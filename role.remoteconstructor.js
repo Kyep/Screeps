@@ -18,16 +18,21 @@ module.exports = {
         if(creep.memory.job == 'getstoredenergy' && creep.carry.energy == creep.carryCapacity) {
 	        creep.memory.job = 'travel-out';
             creep.say('🔄 travel-out');
+        } else if(creep.memory.job != 'getstoredenergy' && creep.memory.job != 'renew' && creep.carry.energy == 0) {
+            creep.memory.job = 'getstoredenergy';
        } else  if(creep.memory.job == 'getstoredenergy') {
-            if (jobGetstoredenergy.run(creep) == -1){
-                // do nothing until we get enough
+            if (creep.room.name == creep.memory.home) {
+                if (jobGetstoredenergy.run(creep) == -1){
+                    // do nothing until we get enough
+                }
+            } else {
+                creep.moveTo(new RoomPosition(25, 25, creep.memory.home))
             }
         } else if (creep.memory.job == 'travel-out') {
+            creep.moveTo(new RoomPosition(25, 25, creep.memory.target))
             if (creep.room.name == creep.memory.target) {
                 creep.memory.job = 'build';
                 creep.say('🚧 build');
-            } else {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory.target))
             }
         } else if(creep.memory.job == 'build') {
             if (jobBuild.run(creep) == -1) {
@@ -42,11 +47,6 @@ module.exports = {
 	    } else if(creep.memory.job == 'repair') {
             if (jobRepair.run(creep) == -1) {
                 // stay there.
-            }
-        } else if (creep.memory.job == 'travel-back') {
-            creep.moveTo(new RoomPosition(25, 25, creep.memory.home))
-            if (creep.room.name == creep.memory.home) {
-                // you are home!
             }
 	    } else if(creep.memory.job == 'recycle') {
 	        jobRecycle.run(creep);
