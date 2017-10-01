@@ -1,0 +1,52 @@
+var jobReturnresources = require('job.returnresources');
+var jobBuild = require('job.build');
+var jobRepair = require('job.repair');
+var jobRenew = require('job.renew');
+var jobGetstoredenergy = require('job.getstoredenergy');
+
+var roleBuilderstorage = {
+
+    /** @param {Creep} creep **/
+    run: function(creep) {
+        if(creep.memory.job != 'getstoredenergy' && creep.memory.job != 'renew' && creep.carry.energy == 0) {
+            var projectsList = Game.spawns.Spawn1.room.find(FIND_CONSTRUCTION_SITES);
+            if(projectsList.length) {
+                if(creep.ticksToLive < 300) {
+                    creep.memory.job = 'renew';
+                    creep.say('🔄 renew');
+                } else {
+                    creep.memory.job = 'getstoredenergy';
+                    creep.say('🔄 getstoredenergy');
+                }
+            } else {
+                creep.memory.role = 'recycler';
+            }
+        } else if(creep.memory.job == 'getstoredenergy' && creep.carry.energy == creep.carryCapacity) {
+            creep.memory.job = 'build';
+            creep.say('🚧 build');
+        } else if(creep.memory.job == 'getstoredenergy') {
+            if (jobGetstoredenergy.run(creep) == -1){
+                creep.memory.role = 'recycler';
+            }
+        } else if(creep.memory.job == 'build') {
+            if(jobBuild.run(creep) == -1){
+	            jobReturnresources.run(creep);
+            }
+        } else if (creep.memory.job == 'renew') {
+            if (creep.ticksToLive > 1000) {
+	            creep.memory.job = 'build';
+                creep.say('🔄 build');
+            } else {
+                if (jobRenew.run(creep) == -1){
+                    creep.memory.job = 'getstoredenergy';
+                    creep.say('🔄 getstoredenergy');
+                }
+            }
+        } else {
+            console.log("WARNING: " + creep.name + " has no job: " + creep.memory.job);
+            creep.memory.job = 'getstoredenergy';
+        }
+	}
+};
+
+module.exports = roleBuilderstorage;
