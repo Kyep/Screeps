@@ -44,18 +44,18 @@ module.exports.loop = function () {
     
     //console.log('Account: ' + Game.cpu.limit + ', Cycle: ' + Game.cpu.tickLimit + ', Bucket: ' + Game.cpu.bucket);
 
-    var alerts_duration = 120; // 120 ticks after enemies spotted, clear the alert.
+    var alerts_duration = 60; // 120 ticks after enemies spotted, clear the alert.
     var alerts_recycle = 1; // after alert is over, spawned adventurers recycle themselves.
 
     var sources_config = {};
-    sources_config['59bbc3f82052a716c3ce7289'] = {'harvester':4}; // just ne of spawn, 4 slots, harvester
+    sources_config['59bbc3f82052a716c3ce7289'] = {'harvester':4, 'scavenger': 1}; // just ne of spawn, 4 slots, harvester
     sources_config['59bbc3f82052a716c3ce728b'] = {'upgrader': 3}; // just sw of spawn, upgrader-heavy
     sources_config['59bbc4062052a716c3ce7408'] = {'ldharvester': 6, 'claimer': 1}; // E room, 3 slots     
     sources_config['59bbc3f72052a716c3ce7287'] = {'ldharvester': 2}; // N room, 1 slot, 
     sources_config['59bbc3e92052a716c3ce70b6'] = {'ldharvester': 5, 'claimer': 1}; // W room, 3 slots, north  
     sources_config['59bbc3e92052a716c3ce70b7'] = {'ldharvester': 5}; // W room, 3 slots, south
     sources_config['59bbc3e82052a716c3ce70b4'] = {'ldharvester': 6, 'claimer': 1}; // NW room, 4 slots, swamp
-    sources_config['none'] = {'scavenger': 1};
+    sources_config['none'] = {};
 
 
 
@@ -121,7 +121,7 @@ module.exports.loop = function () {
                     }
                 }
             } else {
-                sources_config['none']['teller'] = 1;
+                sources_config['59bbc3f82052a716c3ce7289']['teller'] = 1;
                 for (var skey in sources_config) {
                     if(sources_detail[skey] != undefined) {
                         if(sources_detail[skey]['roomname'] == csector) {
@@ -272,100 +272,43 @@ module.exports.loop = function () {
     
     }
     
-    var harvesters_per_room = 3;
-    var upgraders_per_room = 3;
-    var builders_per_room = 2;
-    var scavengers_per_room = 0;
-    var scavengers_per_room_war = 1;
-    
-    var harvesters_east_per_room = 8;
-    var harvesters_north_per_room = 4;
-    var harvesters_west_per_room = 8;
-
     for(var id in Game.structures){
         if(Game.structures[id].structureType == STRUCTURE_TOWER){
             structureTower.run(Game.structures[id])
         }
     }
 
-    var harvesters = [];
-    var builders = [];
-    var upgraders = [];
-    var adventurers = [];
-    var scavengers = [];
-    var claimers = [];
-    var recyclers = [];
-    var harvesters_east = [];
-    var harvesters_north = [];
-    var harvesters_west = [];
-    var harvesters_nw = [];
-
     for(var name in Game.creeps) {
         var creep = Game.creeps[name];
         if(creep.memory.role == 'harvester') {
-            if(creep.memory.source == undefined){
-                actionAssignsource.run(creep);
-            } else {
-                roleHarvester.run(creep);
-            }
-            harvesters.push(creep);
+            roleHarvester.run(creep);
         }
         if(creep.memory.role == 'ldharvester') {
-            if(creep.memory.source == undefined){
-                console.log(creep.name + 'needs a source and target!');
-            } else {
-                roleLDHarvester.run(creep);
-            }
-            if (creep.memory.target == 'W54S18') {
-                harvesters_west.push(creep);
-            } else if (creep.memory.target == 'W53S17') {
-                harvesters_north.push(creep);
-            } else if (creep.memory.target == 'W52S18') {
-                harvesters_east.push(creep);
-            } else if (creep.memory.target == 'W54S17') {
-                harvesters_nw.push(creep);
-            } else {
-                console.log(creep.name + ' is unknown LD harvester! target:' + creep.memory.target + ', source: ' + creep.memory.source);
-            }
+            roleLDHarvester.run(creep);
         }
         if(creep.memory.role == 'upgrader') {
-            if(creep.memory.source == undefined){
-                actionAssignsource.run(creep);
-            } else {
-                roleUpgrader.run(creep);
-            }
-            upgraders.push(creep);
+            roleUpgrader.run(creep);
         }
         if(creep.memory.role == 'upgraderstorage') {
             roleUpgraderstorage.run(creep);
         }
         if(creep.memory.role == 'builder') {
-            if(creep.memory.source == undefined){
-                actionAssignsource.run(creep);
-            } else {
-                roleBuilder.run(creep);
-            }
-            builders.push(creep);
+            roleBuilder.run(creep);
         }
         if(creep.memory.role == 'builderstorage') {
             roleBuilderstorage.run(creep);
-            //builders.push(creep);
         }
         if(creep.memory.role == 'adventurer') {
             roleAdventurer.run(creep);
-            adventurers.push(creep);
         }
         if(creep.memory.role == 'scavenger') {
             roleScavenger.run(creep);
-            scavengers.push(creep);
         }
         if(creep.memory.role == 'claimer') {
             roleClaimer.run(creep);
-            claimers.push(creep);
         }
         if(creep.memory.role == 'recycler') {
             roleRecycler.run(creep);
-            recyclers.push(creep);
         }
         if(creep.memory.role == 'teller') {
             roleTeller.run(creep);
@@ -375,22 +318,5 @@ module.exports.loop = function () {
         }
     }
 
-    /*
-
-    var status_string = 
-    'Harvesters: ' + harvesters.length + '/' + harvesters_per_room + 
-    ', Upgraders: ' + upgraders.length + '/' + upgraders_per_room + 
-    ', Builders: ' + builders.length + '/' + builders_per_room + 
-    ', Warriors: ' + warriors.length + '/' + warriors_per_room + 
-    ', Scavengers: ' + scavengers.length + '/' + scavengers_per_room + 
-    ', LDH (W): ' + harvesters_west.length + '/' + harvesters_west_per_room +
-    ', LDH (N): ' + harvesters_north.length + '/' + harvesters_north_per_room +
-    ', LDH (E): ' + harvesters_east.length + '/' + harvesters_east_per_room +
-    ', Spawner energy: ' + Game.spawns.Spawn1.energy +
-    ', Total Energy: ' + total_energy + '/' + energy_capacity;
-    console.log(status_string);
-
-
-    */
 
 }
