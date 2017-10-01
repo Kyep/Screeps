@@ -29,7 +29,8 @@ global.CREEP_COST = (body) => _.sum(body, p => BODYPART_COST[p.type])
     global.sources_detail['59bbc3f82052a716c3ce728b'] = {'roomname':'W53S18', 'sourcename':'base SW', 'x':16, 'y':26}; // juts sw of spawn, 4 slots, upgrader-heavy
     global.sources_detail['59bbc4062052a716c3ce7408'] = {'roomname':'W52S18', 'sourcename':'E room', 'x':11, 'y':14}; // E room, 3 slots
     global.sources_detail['59bbc3f72052a716c3ce7287'] = {'roomname':'W53S17', 'sourcename':'N room', 'x':4, 'y':44}; // N room, 1 slot, 
-    global.sources_detail['59bbc3e92052a716c3ce70b6'] = {'roomname':'W54S18', 'sourcename':'W room', 'x':42, 'y':6}; // W room, 3 slots,
+    global.sources_detail['59bbc3e92052a716c3ce70b6'] = {'roomname':'W54S18', 'sourcename':'W room', 'x':42, 'y':6}; // W room, N, 3 slots,
+    global.sources_detail['59bbc3e92052a716c3ce70b7'] = {'roomname':'W54S18', 'sourcename':'W room', 'x':5, 'y':37}; // W room, S, 3 slots,
     global.sources_detail['59bbc3e82052a716c3ce70b4'] = {'roomname':'W54S17', 'sourcename':'NW room', 'x':38, 'y':31}; // NW room, 4 slots, swamp
 
 // ---------------------------
@@ -49,10 +50,11 @@ module.exports.loop = function () {
     var sources_config = {};
     sources_config['59bbc3f82052a716c3ce7289'] = {'harvester':4}; // just ne of spawn, 4 slots, harvester
     sources_config['59bbc3f82052a716c3ce728b'] = {'upgrader': 3}; // just sw of spawn, upgrader-heavy
-    sources_config['59bbc4062052a716c3ce7408'] = {'ldharvester': 6}; // E room, 3 slots     , 'claimer': 1
+    sources_config['59bbc4062052a716c3ce7408'] = {'ldharvester': 6, 'claimer': 1}; // E room, 3 slots     
     sources_config['59bbc3f72052a716c3ce7287'] = {'ldharvester': 2}; // N room, 1 slot, 
-    sources_config['59bbc3e92052a716c3ce70b6'] = {'ldharvester': 5}; // W room, 3 slots,   , 'claimer': 1
-    sources_config['59bbc3e82052a716c3ce70b4'] = {'ldharvester': 6}; // NW room, 4 slots, swamp
+    sources_config['59bbc3e92052a716c3ce70b6'] = {'ldharvester': 5, 'claimer': 1}; // W room, 3 slots, north  
+    sources_config['59bbc3e92052a716c3ce70b7'] = {'ldharvester': 5}; // W room, 3 slots, south
+    sources_config['59bbc3e82052a716c3ce70b4'] = {'ldharvester': 6, 'claimer': 1}; // NW room, 4 slots, swamp
     sources_config['none'] = {'scavenger': 1};
 
 
