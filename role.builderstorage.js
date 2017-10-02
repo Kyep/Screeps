@@ -19,17 +19,19 @@ var roleBuilderstorage = {
                     creep.say('🔄 getstoredenergy');
                 }
             } else {
-                creep.memory.role = 'recycler';
+                //creep.memory.role = 'recycler';
             }
         } else if(creep.memory.job == 'getstoredenergy' && creep.carry.energy == creep.carryCapacity) {
             creep.memory.job = 'build';
             creep.say('🚧 build');
         } else if(creep.memory.job == 'getstoredenergy') {
             if (jobGetstoredenergy.run(creep) == -1){
-                creep.memory.role = 'recycler';
+                //creep.memory.role = 'recycler';
             }
         } else if(creep.memory.job == 'build') {
-            if(jobBuild.run(creep) == -1){
+            if(creep.memory.target != creep.room.name){
+                creep.moveTo(new RoomPosition(25, 25, creep.memory.target), {visualizePathStyle: {stroke: '#ffffff'}})
+            } else if(jobBuild.run(creep) == -1){
 	            jobReturnresources.run(creep);
             }
         } else if (creep.memory.job == 'renew') {

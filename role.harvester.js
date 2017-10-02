@@ -1,6 +1,7 @@
 var jobHarvest = require('job.harvest');
 var jobReturnresources = require('job.returnresources');
 var jobBuild = require('job.build');
+var jobRepair = require('job.repair');
 var jobUpgrade = require('job.upgrade');
 var jobRenew = require('job.renew');
 
@@ -20,11 +21,20 @@ var roleHarvester = {
             creep.memory.job = 'return';
             creep.say('🔄 return');
 	    } else if(creep.memory.job == 'harvest') {
-	        jobHarvest.run(creep);
+            if(creep.memory.target != creep.room.name){
+                creep.moveTo(new RoomPosition(25, 25, creep.memory.target), {visualizePathStyle: {stroke: '#ffffff'}})
+            } else {
+	            jobHarvest.run(creep);
+            }
 	    } else if(creep.memory.job == 'return') {
             if (jobReturnresources.run(creep) == -1) {
+                creep.memory.job = 'repair';
+                creep.say('🔄 repair');
+            }
+	    } else if(creep.memory.job == 'repair') {
+            if (jobRepair.run(creep) == -1) {
                 creep.memory.job = 'build';
-                creep.say('🔄 build');
+                creep.say('🚧 builde');
             }
         } else if(creep.memory.job == 'build') {
             if (jobBuild.run(creep) == -1) {

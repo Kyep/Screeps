@@ -1,4 +1,6 @@
 var jobReturnresources = require('job.returnresources');
+var jobBuild = require('job.build');
+var jobUpgrade = require('job.upgrade');
 var jobRecycle = require('job.recycle');
 var jobScavenge = require('job.scavenge');
 
@@ -16,16 +18,24 @@ var roleScavenger = {
             creep.say('🔄 return');
 	    }
 	    if(creep.memory.job == 'scavenge') {
-	        
-	        jobScavenge.run(creep);
+	        if (jobScavenge.run(creep) == -1) {
+	            if (creep.carry.energy > 0) {
+                    creep.memory.job = 'return';
+                    creep.say('🔄 return');
+	            }
+	        }
 	    } else if(creep.memory.job == 'return') {
-            var source = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {filter: (s) => s.energy > 0});
-            if(source != null){
-                jobReturnresources.run(creep);
-            } else {
-                creep.memory.job = 'return';
-                creep.say('🔄 return');
+            if(jobReturnresources.run(creep) == -1){
+                creep.say('🚧 build');
+	            creep.memory.job = 'build';  
             }
+        } else if(creep.memory.job == 'build') {
+            if (jobBuild.run(creep) == -1) {
+                creep.memory.job = 'upgrade';
+                creep.say('🚧 upgrade');
+            }
+        } else if(creep.memory.job == 'upgrade') {
+            jobUpgrade.run(creep);
         } else {
             console.log("WARNING: " + creep.name + " has no job!");
             creep.memory.job = 'scavenge';

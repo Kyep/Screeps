@@ -13,9 +13,8 @@ var jobRecycle = {
         });
         if(targets.length) {
             var theSpawn = targets[0];
-            if(theSpawn.recycleCreep(creep) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(theSpawn, {visualizePathStyle: {stroke: '#ff0000'}});
-            }
+            theSpawn.recycleCreep(creep)
+            creep.moveTo(theSpawn, {visualizePathStyle: {stroke: '#ff0000'}});
         } else {
             return -1;
         }

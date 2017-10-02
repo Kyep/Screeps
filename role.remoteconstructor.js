@@ -16,8 +16,8 @@ module.exports = {
         }
 
         if(creep.memory.job == 'getstoredenergy' && creep.carry.energy == creep.carryCapacity) {
-	        creep.memory.job = 'travel-out';
-            creep.say('🔄 travel-out');
+	        creep.memory.job = 'renew';
+            creep.say('🔄 renew');
         } else if(creep.memory.job != 'getstoredenergy' && creep.memory.job != 'renew' && creep.carry.energy == 0) {
             creep.memory.job = 'getstoredenergy';
        } else  if(creep.memory.job == 'getstoredenergy') {
@@ -36,20 +36,24 @@ module.exports = {
                     creep.memory.job = 'upgrade';
                     creep.say('🚧 upgrade');
                 } else {
-                    creep.memory.job = 'repair';
-                    creep.say('🚧 repair');
+                    //creep.memory.job = 'repair';
+                    //creep.say('🚧 repair');
                 }
             }
 	    } else if(creep.memory.job == 'repair') {
             if (jobRepair.run(creep) == -1) {
-                // stay there.
+                // stay there until you die.
             }
 	    } else if(creep.memory.job == 'recycle') {
 	        jobRecycle.run(creep);
         } else if (creep.memory.job == 'renew') {
             if (creep.ticksToLive > 800) {
-	            creep.memory.job = 'travel-out';
-                creep.say('🔄 travel-out');
+                if (creep.carry.energy == creep.carryCapacity) {
+    	            creep.memory.job = 'travel-out';
+                    creep.say('🔄 travel-out');
+                } else {
+                    creep.memory.job = 'getstoredenergy';
+                }
             } else {
                 if(jobRenew.run(creep) == -1) {
                     creep.memory.job = 'travel-out';

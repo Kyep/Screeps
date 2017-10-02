@@ -107,7 +107,7 @@ module.exports = {
                 creep.say('🔄 build');
             }
         } else if (creep.memory.job == 'renew') {
-            if (creep.ticksToLive > 800) {
+            if (creep.ticksToLive > 500) {
                 if (creep.carry.energy > 0) {
                     creep.memory.job = 'athome';
                 } else {
