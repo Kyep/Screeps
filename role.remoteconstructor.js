@@ -21,12 +21,8 @@ module.exports = {
         } else if(creep.memory.job != 'getstoredenergy' && creep.memory.job != 'renew' && creep.carry.energy == 0) {
             creep.memory.job = 'getstoredenergy';
        } else  if(creep.memory.job == 'getstoredenergy') {
-            if (creep.room.name == creep.memory.home) {
-                if (jobGetstoredenergy.run(creep) == -1){
-                    // do nothing until we get enough
-                }
-            } else {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory.home))
+            if (jobGetstoredenergy.run(creep) == -1){
+                // do nothing until we get enough
             }
         } else if (creep.memory.job == 'travel-out') {
             creep.moveTo(new RoomPosition(25, 25, creep.memory.target))

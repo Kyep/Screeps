@@ -14,17 +14,11 @@ var roleUpgraderstorage = {
             //creep.say('🚧 upgrade!');
         }
         if(creep.memory.job == 'getstoredenergy') {
-            if (creep.room.name != creep.memory.home) {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
-            } else if (jobGetstoredenergy.run(creep) == -1){
+            if (jobGetstoredenergy.run(creep) == -1){
                 //creep.memory.role = 'recycler';
             }
         } else if(creep.memory.job == 'upgrade') {
-            if (creep.room.name != creep.memory.target) {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory.target));
-            } else {
-                jobUpgrade.run(creep);
-            }
+            jobUpgrade.run(creep);
         } else if (creep.memory.job == 'renew') {
             if (creep.ticksToLive > 500 || jobRenew.run(creep) == -1) {
                 creep.memory.job = 'getstoredenergy';

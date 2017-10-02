@@ -12,7 +12,7 @@ module.exports = {
         }
 
         if (creep.memory.job == 'travel-out') {
-            creep.moveTo(new RoomPosition(25, 25, creep.memory.target))
+            creep.moveTo(new RoomPosition(25, 25, creep.memory.target), {visualizePathStyle: {stroke: '#ff0000'}})
             if (creep.room.name == creep.memory.target) {
 	            creep.memory.job = 'patrol';
                 creep.say('🔄 patrol');
@@ -22,7 +22,7 @@ module.exports = {
                 creep.memory.job = 'recycle';
                 creep.say('🔄 at home');
             } else {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory.home))
+                creep.moveTo(new RoomPosition(25, 25, creep.memory.home), {visualizePathStyle: {stroke: '#ff0000'}})
             }
 	    } else if(creep.memory.job == 'recycle') {
 	        jobRecycle.run(creep);

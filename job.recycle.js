@@ -2,14 +2,19 @@ var jobRecycle = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
+        if (creep.room.name != creep.memory.home) {
+                creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
+                return 0;
+        }
         var targets = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity;
+                    return (structure.structureType == STRUCTURE_SPAWN) && structure.energy < structure.energyCapacity;
                 }
         });
         if(targets.length) {
-            if(Game.spawns.Spawn1.recycleCreep(creep) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(Game.spawns.Spawn1, {visualizePathStyle: {stroke: '#ff0000'}});
+            var theSpawn = targets[0];
+            if(theSpawn.recycleCreep(creep) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(theSpawn, {visualizePathStyle: {stroke: '#ff0000'}});
             }
         } else {
             return -1;

@@ -7,10 +7,6 @@ var jobRenew = require('job.renew');
 
 module.exports = {
     run: function(creep) {
-        //if no energy, then set to not working
-        //if(!creep.memory.job) {
-        //    creep.memory.job = 'harvest';
-        //}
         if (creep.memory.target == undefined && creep.memory.source != undefined) {
             var source = Game.getObjectById(creep.memory.source);
             if(source) {
@@ -20,7 +16,7 @@ module.exports = {
                 console.log("WARN: LDH " + creep.name + " has no source with: " + creep.memory.source);
             }
         }
-        if (creep.memory.job != 'travel-out' && creep.memory.job != 'travel-back' && creep.memory.job != 'harvest' && creep.memory.job != 'renew' && creep.carry.energy == 0) {
+        if (creep.carry.energy == 0 && creep.memory.job != 'travel-out' && creep.memory.job != 'travel-back' && creep.memory.job != 'harvest' && creep.memory.job != 'renew') {
             if(creep.ticksToLive < 400) {
                 if(creep.room.name == creep.memory.home) {
                     creep.memory.job = 'renew';
@@ -67,8 +63,10 @@ module.exports = {
                     creep.memory.job = 'upgrade';
                     creep.say('🚧 upgrade');
                 } else {
-                    creep.memory.job = 'repair';
-                    creep.say('🚧 repair');
+                    //creep.memory.job = 'repair';
+                    //creep.say('🚧 repair');
+                    creep.memory.job = 'travel-back';
+                    creep.say('🚧 travel-back');
                 }
             }
 	    } else if(creep.memory.job == 'repair') {
@@ -79,6 +77,18 @@ module.exports = {
         } else if(creep.memory.job == 'upgrade') {
             jobUpgrade.run(creep);
         } else if (creep.memory.job == 'travel-back') {
+            if(creep.carry.energy > 0) {
+                var targets = creep.room.find(FIND_STRUCTURES, 3, {
+                    filter: function(structure){
+                        return (structure.hits < structure.hitsMax) && (structure.structureType != STRUCTURE_WALL) && (structure.structureType != STRUCTURE_RAMPART)
+                    }
+                })
+                if(targets.length) {
+                    var target = creep.pos.findClosestByRange(targets)
+                    //console.log(creep.name + " attempts to repair an object at " + target.pos.x + '/' + target.pos.y);
+                    creep.repair(target);
+                }
+            }
             creep.moveTo(new RoomPosition(25, 25, creep.memory.home))
             if (creep.room.name == creep.memory.home) {
                 creep.memory.job = 'athome';
@@ -113,9 +123,6 @@ module.exports = {
                     //}
                 }
             }
-        } else {
-
-            
         }
     }
 };

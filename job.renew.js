@@ -9,6 +9,12 @@ var jobRenew = {
         });
         if(targets.length > 0) {
             var target = creep.pos.findClosestByRange(targets)
+            if (target.energy < 50 && creep.energy > 0) {
+                if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_ENOUGH_ENERGY) {
+                    creep.moveTo(target, {visualizePathStyle: {stroke: '#ff00ff'}});
+                }
+                return 0 
+            }
             var result = target.renewCreep(creep);
             if(result == ERR_NOT_IN_RANGE) {
                 creep.moveTo(target, {visualizePathStyle: {stroke: '#ff00ff'}});

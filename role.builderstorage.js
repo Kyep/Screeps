@@ -9,7 +9,7 @@ var roleBuilderstorage = {
     /** @param {Creep} creep **/
     run: function(creep) {
         if(creep.memory.job != 'getstoredenergy' && creep.memory.job != 'renew' && creep.carry.energy == 0) {
-            var projectsList = Game.spawns.Spawn1.room.find(FIND_CONSTRUCTION_SITES);
+            var projectsList = creep.room.find(FIND_CONSTRUCTION_SITES);
             if(projectsList.length) {
                 if(creep.ticksToLive < 300) {
                     creep.memory.job = 'renew';
