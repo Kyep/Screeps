@@ -32,7 +32,8 @@ var roleBuilderstorage = {
             if(creep.memory.target != creep.room.name){
                 creep.moveTo(new RoomPosition(25, 25, creep.memory.target), {visualizePathStyle: {stroke: '#ffffff'}})
             } else if(jobBuild.run(creep) == -1){
-	            jobReturnresources.run(creep);
+                // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
+	            jobReturnresources.run(creep, 1, 1, 0.5, 1, 1);
             }
         } else if (creep.memory.job == 'renew') {
             if (creep.ticksToLive > 1000) {

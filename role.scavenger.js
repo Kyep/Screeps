@@ -1,4 +1,6 @@
 var jobReturnresources = require('job.returnresources');
+var jobRenew = require('job.renew');
+var jobGetstoredenergy = require('job.getstoredenergy');
 var jobBuild = require('job.build');
 var jobUpgrade = require('job.upgrade');
 var jobRecycle = require('job.recycle');
@@ -10,10 +12,10 @@ var roleScavenger = {
     run: function(creep) {
         if(creep.memory.job == 'recycle') {
             jobRecycle.run(creep);
-        } else if(creep.memory.job != 'scavenge' && creep.carry.energy == 0) {
+        } else if(creep.memory.job != 'scavenge' && creep.memory.job != 'getstoredenergy' && creep.carry.energy == 0) {
             creep.memory.job = 'scavenge';
             creep.say('🔄 scavenge');
-        } else if(creep.memory.job == 'scavenge' && creep.carry.energy == creep.carryCapacity) {
+        } else if((creep.memory.job == 'scavenge' || creep.memory.job == 'getstoredenergy') && creep.carry.energy == creep.carryCapacity) {
             creep.memory.job = 'return';
             creep.say('🔄 return');
 	    }
@@ -22,10 +24,18 @@ var roleScavenger = {
 	            if (creep.carry.energy > 0) {
                     creep.memory.job = 'return';
                     creep.say('🔄 return');
+	            } else {
+	                creep.memory.job = 'getstoredenergy';
+                    //creep.say('🔄 pickup');
 	            }
 	        }
+        } else if(creep.memory.job == 'getstoredenergy') {
+            if (jobGetstoredenergy.run(creep) == -1){
+                creep.memory.job = 'scavenge';
+            }
 	    } else if(creep.memory.job == 'return') {
-            if(jobReturnresources.run(creep) == -1){
+            // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
+	        if (jobReturnresources.run(creep, 1, 1, 0.9, 0, 0) == -1) {
                 creep.say('🚧 build');
 	            creep.memory.job = 'build';  
             }

@@ -27,14 +27,15 @@ var roleHarvester = {
 	            jobHarvest.run(creep);
             }
 	    } else if(creep.memory.job == 'return') {
-            if (jobReturnresources.run(creep) == -1) {
+            // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
+            if (jobReturnresources.run(creep, 1, 1, 0.5, 1, 1) == -1) {
                 creep.memory.job = 'repair';
                 creep.say('🔄 repair');
             }
 	    } else if(creep.memory.job == 'repair') {
             if (jobRepair.run(creep) == -1) {
                 creep.memory.job = 'build';
-                creep.say('🚧 builde');
+                creep.say('🚧 build');
             }
         } else if(creep.memory.job == 'build') {
             if (jobBuild.run(creep) == -1) {

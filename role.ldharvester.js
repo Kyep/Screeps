@@ -51,10 +51,11 @@ module.exports = {
             if (creep.memory.target in Memory.sectors_under_attack) {
                 creep.memory.job = 'travel-back';
                 creep.say('🚧 flee!');
-            } else if (creep.carry.energy == creep.carryCapacity) {
+            } else if (creep.carry.energy == creep.carryCapacity) { // DO NOT DISABLE THIS OR HARVESTERS WILL GET STUCK AND NEVER RETURN!
                 creep.memory.job = 'build';
                 creep.say('🚧 build');
             } else {
+                creep.moveTo(new RoomPosition(creep.memory.target_x, creep.memory.target_y, creep.memory.target), {visualizePathStyle: {stroke: '#ffffff'}})
 	            jobHarvest.run(creep);
             }
         } else if(creep.memory.job == 'build') {
@@ -75,7 +76,12 @@ module.exports = {
                 creep.say('🚧 travel-back');
             }
         } else if(creep.memory.job == 'upgrade') {
-            jobUpgrade.run(creep);
+            if (creep.room.name == creep.memory.home) {
+                jobUpgrade.run(creep);
+            } else { 
+                creep.memory.job = 'travel-back';
+                creep.say('🚧 travel-back');
+            }
         } else if (creep.memory.job == 'travel-back') {
             if(creep.carry.energy > 0) {
                 var targets = creep.room.find(FIND_STRUCTURES, 3, {
@@ -102,7 +108,8 @@ module.exports = {
             } else if(creep.ticksToLive < 400) {
                 creep.memory.job = 'renew';
                 creep.say('🔄 renew');
-	        } else if (jobReturnresources.run(creep) == -1) {
+            // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
+	        } else if (jobReturnresources.run(creep, 1, 1, 0.3, 1, 1) == -1) {
                 creep.memory.job = 'build';
                 creep.say('🔄 build');
             }

@@ -8,7 +8,8 @@ var jobHarvest = {
         } else {
             var source = creep.pos.findClosestByPath(FIND_SOURCES,{filter: (s) => s.id == creep.memory.source});
             if(source != null){
-                if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+                var result = creep.harvest(source);
+                if (result == ERR_NOT_IN_RANGE || result == ERR_NOT_ENOUGH_RESOURCES) {
                     creep.moveTo(source, {visualizePathStyle: {stroke: '#ffffff'}});
                 }
             } else {
