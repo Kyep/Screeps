@@ -18,6 +18,12 @@ var roleUpgrader = {
                 creep.say('🔄 harvest');
             }
         } else if(creep.memory.job == 'harvest' && creep.carry.energy == creep.carryCapacity) {
+            var asectors = Memory['sectors_under_attack'];
+            if (asectors.length > 0) {
+                creep.memory.job = 'return';
+                creep.say('⚡ return');
+                return;
+            }
             var targets = creep.room.find(FIND_STRUCTURES, {
                 filter: function(structure){
                     return (structure.hits < structure.hitsMax) && (structure.structureType != STRUCTURE_WALL) && (structure.structureType != STRUCTURE_RAMPART)
@@ -32,6 +38,12 @@ var roleUpgrader = {
             }
 	    } else if(creep.memory.job == 'harvest') {
 	        jobHarvest.run(creep);
+	    } else if(creep.memory.job == 'return') {
+            // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
+            if (jobReturnresources.run(creep, 1, 1, 0.75, 1, 1) == -1) {
+                creep.memory.job = 'repair';
+                creep.say('🔄 repair');
+            }
 	    } else if(creep.memory.job == 'repair') {
             var targets = creep.room.find(FIND_STRUCTURES, {
                 filter: function(structure){

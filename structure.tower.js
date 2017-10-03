@@ -3,7 +3,7 @@ var structureTower = {
         var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
         if(closestHostile) {
             tower.attack(closestHostile);
-            return 1;
+            return 0;
         }
 
         var repairTargets = tower.pos.findInRange(FIND_STRUCTURES, 50, {

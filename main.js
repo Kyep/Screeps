@@ -31,9 +31,9 @@ global.overlord = 'Phisec';
         'storage': '59cfa1fcd8ad39203de0a8aa',
         'room': 'W53S18',
         'sourceid': '59bbc3f82052a716c3ce7289',
-        'military_roles' : ['adventurer', 'scout'],
-        'alerts_duration' : 60,
-        'alerts_recycle' : 1
+        'military_roles' : ['adventurer', 'scout', 'teller'],
+        'alerts_duration' : 300,
+        'alerts_recycle' : 0
     }
     global.empire = {
         'W53S18': {
@@ -123,10 +123,11 @@ global.overlord = 'Phisec';
                     'expected_income': 10
                 }
             }
-        },
+        }
         
         
         // HOSTILE ROOMS
+        /*
         'W52S16': {
             'spawns_from': 'W51S18',
             'sources': {
@@ -140,7 +141,7 @@ global.overlord = 'Phisec';
                 }
             }
         }
-        
+        */        
     }
 
 // rule: must have  1 move part for 1 every other part, or 2 every other parts if creep uses roads exclusively
@@ -269,6 +270,7 @@ module.exports.loop = function () {
         // COMBAT CONTROLLER
         var timenow = Game.time;
         for(var rname in Game.rooms) {
+            
             //console.log("Parsing room: " + Game.rooms[rname].name);
             var enemiesList = Game.rooms[rname].find(FIND_HOSTILE_CREEPS);
             var enemiesCost = 0;
@@ -283,10 +285,47 @@ module.exports.loop = function () {
                     console.log("ATTACK: NEW DETECTED: " + Game.rooms[rname].name);
                     sectors_under_attack[Game.rooms[rname].name] = {}
                     sectors_under_attack[Game.rooms[rname].name]['attackstart'] = timenow;
+
+                    var texits = Game.map.describeExits(rname);
+                    //console.log("Checking exits of " + rname);
+                    console.log(JSON.stringify(texits));
+                    var exit_arr = []
+                    for (var ex in texits) {
+                        exit_arr.push(texits[ex]);
+                    }
+                    //console.log("Checking creeps");
+                    for (var tc in Game.creeps) {
+                        //console.log("Checking creep " + Game.creeps[tc].name);
+                        if(!exit_arr.includes(Game.creeps[tc].room.name)) {
+                            // if they aren't next door, skip them.
+                            continue;
+                        }
+                        if(Game.creeps[tc].memory['role'] == undefined) {
+                            // if they have a weird role, skip them.
+                            continue;
+                        }
+                        if (!empire_defaults['military_roles'].includes(Game.creeps[tc].memory['role'])) {
+                            // if they are not military, skip them.
+                            continue;
+                        }
+                        var enemiesList = Game.creeps[tc].room.find(FIND_HOSTILE_CREEPS);
+                        if (enemiesList.length) {
+                            // if there are enemies in the sector they're in, skip them.
+                            continue;
+                        }
+                        // otherwise...
+                        Game.creeps[tc].memory['target'] = rname;
+                        console.log("REASSIGN: sent " + Game.creeps[tc].name + " to defend" + rname);
+                    }
+
+
                 }
                 sectors_under_attack[Game.rooms[rname].name]['time'] = timenow;
                 sectors_under_attack[Game.rooms[rname].name]['threat'] = enemiesCost;
                 sectors_under_attack[Game.rooms[rname].name]['enemycount'] = enemiesList.length;
+            } else if(sectors_under_attack[Game.rooms[rname].name] != undefined) {
+                sectors_under_attack[Game.rooms[rname].name]['threat'] = 0;
+                sectors_under_attack[Game.rooms[rname].name]['enemycount'] = 0;
             }
         }
         for(var csector in sectors_under_attack) {
@@ -295,8 +334,15 @@ module.exports.loop = function () {
                 continue;
             }
             var tgap = timenow - sectors_under_attack[csector]['time'];
-            if(tgap >= empire_defaults['alerts_duration']) {
+            var end_attack_now = 0;
+            if(sectors_under_attack[csector]['enemycount'] == 0) {
+                console.log("ATTACK: ENDS (ENEMY WIPED OUT): " + csector + ' in ' + (timenow - sectors_under_attack[csector]['attackstart']) + ' ticks.');
+                end_attack_now = 1;
+            } else if(tgap >= empire_defaults['alerts_duration']) {
                 console.log("ATTACK: OLD ENDS: " + csector + ' at ' + tgap + ' seconds since last detection.');
+                end_attack_now = 1;
+            }
+            if (end_attack_now) {
                 delete sectors_under_attack[csector];
                 if(empire_defaults['alerts_recycle'] == 1) {
                     for(var name in Game.creeps) {
@@ -315,33 +361,58 @@ module.exports.loop = function () {
                     console.log("ATTACK: csector " + csector + " is undefined.");
                     continue;
                 }
+                if( empire[csector] == undefined ) {
+                    console.log("ATTACK: csector " + csector + " is undefined.");
+                    continue;
+                }
 
                 var defenseforce = {'adventurer': 1};
                 var room_has_spawn = 0;
                 for (var thisspawn in Game.spawns) {
-                    if (thisspawn.room == csector) {
+                    if (Game.spawns[thisspawn].room.name == csector) {
                         room_has_spawn = 1;
                     }
                 }
 
                 // defcon 1: single invader, invasion lasting less than a minute, not very strong
                 if (sectors_under_attack[csector]['threat'] < 2000 && (timenow - sectors_under_attack[csector]['attackstart']) < 60 && sectors_under_attack[csector]['enemycount'] == 1) {
-                    defenseforce = {'scout': 2};
+                    if (room_has_spawn) {
+                        defenseforce['scout'] = 1;
+                        defenseforce['teller'] = 1;
+                    } else {
+                        defenseforce['scout'] = 2;
+                    }
                     empire[csector]['defcon'] = 1;
 
                 // defcon 2: big invader, or tougher group, invasion lasting less than 3 minutes, or up to 3 enemies               
                 } else if (sectors_under_attack[csector]['threat'] < 6000 && (timenow - sectors_under_attack[csector]['attackstart']) < 180 && sectors_under_attack[csector]['enemycount'] > 1 && sectors_under_attack[csector]['enemycount'] < 4) {
-                    defenseforce = {'adventurer': 3};
+                    if (room_has_spawn) {
+                        defenseforce['adventurer'] = 1;
+                        defenseforce['teller'] = 1;
+                    } else {
+                        defenseforce['adventurer'] = 2;
+                    }
                     empire[csector]['defcon'] = 2;
 
                 // defcon 3: big invader, or tougher group, invasion lasting less than 3 minutes    
                 } else if (sectors_under_attack[csector]['threat'] < 10000 && (timenow - sectors_under_attack[csector]['attackstart']) < 360) {
-                    defenseforce = {'teller': 1, 'adventurer': 5};
+                    if (room_has_spawn) {
+                        defenseforce['adventurer'] = 3;
+                        defenseforce['teller'] = 1;
+                        teller = 1;
+                    } else {
+                        defenseforce['adventurer'] = 4;
+                    }
                     empire[csector]['defcon'] = 3;
 
                 // defcon 4: big invader, or tougher group, invasion lasting less than 3 minutes  
                 } else {
-                    defenseforce = {'teller': 1, 'adventurer': 9};
+                    if (room_has_spawn) {
+                        defenseforce['adventurer'] = 4;
+                        defenseforce['teller'] = 1;
+                    } else {
+                        defenseforce['adventurer'] = 5;
+                    }
                     empire[csector]['defcon'] = 4;
                 }
 
@@ -356,6 +427,9 @@ module.exports.loop = function () {
                 }
             }
         }
+        
+
+
         Memory['sectors_under_attack'] = sectors_under_attack;
 
 
@@ -462,7 +536,7 @@ module.exports.loop = function () {
                                 continue;
                             }
                             if (spawner.room.energyAvailable < 300) {
-                                //console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as THIS UNIT cost " + thecost + ' exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
+                                console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as THIS UNIT cost " + thecost + ' exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
                                 //continue;
                             }
                             var part_template = empire_workers[role]['body'];
@@ -501,7 +575,7 @@ module.exports.loop = function () {
                                 continue;
                             }
                             if (spawner.room.energyAvailable < thecost) {
-                                //console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as we lack the cost " + thecost + ' exceeds storage: ' + spawner.room.energyAvailable + ' ~ ' + JSON.stringify(partlist));
+                                console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as we lack the cost " + thecost + ' exceeds storage: ' + spawner.room.energyAvailable + ' ~ ' + JSON.stringify(partlist));
                                 continue;
                             }
                             var target_x = 25;
