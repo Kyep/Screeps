@@ -101,6 +101,9 @@ module.exports = {
                 creep.say('🔄 at home');
             }
 	    } else if (creep.memory.job == 'athome') {
+            if (creep.pos.x < 2 || creep.pos.x > 47 || creep.pos.y < 2 || creep.pos.y > 47) {
+                creep.moveTo(25, 25, creep.room);
+            }
 	        if (creep.room.name != creep.memory.home) {
                 creep.moveTo(new RoomPosition(25, 25, creep.memory.home))
                 //var exit = creep.room.findExitTo(creep.memory.home);

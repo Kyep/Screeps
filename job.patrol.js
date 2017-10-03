@@ -36,12 +36,18 @@ var jobPatrol = {
                 creep.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}});
             }
         } else {
-            if (creep.room.controller.owner.username != overlord) {
-                var csites = creep.room.find(FIND_CONSTRUCTION_SITES);
-                if (csites.length) {
-                    csite = creep.pos.findClosestByPath(csites);
-                    creep.moveTo(csite, {visualizePathStyle: {stroke: '#ff0000'}});
-                    return 0;
+            if (creep.room.controller) {
+                if (creep.room.controller.owner) {
+                    if (creep.room.controller.owner.username) {
+                        if (creep.room.controller.owner.username != overlord) {
+                            var csites = creep.room.find(FIND_CONSTRUCTION_SITES);
+                            if (csites.length) {
+                                csite = creep.pos.findClosestByPath(csites);
+                                creep.moveTo(csite, {visualizePathStyle: {stroke: '#ff0000'}});
+                                return 0;
+                            }
+                        }
+                    }
                 }
             }
             //console.log(creep.name + ' NO TARGET IN ' + creep.room.name);

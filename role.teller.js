@@ -18,7 +18,7 @@ var roleBuilderstorage = {
             }
 	    } else if(creep.memory.job == 'return') {
             // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
-	        if (jobReturnresources.run(creep, 1, 1, 0.7, 1, 1) == -1) {
+	        if (jobReturnresources.run(creep, 1, 1, 0.7, 0, 0) == -1) {
                 //
             }
         } else if (creep.memory.job == 'renew') {
