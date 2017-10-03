@@ -536,7 +536,7 @@ module.exports.loop = function () {
                                 continue;
                             }
                             if (spawner.room.energyAvailable < 300) {
-                                console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as THIS UNIT cost " + thecost + ' exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
+                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as THIS UNIT cost " + thecost + ' exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
                                 //continue;
                             }
                             var part_template = empire_workers[role]['body'];
@@ -575,7 +575,7 @@ module.exports.loop = function () {
                                 continue;
                             }
                             if (spawner.room.energyAvailable < thecost) {
-                                console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as we lack the cost " + thecost + ' exceeds storage: ' + spawner.room.energyAvailable + ' ~ ' + JSON.stringify(partlist));
+                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as we lack the cost " + thecost + ' exceeds storage: ' + spawner.room.energyAvailable + ' ~ ' + JSON.stringify(partlist));
                                 continue;
                             }
                             var target_x = 25;
