@@ -100,6 +100,12 @@ module.exports = {
                 creep.memory.job = 'athome';
                 creep.say('🔄 at home');
             }
+	    } else if(creep.memory.job == 'return') {
+            // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
+            if (jobReturnresources.run(creep, 1, 1, 0.5, 1, 1) == -1) {
+                creep.memory.job = 'athome';
+                creep.say('🔄 athome');
+            }
 	    } else if (creep.memory.job == 'athome') {
             if (creep.pos.x < 2 || creep.pos.x > 47 || creep.pos.y < 2 || creep.pos.y > 47) {
                 creep.moveTo(25, 25, creep.room);
@@ -119,16 +125,16 @@ module.exports = {
         } else if (creep.memory.job == 'renew') {
             if (creep.ticksToLive > 500) {
                 if (creep.carry.energy > 0) {
-                    creep.memory.job = 'athome';
+                    creep.memory.job = 'return';
                 } else {
     	            creep.memory.job = 'travel-out';
                     creep.say('🔄 travel-out');
                 }
             } else {
                 if(jobRenew.run(creep) == -1) {
-                    //if (creep.carry.energy > 0) {
-                    //    creep.memory.job = 'athome';
-                    //} else {
+                    if (creep.carry.energy > 0) { // trying this again, see if it helps avoid them wasting time standing around.
+                        creep.memory.job = 'return';
+                    }// else {
                     //   creep.memory.job = 'travel-out';
                     //}
                 }

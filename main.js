@@ -60,7 +60,7 @@ global.overlord = 'Phisec';
         'W53S17': {
             'sources': {
                 '59bbc3f72052a716c3ce7287': {'sourcename':'1N', 'x':4, 'y':44,
-                    'assigned': {'ldharvester': 2}, // , 'reserver': 1
+                    'assigned': {'ldharvester': 2, 'reserver': 1}, // , 'reserver': 1
                     'expected_income': 10
                 },
             } 
@@ -91,7 +91,7 @@ global.overlord = 'Phisec';
             'spawns_from': 'W51S18',
             'sources': {
                 '59bbc4182052a716c3ce758c': {'sourcename':'2', 'x':14, 'y':20,
-                    'assigned': {'harvester':2, 'upgrader':1, 'builder': 2},
+                    'assigned': {'harvester':2, 'upgrader':1, 'builder': 1},
                     'expected_income': 80
                 },
                 '59bbc4182052a716c3ce758d': {'sourcename':'2', 'x':3, 'y':27,
@@ -105,7 +105,7 @@ global.overlord = 'Phisec';
         'W51S19': {
             'spawns_from': 'W51S18',
             'sources': {
-                '59bbc4182052a716c3ce758f': {'sourcename':'2S', 'x':33, 'y':5,
+                '59bbc4182052a716c3ce758f': {'sourcename':'2S', 'x':34, 'y':6,
                     'assigned': {'ldharvester':2},
                     'expected_income': 50
                 }
@@ -199,11 +199,11 @@ module.exports.loop = function () {
         if(vault) {
            var energy_reserves = vault.store.energy;
            //console.log('Vault: ' + energy_reserves);
-           if(energy_reserves > 50000) {
+           if(energy_reserves > 80000) {
                empire[empire_defaults['room']].sources[empire_defaults['sourceid']].assigned['upgraderstorage'] = 4;
-           } else if(energy_reserves > 20000) {
+           } else if(energy_reserves > 40000) {
                empire[empire_defaults['room']].sources[empire_defaults['sourceid']].assigned['upgraderstorage'] = 2;
-           } else if(energy_reserves > 10000) {
+           } else if(energy_reserves > 20000) {
                empire[empire_defaults['room']].sources[empire_defaults['sourceid']].assigned['upgraderstorage'] = 1;
            }
         }
@@ -575,7 +575,7 @@ module.exports.loop = function () {
                                 continue;
                             }
                             if (spawner.room.energyAvailable < thecost) {
-                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as we lack the cost " + thecost + ' exceeds storage: ' + spawner.room.energyAvailable + ' ~ ' + JSON.stringify(partlist));
+                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as we lack the cost " + thecost + ' exceeds storage: ' + spawner.room.energyAvailable);
                                 continue;
                             }
                             var target_x = 25;
