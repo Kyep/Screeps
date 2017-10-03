@@ -29,7 +29,8 @@ var roleScavenger = {
                     //creep.say('🔄 pickup');
 	            }
 	        }
-        } else if(creep.memory.job == 'getstoredenergy') {
+        }
+        if(creep.memory.job == 'getstoredenergy') {
             if (jobGetstoredenergy.run(creep) == -1){
                 creep.memory.job = 'scavenge';
             }

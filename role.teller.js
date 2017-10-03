@@ -12,13 +12,14 @@ var roleBuilderstorage = {
         } else if(creep.memory.job == 'getstoredenergy' && creep.carry.energy == creep.carryCapacity) {
             creep.memory.job = 'return';
             creep.say('🚧 return');
-        } else if(creep.memory.job == 'getstoredenergy') {
+        }
+        if(creep.memory.job == 'getstoredenergy') {
             if (jobGetstoredenergy.run(creep) == -1){
                 //creep.memory.role = 'recycler'; // this is super-dangerous, it can create an endless loop when a room without a container spawns a teller :P
             }
 	    } else if(creep.memory.job == 'return') {
             // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
-	        if (jobReturnresources.run(creep, 1, 1, 0.7, 0, 0) == -1) {
+	        if (jobReturnresources.run(creep, 1, 1, 0.8, 0, 0) == -1) {
                 //
             }
         /*

@@ -377,8 +377,8 @@ module.exports.loop = function () {
                 // defcon 1: single invader, invasion lasting less than a minute, not very strong
                 if (sectors_under_attack[csector]['threat'] < 2000 && (timenow - sectors_under_attack[csector]['attackstart']) < 60 && sectors_under_attack[csector]['enemycount'] == 1) {
                     if (room_has_spawn) {
-                        defenseforce['scout'] = 1;
-                        defenseforce['teller'] = 1;
+                        //defenseforce['scout'] = 1;
+                        //defenseforce['teller'] = 1;
                     } else {
                         defenseforce['scout'] = 2;
                     }
@@ -387,10 +387,10 @@ module.exports.loop = function () {
                 // defcon 2: big invader, or tougher group, invasion lasting less than 3 minutes, or up to 3 enemies               
                 } else if (sectors_under_attack[csector]['threat'] < 6000 && (timenow - sectors_under_attack[csector]['attackstart']) < 180 && sectors_under_attack[csector]['enemycount'] > 1 && sectors_under_attack[csector]['enemycount'] < 4) {
                     if (room_has_spawn) {
-                        defenseforce['adventurer'] = 1;
+                        defenseforce['scout'] = 2;
                         defenseforce['teller'] = 1;
                     } else {
-                        defenseforce['adventurer'] = 2;
+                        defenseforce['adventurer'] = 1;
                     }
                     empire[csector]['defcon'] = 2;
 
