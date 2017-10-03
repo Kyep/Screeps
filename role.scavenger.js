@@ -47,9 +47,6 @@ var roleScavenger = {
             }
         } else if(creep.memory.job == 'upgrade') {
             jobUpgrade.run(creep);
-        } else {
-            console.log("WARNING: " + creep.name + " has no job!");
-            creep.memory.job = 'scavenge';
         }
 
 	}
