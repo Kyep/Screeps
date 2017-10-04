@@ -28,7 +28,6 @@ global.overlord = 'Phisec';
 
     global.empire_defaults = {
         'spawner': '59ce24a6b1421365236708e4',
-        'storage': '59cfa1fcd8ad39203de0a8aa',
         'room': 'W53S18',
         'sourceid': '59bbc3f82052a716c3ce7289',
         'military_roles' : ['adventurer', 'scout', 'teller'],
@@ -195,19 +194,6 @@ module.exports.loop = function () {
 
         // EXPANSION CONTROLLER
         
-        var vault = Game.getObjectById(empire_defaults['storage']);
-        if(vault) {
-           var energy_reserves = vault.store.energy;
-           //console.log('Vault: ' + energy_reserves);
-           if(energy_reserves > 80000) {
-               empire[empire_defaults['room']].sources[empire_defaults['sourceid']].assigned['upgraderstorage'] = 4;
-           } else if(energy_reserves > 40000) {
-               empire[empire_defaults['room']].sources[empire_defaults['sourceid']].assigned['upgraderstorage'] = 2;
-           } else if(energy_reserves > 20000) {
-               empire[empire_defaults['room']].sources[empire_defaults['sourceid']].assigned['upgraderstorage'] = 1;
-           }
-        }
-        
         /*
         var myusername = overlord;
         var expansiontarget = Game.rooms['W51S18'];
@@ -267,9 +253,25 @@ module.exports.loop = function () {
         }
         */
 
+
         // COMBAT CONTROLLER
         var timenow = Game.time;
         for(var rname in Game.rooms) {
+
+            var energy_reserves = 0;
+            if(Game.rooms[rname]['storage'] != undefined) {
+                if (Game.rooms[rname]['storage'].store.energy) {
+                    energy_reserves = Game.rooms[rname]['storage'].store.energy;
+                    empire[rname].sources['upgrader'] = {'sourcename': rname + '-upgrade', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 10}
+                    if(energy_reserves > 80000) {
+                        empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 4;
+                    } else if(energy_reserves > 40000) {
+                        empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 2;
+                    } else if(energy_reserves > 20000) {
+                        empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 1;
+                    }                    
+                }
+            }
             
             //console.log("Parsing room: " + Game.rooms[rname].name);
             var enemiesList = Game.rooms[rname].find(FIND_HOSTILE_CREEPS);
@@ -349,7 +351,7 @@ module.exports.loop = function () {
                         if(Game.creeps[name].memory.target == csector && (empire_defaults['military_roles'].includes(Game.creeps[name].memory.role))) {
                             Game.creeps[name].memory.role = 'recycler';
                             Game.creeps[name].say('🔄 recycle');
-                            //console.log("MOB: " + name + ' IS eligible.');
+                            console.log("RECYCLE: " + name + ' due to it being part of sector defense forces for a sector that is no longer under attack.');
                         } else { 
                             //console.log("MOB: " + name + ' not eligible.');
                             
@@ -366,7 +368,7 @@ module.exports.loop = function () {
                     continue;
                 }
 
-                var defenseforce = {'adventurer': 1};
+                var defenseforce = {};
                 var room_has_spawn = 0;
                 for (var thisspawn in Game.spawns) {
                     if (Game.spawns[thisspawn].room.name == csector) {
@@ -401,7 +403,7 @@ module.exports.loop = function () {
                         defenseforce['teller'] = 1;
                         teller = 1;
                     } else {
-                        defenseforce['adventurer'] = 4;
+                        defenseforce['adventurer'] = 3;
                     }
                     empire[csector]['defcon'] = 3;
 
@@ -554,6 +556,19 @@ module.exports.loop = function () {
                                     renew_allowed = 0;
                                     console.log(spawner.name + ': ALLOWING ONLY ONE WORK UNIT, AS MY MOB LIST HAS LESS THAN 5 MOBS. ');
                                 }
+                            }
+                            var renewing_creeps = 0;
+                            for (var cr in Game.creeps) {
+                                //console.log(Game.creeps[cr].room['name'] + ' v ' + spawner.room.name);
+                                if(Game.creeps[cr].room == spawner.room.name && Game.creeps[cr].memory.job == 'renew') {
+                                    renewing_creeps++;
+                                }
+                            }
+                            if (renewing_creeps >= 1) {
+                                console.log(spawner.name + ' BLOCKED: number creeps renewing: ' + renewing_creeps);
+                                continue;
+                            } else {
+                                console.log(spawner.name + ': number creeps renewing: ' + renewing_creeps);
                             }
                             
                             if (empire_workers[role]['noresizing'] == undefined) {

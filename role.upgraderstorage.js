@@ -17,7 +17,7 @@ var roleUpgraderstorage = {
             if (creep.room.name != creep.memory.home) {
                 creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
             } else if (jobGetstoredenergy.run(creep) == -1){
-                //creep.memory.role = 'recycler';
+                creep.memory.role = 'recycler';
             }
         } else if(creep.memory.job == 'upgrade') {
             if (creep.room.name != creep.memory.target) {

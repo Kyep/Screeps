@@ -17,7 +17,8 @@ var roleHarvester = {
                 creep.memory.job = 'harvest';
                 creep.say('🔄 harvest');
             }
-        } else if(creep.memory.job == 'harvest' && creep.carry.energy == creep.carryCapacity) {
+        }
+        if(creep.memory.job == 'harvest' && creep.carry.energy == creep.carryCapacity) {
             creep.memory.job = 'return';
             creep.say('🔄 return');
 	    } else if(creep.memory.job == 'harvest') {

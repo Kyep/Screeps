@@ -28,15 +28,28 @@ var roleScavenger = {
 	                creep.memory.job = 'getstoredenergy';
                     //creep.say('🔄 pickup');
 	            }
+	        } else {
+                creep.memory.pickupfrom = 'scavage'
 	        }
         }
         if(creep.memory.job == 'getstoredenergy') {
             if (jobGetstoredenergy.run(creep) == -1){
                 creep.memory.job = 'scavenge';
+            } else {
+                creep.memory.pickupfrom = 'getstoredenergy';
             }
 	    } else if(creep.memory.job == 'return') {
             // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
-	        if (jobReturnresources.run(creep, 1, 1, 0.9, 0, 0) == -1) {
+            if (creep.memory.pickupfrom == undefined) {
+                creep.memory.pickupfrom = 'getstoredenergy';
+            }
+            var retval = 0;
+            if (creep.memory.pickupfrom == 'getstoredenergy') {
+                retval = jobReturnresources.run(creep, 1, 1, 0.9, 0, 0);
+            } else {
+                retval = jobReturnresources.run(creep, 1, 1, 0.9, 1, 1);
+            }
+	        if (retval == -1) {
                 creep.say('🚧 build');
 	            creep.memory.job = 'build';  
             }
