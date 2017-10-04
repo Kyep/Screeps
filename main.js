@@ -21,14 +21,14 @@ var spawncustom = require('task.spawncustom');
 // ---------------------------
 // GLOBALS
 // ---------------------------
-
     global.overlord = 'Phisec';
 
     global.empire_defaults = {
         'spawner': '59ce24a6b1421365236708e4',
         'room': 'W53S18',
         'sourceid': '59bbc3f82052a716c3ce7289',
-        'military_roles' : ['adventurer', 'scout', 'teller'],
+        'priority_roles': ['teller', 'teller-towers'],
+        'military_roles': ['scout', 'adventurer', 'bezerker', 'wizard', 'healer', 'champion'],
         'alerts_duration' : 300,
         'alerts_recycle' : 0
     }
@@ -44,7 +44,8 @@ var spawncustom = require('task.spawncustom');
                     'assigned': {'upgrader': 1, 'scavenger': 1},
                     'expected_income': 80
                 }
-            }
+            },
+            'safespot': {'x': 16, 'y':32 }
         },
         'W52S18': {
             'sources': {
@@ -88,14 +89,15 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'W51S18',
             'sources': {
                 '59bbc4182052a716c3ce758c': {'sourcename':'2', 'x':14, 'y':20,
-                    'assigned': {'harvester':2, 'upgrader':1, 'builder': 1},
+                    'assigned': {'harvester':1, 'upgrader':1, 'builder': 1},
                     'expected_income': 80
                 },
                 '59bbc4182052a716c3ce758d': {'sourcename':'2', 'x':3, 'y':27,
                     'assigned': {'harvester':2, 'scavenger':1},
                     'expected_income': 90
                 }
-            }
+            },
+            'safespot': {'x': 17, 'y':14 }
         },
         
         // 2ND BASE EXPANSIONS
@@ -125,14 +127,27 @@ var spawncustom = require('task.spawncustom');
         
         // HOSTILE ROOMS
         /*
-        'W52S16': {
+        'W52S17': {
             'spawns_from': 'W51S18',
             'sources': {
-                '59bbc4062052a716c3ce7401': {'sourcename': 'Tarh E', 'x':45, 'y':26,
+                '59bbc4062052a716c3ce7404': {'sourcename': '3-N', 'x':10, 'y':19,
                     'assigned': {},
                     'expected_income': 1
                 },
-                '59bbc4062052a716c3ce7402': {'sourcename': 'Tarh W', 'x':8, 'y':44,
+                '59bbc4062052a716c3ce7406': {'sourcename': '3-S', 'x':21, 'y':31,
+                    'assigned': {},
+                    'expected_income': 1
+                }
+            }
+        },
+        'W52S16': {
+            'spawns_from': 'W51S18',
+            'sources': {
+                '59bbc4062052a716c3ce7401': {'sourcename': '3N-E', 'x':45, 'y':26,
+                    'assigned': {},
+                    'expected_income': 1
+                },
+                '59bbc4062052a716c3ce7402': {'sourcename': '3N-W', 'x':8, 'y':44,
                     'assigned': {},
                     'expected_income': 1
                 }
@@ -151,9 +166,15 @@ global.empire_workers = {
 	'builder': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
 	'builderstorage': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
 	'upgraderstorage': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
-	'adventurer': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, ATTACK] },
-	'scout': { 'version': 1, 'body': [MOVE, MOVE, ATTACK], 'noresizing': 1  },
-	'archer': { 'version': 1, 'body': [TOUGH, MOVE, RANGED_ATTACK] },
+
+	'scout': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, ATTACK, HEAL], 'noresizing': 1  }, // cheap, with some defense, some attack and self-healing. $490
+	'adventurer': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL], 'noresizing': 1}, // scout's bigger brother, 2x the attack, 2x the tough, still self-heals a little. $680
+	'bezerker': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1}, // what you send when you absolutely have to get rid of people... fast and high damage. $580
+	'wizard': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL], 'noresizing': 1}, // designed for attacking groups. 1220
+	'healer': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL], 'noresizing': 1}, // 
+	'champion': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, ATTACK, HEAL]}, // 
+
+
 	'claimer': { 'version': 1, 'body': [CLAIM, MOVE], 'noresizing': 1 },
 	'reserver' : { 'version': 1, 'body': [CLAIM, MOVE, MOVE], 'noresizing': 1 },
 	'teller': { 'version': 1, 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 }	
@@ -397,7 +418,8 @@ module.exports.loop = function () {
                     continue;
                 }
 
-                var defenseforce = {};
+                var baseforce = {};
+                var patrolforce = {};
                 var room_has_spawn = 0;
                 for (var thisspawn in Game.spawns) {
                     if (Game.spawns[thisspawn].room.name == csector) {
@@ -408,47 +430,65 @@ module.exports.loop = function () {
                 // defcon 1: single invader, invasion lasting less than a minute, not very strong
                 if (sectors_under_attack[csector]['threat'] < 2000 && (timenow - sectors_under_attack[csector]['attackstart']) < 60 && sectors_under_attack[csector]['enemycount'] == 1) {
                     if (room_has_spawn) {
-                        //defenseforce['scout'] = 1;
-                        //defenseforce['teller'] = 1;
+                        baseforce['teller-towers'] = 1;
+                        patrolforce['scout'] = 1;
                     } else {
-                        defenseforce['scout'] = 2;
+                        patrolforce['scout'] = 2;
                     }
                     empire[csector]['defcon'] = 1;
+/*
+	'scout': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, ATTACK, HEAL], 'noresizing': 1  }, // cheap, with some defense, some attack and self-healing. $490
+	'adventurer': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL], 'noresizing': 1}, // scout's 2x bigger brother, still self-heals a little. $680
+	'bezerker': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1}, // fast moving high-dps. $580
+	'wizard': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL], 'noresizing': 1}, // designed for attacking groups. 1220
+	'champion': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL]}, // 
+*/
 
-                // defcon 2: big invader, or tougher group, invasion lasting less than 3 minutes, or up to 3 enemies               
+
+                // defcon 2: big invader, or tougher group, invasion lasting less than 5 minutes, or up to 3 enemies               
                 } else if (sectors_under_attack[csector]['threat'] < 6000 && (timenow - sectors_under_attack[csector]['attackstart']) < 300 && sectors_under_attack[csector]['enemycount'] > 1 && sectors_under_attack[csector]['enemycount'] < 4) {
                     if (room_has_spawn) {
-                        defenseforce['scout'] = 2;
-                        defenseforce['teller'] = 1;
+                        baseforce['teller-towers'] = 1;
+                        baseforce['teller'] = 1;
+                        patrolforce['scout'] = 1;
                     } else {
-                        defenseforce['adventurer'] = 1;
+                        patrolforce['adventurer'] = 2;
                     }
                     empire[csector]['defcon'] = 2;
 
-                // defcon 3: big invader, or tougher group, invasion lasting less than 3 minutes    
+                // defcon 3: huge  invader, or tougher group, over 3 minutes
                 } else if (sectors_under_attack[csector]['threat'] < 10000 && (timenow - sectors_under_attack[csector]['attackstart']) < 600) {
                     if (room_has_spawn) {
-                        defenseforce['adventurer'] = 3;
-                        defenseforce['teller'] = 1;
+                        baseforce['teller-towers'] = 1;
+                        baseforce['teller'] = 1;
+                        patrolforce['champion'] = 1;
                         teller = 1;
                     } else {
-                        defenseforce['adventurer'] = 3;
+                        patrolforce['bezerker'] = 1;
+                        patrolforce['champion'] = 1;
                     }
                     empire[csector]['defcon'] = 3;
 
                 // defcon 4: big invader, or tougher group, invasion lasting less than 3 minutes  
                 } else {
                     if (room_has_spawn) {
-                        defenseforce['adventurer'] = 4;
-                        defenseforce['teller'] = 1;
+                        baseforce['teller-towers'] = 1;
+                        baseforce['teller'] = 1;
+                        patrolforce['wizard'] = 1;
+                        patrolforce['champion'] = 1;
+                        patrolforce['healer'] = 1;
                     } else {
-                        defenseforce['adventurer'] = 5;
+                        patrolforce['wizard'] = 1;
+                        patrolforce['champion'] = 1;
+                        patrolforce['healer'] = 1;
                     }
                     empire[csector]['defcon'] = 4;
                 }
 
-                empire[csector].sources['defcon'] = {'sourcename': csector + '-defcon', 'x':25, 'y':25,
-                    'assigned': defenseforce, 'expected_income': 100}
+                empire[csector].sources['BASEFORCE'] = {'sourcename': csector + '-base', 'x':25, 'y':25,
+                    'assigned': baseforce, 'expected_income': 100}
+                empire[csector].sources['PATROLFORCE'] = {'sourcename': csector + '-patrol', 'x':25, 'y':25,
+                    'assigned': patrolforce, 'expected_income': 99}
 
 
                 if (tgap > 0) {
@@ -542,7 +582,7 @@ module.exports.loop = function () {
                         }
                         s_status += role + ': ' + sources_actual[skey][role] + '/' + empire[rname].sources[skey].assigned[role] + ' ';
                         if ( sources_actual[skey][role] < empire[rname].sources[skey].assigned[role]) {
-                            if(sectors_under_attack[csector] != undefined && !empire_defaults['military_roles'].includes(role)) {
+                            if(sectors_under_attack[csector] != undefined && !empire_defaults['military_roles'].includes(role) && !empire_defaults['priority_roles'].includes(role)) {
                                 //console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| until attack is over.");
                                 continue;
                             }
@@ -567,7 +607,7 @@ module.exports.loop = function () {
                                 continue;
                             }
                             if (spawner.room.energyAvailable < 300) {
-                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as cost exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
+                                //console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as cost exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
                                 //continue;
                             }
                             var part_template = empire_workers[role]['body'];
@@ -597,7 +637,7 @@ module.exports.loop = function () {
                                 console.log(spawner.name + ' BLOCKED: number creeps renewing: ' + renewing_creeps);
                                 continue;
                             } else {
-                                console.log(spawner.name + ': number creeps renewing: ' + renewing_creeps);
+                                //console.log(spawner.name + ': number creeps renewing: ' + renewing_creeps);
                             }
                             
                             if (empire_workers[role]['noresizing'] == undefined) {
@@ -619,7 +659,7 @@ module.exports.loop = function () {
                                 continue;
                             }
                             if (spawner.room.energyAvailable < thecost) {
-                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as we lack the cost " + thecost + ' exceeds storage: ' + spawner.room.energyAvailable);
+                                //console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as we lack the cost " + thecost + ' exceeds storage: ' + spawner.room.energyAvailable);
                                 continue;
                             }
                             var target_x = 25;
@@ -710,7 +750,11 @@ module.exports.loop = function () {
             roleBuilder.run(creep);
         } else if(creep.memory.role == 'builderstorage') {
             roleBuilderstorage.run(creep);
-        } else if(creep.memory.role == 'adventurer' || creep.memory.role == 'scout') {
+        } else if(creep.memory.role == 'teller') {
+            roleTeller.run(creep, 0);
+        } else if(creep.memory.role == 'teller-towers') {
+            roleTeller.run(creep, 1);
+        } else if (empire_defaults['military_roles'].includes(creep.memory.role)) {
             roleAdventurer.run(creep);
         } else if(creep.memory.role == 'scavenger') {
             roleScavenger.run(creep);
@@ -720,8 +764,6 @@ module.exports.loop = function () {
             roleReserver.run(creep);
         } else if(creep.memory.role == 'recycler') {
             roleRecycler.run(creep);
-        } else if(creep.memory.role == 'teller') {
-            roleTeller.run(creep);
         } else if(creep.memory.role == 'remoteconstructor') {
             roleRemoteconstructor.run(creep);
         } else {

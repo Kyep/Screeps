@@ -34,10 +34,25 @@ module.exports = {
             if (creep.room.name == creep.memory.target) {
 	            creep.memory.job = JOB_HARVEST;
                 //creep.announceJob();
-            } else if (creep.memory.target in Memory.sectors_under_attack) {
+            } else if (creep.memory.target in Memory.sectors_under_attack || (creep.memory.target != creep.memory.home && creep.memory.home in Memory.sectors_under_attack)) {
                 // hide in base.
+                if(creep.ticksToLive < 400) {
+                    if(creep.room.name == creep.memory.home) {
+                        creep.memory.job = JOB_RENEW;
+                        creep.announceJob();
+                        return;
+                    }
+                }
+                var hidex = 25;
+                var hidey = 25;
+                if (empire[creep.memory.home]['safespot'] != undefined) {
+                    if (empire[creep.memory.home]['safespot']['x'] != undefined && empire[creep.memory.home]['safespot']['y'] != undefined) {
+                        hidex = empire[creep.memory.home]['safespot']['x'];
+                        hidey = empire[creep.memory.home]['safespot']['y'];
+                    }
+                }
                 creep.say('🚧 hiding!');
-                creep.moveTo(new RoomPosition(25, 25, creep.memory.home))
+                creep.moveTo(new RoomPosition(hidex, hidey, creep.memory.home))
 
             } else {
                 if(creep.memory.target_x == undefined || creep.memory.target_y == undefined) {
@@ -54,6 +69,7 @@ module.exports = {
                 creep.memory.job = JOB_TRAVEL_BACK;
                 creep.announceJob();
             } else if (creep.carry.energy == creep.carryCapacity) { // DO NOT DISABLE THIS OR HARVESTERS WILL GET STUCK AND NEVER RETURN!
+                creep.memory['targetcontainer'] = undefined;
                 creep.memory.job = JOB_BUILD;
                 creep.announceJob();
             } else {
@@ -90,12 +106,16 @@ module.exports = {
         }
 	    if(creep.memory.job == JOB_RETURN) {
             // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
-            if (jobReturnresources.run(creep, 1, 1, 0.5, 1, 1) == -1) {
+            if (jobReturnresources.run(creep, 1, 1, 0.6, 1, 1) == -1) {
                 creep.memory.job = JOB_IDLE;
                 creep.announceJob();
             }
 	    }
         if (creep.memory.job == JOB_TRAVEL_BACK) {
+            if (creep.memory.home in Memory.sectors_under_attack) {
+                // don't move towards home while its under attack.
+                return;
+            }
             if(creep.carry.energy > 0) {
                 var targets = creep.room.find(FIND_STRUCTURES, 3, {
                     filter: function(structure){

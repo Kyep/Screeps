@@ -20,7 +20,8 @@ module.exports = {
             var target = creep.pos.findClosestByRange(targets)
             var result = target.renewCreep(creep);
             if(result == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_RENEW}});
+                // this cumbersome thing stops 8 creeps all trying to renew from surrounding the spawn, which, together with the spawn trying to spawn something, can cause complete lockup.
+                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_RENEW, avoid: [new RoomPosition(target.pos.x - 1, target.pos.y, target.room.name), new RoomPosition(target.pos.x + 1, target.pos.y, target.room.name)]}} );
             } else if (result == ERR_NOT_ENOUGH_ENERGY) {
                 creep.transfer(target, RESOURCE_ENERGY)
                 return -1;
@@ -35,9 +36,9 @@ module.exports = {
                     creep.memory['renewals']++;
                 }
             }
-            //console.log('creep ' + creep.name + ' at ' + creep.pos.x + ',' + creep.pos.y + ':' + creep.room.name + ' failed renew: ' + result)
+            if (result != OK && result != ERR_NOT_IN_RANGE) { console.log('creep ' + creep.name + ' at ' + creep.pos.x + ',' + creep.pos.y + ':' + creep.room.name + ' failed renew: ' + result) }
         } else {
-            //console.log('creep ' + creep.name + ' failed renew (no spawn) ')
+            console.log('creep ' + creep.name + ' failed renew (no spawn) ')
             return -1;
         }
 	}

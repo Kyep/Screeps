@@ -20,6 +20,7 @@ module.exports =  {
         } else if(creep.memory.job == JOB_HARVEST && creep.carry.energy == creep.carryCapacity) {
             var asectors = Memory['sectors_under_attack'];
             if (asectors.length > 0) {
+                creep.memory['targetcontainer'] = undefined;
                 creep.memory.job = JOB_RETURN;
                 creep.announceJob();
                 return;

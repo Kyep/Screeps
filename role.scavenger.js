@@ -19,6 +19,7 @@ module.exports =  {
             //creep.announceJob();
         } else if((creep.memory.job == JOB_SCAVENGE || creep.memory.job == JOB_GFS) && creep.carry.energy == creep.carryCapacity) {
             creep.memory.job = JOB_RETURN;
+            creep.memory['targetcontainer'] = undefined;
             creep.announceJob();
 	    }
 	    if(creep.memory.job == JOB_SCAVENGE) {

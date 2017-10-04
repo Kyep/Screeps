@@ -1,11 +1,13 @@
 module.exports =  {
     run: function(tower){
+        
+        
         var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
         if(closestHostile) {
             tower.attack(closestHostile);
             return 0;
         }
-
+        
         var repairTargets = tower.pos.findInRange(FIND_STRUCTURES, 50, {
             filter: function(structure){
                 if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){

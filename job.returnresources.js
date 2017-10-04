@@ -58,7 +58,7 @@ module.exports =  {
                 //
             //}
             if (target == undefined) {
-                target = creep.pos.findClosestByRange(targets)
+                target = creep.pos.findClosestByRange(targets);
                 creep.memory['targetcontainer'] = target.id;
             }
             var result = creep.transfer(target, RESOURCE_ENERGY);
