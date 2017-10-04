@@ -20,7 +20,20 @@ module.exports =  {
                 return a.hits - b.hits
             })
 
-            tower.repair(repairTargets[0])
+            tower.repair(repairTargets[0]);
+            return 0;
+        }
+        
+        var healTargets = tower.pos.findInRange(FIND_MY_CREEPS, 50, {
+            filter: function(creep){
+                return (creep.hits < creep.hitsMax)
+            }
+        })
+        if(healTargets.length){
+            healTargets.sort(function(a, b){
+                return a.hits - b.hits
+            });
+            tower.heal(healTargets[0]);
         }
     }
 }

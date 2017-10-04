@@ -10,7 +10,7 @@ module.exports = {
         target = creep.pos.findClosestByRange(targets)
         if(target) {
             if(creep.repair(target) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target, {visualizePathStyle: {stroke: '#0000ff'}});
+                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_REPAIR}});
             }
         } else {
             return -1;

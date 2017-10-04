@@ -2,19 +2,7 @@ module.exports = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
-        /*
-        var myversion = 0;
-        if(creep.memory['version'] != undefined) {
-            myversion = creep.memory['version'];
-        }
-        var currentversion = 0;
-        if (empire_workers[creep.memory['role']].version != undefined) {
-            currentversion = empire_workers[creep.memory['role']].version;
-        }
-        if (myversion < currentversion) {
-            //creep.memory['role'] = 'recycler';
-        }
-        */
+
         if(creep.memory['renew_allowed'] == undefined) {
             //creep.memory['role'] = 'recycler';
         } else {
@@ -32,12 +20,12 @@ module.exports = {
             var target = creep.pos.findClosestByRange(targets)
             var result = target.renewCreep(creep);
             if(result == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target, {visualizePathStyle: {stroke: '#ff00ff'}});
+                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_RENEW}});
             } else if (result == ERR_NOT_ENOUGH_ENERGY) {
                 creep.transfer(target, RESOURCE_ENERGY)
                 return -1;
             } else if (result == ERR_BUSY) {
-                creep.moveTo(target, {visualizePathStyle: {stroke: '#ff00ff'}});
+                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_RENEW}});
                 return -1;
             } else {
                 creep.transfer(target, RESOURCE_ENERGY);

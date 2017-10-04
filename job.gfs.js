@@ -21,7 +21,7 @@ module.exports =  {
         if(targets.length > 0) {
             var target = creep.pos.findClosestByRange(targets);
             if(creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target, {visualizePathStyle: {stroke: '#ffff00'}});
+                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_GFS}});
             }
         } else {
             return -1;

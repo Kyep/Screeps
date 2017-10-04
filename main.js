@@ -1,7 +1,6 @@
 // requirements ONLY
 
 var roleHarvester = require('role.harvester');
-var roleLDHarvester = require('role.ldharvester');
 var roleUpgrader = require('role.upgrader');
 var roleUpgraderstorage = require('role.upgraderstorage');
 var roleBuilder = require('role.builder');
@@ -50,7 +49,7 @@ var spawncustom = require('task.spawncustom');
         'W52S18': {
             'sources': {
                 '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14,
-                    'assigned': {'ldharvester': 2}, //, 'reserver': 1
+                    'assigned': {'harvester': 2}, //, 'reserver': 1
                     'expected_income': 10
                 },
             }
@@ -58,7 +57,7 @@ var spawncustom = require('task.spawncustom');
         'W53S17': {
             'sources': {
                 '59bbc3f72052a716c3ce7287': {'sourcename':'1N', 'x':4, 'y':44,
-                    'assigned': {'ldharvester': 2, 'reserver': 1}, // , 'reserver': 1
+                    'assigned': {'harvester': 2, 'reserver': 1}, // , 'reserver': 1
                     'expected_income': 10
                 },
             } 
@@ -66,11 +65,11 @@ var spawncustom = require('task.spawncustom');
         'W54S18': {
             'sources': {
                 '59bbc3e92052a716c3ce70b6': {'sourcename':'1W-E', 'x':42, 'y':6,
-                    'assigned': {'ldharvester': 3},
+                    'assigned': {'harvester': 3},
                     'expected_income': 10
                 },
                 '59bbc3e92052a716c3ce70b7': {'sourcename':'1W-W', 'x':5, 'y':37,
-                    'assigned': {'ldharvester': 2, 'reserver': 1},
+                    'assigned': {'harvester': 2, 'reserver': 1},
                     'expected_income': 5
                 }
             }
@@ -78,7 +77,7 @@ var spawncustom = require('task.spawncustom');
         'W54S17': {
             'sources': {
                 '59bbc3e82052a716c3ce70b4': {'sourcename':'1NW', 'x':38, 'y':31,
-                    'assigned': {'ldharvester': 2}, //, 'reserver': 1
+                    'assigned': {'harvester': 2}, //, 'reserver': 1
                     'expected_income': 10
                 }
             } 
@@ -104,7 +103,7 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'W51S18',
             'sources': {
                 '59bbc4182052a716c3ce758f': {'sourcename':'2S', 'x':34, 'y':6,
-                    'assigned': {'ldharvester':2},
+                    'assigned': {'harvester':2},
                     'expected_income': 50
                 }
             }
@@ -113,11 +112,11 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'W51S18',
             'sources': {
                 '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29,
-                    'assigned': {'ldharvester':2},
+                    'assigned': {'harvester':2},
                     'expected_income': 40
                 },
                 '59bbc4182052a716c3ce7588': {'sourcename':'2N-W', 'x':4, 'y':26,
-                    'assigned': {'ldharvester':4},
+                    'assigned': {'harvester':4},
                     'expected_income': 10
                 }
             }
@@ -148,8 +147,7 @@ global.empire_workers = {
 	'remoteupgrader': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
 	'remoteconstructor': { 'version': 1, 'body': [WORK, CARRY, CARRY, MOVE, MOVE] },
 	'harvester': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
-	'scavenger': { 'version': 1, 'body': [WORK, CARRY, CARRY, CARRY, MOVE, MOVE], 'noresizing': 1 },
-	'ldharvester': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
+	'scavenger': { 'version': 1, 'body': [WORK, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
 	'builder': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
 	'builderstorage': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
 	'upgraderstorage': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
@@ -166,17 +164,36 @@ global.empire_workers = {
 global.UNIT_COST = (body) => _.sum(body, p => BODYPART_COST[p]);
 global.CREEP_COST = (body) => _.sum(body, p => BODYPART_COST[p.type])
 
-global.JOB_HARVEST = 'harvest';
-globalJOB_BUILD = 'build';
+global.JOB_HARVEST = 'mine';
+global.JOB_BUILD = 'build';
 global.JOB_GFS = 'gfs';
 global.JOB_PATROL = 'patrol';
 global.JOB_RENEW = 'renew';
 global.JOB_REPAIR = 'repair';
-global.JOB_RR = 'rr';
-global.JOB_SCAVENGE = 'scavenge';
+global.JOB_RETURN = 'return';
+global.JOB_SCAVENGE = 'clean';
 global.JOB_UPGRADE = 'upgrade';
+global.JOB_TRAVEL_OUT = 'go-out';
+global.JOB_TRAVEL_BACK = 'go-back';
+global.JOB_IDLE = 'idle';
 
-                
+global.COLOR_HARVEST = '#ffffff';
+global.COLOR_BUILD = '#0000ff';
+global.COLOR_REPAIR = '#0000ff';
+global.COLOR_PATROL = '#ff0000';
+global.COLOR_DROPOFF = '#ffff00';
+global.COLOR_GFS = '#ffff00';
+global.COLOR_RENEW = '#ff00ff';
+global.COLOR_SCAVAGE = '#000000';
+
+Creep.prototype.announceJob = function() {
+    if(this.memory['job'] == undefined) {
+        console.log('WARN: ' + this.name + ' has no job!');
+        return -1;
+    }
+    this.say(this.memory['job']);
+}
+
     // SHORTCUTS: 
     //default assign:
     // empire[empire_defaults['room']].sources[empire_defaults['sourceid']].assigned
@@ -399,7 +416,7 @@ module.exports.loop = function () {
                     empire[csector]['defcon'] = 1;
 
                 // defcon 2: big invader, or tougher group, invasion lasting less than 3 minutes, or up to 3 enemies               
-                } else if (sectors_under_attack[csector]['threat'] < 6000 && (timenow - sectors_under_attack[csector]['attackstart']) < 180 && sectors_under_attack[csector]['enemycount'] > 1 && sectors_under_attack[csector]['enemycount'] < 4) {
+                } else if (sectors_under_attack[csector]['threat'] < 6000 && (timenow - sectors_under_attack[csector]['attackstart']) < 300 && sectors_under_attack[csector]['enemycount'] > 1 && sectors_under_attack[csector]['enemycount'] < 4) {
                     if (room_has_spawn) {
                         defenseforce['scout'] = 2;
                         defenseforce['teller'] = 1;
@@ -409,7 +426,7 @@ module.exports.loop = function () {
                     empire[csector]['defcon'] = 2;
 
                 // defcon 3: big invader, or tougher group, invasion lasting less than 3 minutes    
-                } else if (sectors_under_attack[csector]['threat'] < 10000 && (timenow - sectors_under_attack[csector]['attackstart']) < 360) {
+                } else if (sectors_under_attack[csector]['threat'] < 10000 && (timenow - sectors_under_attack[csector]['attackstart']) < 600) {
                     if (room_has_spawn) {
                         defenseforce['adventurer'] = 3;
                         defenseforce['teller'] = 1;
@@ -550,7 +567,7 @@ module.exports.loop = function () {
                                 continue;
                             }
                             if (spawner.room.energyAvailable < 300) {
-                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as THIS UNIT cost " + thecost + ' exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
+                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as cost exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
                                 //continue;
                             }
                             var part_template = empire_workers[role]['body'];
@@ -572,9 +589,9 @@ module.exports.loop = function () {
                             var renewing_creeps = 0;
                             for (var cr in Game.creeps) {
                                 //console.log(Game.creeps[cr].room['name'] + ' v ' + spawner.room.name);
-                                if(Game.creeps[cr].room == spawner.room.name && Game.creeps[cr].memory.job == 'renew') {
+                                if(Game.creeps[cr].room.name == spawner.room.name && Game.creeps[cr].memory.job == 'renew' && spawner.pos.getRangeTo(Game.creeps[cr]) < 3) {
                                     renewing_creeps++;
-                                }
+                                } 
                             }
                             if (renewing_creeps >= 1) {
                                 console.log(spawner.name + ' BLOCKED: number creeps renewing: ' + renewing_creeps);
@@ -682,8 +699,9 @@ module.exports.loop = function () {
         var creep = Game.creeps[name];
         if(creep.memory.role == 'harvester') {
             roleHarvester.run(creep);
-        } else if(creep.memory.role == 'ldharvester') {
-            roleLDHarvester.run(creep);
+        //} else if(creep.memory.role == 'ldharvester') {
+        //    console.log("ALERT: " + creep.name + " has role " + creep.memory.role + " which I reassigned!")
+        //   creep.memory['role'] = 'harvester'
         } else if(creep.memory.role == 'upgrader') {
             roleUpgrader.run(creep);
         } else if(creep.memory.role == 'upgraderstorage') {

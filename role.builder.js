@@ -7,24 +7,24 @@ module.exports =  {
     /** @param {Creep} creep **/
     run: function(creep) {
 
-        if(creep.memory.job != 'harvest' && creep.carry.energy == 0) {
-            creep.memory.job = 'harvest';
-            creep.say('🔄 harvest');
-        } else if(creep.memory.job == 'harvest' && creep.carry.energy == creep.carryCapacity) {
-            creep.memory.job = 'build';
-            creep.say('🚧 build');
-	    } else if(creep.memory.job == 'harvest') {
+        if(creep.memory.job != JOB_HARVEST && creep.carry.energy == 0) {
+            creep.memory.job = JOB_HARVEST;
+            creep.announceJob();
+        } else if(creep.memory.job == JOB_HARVEST && creep.carry.energy == creep.carryCapacity) {
+            creep.memory.job = JOB_BUILD;
+            creep.announceJob();
+	    } else if(creep.memory.job == JOB_HARVEST) {
 	        jobHarvest.run(creep);
-        } else if(creep.memory.job == 'build') {
+        } else if(creep.memory.job == JOB_BUILD) {
             if (jobBuild.run(creep) == -1) {
-                creep.memory.job = 'upgrade';
-                creep.say('🚧 upgrade');
+                creep.memory.job = JOB_UPGRADE;
+                 creep.announceJob();
             }
-        } else if(creep.memory.job == 'upgrade') {
+        } else if(creep.memory.job == JOB_UPGRADE) {
             jobUpgrade.run(creep);
         } else {
             console.log("WARNING: " + creep.name + " has no job!");
-            creep.memory.job = 'harvest';
+            creep.memory.job = JOB_HARVEST;
         }
 	}
 };

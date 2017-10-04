@@ -10,7 +10,7 @@ module.exports = {
             if(source != null){
                 var result = creep.harvest(source);
                 if (result == ERR_NOT_IN_RANGE || result == ERR_NOT_ENOUGH_RESOURCES) {
-                    creep.moveTo(source, {visualizePathStyle: {stroke: '#ffffff'}});
+                    creep.moveTo(source, {visualizePathStyle: {stroke: COLOR_HARVEST}});
                 }
             } else {
                 return -1;

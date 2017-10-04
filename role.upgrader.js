@@ -9,19 +9,19 @@ module.exports =  {
     /** @param {Creep} creep **/
     run: function(creep) {
 
-        if(creep.memory.job != 'harvest' && creep.memory.job != 'renew' && creep.carry.energy == 0) {
+        if(creep.memory.job != JOB_HARVEST && creep.memory.job != JOB_RENEW && creep.carry.energy == 0) {
             if(creep.ticksToLive < 300) {
-                creep.memory.job = 'renew';
-                creep.say('🔄 renew');
+                creep.memory.job = JOB_RENEW;
+                creep.announceJob();
             } else {
-                creep.memory.job = 'harvest';
-                creep.say('🔄 harvest');
+                creep.memory.job = JOB_HARVEST;
+                creep.announceJob();
             }
-        } else if(creep.memory.job == 'harvest' && creep.carry.energy == creep.carryCapacity) {
+        } else if(creep.memory.job == JOB_HARVEST && creep.carry.energy == creep.carryCapacity) {
             var asectors = Memory['sectors_under_attack'];
             if (asectors.length > 0) {
-                creep.memory.job = 'return';
-                creep.say('⚡ return');
+                creep.memory.job = JOB_RETURN;
+                creep.announceJob();
                 return;
             }
             var targets = creep.room.find(FIND_STRUCTURES, {
@@ -30,21 +30,21 @@ module.exports =  {
                 }
             })
             if(targets.length && 1 == 2) {
-                creep.say('⚡ repair');
-                creep.memory.job = 'repair';
+                creep.memory.job = JOB_REPAIR;
+                creep.announceJob();
             } else {
-                creep.memory.job = 'upgrade';
-                creep.say('⚡ upgrade');
+                creep.memory.job = JOB_UPGRADE;
+                creep.announceJob();
             }
-	    } else if(creep.memory.job == 'harvest') {
+	    } else if(creep.memory.job == JOB_HARVEST) {
 	        jobHarvest.run(creep);
-	    } else if(creep.memory.job == 'return') {
+	    } else if(creep.memory.job == JOB_RETURN) {
             // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
             if (jobReturnresources.run(creep, 1, 1, 0.75, 1, 1) == -1) {
-                creep.memory.job = 'repair';
-                creep.say('🔄 repair');
+                creep.memory.job = JOB_REPAIR;
+                creep.announceJob();
             }
-	    } else if(creep.memory.job == 'repair') {
+	    } else if(creep.memory.job == JOB_REPAIR) {
             var targets = creep.room.find(FIND_STRUCTURES, {
                 filter: function(structure){
                     return (structure.hits < structure.hitsMax) && (structure.structureType != STRUCTURE_WALL) && (structure.structureType != STRUCTURE_RAMPART)
@@ -53,23 +53,23 @@ module.exports =  {
             if(targets.length) {
                 jobRepair.run(creep);
             } else {
-                creep.memory.job = 'upgrade';
-                creep.say('⚡ upgrade');
+                creep.memory.job = JOB_UPGRADE;
+                creep.announceJob();
             }
-        } else if(creep.memory.job == 'upgrade') {
+        } else if(creep.memory.job == JOB_UPGRADE) {
             jobUpgrade.run(creep);
-        } else if (creep.memory.job == 'renew') {
+        } else if (creep.memory.job == JOB_RENEW) {
             if (creep.ticksToLive > 1000) {
-	            creep.memory.job = 'harvest';
-                creep.say('🔄 harvest');
+	            creep.memory.job = JOB_HARVEST;
+                creep.announceJob();
             } else {
                 if(jobRenew.run(creep) == -1) {
-                    creep.memory.job = 'harvest';
+                    creep.memory.job = JOB_HARVEST;
                 }
             }
         } else {
             console.log("WARNING: " + creep.name + " has no job!");
-            creep.memory.job = 'harvest';
+            creep.memory.job = JOB_HARVEST;
         }
 	}
 };

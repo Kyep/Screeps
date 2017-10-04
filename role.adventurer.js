@@ -1,6 +1,5 @@
 var jobRenew = require('job.renew');
 var jobPatrol = require('job.patrol');
-var jobRecycle = require('job.recycle');
 
 module.exports = {
     run: function(creep) {
@@ -11,48 +10,47 @@ module.exports = {
             creep.memory.home = creep.room.name;
         }
 
-        if (creep.memory.job == 'travel-out') {
+        if (creep.memory.job == JOB_TRAVEL_OUT) {
             creep.moveTo(new RoomPosition(25, 25, creep.memory.target), {visualizePathStyle: {stroke: '#ff0000'}})
             if (creep.room.name == creep.memory.target) {
-	            creep.memory.job = 'patrol';
-                creep.say('🔄 patrol');
+	            creep.memory.job = JOB_PATROL;
+                creep.announceJob();
             }
-        } else if (creep.memory.job == 'travel-back') {
+        } else if (creep.memory.job == JOB_TRAVEL_BACK) {
             if (creep.room.name == creep.memory.home) {
-                creep.memory.job = 'recycle';
-                creep.say('🔄 at home');
+	            creep.memory.job = JOB_PATROL;
+                creep.announceJob();
             } else {
                 creep.moveTo(new RoomPosition(25, 25, creep.memory.home), {visualizePathStyle: {stroke: '#ff0000'}})
             }
-	    } else if(creep.memory.job == 'recycle') {
-	        jobRecycle.run(creep);
-        } else if(creep.memory.job == 'patrol') {
+	    } else if(creep.memory.job == JOB_PATROL) {
             if(creep.ticksToLive < 400 && creep.room.name == creep.memory.home) {
-                creep.memory.job = 'renew';
-                creep.say('🔄 renew');
+                creep.memory.job = JOB_RENEW;
+                creep.announceJob();
             } else if (creep.room.name == creep.memory.target) {
+                //creep.moveTo(new RoomPosition(25, 25, creep.memory.home), {visualizePathStyle: {stroke: '#ff0000'}})
                 jobPatrol.run(creep);
             } else {
                 target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
                 if(target) {
                     jobPatrol.run(creep);
                 } else {
-    	            creep.memory.job = 'travel-out';
-                    creep.say('🔄 travel-out');
+    	            creep.memory.job = JOB_TRAVEL_OUT;
+                    creep.announceJob();
                 }
             }
-        } else if (creep.memory.job == 'renew') {
+        } else if (creep.memory.job == JOB_RENEW) {
             if (creep.ticksToLive > 800) {
-	            creep.memory.job = 'travel-out';
-                creep.say('🔄 travel-out');
+	            creep.memory.job = JOB_TRAVEL_OUT;
+                creep.announceJob();
             } else {
                 if(jobRenew.run(creep) == -1) {
-                    creep.memory.job = 'travel-out';
+                    creep.memory.job = JOB_TRAVEL_OUT;
                 }
             }
         } else { // check for hostiles in the local room. if none found, travel to destination.
             if (jobPatrol.run(creep) == -1) {
-                creep.memory.job = 'travel-out';
+                creep.memory.job = JOB_TRAVEL_OUT;
             }
         }
     }

@@ -27,13 +27,13 @@ module.exports =  {
             if(result == OK){
                 // all good
             } else if(result == ERR_NOT_IN_RANGE){
-                creep.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}});
+                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_PATROL}});
                 if (heal_parts > 0) { 
                     creep.heal(creep);
                 }
             } else if(result == ERR_INVALID_TARGET){
                 console.log(creep.name + ' targets: ' + target + ' UNATTACKABLE!');
-                creep.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}});
+                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_PATROL}});
             }
         } else {
             if (creep.room.controller) {
@@ -43,7 +43,7 @@ module.exports =  {
                             var csites = creep.room.find(FIND_CONSTRUCTION_SITES);
                             if (csites.length) {
                                 csite = creep.pos.findClosestByPath(csites);
-                                creep.moveTo(csite, {visualizePathStyle: {stroke: '#ff0000'}});
+                                creep.moveTo(csite, {visualizePathStyle: {stroke: COLOR_PATROL}});
                                 return 0;
                             }
                         }
