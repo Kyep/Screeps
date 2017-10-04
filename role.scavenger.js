@@ -6,7 +6,7 @@ var jobUpgrade = require('job.upgrade');
 var jobRecycle = require('job.recycle');
 var jobScavenge = require('job.scavenge');
 
-var roleScavenger = {
+module.exports =  {
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -64,5 +64,3 @@ var roleScavenger = {
 
 	}
 };
-
-module.exports = roleScavenger;

@@ -1,4 +1,4 @@
-var jobReturnresources = {
+module.exports =  {
 
     /** @param {Creep} creep **/
     run: function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
@@ -27,5 +27,3 @@ var jobReturnresources = {
         }
 	}
 };
-
-module.exports = jobReturnresources;

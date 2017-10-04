@@ -5,7 +5,7 @@ var jobRepair = require('job.repair');
 var jobUpgrade = require('job.upgrade');
 var jobRenew = require('job.renew');
 
-var roleHarvester = {
+module.exports =  {
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -62,5 +62,3 @@ var roleHarvester = {
         }
 	}
 };
-
-module.exports = roleHarvester;

@@ -1,4 +1,5 @@
 // requirements ONLY
+
 var roleHarvester = require('role.harvester');
 var roleLDHarvester = require('role.ldharvester');
 var roleUpgrader = require('role.upgrader');
@@ -22,9 +23,7 @@ var spawncustom = require('task.spawncustom');
 // GLOBALS
 // ---------------------------
 
-global.UNIT_COST = (body) => _.sum(body, p => BODYPART_COST[p]);
-global.CREEP_COST = (body) => _.sum(body, p => BODYPART_COST[p.type])
-global.overlord = 'Phisec';
+    global.overlord = 'Phisec';
 
     global.empire_defaults = {
         'spawner': '59ce24a6b1421365236708e4',
@@ -163,6 +162,19 @@ global.empire_workers = {
 }
 
 
+
+global.UNIT_COST = (body) => _.sum(body, p => BODYPART_COST[p]);
+global.CREEP_COST = (body) => _.sum(body, p => BODYPART_COST[p.type])
+
+global.JOB_HARVEST = 'harvest';
+globalJOB_BUILD = 'build';
+global.JOB_GFS = 'gfs';
+global.JOB_PATROL = 'patrol';
+global.JOB_RENEW = 'renew';
+global.JOB_REPAIR = 'repair';
+global.JOB_RR = 'rr';
+global.JOB_SCAVENGE = 'scavenge';
+global.JOB_UPGRADE = 'upgrade';
 
                 
     // SHORTCUTS: 

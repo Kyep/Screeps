@@ -2,7 +2,7 @@ var jobUpgrade = require('job.upgrade');
 var jobRenew = require('job.renew');
 var jobGetstoredenergy = require('job.getstoredenergy');
 
-var roleUpgraderstorage = {
+module.exports = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -36,5 +36,3 @@ var roleUpgraderstorage = {
         }
 	}
 };
-
-module.exports = roleUpgraderstorage;

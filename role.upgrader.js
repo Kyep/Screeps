@@ -4,7 +4,7 @@ var jobUpgrade = require('job.upgrade');
 var jobRepair = require('job.repair');
 var jobRenew = require('job.renew');
 
-var roleUpgrader = {
+module.exports =  {
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -73,5 +73,3 @@ var roleUpgrader = {
         }
 	}
 };
-
-module.exports = roleUpgrader;

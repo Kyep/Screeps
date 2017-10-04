@@ -2,7 +2,7 @@ var jobHarvest = require('job.harvest');
 var jobBuild = require('job.build');
 var jobUpgrade = require('job.upgrade');
 
-var roleBuilder = {
+module.exports =  {
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -28,5 +28,3 @@ var roleBuilder = {
         }
 	}
 };
-
-module.exports = roleBuilder;

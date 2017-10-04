@@ -1,4 +1,4 @@
-var jobRecycle = {
+module.exports = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -20,5 +20,3 @@ var jobRecycle = {
         }
     }
 };
-
-module.exports = jobRecycle;

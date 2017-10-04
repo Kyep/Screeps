@@ -4,7 +4,7 @@ var jobRepair = require('job.repair');
 var jobRenew = require('job.renew');
 var jobGetstoredenergy = require('job.getstoredenergy');
 
-var roleBuilderstorage = {
+module.exports =  {
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -51,5 +51,3 @@ var roleBuilderstorage = {
         }
 	}
 };
-
-module.exports = roleBuilderstorage;

@@ -1,4 +1,4 @@
-var jobRepair = {
+module.exports = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -17,5 +17,3 @@ var jobRepair = {
         }
 	}
 };
-
-module.exports = jobRepair;

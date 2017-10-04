@@ -1,4 +1,4 @@
-var structureTower = {
+module.exports =  {
     run: function(tower){
         var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
         if(closestHostile) {
@@ -24,5 +24,3 @@ var structureTower = {
         }
     }
 }
-
-module.exports = structureTower;

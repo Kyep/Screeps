@@ -1,4 +1,4 @@
-var jobHarvest = {
+module.exports = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -18,5 +18,3 @@ var jobHarvest = {
         }
 	}
 };
-
-module.exports = jobHarvest;

@@ -1,4 +1,4 @@
-var jobScavenge = {
+module.exports =  {
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -12,5 +12,3 @@ var jobScavenge = {
         }
     }
 };
-
-module.exports = jobScavenge;

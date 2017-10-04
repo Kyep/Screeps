@@ -1,4 +1,4 @@
-var jobGetstoredenergy = {
+module.exports =  {
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -29,5 +29,3 @@ var jobGetstoredenergy = {
         
 	}
 };
-
-module.exports = jobGetstoredenergy;

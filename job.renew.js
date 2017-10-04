@@ -1,4 +1,4 @@
-var jobRenew = {
+module.exports = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -54,5 +54,3 @@ var jobRenew = {
         }
 	}
 };
-
-module.exports = jobRenew;
