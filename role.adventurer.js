@@ -9,7 +9,10 @@ module.exports = {
         if (creep.memory.home == undefined) {
             creep.memory.home = creep.room.name;
         }
-
+        if (creep.memory.job == undefined) {
+            creep.memory.job = JOB_TRAVEL_OUT;
+        }
+        
         if (creep.memory.job == JOB_TRAVEL_OUT) {
             creep.moveTo(new RoomPosition(25, 25, creep.memory.target), {visualizePathStyle: {stroke: '#ff0000'}})
             if (creep.room.name == creep.memory.target) {

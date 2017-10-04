@@ -13,6 +13,10 @@ module.exports =  {
         // define our nearest target, hurt friendly, and friendly
         var target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
         var rangetotarget = 0;
+        if (!target) {
+            //console.log(creep.name + ' searching hostile structures');
+            target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES);
+        }
         if (target) {
             rangetotarget = creep.pos.getRangeTo(target);
         }
@@ -135,6 +139,7 @@ module.exports =  {
             }
         }
 
+        
         /*
         if(!target) {
             //console.log(creep.name + ' searching hostile structures');
@@ -146,7 +151,7 @@ module.exports =  {
         }
         //console.log(creep.getActiveBodyparts(RANGED_ATTACK));
 
-        
+
         if(target) {
             result = OK
             if (ranged_parts > 0 ) { result = creep.rangedAttack(target) }

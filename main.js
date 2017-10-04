@@ -28,11 +28,12 @@ var spawncustom = require('task.spawncustom');
         'room': 'W53S18',
         'sourceid': '59bbc3f82052a716c3ce7289',
         'priority_roles': ['teller', 'teller-towers'],
-        'military_roles': ['scout', 'adventurer', 'bezerker', 'wizard', 'healer', 'champion'],
+        'military_roles': ['scout', 'adventurer', 'rogue', 'wizard', 'healer', 'champion'],
         'alerts_duration' : 300,
         'alerts_recycle' : 0
     }
     global.empire = {
+        // 1st base
         'W53S18': {
             'spawns_from': 'W53S18',
             'sources': {
@@ -47,10 +48,12 @@ var spawncustom = require('task.spawncustom');
             },
             'safespot': {'x': 16, 'y':32 }
         },
+
+        // 1st base remote mining
         'W52S18': {
             'sources': {
                 '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14,
-                    'assigned': {'harvester': 2}, //, 'reserver': 1
+                    'assigned': {'harvester': 1}, //, 'reserver': 1
                     'expected_income': 10
                 },
             }
@@ -58,7 +61,7 @@ var spawncustom = require('task.spawncustom');
         'W53S17': {
             'sources': {
                 '59bbc3f72052a716c3ce7287': {'sourcename':'1N', 'x':4, 'y':44,
-                    'assigned': {'harvester': 2, 'reserver': 1}, // , 'reserver': 1
+                    'assigned': {'harvester': 1}, // , 'reserver': 1
                     'expected_income': 10
                 },
             } 
@@ -66,7 +69,7 @@ var spawncustom = require('task.spawncustom');
         'W54S18': {
             'sources': {
                 '59bbc3e92052a716c3ce70b6': {'sourcename':'1W-E', 'x':42, 'y':6,
-                    'assigned': {'harvester': 3},
+                    'assigned': {'harvester': 1},
                     'expected_income': 10
                 },
                 '59bbc3e92052a716c3ce70b7': {'sourcename':'1W-W', 'x':5, 'y':37,
@@ -100,7 +103,7 @@ var spawncustom = require('task.spawncustom');
             'safespot': {'x': 17, 'y':14 }
         },
         
-        // 2ND BASE EXPANSIONS
+        // 2nd base remote mining
         'W51S19': {
             'spawns_from': 'W51S18',
             'sources': {
@@ -114,7 +117,7 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'W51S18',
             'sources': {
                 '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29,
-                    'assigned': {'harvester':2},
+                    'assigned': {'harvester':3},
                     'expected_income': 40
                 },
                 '59bbc4182052a716c3ce7588': {'sourcename':'2N-W', 'x':4, 'y':26,
@@ -125,7 +128,7 @@ var spawncustom = require('task.spawncustom');
         }
         
         
-        // HOSTILE ROOMS
+        // 3rd base (planned)
         /*
         'W52S17': {
             'spawns_from': 'W51S18',
@@ -140,6 +143,7 @@ var spawncustom = require('task.spawncustom');
                 }
             }
         },
+        // 3rd base expansions (planned)
         'W52S16': {
             'spawns_from': 'W51S18',
             'sources': {
@@ -153,7 +157,8 @@ var spawncustom = require('task.spawncustom');
                 }
             }
         }
-        */        
+        */ 
+       
     }
 
 // rule: must have  1 move part for 1 every other part, or 2 every other parts if creep uses roads exclusively
@@ -169,7 +174,7 @@ global.empire_workers = {
 
 	'scout': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, ATTACK, HEAL], 'noresizing': 1  }, // cheap, with some defense, some attack and self-healing. $490
 	'adventurer': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL], 'noresizing': 1}, // scout's bigger brother, 2x the attack, 2x the tough, still self-heals a little. $680
-	'bezerker': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1}, // what you send when you absolutely have to get rid of people... fast and high damage. $580
+	'rogue': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1}, // what you send when you absolutely have to get rid of people... fast and high damage. $580
 	'wizard': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL], 'noresizing': 1}, // designed for attacking groups. 1220
 	'healer': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL], 'noresizing': 1}, // 
 	'champion': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, ATTACK, HEAL]}, // 
@@ -318,8 +323,8 @@ module.exports.loop = function () {
                     var projectsList = Game.rooms[rname].find(FIND_CONSTRUCTION_SITES);
                     if(projectsList.length) {
                         if(energy_reserves > 20000) {
-                            empire[rname].sources['builders'] = {'sourcename': rname + '-build', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5}
-                            empire[rname].sources['builders'].assigned['builderstorage'] = 2;
+                            empire[rname].sources['builder'] = {'sourcename': rname + '-build', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5}
+                            empire[rname].sources['builder'].assigned['builderstorage'] = 2;
                         }
                     }
                     
@@ -389,7 +394,9 @@ module.exports.loop = function () {
                 sectors_under_attack[Game.rooms[rname].name]['time'] = timenow;
                 sectors_under_attack[Game.rooms[rname].name]['threat'] = enemiesCost;
                 sectors_under_attack[Game.rooms[rname].name]['enemycount'] = enemiesList.length;
+                //console.log(enemiesList.length + 'no enemies in '+ rname);                
             } else if(sectors_under_attack[Game.rooms[rname].name] != undefined) {
+                //console.log('no enemies in '+ rname);
                 sectors_under_attack[Game.rooms[rname].name]['threat'] = 0;
                 sectors_under_attack[Game.rooms[rname].name]['enemycount'] = 0;
             }
@@ -453,7 +460,7 @@ module.exports.loop = function () {
 /*
 	'scout': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, ATTACK, HEAL], 'noresizing': 1  }, // cheap, with some defense, some attack and self-healing. $490
 	'adventurer': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL], 'noresizing': 1}, // scout's 2x bigger brother, still self-heals a little. $680
-	'bezerker': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1}, // fast moving high-dps. $580
+	'rogue': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1}, // fast moving high-dps. $580
 	'wizard': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL], 'noresizing': 1}, // designed for attacking groups. 1220
 	'champion': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL]}, // 
 */
@@ -478,7 +485,7 @@ module.exports.loop = function () {
                         patrolforce['champion'] = 1;
                         teller = 1;
                     } else {
-                        patrolforce['bezerker'] = 1;
+                        patrolforce['rogue'] = 1;
                         patrolforce['champion'] = 1;
                     }
                     empire[csector]['defcon'] = 3;
@@ -519,8 +526,19 @@ module.exports.loop = function () {
 
 
         var sources_actual = [];
+        var spawner_parts = {};
         for(var name in Memory.creeps) {
-
+            if(Game.creeps[name].memory.spawner == undefined) {
+                var pcount = Game.creeps[name].body.length;
+                if (Game.creeps[name].memory.spawnername == undefined) {
+                    console.log(name + ' has undefined spawner.');
+                }
+                if (spawner_parts[Game.creeps[name].memory.spawnername] == undefined) {
+                    spawner_parts[Game.creeps[name].memory.spawnername] = pcount;
+                }  else {
+                    spawner_parts[Game.creeps[name].memory.spawnername] += pcount;
+                }
+            }
             if(Game.creeps[name].memory.source == undefined) {
                 console.log("WARN: " + Game.creeps[name] + " in " + Game.creeps[name].room.name + " has no source defined.");
             }
@@ -550,6 +568,13 @@ module.exports.loop = function () {
                 continue;
             }
         }
+        for(var spawner in spawner_parts) {
+            if(spawner_parts[spawner] > 400) {
+                console.log("ALERT: spawner " + spawner + " is maintaining " + spawner_parts[spawner] + " > 400 creep parts. Not sustainable.");
+            }
+
+        }
+
         //console.log('Test actual:' + JSON.stringify(sources_actual['59bbc3f82052a716c3ce7289']));
         
         var spawner_mobs = {};

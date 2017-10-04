@@ -21,7 +21,8 @@ module.exports = {
             var result = target.renewCreep(creep);
             if(result == ERR_NOT_IN_RANGE) {
                 // this cumbersome thing stops 8 creeps all trying to renew from surrounding the spawn, which, together with the spawn trying to spawn something, can cause complete lockup.
-                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_RENEW, avoid: [new RoomPosition(target.pos.x - 1, target.pos.y, target.room.name), new RoomPosition(target.pos.x + 1, target.pos.y, target.room.name)]}} );
+                creep.moveTo(target);
+                //creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_RENEW, avoid: [new RoomPosition(target.pos.x - 1, target.pos.y, target.room.name), new RoomPosition(target.pos.x + 1, target.pos.y, target.room.name)]}} );
             } else if (result == ERR_NOT_ENOUGH_ENERGY) {
                 creep.transfer(target, RESOURCE_ENERGY)
                 return -1;

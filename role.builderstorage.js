@@ -2,7 +2,7 @@ var jobReturnresources = require('job.returnresources');
 var jobBuild = require('job.build');
 var jobRepair = require('job.repair');
 var jobRenew = require('job.renew');
-var jobGetstoredenergy = require('job.getstoredenergy');
+var jobGetstoredenergy = require('job.gfs');
 
 module.exports =  {
 
@@ -19,14 +19,14 @@ module.exports =  {
                     creep.announceJob();
                 }
             } else {
-                //creep.memory.role = 'recycler';
+                creep.memory.role = 'recycler';
             }
         } else if(creep.memory.job == JOB_GFS && creep.carry.energy == creep.carryCapacity) {
             creep.memory.job = JOB_BUILD;
             creep.announceJob();
         } else if(creep.memory.job == JOB_GFS) {
             if (jobGetstoredenergy.run(creep) == -1){
-                //creep.memory.role = 'recycler';
+                creep.memory.role = 'recycler';
             }
         } else if(creep.memory.job == JOB_BUILD) {
             if(creep.memory.target != creep.room.name){
