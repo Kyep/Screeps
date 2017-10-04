@@ -312,16 +312,30 @@ module.exports.loop = function () {
             if(Game.rooms[rname]['storage'] != undefined) {
                 if (Game.rooms[rname]['storage'].store.energy) {
                     energy_reserves = Game.rooms[rname]['storage'].store.energy;
+
+
+                    // Adjust builders depending on unfinished projects.
+                    var projectsList = Game.rooms[rname].find(FIND_CONSTRUCTION_SITES);
+                    if(projectsList.length) {
+                        if(energy_reserves > 20000) {
+                            empire[rname].sources['builders'] = {'sourcename': rname + '-build', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5}
+                            empire[rname].sources['builders'].assigned['builderstorage'] = 2;
+                        }
+                    }
+                    
                     empire[rname].sources['upgrader'] = {'sourcename': rname + '-upgrade', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 10}
-                    if(energy_reserves > 80000) {
+                    if(energy_reserves > 90000) {
                         empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 4;
-                    } else if(energy_reserves > 40000) {
+                    } else if(energy_reserves > 60000) {
                         empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 2;
-                    } else if(energy_reserves > 20000) {
+                    } else if(energy_reserves > 30000) {
                         empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 1;
                     }                    
+
                 }
             }
+
+
             
             //console.log("Parsing room: " + Game.rooms[rname].name);
             var enemiesList = Game.rooms[rname].find(FIND_HOSTILE_CREEPS);
@@ -503,19 +517,6 @@ module.exports.loop = function () {
 
         Memory['sectors_under_attack'] = sectors_under_attack;
 
-
-        // Adjust builders depending on unfinished projects.
-        var projectsList = Game.spawns.Spawn1.room.find(FIND_CONSTRUCTION_SITES);
-        if(projectsList.length) {
-            var targets = Game.spawns.Spawn1.room.find(FIND_STRUCTURES, {
-                filter: (structure) => {
-                     return (structure.structureType == STRUCTURE_STORAGE)  && structure.store.energy < structure.storeCapacity
-                }
-            });
-            if(targets.length > 0 && energy_reserves > 20000) {
-                empire[empire_defaults['room']].sources[empire_defaults['sourceid']].assigned['builderstorage'] = 2;
-            }
-        }
 
         var sources_actual = [];
         for(var name in Memory.creeps) {
