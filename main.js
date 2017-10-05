@@ -12,6 +12,7 @@ var roleRecycler = require('role.recycler');
 var roleBuilderstorage = require('role.builderstorage');
 var roleTeller = require('role.teller');
 var roleRemoteconstructor = require('role.remoteconstructor');
+var roleSiege = require('role.siege');
 
 var structureTower = require('structure.tower');
 
@@ -28,7 +29,7 @@ var spawncustom = require('task.spawncustom');
         'room': 'W53S18',
         'sourceid': '59bbc3f82052a716c3ce7289',
         'priority_roles': ['teller', 'teller-towers'],
-        'military_roles': ['scout', 'adventurer', 'rogue', 'wizard', 'healer', 'champion'],
+        'military_roles': ['scout', 'adventurer', 'rogue', 'apprentice', 'wizard', 'healer', 'champion', 'guardian'],
         'alerts_duration' : 300,
         'alerts_recycle' : 0
     }
@@ -37,12 +38,17 @@ var spawncustom = require('task.spawncustom');
         'W53S18': {
             'spawns_from': 'W53S18',
             'sources': {
-                '59bbc3f82052a716c3ce7289': {'sourcename':'1-E', 'x':25, 'y':18,
+                'base-maint': {
+                    'sourcename': '1-base', 'x':20, 'y':20, 'assigned': {'scavenger':1}, 'expected_income': 40
+                },
+                '59bbc3f82052a716c3ce7289': {
+                    'sourcename':'1-E', 'x':25, 'y':18,
                     'assigned': {'harvester':1},
                     'expected_income': 90
                 },
-                '59bbc3f82052a716c3ce728b': {'sourcename':'1-W', 'x':16, 'y':26,
-                    'assigned': {'upgrader': 1, 'scavenger': 1},
+                '59bbc3f82052a716c3ce728b': {
+                    'sourcename':'1-W', 'x':16, 'y':26,
+                    'assigned': {'upgrader': 1},
                     'expected_income': 80
                 }
             },
@@ -73,15 +79,19 @@ var spawncustom = require('task.spawncustom');
                     'expected_income': 10
                 },
                 '59bbc3e92052a716c3ce70b7': {'sourcename':'1W-W', 'x':5, 'y':37,
-                    'assigned': {'harvester': 2, 'reserver': 1},
+                    'assigned': {'harvester': 2},
                     'expected_income': 5
+                },
+                'reserver': {'sourcename':'1W-R', 'x':5, 'y':37,
+                    'assigned': {'reserver': 1},
+                    'expected_income': 1
                 }
             }
         },
         'W54S17': {
             'sources': {
                 '59bbc3e82052a716c3ce70b4': {'sourcename':'1NW', 'x':38, 'y':31,
-                    'assigned': {'harvester': 2}, //, 'reserver': 1
+                    'assigned': {'harvester': 2}, 
                     'expected_income': 10
                 }
             } 
@@ -91,12 +101,13 @@ var spawncustom = require('task.spawncustom');
         'W51S18': {
             'spawns_from': 'W51S18',
             'sources': {
-                '59bbc4182052a716c3ce758c': {'sourcename':'2', 'x':14, 'y':20,
+                'base-maint': {'sourcename': '2-base', 'x':16, 'y':24, 'assigned': {}, 'expected_income': 70 }, // 'scavenger':1
+                '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20,
                     'assigned': {'harvester':1, 'upgrader':1, 'builder': 1},
                     'expected_income': 80
                 },
-                '59bbc4182052a716c3ce758d': {'sourcename':'2', 'x':3, 'y':27,
-                    'assigned': {'harvester':2, 'scavenger':1},
+                '59bbc4182052a716c3ce758d': {'sourcename':'2-W', 'x':3, 'y':27,
+                    'assigned': {'harvester':2},
                     'expected_income': 90
                 }
             },
@@ -117,13 +128,17 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'W51S18',
             'sources': {
                 '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29,
-                    'assigned': {'harvester':3},
+                    'assigned': {'harvester':2},
                     'expected_income': 40
                 },
                 '59bbc4182052a716c3ce7588': {'sourcename':'2N-W', 'x':4, 'y':26,
-                    'assigned': {'harvester':4},
+                    'assigned': {},
                     'expected_income': 10
-                }
+                }/*,
+                'reserver': {'sourcename':'2N-R', 'x':4, 'y':26,
+                    'assigned': {'reserver': 1},
+                    'expected_income': 10
+                }*/
             }
         }
         
@@ -156,7 +171,37 @@ var spawncustom = require('task.spawncustom');
                     'expected_income': 1
                 }
             }
+        },
+
+        // GUARDIAN north 
+        'W56S17': {
+            //'spawns_from': 'W51S18',
+            'sources': {
+                '59bbc3c92052a716c3ce6c42': {'sourcename': 'GN-N', 'x':24, 'y':29,
+                    'assigned': {},
+                    'expected_income': 1
+                },
+                '59bbc3c92052a716c3ce6c44': {'sourcename': 'GN-S', 'x':35, 'y':42,
+                    'assigned': {},
+                    'expected_income': 1
+                }
+            }
         }
+        // GUARDIAN home 
+        'W56S18': {
+            //'spawns_from': 'W51S18',
+            'sources': {
+                '59bbc3c92052a716c3ce6c47': {'sourcename': 'G-N', 'x':31, 'y':30,
+                    'assigned': {},
+                    'expected_income': 1
+                },
+                '59bbc3c92052a716c3ce6c48': {'sourcename': 'G-S', 'x':35, 'y':39,
+                    'assigned': {},
+                    'expected_income': 1
+                }
+            }
+        }
+        
         */ 
        
     }
@@ -169,20 +214,26 @@ global.empire_workers = {
 	'harvester': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
 	'scavenger': { 'version': 1, 'body': [WORK, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
 	'builder': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
-	'builderstorage': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
-	'upgraderstorage': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
+	'builderstorage': { 'version': 1, 'body': [WORK, WORK, WORK, CARRY, CARRY, MOVE] }, // halfspeed on roads, quarter speed offroad
+	'upgraderstorage': { 'version': 1, 'body': [WORK, WORK, WORK, CARRY, CARRY, MOVE] },  // halfspeed on roads, quarter speed offroad
 
-	'scout': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, ATTACK, HEAL], 'noresizing': 1  }, // cheap, with some defense, some attack and self-healing. $490
-	'adventurer': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL], 'noresizing': 1}, // scout's bigger brother, 2x the attack, 2x the tough, still self-heals a little. $680
-	'rogue': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1}, // what you send when you absolutely have to get rid of people... fast and high damage. $580
-	'wizard': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL], 'noresizing': 1}, // designed for attacking groups. 1220
-	'healer': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL], 'noresizing': 1}, // 
-	'champion': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, ATTACK, HEAL]}, // 
+	'scout': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0 }, // cheap, with some defense, some attack and self-healing. $490
+	'adventurer': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // scout's bigger brother, 2x the attack, 2x the tough, still self-heals a little. $680
+	'rogue': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // what you send when you absolutely have to get rid of people... fast and high damage. $580
+	'apprentice': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // weak ranged combatant.
+	'wizard': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // designed for attacking groups. 1220
+	'healer': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // 
+	'champion': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, ATTACK, HEAL], 'renew_allowed': 0}, // 
+	'guardian': { 'version': 1, 'body': [TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, HEAL, HEAL, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // half speed, strong but slow
 
+	'siege': { 'version': 1, 'body': [MOVE, ATTACK, ATTACK], 'renew_allowed': 0}, // half speed, strong but slow
+	'siegefar': { 'version': 1, 'body': [MOVE, ATTACK], 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
 
-	'claimer': { 'version': 1, 'body': [CLAIM, MOVE], 'noresizing': 1 },
-	'reserver' : { 'version': 1, 'body': [CLAIM, MOVE, MOVE], 'noresizing': 1 },
-	'teller': { 'version': 1, 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 }	
+	'claimer': { 'version': 1, 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
+	'reserver' : { 'version': 1, 'body': [CLAIM, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
+	'teller': { 'version': 1, 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0},
+	'teller-towers': { 'version': 1, 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 }	
+    
 }
 
 
@@ -220,6 +271,94 @@ Creep.prototype.announceJob = function() {
     this.say(this.memory['job']);
 }
 
+Creep.prototype.setupMemory = function() {
+    if(this.memory['created_at'] == undefined) {
+        this.memory['created_at'] = Game.time;
+        //console.log('WARN: ' + this.name + ' has no created_at! Setting it to inital value of game time: ' + this.memory['created_at']);
+    }
+}
+
+Creep.prototype.adjustEarnings = function(deposit) {
+    if(this.memory['earnings'] == undefined) {
+        this.memory['earnings'] = CREEP_COST(this.body) * -1;
+        console.log('WARN: ' + this.name + ' has no earnings! Setting it to inital value of creep cost: ' + this.memory['earnings']);
+    }
+    this.memory['earnings'] = this.memory['earnings'] + deposit;
+    if(this.memory['created_at'] == undefined) {
+        this.memory['created_at'] = Game.time;
+        //console.log('WARN: ' + this.name + ' has no created_at! Setting it to inital value of game time: ' + this.memory['created_at']);
+    }
+}
+
+Creep.prototype.getEarnings = function() {
+    this.adjustEarnings(0); 
+    return (this.memory['earnings']); 
+}
+
+Creep.prototype.getTicksAlive = function() {
+    this.adjustEarnings(0); 
+    return (Game.time - this.memory['created_at']);
+}
+
+Creep.prototype.getEarningsPerTick = function() {
+    this.adjustEarnings(0); // to ensure they're defined.
+    return (this.getEarnings() / this.getTicksAlive()); // total_earnings / time they've had to earn them.
+}
+
+global.REPORT_EARNINGS = function() {
+    for (var cr in Game.creeps) {
+        var earnings = Game.creeps[cr].getEarnings(); 
+        var ept = Math.round(Game.creeps[cr].getEarningsPerTick()); 
+        var tal = Game.creeps[cr].getTicksAlive();
+        console.log("Creep " + cr + " working on " + empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']]['sourcename'] + " has earned " + ept + " energy per tick over its " + tal + ' tick lifespan, ' + earnings + ' energy in total.'); 
+    }
+}
+
+global.REPORT_EARNINGS_SOURCES = function() {
+    for (var cr in Game.creeps) {
+        var earnings = Game.creeps[cr].getEarnings(); 
+        var ept = Math.round(Game.creeps[cr].getEarningsPerTick()); 
+        var tal = Game.creeps[cr].getTicksAlive();
+
+        if(empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']] != undefined) {
+            if (empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']]['earnings'] == undefined) {
+                empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']]['earnings'] = earnings;
+            } else {
+                empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']]['earnings'] += earnings;
+            }
+            if (empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']]['ticks'] == undefined) {
+                empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']]['ticks'] = tal;
+            } else {
+                empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']]['ticks'] += tal;
+            }
+        }
+    }
+    var rt_earnings = 0;
+    var rt_ticks = 0;
+    for(var rname in empire) {
+        var r_earnings = 0;
+        var r_ticks = 0;
+        console.log(' ');
+        for (var sname in empire[rname].sources) {
+            var earnings = empire[rname].sources[sname]['earnings'];
+            if(earnings == undefined) {
+                continue;
+            }
+            var ticks = empire[rname].sources[sname]['ticks'];
+            var ept = Math.round(earnings/ticks);
+            console.log("- Source " + empire[rname].sources[sname]['sourcename'] + " has earned " + earnings + " over " + ticks + ' or EPT: ' + ept); 
+            rt_earnings += earnings;
+            rt_ticks += ticks;
+            r_earnings += earnings;
+            r_ticks += ticks;
+        }
+        var r_ept = Math.round(r_earnings / r_ticks);
+        console.log(rname +" has earned " + r_earnings + " over " + r_ticks + ' or EPT: ' + r_ept); 
+    }
+    console.log('TOTAL: ' + rt_earnings + ' over ' + rt_ticks + ' ticks, or ' + Math.round(earnings/ticks) + ' earnings/tick.');
+
+}
+
     // SHORTCUTS: 
     //default assign:
     // empire[empire_defaults['room']].sources[empire_defaults['sourceid']].assigned
@@ -237,7 +376,11 @@ module.exports.loop = function () {
     // MAIN STATUS BAR:
     //console.log(Game.time + ': E: ' + Game.spawns.Spawn1.room.energyAvailable + '/' + Game.spawns.Spawn1.room.energyCapacityAvailable + ', V: ' + energy_reserves + '. B: ' + Game.cpu.bucket);
     
+
     cleaner.process()
+    for(var cr in Game.creeps) {
+        Game.creeps[cr].setupMemory();
+    }
 
     var sectors_under_attack = {};
     if(Memory['sectors_under_attack'] != undefined) {
@@ -351,6 +494,11 @@ module.exports.loop = function () {
                     enemiesCost += global.CREEP_COST(enemiesList[i].body);
                 }
                 //console.log("TOTAL ENEMY COST:" + enemiesCost);
+
+                if(empire[rname] == undefined) {
+                    //console.log("ATTACK: cannot do anything about enemies in a non-empire sector: " + rname);
+                    continue;
+                }
                 console.log("ALERT: " + Game.rooms[rname].name + ' has ' + enemiesList.length + ' enemies, worth body cost: ' + enemiesCost + '!'); 
                 if(sectors_under_attack[Game.rooms[rname].name] == undefined) {
                     console.log("ATTACK: NEW DETECTED: " + Game.rooms[rname].name);
@@ -402,12 +550,13 @@ module.exports.loop = function () {
             }
         }
         for(var csector in sectors_under_attack) {
-            if(empire[csector] == undefined) {
-                console.log("ATTACK: cannot do anything about an attack in a non-empire sector: " + csector);
+            var end_attack_now = 0;
+            if( empire[csector] == undefined ) {
+                console.log("ATTACK: sectors_under_attack: " + csector + " is undefined. DELETING ATTACK ALERT IN THAT SECTOR!");
+                delete sectors_under_attack[csector];
                 continue;
             }
             var tgap = timenow - sectors_under_attack[csector]['time'];
-            var end_attack_now = 0;
             if(sectors_under_attack[csector]['enemycount'] == 0) {
                 console.log("ATTACK: ENDS (ENEMY WIPED OUT): " + csector + ' in ' + (timenow - sectors_under_attack[csector]['attackstart']) + ' ticks.');
                 end_attack_now = 1;
@@ -430,10 +579,7 @@ module.exports.loop = function () {
                     }
                 }
             } else {
-                if( empire[csector] == undefined ) {
-                    console.log("ATTACK: csector " + csector + " is undefined.");
-                    continue;
-                }
+
                 if( empire[csector] == undefined ) {
                     console.log("ATTACK: csector " + csector + " is undefined.");
                     continue;
@@ -449,7 +595,7 @@ module.exports.loop = function () {
                 }
 
                 // defcon 1: single invader, invasion lasting less than a minute, not very strong
-                if (sectors_under_attack[csector]['threat'] < 2000 && (timenow - sectors_under_attack[csector]['attackstart']) < 60 && sectors_under_attack[csector]['enemycount'] == 1) {
+                if (sectors_under_attack[csector]['threat'] < 3000 && (timenow - sectors_under_attack[csector]['attackstart']) < 120 && sectors_under_attack[csector]['enemycount'] == 1) {
                     if (room_has_spawn) {
                         baseforce['teller-towers'] = 1;
                         patrolforce['scout'] = 1;
@@ -457,15 +603,6 @@ module.exports.loop = function () {
                         patrolforce['scout'] = 2;
                     }
                     empire[csector]['defcon'] = 1;
-/*
-	'scout': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, ATTACK, HEAL], 'noresizing': 1  }, // cheap, with some defense, some attack and self-healing. $490
-	'adventurer': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL], 'noresizing': 1}, // scout's 2x bigger brother, still self-heals a little. $680
-	'rogue': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1}, // fast moving high-dps. $580
-	'wizard': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL], 'noresizing': 1}, // designed for attacking groups. 1220
-	'champion': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL]}, // 
-*/
-
-
                 // defcon 2: big invader, or tougher group, invasion lasting less than 5 minutes, or up to 3 enemies               
                 } else if (sectors_under_attack[csector]['threat'] < 6000 && (timenow - sectors_under_attack[csector]['attackstart']) < 300 && sectors_under_attack[csector]['enemycount'] > 1 && sectors_under_attack[csector]['enemycount'] < 4) {
                     if (room_has_spawn) {
@@ -482,26 +619,27 @@ module.exports.loop = function () {
                     if (room_has_spawn) {
                         baseforce['teller-towers'] = 1;
                         baseforce['teller'] = 1;
-                        patrolforce['champion'] = 1;
+                        patrolforce['guardian'] = 1;
                         teller = 1;
                     } else {
                         patrolforce['rogue'] = 1;
                         patrolforce['champion'] = 1;
+                        patrolforce['apprentice'] = 1;
                     }
                     empire[csector]['defcon'] = 3;
 
-                // defcon 4: big invader, or tougher group, invasion lasting less than 3 minutes  
+                // defcon 4: big invader, or tougher group, invasion lasting less than >10 minutes  
                 } else {
                     if (room_has_spawn) {
                         baseforce['teller-towers'] = 1;
                         baseforce['teller'] = 1;
-                        patrolforce['wizard'] = 1;
-                        patrolforce['champion'] = 1;
+                        //patrolforce['wizard'] = 1;
+                        patrolforce['guardian'] = 1;
                         patrolforce['healer'] = 1;
                     } else {
-                        patrolforce['wizard'] = 1;
+                        patrolforce['guardian'] = 1;
                         patrolforce['champion'] = 1;
-                        patrolforce['healer'] = 1;
+                        patrolforce['rogue'] = 1;
                     }
                     empire[csector]['defcon'] = 4;
                 }
@@ -652,6 +790,11 @@ module.exports.loop = function () {
                                     console.log(spawner.name + ': ALLOWING ONLY ONE WORK UNIT, AS MY MOB LIST HAS LESS THAN 5 MOBS. ');
                                 }
                             }
+                            if (empire_workers[role]['renew_allowed'] != undefined) {
+                                if (empire_workers[role]['renew_allowed'] == 0) {
+                                    renew_allowed = 0;   
+                                }
+                            }
                             var renewing_creeps = 0;
                             for (var cr in Game.creeps) {
                                 //console.log(Game.creeps[cr].room['name'] + ' v ' + spawner.room.name);
@@ -660,7 +803,7 @@ module.exports.loop = function () {
                                 } 
                             }
                             if (renewing_creeps >= 1) {
-                                console.log(spawner.name + ' BLOCKED: number creeps renewing: ' + renewing_creeps);
+                                //console.log(spawner.name + ' BLOCKED: number creeps renewing: ' + renewing_creeps);
                                 continue;
                             } else {
                                 //console.log(spawner.name + ': number creeps renewing: ' + renewing_creeps);
@@ -718,7 +861,7 @@ module.exports.loop = function () {
                                 //console.log(spawner.name + ': permitting spawn queue set as there is nothing in queue.');
                             }
                             console.log("SPAWNING: " + spawner.name + " created " + spawnrole + " for |" + empire[rname].sources[skey]['sourcename'] + 
-                            '| going to: ' + rname + ' cost: ' + thecost + '/' + spawner.room.energyAvailable + ' based out of ' + spawner.room.name + ' with renew: ' + renew_allowed);
+                            '| cost: ' + thecost + '/' + spawner.room.energyAvailable + ' based out of ' + spawner.room.name + ' with renew: ' + renew_allowed);
 
                             spawn_queue[spawner.name] = {
                                 'spawner': spawner.name, 'sname': empire[rname].sources[skey]['sourcename'], 'partlist': partlist, 'spawnrole': spawnrole, 'skey': skey, 'rname': rname, 
@@ -792,6 +935,8 @@ module.exports.loop = function () {
             roleRecycler.run(creep);
         } else if(creep.memory.role == 'remoteconstructor') {
             roleRemoteconstructor.run(creep);
+        } else if(creep.memory.role == 'siege') {
+            roleSiege.run(creep);
         } else {
             console.log("ALERT: " + creep.name + " has role " + creep.memory.role + " which I don't know how to handle!")
         }

@@ -5,14 +5,16 @@ module.exports =  {
 
         var targets = [];
         var target = undefined;
+        var using_memory = 0;
         
         if(creep.memory['targetcontainer'] != undefined) {
+            using_memory = 1;
             target = Game.getObjectById(creep.memory['targetcontainer']);
             if(!target) {
                 creep.memory['targetcontainer'] = undefined;
             } else { 
                 if(target.energy != undefined && target.energyCapacity != undefined) {
-                    if (target.energy == target.EnergyCapacity) {
+                    if (target.energy == target.energyCapacity) {
                         creep.memory['targetcontainer'] = undefined;
                         target = undefined;
                     }
@@ -31,6 +33,7 @@ module.exports =  {
                         return (
                                 (
                                   (((structure.structureType == STRUCTURE_SPAWN && fill_spawner) || ( structure.structureType == STRUCTURE_EXTENSION && fill_extensions)) && structure.energy < structure.energyCapacity)
+                                  || (structure.structureType == STRUCTURE_TOWER && structure.energy < (structure.energyCapacity * tower_factor))
                                 )
                         );
                     }
@@ -51,6 +54,7 @@ module.exports =  {
                 });
             }
         }
+
         if(targets.length > 0 || target != undefined) {
             //if(targets.indexOf(target) > -1) {
                 //console.log(creep.name + " using saved target: " + target.id);
@@ -60,16 +64,45 @@ module.exports =  {
             if (target == undefined) {
                 target = creep.pos.findClosestByRange(targets);
                 creep.memory['targetcontainer'] = target.id;
+                //console.log(JSON.stringify(target));
             }
-            var result = creep.transfer(target, RESOURCE_ENERGY);
+
+            var structure_max_storage = 0;
+            if (target.energyCapacity != undefined) {
+                structure_max_storage = target.energyCapacity;   
+            }
+            if (target.storeCapacity != undefined) {
+                structure_max_storage = target.storeCapacity;
+            }
+            var structure_contents = 0;
+            if (target.energy != undefined) {
+                structure_contents = target.energy;
+            }
+            if (target.store != undefined) {
+                if (target.store.energy != undefined) {
+                    structure_contents = target.store.energy;
+                }
+            }
+            var amount_to_deposit = creep.carry.energy;
+            if (creep.carry.energy > (structure_max_storage - structure_contents)) {
+                amount_to_deposit = Math.min(creep.carry.energy, (structure_max_storage - structure_contents));
+            }
+            var result = creep.transfer(target, RESOURCE_ENERGY, amount_to_deposit);
+            
+            //var result = creep.transfer(target, RESOURCE_ENERGY);
             if(result == ERR_NOT_IN_RANGE) {
                 creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_DROPOFF}});
-            } else if (result != OK) {
+            } else if (result == OK) {
                 creep.memory['targetcontainer'] = undefined;
+                //console.log(creep.name + ": RR DEPOSIT: " + amount_to_deposit + ' of ' + creep.carry.energy + ' v. ' + structure_max_storage +'/'+ structure_contents + '~' + using_memory);
+                
+                creep.memory['targetcontainer'] = undefined;
+                creep.adjustEarnings(amount_to_deposit);
             }
             if (creep.carry.energy == 0) {
                 creep.memory['targetcontainer'] = undefined;
             }
+
 
 
         } else {

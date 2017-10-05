@@ -31,18 +31,24 @@ module.exports = {
             }
         }
         if (creep.memory.job == JOB_TRAVEL_OUT) {
+            if (creep.memory.journeystart == undefined ) {
+                creep.memory.journeystart = Game.time;
+            }
             if (creep.room.name == creep.memory.target) {
 	            creep.memory.job = JOB_HARVEST;
                 //creep.announceJob();
             } else if (creep.memory.target in Memory.sectors_under_attack || (creep.memory.target != creep.memory.home && creep.memory.home in Memory.sectors_under_attack)) {
                 // hide in base.
+                /*
                 if(creep.ticksToLive < 400) {
                     if(creep.room.name == creep.memory.home) {
                         creep.memory.job = JOB_RENEW;
                         creep.announceJob();
                         return;
                     }
-                }
+                } */
+                // I would rather they not block spawning of combat mobs by renewing.
+                // Also, for long attacks, I would rather not pay their energy cost to maintain them.
                 var hidex = 25;
                 var hidey = 25;
                 if (empire[creep.memory.home]['safespot'] != undefined) {
@@ -59,7 +65,8 @@ module.exports = {
                     creep.memory.target_x = 25;
                     creep.memory.target_y = 25;
                 }
-                creep.moveTo(new RoomPosition(creep.memory.target_x, creep.memory.target_y, creep.memory.target), {visualizePathStyle: {stroke: '#ffffff'}})
+                creep.moveTo(new RoomPosition(creep.memory.target_x, creep.memory.target_y, creep.memory.target))
+                //creep.moveTo(new RoomPosition(creep.memory.target_x, creep.memory.target_y, creep.memory.target), {visualizePathStyle: {stroke: '#ffffff'}})
                 //var exit = creep.room.findExitTo(creep.memory.target);
                 //creep.moveTo(creep.pos.findClosestByRange(exit), {visualizePathStyle: {stroke: '#ffffff'}});
             }
@@ -73,7 +80,8 @@ module.exports = {
                 creep.memory.job = JOB_BUILD;
                 creep.announceJob();
             } else {
-                creep.moveTo(new RoomPosition(creep.memory.target_x, creep.memory.target_y, creep.memory.target), {visualizePathStyle: {stroke: '#ffffff'}})
+                creep.moveTo(new RoomPosition(creep.memory.target_x, creep.memory.target_y, creep.memory.target))
+                //creep.moveTo(new RoomPosition(creep.memory.target_x, creep.memory.target_y, creep.memory.target), {visualizePathStyle: {stroke: '#ffffff'}})
 	            jobHarvest.run(creep);
             }
         }
@@ -105,8 +113,8 @@ module.exports = {
             }
         }
 	    if(creep.memory.job == JOB_RETURN) {
-            // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
-            if (jobReturnresources.run(creep, 1, 1, 0.6, 1, 1) == -1) {
+            // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage, ext_priority) {
+            if (jobReturnresources.run(creep, 1, 1, 0.6, 1, 1, 1) == -1) {
                 creep.memory.job = JOB_IDLE;
                 creep.announceJob();
             }

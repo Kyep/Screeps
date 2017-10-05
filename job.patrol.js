@@ -32,7 +32,7 @@ module.exports =  {
         // 1st, where should we move to?
         
         // if at sim border, always move in.
-        if (creep.pos.x < 3 || creep.pos.x > 46 || creep.pos.y < 3 || creep.pos.y > 46) {
+        if (creep.pos.x < 1 || creep.pos.x > 48 || creep.pos.y < 1 || creep.pos.y > 48) {
             creep.moveTo(25, 25, creep.room);
         // if we are a dedicated healer, keep the wounded in range.
         } else if (heal_parts > ranged_parts && rangetohurtfriendly > 1) {
