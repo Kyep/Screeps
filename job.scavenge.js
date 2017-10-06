@@ -1,6 +1,4 @@
 module.exports =  {
-
-    /** @param {Creep} creep **/
     run: function(creep) {
         var source = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {filter: (s) => s.energy > 0});
         if(source != null){

@@ -1,7 +1,5 @@
 module.exports =  {
-
-    /** @param {Creep} creep **/
-run: function(creep) {
+    run: function(creep) {
         var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
         if(targets.length) {
             var target = creep.pos.findClosestByRange(targets)

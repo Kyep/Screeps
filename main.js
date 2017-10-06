@@ -42,7 +42,9 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'W53S18',
             'sources': {
                 'base-maint': {
-                    'sourcename': '1-base', 'x':20, 'y':20, 'assigned': {'scavenger':1, 'teller': 1}, 'expected_income': 100
+                    'sourcename': '1-base', 'x':20, 'y':20, 
+                    'assigned': {'scavenger':1}, 
+                    'expected_income': 100
                 },
                 '59bbc3f82052a716c3ce7289': {
                     'sourcename':'1-E', 'x':25, 'y':18,
@@ -51,7 +53,7 @@ var spawncustom = require('task.spawncustom');
                 },
                 '59bbc3f82052a716c3ce728b': {
                     'sourcename':'1-W', 'x':16, 'y':26,
-                    'assigned': {'upgrader': 1, 'builder': 1},
+                    'assigned': {'upgrader': 1},
                     'expected_income': 80
                 }
             },
@@ -62,8 +64,8 @@ var spawncustom = require('task.spawncustom');
         'W52S18': {
             'sources': {
                 '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14,
-                    'assigned': {'harvester': 0}, //, 'reserver': 1
-                    'expected_income': 10
+                    'assigned': {'harvester': 1}, //, 'reserver': 1
+                    'expected_income': 1
                 },
             }
         },
@@ -104,7 +106,10 @@ var spawncustom = require('task.spawncustom');
         'W51S18': {
             'spawns_from': 'W51S18',
             'sources': {
-                'base-maint': {'sourcename': '2-base', 'x':16, 'y':24, 'assigned': {'scavenger': 1}, 'expected_income': 100 }, // 'scavenger':1
+                'base-maint': {'sourcename': '2-base', 'x':16, 'y':24, 
+                    'assigned': {'scavenger': 1}, 
+                    'expected_income': 100 
+                }, 
                 '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20,
                     'assigned': {'harvester':1, 'upgrader':1, 'builder': 1},
                     'expected_income': 80
@@ -177,8 +182,9 @@ var spawncustom = require('task.spawncustom');
                     'expected_income': 1
                 }
             }
-        },
+        }
 
+        /*
         // GUARDIAN north 
         'W56S17': {
             'ignoreattacks': 1,
@@ -251,6 +257,7 @@ var spawncustom = require('task.spawncustom');
                 }
             }
         }
+        */
          
        
     }
@@ -273,12 +280,12 @@ global.empire_workers = {
 	'apprentice': { 'version': 1, 'body':[TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // weak ranged combatant. $560
 	'wizard': { 'version': 1, 'body':   [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // designed for attacking groups. 1220
 	'healer': { 'version': 1, 'body':   [MOVE, HEAL, HEAL], 'renew_allowed': 0}, // 
-	'champion': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, ATTACK, HEAL], 'renew_allowed': 0}, // 
-	'guardian': { 'version': 1, 'body': [TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, HEAL, HEAL, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // half speed, strong but slow
+	'champion': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, ATTACK, HEAL], 'renew_allowed': 0}, // not very effective, it turns out.
+	'guardian': { 'version': 1, 'body': [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, 
 
 	'siege': { 'version': 1, 'body': [MOVE, ATTACK, ATTACK], 'renew_allowed': 0}, // half speed, strong but slow
 	'siegefar': { 'version': 1, 'body': [MOVE, ATTACK], 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
-	'drainer': { 'version': 1, 'body': [TOUGH, MOVE], 'renew_allowed': 0}, 
+	'drainer': { 'version': 1, 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
 
 	'claimer': { 'version': 1, 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 	'reserver' : { 'version': 1, 'body': [CLAIM, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
@@ -353,7 +360,7 @@ Creep.prototype.getTicksAlive = function() {
 
 Creep.prototype.getEarningsPerTick = function() {
     this.adjustEarnings(0); // to ensure they're defined.
-    return (this.getEarnings() / this.getTicksAlive()); // total_earnings / time they've had to earn them.
+    return (this.getEarnings() / this.getTicksAlive()); 
 }
 
 Room.prototype.getMyStructuresCount = function() {
@@ -378,6 +385,9 @@ global.REPORT_EARNINGS = function() {
         var earnings = Game.creeps[cr].getEarnings(); 
         var ept = Math.round(Game.creeps[cr].getEarningsPerTick()); 
         var tal = Game.creeps[cr].getTicksAlive();
+        if (Game.creeps[cr].memory['source'] == undefined) {
+            continue;
+        }
         console.log("Creep " + cr + " working on " + empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']]['sourcename'] + " has earned " + ept + " energy per tick over its " + tal + ' tick lifespan, ' + earnings + ' energy in total.'); 
     }
 }
@@ -406,7 +416,6 @@ global.REPORT_EARNINGS_SOURCES = function() {
     for(var rname in empire) {
         var r_earnings = 0;
         var r_ticks = 0;
-        console.log(' ');
         for (var sname in empire[rname].sources) {
             var earnings = empire[rname].sources[sname]['earnings'];
             if(earnings == undefined) {
@@ -421,18 +430,17 @@ global.REPORT_EARNINGS_SOURCES = function() {
             r_ticks += ticks;
         }
         var r_ept = Math.round(r_earnings / r_ticks);
-        console.log(rname +" has earned " + r_earnings + " over " + r_ticks + ' or EPT: ' + r_ept); 
+        if (r_earnings != 0) {
+            console.log(rname +" has earned " + r_earnings + " over " + r_ticks + ' or EPT: ' + r_ept); 
+            console.log(' ');
+        }
     }
-    console.log('TOTAL: ' + rt_earnings + ' over ' + rt_ticks + ' ticks, or ' + Math.round(earnings/ticks) + ' earnings/tick.');
+    console.log('TOTAL: ' + rt_earnings + ' over ' + rt_ticks + ' ticks, or ' + Math.round(rt_earnings/ticks) + ' earnings/tick.');
 
 }
 
-    // SHORTCUTS: 
-    //default assign:
-    // empire[empire_defaults['room']].sources[empire_defaults['sourceid']].assigned
-
 // ---------------------------
-// BEGIN MAIN LOOP (ALL CODE HAS TO GO BELOW THIS LINE!)
+// BEGIN MAIN LOOP 
 // ---------------------------
 
 module.exports.loop = function () {
@@ -516,54 +524,48 @@ module.exports.loop = function () {
         */
 
 
-        // COMBAT CONTROLLER
+        // ROOM MANAGER
         var timenow = Game.time;
         for(var rname in Game.rooms) {
-
-
-
+            
+            // ENERGY MANAGEMENT
             var energy_reserves = 0;
             if(Game.rooms[rname]['storage'] != undefined) {
                 if (Game.rooms[rname]['storage'].store.energy) {
 
                     energy_reserves = Game.rooms[rname]['storage'].store.energy;
 
+                    if(empire[rname] == undefined) {
+                        continue;
+                    }
 
                     // Adjust builders depending on unfinished projects.
-                    var projectsList = Game.rooms[rname].find(FIND_CONSTRUCTION_SITES);
-                    if(projectsList.length) {
-                        if(energy_reserves > 20000) {
+                    var projectsList = Game.rooms[rname].find(FIND_MY_CONSTRUCTION_SITES);
+                    if(projectsList.length > 0) {
+                        if(energy_reserves > 200000) {
                             empire[rname].sources['builder'] = {'sourcename': rname + '-build', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5}
                             empire[rname].sources['builder'].assigned['builderstorage'] = 2;
                         }
                     }
 
-                    if(empire[rname] == undefined) {
-                        continue;
-                    }                
-
                     empire[rname].sources['upgrader'] = {'sourcename': rname + '-upgrade', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 10}
                     
                     if(energy_reserves > 700000) {
                         empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 4;
-                    } else if(energy_reserves > 600000) {
-                        empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 2;
                     } else if(energy_reserves > 500000) {
+                        empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 2;
+                    } else if(energy_reserves > 300000) {
                         empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 1;
                     }                    
                     
                 }
             }
 
-
-            
-            //console.log("Parsing room: " + Game.rooms[rname].name);
+            // DEFCON MANAGEMENT
             var enemiesList = Game.rooms[rname].find(FIND_HOSTILE_CREEPS);
             var enemiesCost = 0;
             var attacker_username = 'Invader';
             if(enemiesList.length) {
-
-                // Let enemiesCost = total cost of all hostile creeps in the room, attacker_username = who is to blame for this attack.
                 for(var i = 0; i < enemiesList.length; i++) {
                     enemiesCost += global.CREEP_COST(enemiesList[i].body);
                     if (enemiesList[i].owner != undefined) {
@@ -574,7 +576,6 @@ module.exports.loop = function () {
                         }
                     }
                 }
-
                 if(empire[rname] == undefined) {
                     //console.log("ATTACK: cannot do anything about enemies in a non-empire sector: " + rname);
                     continue;
@@ -583,58 +584,41 @@ module.exports.loop = function () {
                 }
                 console.log("ALERT: " + Game.rooms[rname].name + ' has ' + enemiesList.length + ' enemies, worth body cost: ' + enemiesCost + '!'); 
                 if(sectors_under_attack[Game.rooms[rname].name] == undefined) {
-                    console.log("ATTACK: NEW DETECTED: " + Game.rooms[rname].name);
+                    console.log("ATTACK: NEW ATTACK DETECTED: " + Game.rooms[rname].name);
                     sectors_under_attack[Game.rooms[rname].name] = {}
                     sectors_under_attack[Game.rooms[rname].name]['attackstart'] = timenow;
-                    
                     sectors_under_attack[Game.rooms[rname].name]['mystructures'] = Game.rooms[rname].getMyStructuresCount();
                     sectors_under_attack[Game.rooms[rname].name]['attacker_username'] = attacker_username;
-
                     var texits = Game.map.describeExits(rname);
-                    //console.log("Checking exits of " + rname);
-                    //console.log(JSON.stringify(texits));
                     var exit_arr = []
                     for (var ex in texits) {
                         exit_arr.push(texits[ex]);
                     }
-                    //console.log("Checking creeps");
                     for (var tc in Game.creeps) {
-                        //console.log("Checking creep " + Game.creeps[tc].name);
-                        if(!exit_arr.includes(Game.creeps[tc].room.name)) {
-                            // if they aren't next door, skip them.
+                        if(!exit_arr.includes(Game.creeps[tc].room.name)) { // if they aren't next door, skip them.
                             continue;
                         }
                         if(Game.creeps[tc].memory['role'] == undefined) {
-                            // if they have a weird role, skip them.
                             continue;
                         }
                         if (!empire_defaults['military_roles'].includes(Game.creeps[tc].memory['role'])) {
-                            // if they are not military, skip them.
                             continue;
                         }
-                        var enemiesList = Game.creeps[tc].room.find(FIND_HOSTILE_CREEPS);
-                        if (enemiesList.length) {
-                            // if there are enemies in the sector they're in, skip them.
+                        var theirEnemies = Game.creeps[tc].room.find(FIND_HOSTILE_CREEPS);
+                        if (theirEnemies.length) {
                             continue;
                         }
-                        // otherwise...
                         Game.creeps[tc].memory['target'] = rname;
                         console.log("REASSIGN: sent " + Game.creeps[tc].name + " to defend" + rname);
                     }
-
-
                 }
                 sectors_under_attack[Game.rooms[rname].name]['time'] = timenow;
                 sectors_under_attack[Game.rooms[rname].name]['threat'] = enemiesCost;
                 sectors_under_attack[Game.rooms[rname].name]['enemycount'] = enemiesList.length;
-                //console.log(enemiesList.length + 'no enemies in '+ rname);                
-
                 if(attacker_username != 'Invader') {
                     Game.notify("NON-NPC ATTACK! " + rname + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[rname].name]));
                 }
-
             } else if(sectors_under_attack[Game.rooms[rname].name] != undefined) {
-                //console.log('no enemies in '+ rname);
                 sectors_under_attack[Game.rooms[rname].name]['threat'] = 0;
                 sectors_under_attack[Game.rooms[rname].name]['enemycount'] = 0;
             }
@@ -642,7 +626,7 @@ module.exports.loop = function () {
         for(var csector in sectors_under_attack) {
             var end_attack_now = 0;
             if( empire[csector] == undefined ) {
-                console.log("ATTACK: sectors_under_attack: " + csector + " is undefined. DELETING ATTACK ALERT IN THAT SECTOR!");
+                console.log("ATTACK: sectors_under_attack: empire/" + csector + " is undefined. DELETING ATTACK ALERT IN THAT SECTOR!");
                 delete sectors_under_attack[csector];
                 continue;
             }
@@ -662,16 +646,13 @@ module.exports.loop = function () {
                             Game.creeps[name].memory.role = 'recycler';
                             Game.creeps[name].say('🔄 recycle');
                             console.log("RECYCLE: " + name + ' due to it being part of sector defense forces for a sector that is no longer under attack.');
-                        } else { 
-                            //console.log("MOB: " + name + ' not eligible.');
-                            
                         }
                     }
                 }
             } else {
 
                 if (empire[csector] == undefined) {
-                    console.log("ATTACK: csector " + csector + " is undefined.");
+                    console.log("ERROR: attack csector: " + csector + " is undefined.");
                     continue;
                 }
 
@@ -697,8 +678,6 @@ module.exports.loop = function () {
                             Game.notify("CANNOT ACTIVATE SAFEMODE DESPITE STRUCTURE LOSS: " + rname + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
                             console.log("SAFE MODE UNAVAILABLE: ATTACK: " + csector + " only has " + newcount + " structures versus original count of " + oldcount + "!");
                         }
-                    } else {
-                        //console.log("ATTACK-OK: " + csector + " has " + newcount + " structures versus original count of " + oldcount + "! SAFE MODE AVAILABLE!");
                     }
                 }
 
@@ -706,7 +685,6 @@ module.exports.loop = function () {
                 // defcon 1: single invader, invasion lasting less than a minute, not very strong
                 if (sectors_under_attack[csector]['threat'] < 3000 && (timenow - sectors_under_attack[csector]['attackstart']) < 120 && sectors_under_attack[csector]['enemycount'] == 1) {
                     if (room_has_spawn) {
-                        baseforce['teller'] = 1;
                         baseforce['teller-towers'] = 1;
                         patrolforce['scout'] = 1;
                     } else {
@@ -724,7 +702,7 @@ module.exports.loop = function () {
                     }
                     empire[csector]['defcon'] = 2;
 
-                // defcon 3: huge  invader, or tougher group, over 3 minutes
+                // defcon 3: huge invader, or tougher group, over 3 minutes
                 } else if (sectors_under_attack[csector]['threat'] < 10000 && (timenow - sectors_under_attack[csector]['attackstart']) < 600) {
                     if (room_has_spawn) {
                         baseforce['teller-towers'] = 2;
@@ -732,34 +710,29 @@ module.exports.loop = function () {
                         patrolforce['guardian'] = 1;
                         patrolforce['rogue'] = 1;
                     } else {
-                        patrolforce['rogue'] = 1;
-                        patrolforce['champion'] = 1;
-                        patrolforce['apprentice'] = 1;
+                        patrolforce['rogue'] = 2;
+                        patrolforce['guardian'] = 1;
                     }
                     empire[csector]['defcon'] = 3;
 
                 // defcon 4: big invader, or tougher group, invasion lasting less than >10 minutes  
                 } else {
                     if (room_has_spawn) {
-                        baseforce['teller-towers'] = 1;
-                        baseforce['teller'] = 1;
+                        baseforce['teller-towers'] = 2;
+                        baseforce['teller'] = 2;
                         //patrolforce['wizard'] = 1;
                         patrolforce['guardian'] = 1;
-                        patrolforce['healer'] = 1;
+                        patrolforce['rogue'] = 1;
                     } else {
                         patrolforce['guardian'] = 1;
-                        patrolforce['champion'] = 1;
                         patrolforce['rogue'] = 1;
                     }
                     empire[csector]['defcon'] = 4;
                 }
-
                 empire[csector].sources['BASEFORCE'] = {'sourcename': csector + '-base', 'x':25, 'y':25,
                     'assigned': baseforce, 'expected_income': 100}
                 empire[csector].sources['PATROLFORCE'] = {'sourcename': csector + '-patrol', 'x':25, 'y':25,
                     'assigned': patrolforce, 'expected_income': 99}
-
-
                 if (tgap > 0) {
                     console.log("ATTACK: TIMING OUT IN: " + csector + ', age: ' + tgap + ' DEFCON: ' + empire[csector]['defcon']);
                 } else {
@@ -767,12 +740,9 @@ module.exports.loop = function () {
                 }
             }
         }
-        
-
-
         Memory['sectors_under_attack'] = sectors_under_attack;
 
-
+        // SPAWNING MANAGER
         var sources_actual = [];
         var spawner_parts = {};
         for(var name in Memory.creeps) {
@@ -798,24 +768,18 @@ module.exports.loop = function () {
             }
             if(Game.creeps[name].memory.role) {
                 myrole = Game.creeps[name].memory.role;
-                if(Game.creeps[name].memory.source) {
-                    //console.log("Creep " + name + " has source:" + Game.creeps[name].memory.source);
+                if(Game.creeps[name].memory.source != undefined) {
                     if(sources_actual[Game.creeps[name].memory.source] == undefined) { 
-                        //console.log("Creep " + name + " created an sources_actual entry for source:" + Game.creeps[name].memory.source);
                         sources_actual[Game.creeps[name].memory.source] = {id:sources_actual[Game.creeps[name].memory.source]};
                     }
                     if(sources_actual[Game.creeps[name].memory.source][myrole] == undefined) {
                         sources_actual[Game.creeps[name].memory.source][myrole] = 1;
-                        //console.log("Creep " + name + " created an sources_actual entry for source:" + Game.creeps[name].memory.source + ' role: ' + myrole);
                     } else {
                         sources_actual[Game.creeps[name].memory.source][myrole] = sources_actual[Game.creeps[name].memory.source][myrole] + 1;
-                        //console.log("Creep " + name + " incremented an sources_actual entry for source:" + Game.creeps[name].memory.source + ' role: ' + myrole + ' to ' + sources_actual[Game.creeps[name].memory.source][myrole]);
-                        //console.log(sources_actual[Game.creeps[name].memory.source][myrole]);
                     }
-                    //console.log('Finished creep.Result: ' + JSON.stringify(sources_actual[Game.creeps[name].memory.source]));
-                    //console.log(sources_actual[Game.creeps[name].memory.source]);
                 } else {
                     Game.creeps[name].memory.source = '59bbc3f82052a716c3ce728b'; // :((( ******************
+                    console.log("Creep " + name + " has NO SOURCE! THIS IS BAD, FIX IT!");
                 }
             } else {
                 console.log("Creep " + name + " has NO ROLE!");
@@ -829,26 +793,21 @@ module.exports.loop = function () {
 
         }
 
-        //console.log('Test actual:' + JSON.stringify(sources_actual['59bbc3f82052a716c3ce7289']));
-        
-        var spawner_mobs = {};
-        var spawnerless_mobs = [];
-        for (mname in Game.creeps) {
-            if (Game.creeps[mname].memory['spawnername'] != undefined) {
-                var theirsname = Game.creeps[mname].memory['spawnername'];
-                if(spawner_mobs[theirsname] == undefined) {
-                    spawner_mobs[theirsname] = [];
-                }
-                spawner_mobs[theirsname].push(mname);
-                //console.log("Adding one to: " + theirsname);
-            } else {
-                spawnerless_mobs.push(mname);
-            }
-        }
-        //console.log(JSON.stringify(spawner_mobs));
 
-        
         EmpireSpawning: {
+            var spawner_mobs = {};
+            var spawnerless_mobs = [];
+            for (mname in Game.creeps) {
+                if (Game.creeps[mname].memory['spawnername'] != undefined) {
+                    var theirsname = Game.creeps[mname].memory['spawnername'];
+                    if(spawner_mobs[theirsname] == undefined) {
+                        spawner_mobs[theirsname] = [];
+                    }
+                    spawner_mobs[theirsname].push(mname);
+                } else {
+                    spawnerless_mobs.push(mname);
+                }
+            }
             var spawn_queue = {};
             for (var rname in empire) {
                 for (var skey in empire[rname].sources) {
@@ -867,14 +826,13 @@ module.exports.loop = function () {
                                 continue;
                             }
                             //if (!empire_defaults['military_roles'].includes(role) && !empire_defaults['priority_roles'].includes(role)) {
-                            //    console.log('WAR: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '|');
+                            //    console.log('TEMPORARY BLOCK! holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '|');
                             //}
                             var spawner = Game.getObjectById(empire_defaults['spawner']);
                             if (empire[rname]['spawns_from'] != undefined) {
                                 for (key in Game.spawns) {
                                     if (Game.spawns[key].room.name == empire[rname]['spawns_from']) {
                                         spawner = Game.spawns[key];
-                                        //console.log('SPAWNER CUSTOMIZED:  ' + role + ' for |' + empire[rname].sources[skey]['sourcename'] + "| will use custom spawner ID " + key);
                                     }
                                 }
                             }
@@ -882,7 +840,6 @@ module.exports.loop = function () {
                                 console.log('SPAWNER UNDEFINED:  ' + role + ' for |' + empire[rname].sources[skey]['sourcename'] + "|");
                                 continue;
                             } else if(spawner.spawning != null) {
-                                //console.log('Queued spawn ' + role + ' for |' + empire[rname].sources[skey]['sourcename'] + "|");
                                 continue;
                             }                
                             if (empire_workers[role] == undefined) {

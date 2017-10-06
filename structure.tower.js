@@ -92,7 +92,7 @@ module.exports =  {
         });
         if(repairTargets.length){
             //console.log(repairTargets.length);
-            tower.room.visual.circle(tower.pos, {fill: 'transparent', radius: TOWER_FALLOFF_RANGE, stroke: 'green'});
+            //tower.room.visual.circle(tower.pos, {fill: 'transparent', radius: TOWER_FALLOFF_RANGE, stroke: 'green'});
             for(var i = 0; i < repairTargets.length; i++) {
                 var our_power = tower.getPowerForRange(TOWER_POWER_REPAIR, tower.pos.getRangeTo(repairTargets[i]));
                 var repairable_damage = repairTargets[i].hitsMax - repairTargets[i].hits;
