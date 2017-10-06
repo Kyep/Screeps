@@ -20,6 +20,20 @@ module.exports = {
                     return (structure.structureType == STRUCTURE_SPAWN);
                 }
         });
+        //creep.room.visual.circle(creep.pos, {fill: 'transparent', radius: 0.5, stroke: COLOR_RENEW});
+        if(creep.ticksToLive > 500) {
+            // nothing
+        } else if(creep.ticksToLive > 400) {
+            creep.say("🌕");
+        } else if(creep.ticksToLive > 300) {
+            creep.say("🌔");
+        } else if(creep.ticksToLive > 200) {
+            creep.say("🌓");
+        } else if(creep.ticksToLive > 100) {
+            creep.say("🌒");
+        } else {
+            creep.say("🌑");
+        }
         if(targets.length > 0) {
             var target = creep.pos.findClosestByRange(targets)
             var result = target.renewCreep(creep);

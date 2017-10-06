@@ -50,22 +50,32 @@ module.exports =  {
                         ownername = enemiesList[i].owner.username;
                     }
                 }
-                console.log("TOWER: Evaluating mob of " + ownername + ", a " + hp + "hp " + classification + "-type mob with " + threat + " threat and " + my_score + " priority versus " + primetarget_score)
+                var actual_range = tower.pos.getRangeTo(enemiesList[i]);
+                var expected_damage = tower.getPowerForRange(TOWER_POWER_ATTACK, actual_range);
+
+                //console.log("TOWER: " + ownername + " mob, " + hp + "HP, " + classification + " type, " + actual_range + ' range, ' + threat + " threat, " + my_score + " pri, v " + primetarget_score + "CurPri, projected dmg: " + expected_damage);
                 //console.log(JSON.stringify(enemiesList[i]));
+                if(expected_damage <= hps) {
+                    console.log("TOWER: Setting mob score to 0, because they can heal themselves for " + hps + ", which is more than the " + expected_damage + " we can hurt them with at their current position.");
+                    my_score = 0;
+                }
                 if (my_score > primetarget_score) {
-                    console.log("TOWER: switched targeting to this mob, as its score " + my_score + " is higher than previous score " + primetarget_score);
+                    //console.log("TOWER: switched targeting to this mob, as its score " + my_score + " is higher than previous score " + primetarget_score);
                     primetarget = enemiesList[i];
                     primetarget_score = my_score;
                 }
             }
-            console.log("TOWER: WINNER: " +primetarget_score);
+            //console.log("TOWER: WINNER: " +primetarget_score + ' at ' + tower.pos.getRangeTo(primetarget));
             //console.log(JSON.stringify(primetarget));
+            tower.room.visual.circle(tower.pos, {fill: 'transparent', radius: TOWER_OPTIMAL_RANGE, stroke: 'green'});
+            tower.room.visual.circle(tower.pos, {fill: 'transparent', radius: TOWER_FALLOFF_RANGE, stroke: 'yellow'});
+            tower.room.visual.circle(primetarget.pos, {fill: 'transparent', radius: 0.5, stroke: 'red'});
             var ret = tower.attack(primetarget);
             if (ret == ERR_INVALID_TARGET) {
                 primetarget = tower.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
-                //tower.attack(primetarget);
+                tower.attack(primetarget);
             }
-            console.log(ret);
+            //console.log(ret);
             return 0;
         }
         
@@ -84,8 +94,12 @@ module.exports =  {
             repairTargets.sort(function(a, b){
                 return a.hits - b.hits
             })
-
-            tower.repair(repairTargets[0]);
+            if(tower.getPowerForRange(TOWER_POWER_REPAIR, tower.pos.getRangeTo(repairTargets[0])) > (repairTargets[0].hitsMax - repairTargets[0].hits)) {
+                // Don't repair things that have a hit deficit less than our repair power against them.
+                // This ensures that with a spread of towers... the tower that can repair the thing for the lower price does so.
+                // It also ensures that towers in theory don't over-heal things... they don't waste energy healing for more than they can.
+                tower.repair(repairTargets[0]);
+            }
             return 0;
         }
         

@@ -305,6 +305,23 @@ Creep.prototype.getEarningsPerTick = function() {
     return (this.getEarnings() / this.getTicksAlive()); // total_earnings / time they've had to earn them.
 }
 
+Room.prototype.getMyStructuresCount = function() {
+    var mystructures = this.find(FIND_MY_STRUCTURES);
+    var mywalls = this.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_WALL } } );
+    return mystructures.length + mywalls.length;
+}
+
+StructureTower.prototype.getPowerForRange = function(initialpower, dist) {
+    var expected_effect = initialpower;
+    if (dist > TOWER_OPTIMAL_RANGE) {
+        if (dist > TOWER_FALLOFF_RANGE) {
+            dist = TOWER_FALLOFF_RANGE;
+        }
+        expected_effect -= expected_effect * TOWER_FALLOFF * (dist - TOWER_OPTIMAL_RANGE) / (TOWER_FALLOFF_RANGE - TOWER_OPTIMAL_RANGE);
+    }
+    return Math.floor(expected_effect);
+}
+
 global.REPORT_EARNINGS = function() {
     for (var cr in Game.creeps) {
         var earnings = Game.creeps[cr].getEarnings(); 
@@ -369,7 +386,6 @@ global.REPORT_EARNINGS_SOURCES = function() {
 
 module.exports.loop = function () {
 
-    //empire[empire_defaults['room']].sources[empire_defaults['sourceid']].assigned['teller'] = 1;
 
     //console.log('Account: ' + Game.cpu.limit + ', Cycle: ' + Game.cpu.tickLimit + ', Bucket: ' + Game.cpu.bucket);
 
@@ -472,14 +488,15 @@ module.exports.loop = function () {
                     }
                     
                     empire[rname].sources['upgrader'] = {'sourcename': rname + '-upgrade', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 10}
-                    if(energy_reserves > 90000) {
+                    
+                    if(energy_reserves > 400000) {
                         empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 4;
-                    } else if(energy_reserves > 60000) {
+                    } else if(energy_reserves > 300000) {
                         empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 2;
-                    } else if(energy_reserves > 30000) {
+                    } else if(energy_reserves > 200000) {
                         empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 1;
                     }                    
-
+                    
                 }
             }
 
@@ -488,12 +505,20 @@ module.exports.loop = function () {
             //console.log("Parsing room: " + Game.rooms[rname].name);
             var enemiesList = Game.rooms[rname].find(FIND_HOSTILE_CREEPS);
             var enemiesCost = 0;
-            //console.log(JSON.stringify(enemiesList));
+            var attacker_username = 'Invader';
             if(enemiesList.length) {
+
+                // Let enemiesCost = total cost of all hostile creeps in the room, attacker_username = who is to blame for this attack.
                 for(var i = 0; i < enemiesList.length; i++) {
                     enemiesCost += global.CREEP_COST(enemiesList[i].body);
+                    if (enemiesList[i].owner != undefined) {
+                        if (enemiesList[i].owner.username != undefined) {
+                            if (enemiesList[i].owner.username != attacker_username) {
+                                attacker_username = enemiesList[i].owner.username;
+                            }
+                        }
+                    }
                 }
-                //console.log("TOTAL ENEMY COST:" + enemiesCost);
 
                 if(empire[rname] == undefined) {
                     //console.log("ATTACK: cannot do anything about enemies in a non-empire sector: " + rname);
@@ -504,10 +529,13 @@ module.exports.loop = function () {
                     console.log("ATTACK: NEW DETECTED: " + Game.rooms[rname].name);
                     sectors_under_attack[Game.rooms[rname].name] = {}
                     sectors_under_attack[Game.rooms[rname].name]['attackstart'] = timenow;
+                    
+                    sectors_under_attack[Game.rooms[rname].name]['mystructures'] = Game.rooms[rname].getMyStructuresCount();
+                    sectors_under_attack[Game.rooms[rname].name]['attacker_username'] = attacker_username;
 
                     var texits = Game.map.describeExits(rname);
                     //console.log("Checking exits of " + rname);
-                    console.log(JSON.stringify(texits));
+                    //console.log(JSON.stringify(texits));
                     var exit_arr = []
                     for (var ex in texits) {
                         exit_arr.push(texits[ex]);
@@ -543,6 +571,11 @@ module.exports.loop = function () {
                 sectors_under_attack[Game.rooms[rname].name]['threat'] = enemiesCost;
                 sectors_under_attack[Game.rooms[rname].name]['enemycount'] = enemiesList.length;
                 //console.log(enemiesList.length + 'no enemies in '+ rname);                
+
+                if(attacker_username != 'Invader') {
+                    Game.notify("NON-NPC ATTACK! " + rname + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[rname].name]));
+                }
+
             } else if(sectors_under_attack[Game.rooms[rname].name] != undefined) {
                 //console.log('no enemies in '+ rname);
                 sectors_under_attack[Game.rooms[rname].name]['threat'] = 0;
@@ -580,10 +613,27 @@ module.exports.loop = function () {
                 }
             } else {
 
-                if( empire[csector] == undefined ) {
+                if (empire[csector] == undefined) {
                     console.log("ATTACK: csector " + csector + " is undefined.");
                     continue;
                 }
+
+                var newcount = Game.rooms[csector].getMyStructuresCount();
+                var oldcount = sectors_under_attack[Game.rooms[csector].name]['mystructures'];
+                if (newcount < oldcount) {
+                    var cc = Game.rooms[csector].controller;
+                    if (cc.safeModeAvailable) {
+                        cc.activateSafeMode();
+                        Game.notify("SAFEMODE ACTIVATION DUE TO STRUCTURE LOSS: " + rname + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
+                        console.log("SAFE MODE ACTIVATED: ATTACK: " + csector + " only has " + newcount + " structures versus original count of " + oldcount + "!");
+                    } else {
+                        Game.notify("CANNOT ACTIVATE SAFEMODE DESPITE STRUCTURE LOSS: " + rname + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
+                        console.log("SAFE MODE UNAVAILABLE: ATTACK: " + csector + " only has " + newcount + " structures versus original count of " + oldcount + "!");
+                    }
+                } else {
+                    //console.log("ATTACK-OK: " + csector + " has " + newcount + " structures versus original count of " + oldcount + "! SAFE MODE AVAILABLE!");
+                }
+
 
                 var baseforce = {};
                 var patrolforce = {};
@@ -597,6 +647,7 @@ module.exports.loop = function () {
                 // defcon 1: single invader, invasion lasting less than a minute, not very strong
                 if (sectors_under_attack[csector]['threat'] < 3000 && (timenow - sectors_under_attack[csector]['attackstart']) < 120 && sectors_under_attack[csector]['enemycount'] == 1) {
                     if (room_has_spawn) {
+                        baseforce['teller'] = 1;
                         baseforce['teller-towers'] = 1;
                         patrolforce['scout'] = 1;
                     } else {
@@ -608,7 +659,7 @@ module.exports.loop = function () {
                     if (room_has_spawn) {
                         baseforce['teller-towers'] = 1;
                         baseforce['teller'] = 1;
-                        patrolforce['scout'] = 1;
+                        patrolforce['scout'] = 2;
                     } else {
                         patrolforce['adventurer'] = 2;
                     }
@@ -617,10 +668,10 @@ module.exports.loop = function () {
                 // defcon 3: huge  invader, or tougher group, over 3 minutes
                 } else if (sectors_under_attack[csector]['threat'] < 10000 && (timenow - sectors_under_attack[csector]['attackstart']) < 600) {
                     if (room_has_spawn) {
-                        baseforce['teller-towers'] = 1;
+                        baseforce['teller-towers'] = 2;
                         baseforce['teller'] = 1;
                         patrolforce['guardian'] = 1;
-                        teller = 1;
+                        patrolforce['rogue'] = 1;
                     } else {
                         patrolforce['rogue'] = 1;
                         patrolforce['champion'] = 1;
@@ -670,6 +721,12 @@ module.exports.loop = function () {
                 var pcount = Game.creeps[name].body.length;
                 if (Game.creeps[name].memory.spawnername == undefined) {
                     console.log(name + ' has undefined spawner.');
+                    continue;
+                }
+                if (Game.creeps[name].memory['respawn_allowed'] !=  undefined) {
+                    if (Game.creeps[name].memory['respawn_allowed'] == 0) {
+                        continue;
+                    }
                 }
                 if (spawner_parts[Game.creeps[name].memory.spawnername] == undefined) {
                     spawner_parts[Game.creeps[name].memory.spawnername] = pcount;
