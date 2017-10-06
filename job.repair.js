@@ -2,15 +2,19 @@ module.exports = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
-        var targets = creep.room.find(FIND_STRUCTURES, {
+        var repairTargets = creep.room.find(FIND_STRUCTURES, {
             filter: function(structure){
-                return (structure.hits < structure.hitsMax) && (structure.structureType != STRUCTURE_WALL) && (structure.structureType != STRUCTURE_RAMPART)
+                if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
+                    return (structure.hits < empire_defaults['repairmax_creeps'])
+                }else{
+                    return (structure.hits < structure.hitsMax)
+                }
             }
-        })
-        target = creep.pos.findClosestByRange(targets)
-        if(target) {
-            if(creep.repair(target) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_REPAIR}});
+        });
+        repairtarget = creep.pos.findClosestByRange(repairTargets)
+        if(repairtarget) {
+            if(creep.repair(repairtarget) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(repairtarget, {visualizePathStyle: {stroke: COLOR_REPAIR}});
             }
         } else {
             return -1;

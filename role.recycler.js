@@ -1,5 +1,3 @@
-var jobRecycle = require('job.recycle');
-
 var roleRecycle = {
     run: function(creep) {
         if (creep.room.name != creep.memory.home) {

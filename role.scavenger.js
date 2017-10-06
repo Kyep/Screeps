@@ -3,7 +3,6 @@ var jobRenew = require('job.renew');
 var jobGetstoredenergy = require('job.gfs');
 var jobBuild = require('job.build');
 var jobUpgrade = require('job.upgrade');
-var jobRecycle = require('job.recycle');
 var jobScavenge = require('job.scavenge');
 
 module.exports =  {

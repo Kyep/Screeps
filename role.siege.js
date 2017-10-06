@@ -1,12 +1,12 @@
 module.exports = {
     
     run: function(creep) {
-        //return;
-        //if(creep.room.name == 'W53S20') { return }
-        
+
         if(creep.room.name != creep.memory['target']) {
-            
-            creep.moveTo(new RoomPosition(25, 25, creep.memory.target), {visualizePathStyle: {stroke: '#ff0000'}})
+            creep.moveTo(new RoomPosition(25, 25, creep.memory.target));
+            return;
+        } else if (creep.pos.x < 1 || creep.pos.x > 48 || creep.pos.y < 1 || creep.pos.y > 48) {
+            creep.moveTo(25, 25, creep.room);
             return;
         } else if (creep.memory['nexttarget'] != undefined) {
             if (creep.memory['nexttarget'].length > 0) {
@@ -18,8 +18,8 @@ module.exports = {
         }
 
         var enemy_creeps = creep.room.find(FIND_HOSTILE_CREEPS); 
-        var enemy_structures = creep.room.find(FIND_STRUCTURES); // HOSTILE_
-        var priority_structures = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_STORAGE, STRUCTURE_RAMPART];
+        var enemy_structures = creep.room.find(FIND_HOSTILE_STRUCTURES); // WE IGNORE WALLS.
+        var priority_structures = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_RAMPART];
         var target = undefined;
 
         for(var i = 0; i < enemy_creeps.length; i++) {
@@ -45,7 +45,6 @@ module.exports = {
         for(var i = 0; i < enemy_structures.length; i++) {
             var them = enemy_structures[i];
             if(!priority_structures.includes(them.structureType)) {
-                //console.log
                 continue;
             }
             var thepath = creep.pos.findPathTo(creep.pos, them.pos, {maxRooms: 1});
@@ -54,8 +53,8 @@ module.exports = {
                     var myindex = priority_structures.indexOf(them.structureType);
                     var oldindex = priority_structures.indexOf(target.structureType);
                     if (myindex <= oldindex && them.hits <= target.hits) {
+                        console.log("SIEGE: " + creep.name + " updates target to " + them.id + " because its index " + myindex + " and hits " + them.hits + " are <= the previous index " + oldindex + " and hits " + target.hits); 
                         target = them;
-                        console.log("SIEGE: " + creep.name + " updates target to " + target.id + " because its index " + myindex + " and hits " + target.hits + " are <= the previous index " + last_structure_index + " and hits " + last_structure_hits); 
                     } 
                 } else {
                     target = them;
@@ -70,16 +69,12 @@ module.exports = {
         }
         if(target) {
             //console.log("SIEGE: " + creep.name + " TARGETTING: " + target.id);
-            var dir = creep.pos.getDirectionTo(target);
             //console.log(JSON.stringify(target));
-            if(creep.pos.getRangeTo(target) > 1){
+            if(creep.attack(target) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}});
-                //creep.move(dir);
-            } else {
-                creep.attack(target);
             }
         } else {
-            console.log("ALERT: SIEGE CREEP " + creep.name + " IN " + creep.room.name + " HAS NO TARGET! REASSIGN THEM!");
+            console.log("ALERT: SIEGE CREEP " + creep.name + " IN " + creep.room.name + " HAS NO TARGET! GIVE THEM A JOB!");
         }
         
     }

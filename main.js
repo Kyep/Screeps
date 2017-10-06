@@ -13,6 +13,7 @@ var roleBuilderstorage = require('role.builderstorage');
 var roleTeller = require('role.teller');
 var roleRemoteconstructor = require('role.remoteconstructor');
 var roleSiege = require('role.siege');
+var roleDrainer = require('role.drainer');
 
 var structureTower = require('structure.tower');
 
@@ -24,14 +25,16 @@ var spawncustom = require('task.spawncustom');
 // ---------------------------
     global.overlord = 'Phisec';
 
-    global.empire_defaults = {
+    global.empire_defaults = { 
         'spawner': '59ce24a6b1421365236708e4',
         'room': 'W53S18',
         'sourceid': '59bbc3f82052a716c3ce7289',
         'priority_roles': ['teller', 'teller-towers'],
-        'military_roles': ['scout', 'adventurer', 'rogue', 'apprentice', 'wizard', 'healer', 'champion', 'guardian'],
+        'military_roles': ['scout', 'adventurer', 'scout', 'rogue', 'apprentice', 'wizard', 'healer', 'champion', 'guardian', 'siege', 'siegefar', 'drainer'],
         'alerts_duration' : 300,
-        'alerts_recycle' : 0
+        'alerts_recycle' : 0,
+        'repairmax_creeps' : 250000,
+        'repairmax_towers' : 100000
     }
     global.empire = {
         // 1st base
@@ -39,16 +42,16 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'W53S18',
             'sources': {
                 'base-maint': {
-                    'sourcename': '1-base', 'x':20, 'y':20, 'assigned': {'scavenger':1}, 'expected_income': 40
+                    'sourcename': '1-base', 'x':20, 'y':20, 'assigned': {'scavenger':1, 'teller': 1}, 'expected_income': 100
                 },
                 '59bbc3f82052a716c3ce7289': {
                     'sourcename':'1-E', 'x':25, 'y':18,
-                    'assigned': {'harvester':1},
+                    'assigned': {'harvester': 1},
                     'expected_income': 90
                 },
                 '59bbc3f82052a716c3ce728b': {
                     'sourcename':'1-W', 'x':16, 'y':26,
-                    'assigned': {'upgrader': 1},
+                    'assigned': {'upgrader': 1, 'builder': 1},
                     'expected_income': 80
                 }
             },
@@ -59,7 +62,7 @@ var spawncustom = require('task.spawncustom');
         'W52S18': {
             'sources': {
                 '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14,
-                    'assigned': {'harvester': 1}, //, 'reserver': 1
+                    'assigned': {'harvester': 0}, //, 'reserver': 1
                     'expected_income': 10
                 },
             }
@@ -79,11 +82,11 @@ var spawncustom = require('task.spawncustom');
                     'expected_income': 10
                 },
                 '59bbc3e92052a716c3ce70b7': {'sourcename':'1W-W', 'x':5, 'y':37,
-                    'assigned': {'harvester': 2},
+                    'assigned': {'harvester': 0},
                     'expected_income': 5
                 },
                 'reserver': {'sourcename':'1W-R', 'x':5, 'y':37,
-                    'assigned': {'reserver': 1},
+                    'assigned': {'reserver': 0},
                     'expected_income': 1
                 }
             }
@@ -91,7 +94,7 @@ var spawncustom = require('task.spawncustom');
         'W54S17': {
             'sources': {
                 '59bbc3e82052a716c3ce70b4': {'sourcename':'1NW', 'x':38, 'y':31,
-                    'assigned': {'harvester': 2}, 
+                    'assigned': {'harvester': 0}, 
                     'expected_income': 10
                 }
             } 
@@ -101,7 +104,7 @@ var spawncustom = require('task.spawncustom');
         'W51S18': {
             'spawns_from': 'W51S18',
             'sources': {
-                'base-maint': {'sourcename': '2-base', 'x':16, 'y':24, 'assigned': {}, 'expected_income': 70 }, // 'scavenger':1
+                'base-maint': {'sourcename': '2-base', 'x':16, 'y':24, 'assigned': {'scavenger': 1}, 'expected_income': 100 }, // 'scavenger':1
                 '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20,
                     'assigned': {'harvester':1, 'upgrader':1, 'builder': 1},
                     'expected_income': 80
@@ -119,7 +122,7 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'W51S18',
             'sources': {
                 '59bbc4182052a716c3ce758f': {'sourcename':'2S', 'x':34, 'y':6,
-                    'assigned': {'harvester':2},
+                    'assigned': {'harvester': 2},
                     'expected_income': 50
                 }
             }
@@ -128,7 +131,7 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'W51S18',
             'sources': {
                 '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29,
-                    'assigned': {'harvester':2},
+                    'assigned': {'harvester': 1},
                     'expected_income': 40
                 },
                 '59bbc4182052a716c3ce7588': {'sourcename':'2N-W', 'x':4, 'y':26,
@@ -140,12 +143,13 @@ var spawncustom = require('task.spawncustom');
                     'expected_income': 10
                 }*/
             }
-        }
+        },
         
         
         // 3rd base (planned)
-        /*
+
         'W52S17': {
+            'ignoreattacks': 1,
             'spawns_from': 'W51S18',
             'sources': {
                 '59bbc4062052a716c3ce7404': {'sourcename': '3-N', 'x':10, 'y':19,
@@ -158,8 +162,10 @@ var spawncustom = require('task.spawncustom');
                 }
             }
         },
+
         // 3rd base expansions (planned)
         'W52S16': {
+            'ignoreattacks': 1,
             'spawns_from': 'W51S18',
             'sources': {
                 '59bbc4062052a716c3ce7401': {'sourcename': '3N-E', 'x':45, 'y':26,
@@ -175,24 +181,42 @@ var spawncustom = require('task.spawncustom');
 
         // GUARDIAN north 
         'W56S17': {
+            'ignoreattacks': 1,
             //'spawns_from': 'W51S18',
             'sources': {
                 '59bbc3c92052a716c3ce6c42': {'sourcename': 'GN-N', 'x':24, 'y':29,
                     'assigned': {},
-                    'expected_income': 1
+                    'expected_income': 90
                 },
                 '59bbc3c92052a716c3ce6c44': {'sourcename': 'GN-S', 'x':35, 'y':42,
                     'assigned': {},
                     'expected_income': 1
                 }
             }
-        }
-        // GUARDIAN home 
+        },
+
+        // GUARDIAN north STAGING EAST
+        'W55S17': {
+            'ignoreattacks': 1,
+            'spawns_from': 'W51S18',
+            'sources': {
+                '59bbc3da2052a716c3ce6e76': {'sourcename': 'GNS-N', 'x':45, 'y':21,
+                    'assigned': {}, // 'siegefar': 3
+                    'expected_income': 90
+                },
+                '59bbc3da2052a716c3ce6e77': {'sourcename': 'GNS-S', 'x':29, 'y':40,
+                    'assigned': {},
+                    'expected_income': 1
+                }
+            }
+        },
+        // GUARDIAN home / south
         'W56S18': {
+            'ignoreattacks': 1,
             //'spawns_from': 'W51S18',
             'sources': {
                 '59bbc3c92052a716c3ce6c47': {'sourcename': 'G-N', 'x':31, 'y':30,
-                    'assigned': {},
+                    'assigned': {}, // 'drainer': 66
                     'expected_income': 1
                 },
                 '59bbc3c92052a716c3ce6c48': {'sourcename': 'G-S', 'x':35, 'y':39,
@@ -200,9 +224,34 @@ var spawncustom = require('task.spawncustom');
                     'expected_income': 1
                 }
             }
+        },
+        // GUARDIAN WEST OF HOME
+        'W57S18': {
+            'ignoreattacks': 1,
+            'spawns_from': 'W51S18',
+            'sources': {
+                '59bbc3c92052a716c3ce6c47': {'sourcename': 'G-N', 'x':31, 'y':30,
+                    'assigned': {}, // 'drainer': 66
+                    'expected_income': 1
+                },
+                '59bbc3c92052a716c3ce6c48': {'sourcename': 'G-S', 'x':35, 'y':39,
+                    'assigned': {},
+                    'expected_income': 1
+                }
+            }
+        },
+        // GUARDIAN SOUTH STAGING EAST
+        'W55S17': {
+            'ignoreattacks': 1,
+            'spawns_from': 'W51S18',
+            'sources': {
+                '59bbc3db2052a716c3ce6e79': {'sourcename': 'GSS-N', 'x':9, 'y':3,
+                    'assigned': {},
+                    'expected_income': 90
+                }
+            }
         }
-        
-        */ 
+         
        
     }
 
@@ -213,21 +262,23 @@ global.empire_workers = {
 	'remoteconstructor': { 'version': 1, 'body': [WORK, CARRY, CARRY, MOVE, MOVE] },
 	'harvester': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
 	'scavenger': { 'version': 1, 'body': [WORK, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
+	'bigscavenger': { 'version': 1, 'body': [CARRY, MOVE] },
 	'builder': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
 	'builderstorage': { 'version': 1, 'body': [WORK, WORK, WORK, CARRY, CARRY, MOVE] }, // halfspeed on roads, quarter speed offroad
 	'upgraderstorage': { 'version': 1, 'body': [WORK, WORK, WORK, CARRY, CARRY, MOVE] },  // halfspeed on roads, quarter speed offroad
 
-	'scout': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0 }, // cheap, with some defense, some attack and self-healing. $490
-	'adventurer': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // scout's bigger brother, 2x the attack, 2x the tough, still self-heals a little. $680
-	'rogue': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // what you send when you absolutely have to get rid of people... fast and high damage. $580
-	'apprentice': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // weak ranged combatant.
-	'wizard': { 'version': 1, 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // designed for attacking groups. 1220
-	'healer': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // 
+	'scout': { 'version': 1, 'body':    [TOUGH, MOVE, MOVE, MOVE, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0 }, // cheap, fast-moving defender. $320.
+	'adventurer': { 'version': 1, 'body':[TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // scout's bigger brother, 2x the attack, 2x the tough, still self-heals a little. $680
+	'rogue': { 'version': 1, 'body':    [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // what you send when you absolutely have to get rid of people... fast and high damage. $580
+	'apprentice': { 'version': 1, 'body':[TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // weak ranged combatant. $560
+	'wizard': { 'version': 1, 'body':   [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // designed for attacking groups. 1220
+	'healer': { 'version': 1, 'body':   [MOVE, HEAL, HEAL], 'renew_allowed': 0}, // 
 	'champion': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, ATTACK, HEAL], 'renew_allowed': 0}, // 
 	'guardian': { 'version': 1, 'body': [TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, HEAL, HEAL, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // half speed, strong but slow
 
 	'siege': { 'version': 1, 'body': [MOVE, ATTACK, ATTACK], 'renew_allowed': 0}, // half speed, strong but slow
 	'siegefar': { 'version': 1, 'body': [MOVE, ATTACK], 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
+	'drainer': { 'version': 1, 'body': [TOUGH, MOVE], 'renew_allowed': 0}, 
 
 	'claimer': { 'version': 1, 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 	'reserver' : { 'version': 1, 'body': [CLAIM, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
@@ -388,10 +439,7 @@ module.exports.loop = function () {
 
 
     //console.log('Account: ' + Game.cpu.limit + ', Cycle: ' + Game.cpu.tickLimit + ', Bucket: ' + Game.cpu.bucket);
-
-    // MAIN STATUS BAR:
-    //console.log(Game.time + ': E: ' + Game.spawns.Spawn1.room.energyAvailable + '/' + Game.spawns.Spawn1.room.energyCapacityAvailable + ', V: ' + energy_reserves + '. B: ' + Game.cpu.bucket);
-    
+    //return;
 
     cleaner.process()
     for(var cr in Game.creeps) {
@@ -404,7 +452,7 @@ module.exports.loop = function () {
     };
 
 
-    if(Game.time % 2 === 0) {
+    if(Game.time % 5 === 0) {
 
         // EXPANSION CONTROLLER
         
@@ -472,9 +520,12 @@ module.exports.loop = function () {
         var timenow = Game.time;
         for(var rname in Game.rooms) {
 
+
+
             var energy_reserves = 0;
             if(Game.rooms[rname]['storage'] != undefined) {
                 if (Game.rooms[rname]['storage'].store.energy) {
+
                     energy_reserves = Game.rooms[rname]['storage'].store.energy;
 
 
@@ -486,14 +537,18 @@ module.exports.loop = function () {
                             empire[rname].sources['builder'].assigned['builderstorage'] = 2;
                         }
                     }
-                    
+
+                    if(empire[rname] == undefined) {
+                        continue;
+                    }                
+
                     empire[rname].sources['upgrader'] = {'sourcename': rname + '-upgrade', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 10}
                     
-                    if(energy_reserves > 400000) {
+                    if(energy_reserves > 700000) {
                         empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 4;
-                    } else if(energy_reserves > 300000) {
+                    } else if(energy_reserves > 600000) {
                         empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 2;
-                    } else if(energy_reserves > 200000) {
+                    } else if(energy_reserves > 500000) {
                         empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 1;
                     }                    
                     
@@ -522,6 +577,8 @@ module.exports.loop = function () {
 
                 if(empire[rname] == undefined) {
                     //console.log("ATTACK: cannot do anything about enemies in a non-empire sector: " + rname);
+                    continue;
+                } else if (empire[rname]['ignoreattacks'] != undefined) {
                     continue;
                 }
                 console.log("ALERT: " + Game.rooms[rname].name + ' has ' + enemiesList.length + ' enemies, worth body cost: ' + enemiesCost + '!'); 
@@ -618,23 +675,6 @@ module.exports.loop = function () {
                     continue;
                 }
 
-                var newcount = Game.rooms[csector].getMyStructuresCount();
-                var oldcount = sectors_under_attack[Game.rooms[csector].name]['mystructures'];
-                if (newcount < oldcount) {
-                    var cc = Game.rooms[csector].controller;
-                    if (cc.safeModeAvailable) {
-                        cc.activateSafeMode();
-                        Game.notify("SAFEMODE ACTIVATION DUE TO STRUCTURE LOSS: " + rname + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
-                        console.log("SAFE MODE ACTIVATED: ATTACK: " + csector + " only has " + newcount + " structures versus original count of " + oldcount + "!");
-                    } else {
-                        Game.notify("CANNOT ACTIVATE SAFEMODE DESPITE STRUCTURE LOSS: " + rname + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
-                        console.log("SAFE MODE UNAVAILABLE: ATTACK: " + csector + " only has " + newcount + " structures versus original count of " + oldcount + "!");
-                    }
-                } else {
-                    //console.log("ATTACK-OK: " + csector + " has " + newcount + " structures versus original count of " + oldcount + "! SAFE MODE AVAILABLE!");
-                }
-
-
                 var baseforce = {};
                 var patrolforce = {};
                 var room_has_spawn = 0;
@@ -643,6 +683,25 @@ module.exports.loop = function () {
                         room_has_spawn = 1;
                     }
                 }
+
+                if(room_has_spawn) {
+                    var newcount = Game.rooms[csector].getMyStructuresCount();
+                    var oldcount = sectors_under_attack[Game.rooms[csector].name]['mystructures'];
+                    if (newcount < oldcount) {
+                        var cc = Game.rooms[csector].controller;
+                        if (cc.safeModeAvailable) {
+                            cc.activateSafeMode();
+                            Game.notify("SAFEMODE ACTIVATION DUE TO STRUCTURE LOSS: " + rname + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
+                            console.log("SAFE MODE ACTIVATED: ATTACK: " + csector + " only has " + newcount + " structures versus original count of " + oldcount + "!");
+                        } else {
+                            Game.notify("CANNOT ACTIVATE SAFEMODE DESPITE STRUCTURE LOSS: " + rname + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
+                            console.log("SAFE MODE UNAVAILABLE: ATTACK: " + csector + " only has " + newcount + " structures versus original count of " + oldcount + "!");
+                        }
+                    } else {
+                        //console.log("ATTACK-OK: " + csector + " has " + newcount + " structures versus original count of " + oldcount + "! SAFE MODE AVAILABLE!");
+                    }
+                }
+
 
                 // defcon 1: single invader, invasion lasting less than a minute, not very strong
                 if (sectors_under_attack[csector]['threat'] < 3000 && (timenow - sectors_under_attack[csector]['attackstart']) < 120 && sectors_under_attack[csector]['enemycount'] == 1) {
@@ -807,6 +866,9 @@ module.exports.loop = function () {
                                 //console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| until attack is over.");
                                 continue;
                             }
+                            //if (!empire_defaults['military_roles'].includes(role) && !empire_defaults['priority_roles'].includes(role)) {
+                            //    console.log('WAR: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '|');
+                            //}
                             var spawner = Game.getObjectById(empire_defaults['spawner']);
                             if (empire[rname]['spawns_from'] != undefined) {
                                 for (key in Game.spawns) {
@@ -860,7 +922,7 @@ module.exports.loop = function () {
                                 } 
                             }
                             if (renewing_creeps >= 1) {
-                                //console.log(spawner.name + ' BLOCKED: number creeps renewing: ' + renewing_creeps);
+                                console.log(spawner.name + ' BLOCKED: number creeps renewing: ' + renewing_creeps);
                                 continue;
                             } else {
                                 //console.log(spawner.name + ': number creeps renewing: ' + renewing_creeps);
@@ -980,9 +1042,15 @@ module.exports.loop = function () {
             roleTeller.run(creep, 0);
         } else if(creep.memory.role == 'teller-towers') {
             roleTeller.run(creep, 1);
+
+        } else if(creep.memory.role == 'drainer') {
+            roleDrainer.run(creep, 1);
+        } else if(creep.memory.role == 'siege') {
+            roleSiege.run(creep);
         } else if (empire_defaults['military_roles'].includes(creep.memory.role)) {
             roleAdventurer.run(creep);
-        } else if(creep.memory.role == 'scavenger') {
+
+        } else if(creep.memory.role == 'scavenger' || creep.memory.role == 'bigscavenger') {
             roleScavenger.run(creep);
         } else if(creep.memory.role == 'claimer') {
             roleClaimer.run(creep);
@@ -992,8 +1060,6 @@ module.exports.loop = function () {
             roleRecycler.run(creep);
         } else if(creep.memory.role == 'remoteconstructor') {
             roleRemoteconstructor.run(creep);
-        } else if(creep.memory.role == 'siege') {
-            roleSiege.run(creep);
         } else {
             console.log("ALERT: " + creep.name + " has role " + creep.memory.role + " which I don't know how to handle!")
         }

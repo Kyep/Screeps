@@ -80,27 +80,31 @@ module.exports =  {
         }
         
 
-        
+        //console.log(empire_defaults['repairmax_towers']);
         var repairTargets = tower.pos.findInRange(FIND_STRUCTURES, 50, {
             filter: function(structure){
                 if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
-                    return (structure.hits < 100000)
+                    return (structure.hits < empire_defaults['repairmax_towers'])
                 }else{
                     return (structure.hits < structure.hitsMax)
                 }
             }
-        })
+        });
         if(repairTargets.length){
-            repairTargets.sort(function(a, b){
-                return a.hits - b.hits
-            })
-            if(tower.getPowerForRange(TOWER_POWER_REPAIR, tower.pos.getRangeTo(repairTargets[0])) > (repairTargets[0].hitsMax - repairTargets[0].hits)) {
-                // Don't repair things that have a hit deficit less than our repair power against them.
-                // This ensures that with a spread of towers... the tower that can repair the thing for the lower price does so.
-                // It also ensures that towers in theory don't over-heal things... they don't waste energy healing for more than they can.
-                tower.repair(repairTargets[0]);
+            //console.log(repairTargets.length);
+            tower.room.visual.circle(tower.pos, {fill: 'transparent', radius: TOWER_FALLOFF_RANGE, stroke: 'green'});
+            for(var i = 0; i < repairTargets.length; i++) {
+                var our_power = tower.getPowerForRange(TOWER_POWER_REPAIR, tower.pos.getRangeTo(repairTargets[i]));
+                var repairable_damage = repairTargets[i].hitsMax - repairTargets[i].hits;
+                if(repairable_damage >= (our_power * 2)) { 
+                    // Don't repair things that have a hit deficit less than 2x our repair power against them.
+                    // This ensures that with a spread of towers... the tower that can repair the thing for the lower price does so.
+                    // It also ensures that towers in theory don't over-heal things... they don't waste energy healing for more than they can.
+                    // Lastly, it avoids both towers repairing something unless both repairs will actually do something.
+                    tower.repair(repairTargets[i]);
+                    return 0;
+                }
             }
-            return 0;
         }
         
         var healTargets = tower.pos.findInRange(FIND_MY_CREEPS, 50, {

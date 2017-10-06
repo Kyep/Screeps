@@ -1,10 +1,9 @@
 var jobRenew = require('job.renew');
-var jobRecycle = require('job.recycle');
 var jobReturnresources = require('job.returnresources');
 var jobBuild = require('job.build');
 var jobRepair = require('job.repair');
 var jobRenew = require('job.renew');
-var jobGetstoredenergy = require('job.getstoredenergy');
+var jobGetstoredenergy = require('job.gfs');
 
 module.exports = {
     run: function(creep) {
