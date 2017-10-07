@@ -16,6 +16,14 @@ module.exports = {
         if (creep.memory.job == JOB_TRAVEL_OUT) {
             creep.moveTo(new RoomPosition(25, 25, creep.memory.target), {visualizePathStyle: {stroke: '#ff0000'}})
             if (creep.room.name == creep.memory.target) {
+                if (creep.memory['nexttarget'] != undefined) {
+                   if (creep.memory['nexttarget'].length > 0) {
+                    creep.memory['target'] = creep.memory['nexttarget'][0];
+                    creep.memory['nexttarget'].shift();
+                    console.log("ADVR: " + creep.name + " has reached " + creep.room.name + ", continuing on to " + creep.memory.target);
+                    return;
+                    }
+                }
 	            creep.memory.job = JOB_PATROL;
                 creep.announceJob();
             }

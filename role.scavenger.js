@@ -2,7 +2,6 @@ var jobReturnresources = require('job.returnresources');
 var jobRenew = require('job.renew');
 var jobGetstoredenergy = require('job.gfs');
 var jobBuild = require('job.build');
-var jobUpgrade = require('job.upgrade');
 var jobScavenge = require('job.scavenge');
 
 module.exports =  {
@@ -57,11 +56,9 @@ module.exports =  {
             }
         } else if(creep.memory.job == JOB_BUILD) {
             if (jobBuild.run(creep) == -1) {
-                creep.memory.job = JOB_UPGRADE;
+                creep.memory.job = JOB_RETURN;
                 creep.announceJob();
             }
-        } else if(creep.memory.job == JOB_UPGRADE) {
-            jobUpgrade.run(creep);
         } else if(creep.memory.job == JOB_RENEW) {
             if (creep.ticksToLive > 800) {
                 creep.memory.job = JOB_SCAVENGE;

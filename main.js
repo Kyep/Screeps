@@ -1,6 +1,9 @@
 // requirements ONLY
 
 var roleHarvester = require('role.harvester');
+var roleHauler = require('role.hauler');
+
+var roleExtractor = require('role.extractor');
 var roleUpgrader = require('role.upgrader');
 var roleUpgraderstorage = require('role.upgraderstorage');
 var roleBuilder = require('role.builder');
@@ -34,11 +37,12 @@ var spawncustom = require('task.spawncustom');
         'alerts_duration' : 300,
         'alerts_recycle' : 0,
         'repairmax_creeps' : 250000,
-        'repairmax_towers' : 100000
+        'repairmax_towers' : 150000
     }
     global.empire = {
         // 1st base
         'W53S18': {
+            'roomname' : '1',
             'spawns_from': 'W53S18',
             'sources': {
                 'base-maint': {
@@ -47,14 +51,19 @@ var spawncustom = require('task.spawncustom');
                     'expected_income': 100
                 },
                 '59bbc3f82052a716c3ce7289': {
-                    'sourcename':'1-E', 'x':25, 'y':18,
+                    'sourcename':'1-E', 'x':25, 'y':18, 'steps':15,
                     'assigned': {'harvester': 1},
                     'expected_income': 90
                 },
                 '59bbc3f82052a716c3ce728b': {
-                    'sourcename':'1-W', 'x':16, 'y':26,
+                    'sourcename':'1-W', 'x':16, 'y':26, 'steps':15,
                     'assigned': {'upgrader': 1},
                     'expected_income': 80
+                },
+                '59bbc644ae9e1411a425ad40': {
+                    'sourcename':'1-mine', 'x':15, 'y':40, 'steps':20,
+                    'assigned': {'extractor': 1},
+                    'expected_income': 40
                 }
             },
             'safespot': {'x': 16, 'y':32 }
@@ -62,41 +71,45 @@ var spawncustom = require('task.spawncustom');
 
         // 1st base remote mining
         'W52S18': {
+            'roomname' : '1E',
             'sources': {
-                '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14,
-                    'assigned': {'harvester': 1}, //, 'reserver': 1
+                '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14, 'steps':33,
+                    'assigned': {'c15harvester': 1, 'hauler': 1, 'reserver': 1}, //, 'reserver': 1
                     'expected_income': 1
                 },
             }
         },
         'W53S17': {
+            'roomname' : '1N',
             'sources': {
-                '59bbc3f72052a716c3ce7287': {'sourcename':'1N', 'x':4, 'y':44,
-                    'assigned': {'harvester': 1}, // , 'reserver': 1
+                '59bbc3f72052a716c3ce7287': {'sourcename':'1N', 'x':4, 'y':44, 'steps':32,
+                    'assigned': {'c15harvester': 1, 'hauler': 1}, // , 'reserver': 1
                     'expected_income': 10
                 },
             } 
         },
         'W54S18': {
+            'roomname' : '1W',
             'sources': {
-                '59bbc3e92052a716c3ce70b6': {'sourcename':'1W-E', 'x':42, 'y':6,
-                    'assigned': {'harvester': 1},
+                '59bbc3e92052a716c3ce70b6': {'sourcename':'1W-E', 'x':42, 'y':6, 'steps':29, 'capacity': 3000,
+                    'assigned': {'c30harvester': 1, 'hauler': 1},
                     'expected_income': 10
                 },
-                '59bbc3e92052a716c3ce70b7': {'sourcename':'1W-W', 'x':5, 'y':37,
-                    'assigned': {'harvester': 0},
+                '59bbc3e92052a716c3ce70b7': {'sourcename':'1W-W', 'x':5, 'y':37, 'steps':63, 'capacity': 3000,
+                    'assigned': {'c30harvester': 1, 'hauler': 1},
                     'expected_income': 5
                 },
                 'reserver': {'sourcename':'1W-R', 'x':5, 'y':37,
-                    'assigned': {'reserver': 0},
+                    'assigned': {'reserver': 1},
                     'expected_income': 1
                 }
             }
         },
         'W54S17': {
+            'roomname' : '1NW',
             'sources': {
-                '59bbc3e82052a716c3ce70b4': {'sourcename':'1NW', 'x':38, 'y':31,
-                    'assigned': {'harvester': 0}, 
+                '59bbc3e82052a716c3ce70b4': {'sourcename':'1NW', 'x':38, 'y':31, 'steps':60, 
+                    'assigned': {'c15harvester': 1, 'hauler': 1}, 
                     'expected_income': 10
                 }
             } 
@@ -104,17 +117,18 @@ var spawncustom = require('task.spawncustom');
         
         // 2ND BASE
         'W51S18': {
+            'roomname' : '2',
             'spawns_from': 'W51S18',
             'sources': {
                 'base-maint': {'sourcename': '2-base', 'x':16, 'y':24, 
-                    'assigned': {'scavenger': 1}, 
+                    'assigned': {'scavenger': 1, 'teller': 1}, 
                     'expected_income': 100 
                 }, 
-                '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20,
-                    'assigned': {'harvester':1, 'upgrader':1, 'builder': 1},
+                '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20, 'steps':10,
+                    'assigned': {'harvester':1, 'upgrader':1},
                     'expected_income': 80
                 },
-                '59bbc4182052a716c3ce758d': {'sourcename':'2-W', 'x':3, 'y':27,
+                '59bbc4182052a716c3ce758d': {'sourcename':'2-W', 'x':3, 'y':27, 'steps':10,
                     'assigned': {'harvester':2},
                     'expected_income': 90
                 }
@@ -124,29 +138,31 @@ var spawncustom = require('task.spawncustom');
         
         // 2nd base remote mining
         'W51S19': {
+            'roomname' : '2S',
             'spawns_from': 'W51S18',
             'sources': {
-                '59bbc4182052a716c3ce758f': {'sourcename':'2S', 'x':34, 'y':6,
-                    'assigned': {'harvester': 2},
+                '59bbc4182052a716c3ce758f': {'sourcename':'2S', 'x':34, 'y':6, 'steps':32,
+                    'assigned': {'c15harvester': 1, 'hauler': 1},
                     'expected_income': 50
                 }
             }
         },
         'W51S17': {
+            'roomname' : '2N',
             'spawns_from': 'W51S18',
             'sources': {
-                '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29,
-                    'assigned': {'harvester': 1},
+                '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29, 'steps':86, 'capacity': 3000,
+                    'assigned': {'c30harvester': 1},
                     'expected_income': 40
                 },
-                '59bbc4182052a716c3ce7588': {'sourcename':'2N-W', 'x':4, 'y':26,
-                    'assigned': {},
-                    'expected_income': 10
-                }/*,
+                '59bbc4182052a716c3ce7588': {'sourcename':'2N-W', 'x':4, 'y':26, 'steps':114, 'capacity': 3000,
+                    'assigned': {'c30harvester': 1},
+                    'expected_income': 40
+                },
                 'reserver': {'sourcename':'2N-R', 'x':4, 'y':26,
                     'assigned': {'reserver': 1},
-                    'expected_income': 10
-                }*/
+                    'expected_income': 40
+                }
             }
         },
         
@@ -154,6 +170,7 @@ var spawncustom = require('task.spawncustom');
         // 3rd base (planned)
 
         'W52S17': {
+            'roomname' : '3',
             'ignoreattacks': 1,
             'spawns_from': 'W51S18',
             'sources': {
@@ -182,6 +199,17 @@ var spawncustom = require('task.spawncustom');
                     'expected_income': 1
                 }
             }
+        },
+        
+        'W51S15': {
+            'ignoreattacks': 1,
+            'spawns_from': 'W51S18',
+            'sources': {
+                '59bbc4172052a716c3ce7582': {'sourcename': '4S-E', 'x':36, 'y':16,
+                'assigned': {},
+                'expected_income': 1
+                }
+            }
         }
 
         /*
@@ -191,7 +219,7 @@ var spawncustom = require('task.spawncustom');
             //'spawns_from': 'W51S18',
             'sources': {
                 '59bbc3c92052a716c3ce6c42': {'sourcename': 'GN-N', 'x':24, 'y':29,
-                    'assigned': {},
+                    'assigned': {'drainer': 15},
                     'expected_income': 90
                 },
                 '59bbc3c92052a716c3ce6c44': {'sourcename': 'GN-S', 'x':35, 'y':42,
@@ -267,12 +295,18 @@ global.empire_workers = {
 	'upgrader': { 'version': 1, 'body': [WORK, WORK, CARRY, MOVE] },
 	'remoteupgrader': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
 	'remoteconstructor': { 'version': 1, 'body': [WORK, CARRY, CARRY, MOVE, MOVE] },
+
 	'harvester': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
+	'c15harvester': { 'version': 1, 'body': [WORK, WORK, WORK, CARRY, MOVE, MOVE], 'noresizing': 1 },
+	'c30harvester': { 'version': 1, 'body': [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
+	'hauler': { 'version': 1, 'body': [WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
+
+	'extractor': { 'version': 1, 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE] },
 	'scavenger': { 'version': 1, 'body': [WORK, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
 	'bigscavenger': { 'version': 1, 'body': [CARRY, MOVE] },
 	'builder': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
 	'builderstorage': { 'version': 1, 'body': [WORK, WORK, WORK, CARRY, CARRY, MOVE] }, // halfspeed on roads, quarter speed offroad
-	'upgraderstorage': { 'version': 1, 'body': [WORK, WORK, WORK, CARRY, CARRY, MOVE] },  // halfspeed on roads, quarter speed offroad
+	'upgraderstorage': { 'version': 1, 'body': [WORK, WORK, CARRY, MOVE] },  // halfspeed on roads, quarter speed offroad
 
 	'scout': { 'version': 1, 'body':    [TOUGH, MOVE, MOVE, MOVE, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0 }, // cheap, fast-moving defender. $320.
 	'adventurer': { 'version': 1, 'body':[TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // scout's bigger brother, 2x the attack, 2x the tough, still self-heals a little. $680
@@ -288,16 +322,39 @@ global.empire_workers = {
 	'drainer': { 'version': 1, 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
 
 	'claimer': { 'version': 1, 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
-	'reserver' : { 'version': 1, 'body': [CLAIM, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
+	'reserver' : { 'version': 1, 'body': [CLAIM, CLAIM, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 	'teller': { 'version': 1, 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0},
-	'teller-towers': { 'version': 1, 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 }	
-    
+	'teller-towers': { 'version': 1, 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 }
 }
-
-
 
 global.UNIT_COST = (body) => _.sum(body, p => BODYPART_COST[p]);
 global.CREEP_COST = (body) => _.sum(body, p => BODYPART_COST[p.type])
+global.CARRY_PARTS = (capacity, steps) => Math.ceil(capacity / ENERGY_REGEN_TIME * 2 * steps / CARRY_CAPACITY);
+global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid) {
+    var sourcecapacity = 1500;
+    var steps = 100;
+    if (empire[roomid] != undefined) {
+        if (empire[roomid].sources != undefined) {
+            if (empire[roomid].sources[sourceid] != undefined) {
+                if (empire[roomid].sources[sourceid]['capacity'] != undefined) {
+                    sourcecapacity = empire[roomid].sources[sourceid]['capacity'];
+                }
+                if (empire[roomid].sources[sourceid]['steps'] != undefined) {
+                    steps = empire[roomid].sources[sourceid]['steps'];
+                }
+            }
+        }
+    }
+    //console.log("S: " + sourcecapacity + " Y: " + steps);
+    var carry_parts = global.CARRY_PARTS(sourcecapacity, steps);
+    var partlist = [WORK, MOVE];
+    for (var i = 0; i < carry_parts; i++) {
+        partlist.push(CARRY);
+        partlist.push(MOVE);
+    }
+    return partlist;
+}
+
 
 global.JOB_HARVEST = 'mine';
 global.JOB_BUILD = 'build';
@@ -311,6 +368,8 @@ global.JOB_UPGRADE = 'upgrade';
 global.JOB_TRAVEL_OUT = 'go-out';
 global.JOB_TRAVEL_BACK = 'go-back';
 global.JOB_IDLE = 'idle';
+global.JOB_EXTRACT ='extract';
+global.JOB_STOREMINERALS = 'storeminerals';
 
 global.COLOR_HARVEST = '#ffffff';
 global.COLOR_BUILD = '#0000ff';
@@ -339,7 +398,7 @@ Creep.prototype.setupMemory = function() {
 Creep.prototype.adjustEarnings = function(deposit) {
     if(this.memory['earnings'] == undefined) {
         this.memory['earnings'] = CREEP_COST(this.body) * -1;
-        console.log('WARN: ' + this.name + ' has no earnings! Setting it to inital value of creep cost: ' + this.memory['earnings']);
+        //console.log('WARN: ' + this.name + ' has no earnings! Setting it to inital value of creep cost: ' + this.memory['earnings']);
     }
     this.memory['earnings'] = this.memory['earnings'] + deposit;
     if(this.memory['created_at'] == undefined) {
@@ -435,7 +494,7 @@ global.REPORT_EARNINGS_SOURCES = function() {
             console.log(' ');
         }
     }
-    console.log('TOTAL: ' + rt_earnings + ' over ' + rt_ticks + ' ticks, or ' + Math.round(rt_earnings/ticks) + ' earnings/tick.');
+    console.log('TOTAL: ' + rt_earnings + ' over ' + rt_ticks + ' ticks, or ' + Math.round(rt_earnings/rt_ticks) + ' earnings/tick.');
 
 }
 
@@ -538,6 +597,7 @@ module.exports.loop = function () {
                     if(empire[rname] == undefined) {
                         continue;
                     }
+                    empire[rname].energy_reserves = energy_reserves;
 
                     // Adjust builders depending on unfinished projects.
                     var projectsList = Game.rooms[rname].find(FIND_MY_CONSTRUCTION_SITES);
@@ -682,30 +742,29 @@ module.exports.loop = function () {
                 }
 
 
-                // defcon 1: single invader, invasion lasting less than a minute, not very strong
-                if (sectors_under_attack[csector]['threat'] < 3000 && (timenow - sectors_under_attack[csector]['attackstart']) < 120 && sectors_under_attack[csector]['enemycount'] == 1) {
+                // defcon 1: single invader, invasion lasting less than 3m, not very strong
+                if (sectors_under_attack[csector]['threat'] < 3000 && (timenow - sectors_under_attack[csector]['attackstart']) < 180 && sectors_under_attack[csector]['enemycount'] == 1) {
                     if (room_has_spawn) {
                         baseforce['teller-towers'] = 1;
-                        patrolforce['scout'] = 1;
                     } else {
                         patrolforce['scout'] = 2;
                     }
                     empire[csector]['defcon'] = 1;
-                // defcon 2: big invader, or tougher group, invasion lasting less than 5 minutes, or up to 3 enemies               
-                } else if (sectors_under_attack[csector]['threat'] < 6000 && (timenow - sectors_under_attack[csector]['attackstart']) < 300 && sectors_under_attack[csector]['enemycount'] > 1 && sectors_under_attack[csector]['enemycount'] < 4) {
+                // defcon 2: big invader, or tougher group, invasion lasting less than 6 minutes, or up to 3 enemies               
+                } else if (sectors_under_attack[csector]['threat'] < 6000 && (timenow - sectors_under_attack[csector]['attackstart']) < 360 && sectors_under_attack[csector]['enemycount'] > 1 && sectors_under_attack[csector]['enemycount'] < 4) {
                     if (room_has_spawn) {
                         baseforce['teller-towers'] = 1;
-                        baseforce['teller'] = 1;
-                        patrolforce['scout'] = 2;
+                        //baseforce['teller'] = 1;
+                        patrolforce['scout'] = 1;
                     } else {
                         patrolforce['adventurer'] = 2;
                     }
                     empire[csector]['defcon'] = 2;
 
-                // defcon 3: huge invader, or tougher group, over 3 minutes
-                } else if (sectors_under_attack[csector]['threat'] < 10000 && (timenow - sectors_under_attack[csector]['attackstart']) < 600) {
+                // defcon 3: huge invader, or tougher group, over 9 minutes
+                } else if (sectors_under_attack[csector]['threat'] < 10000 && (timenow - sectors_under_attack[csector]['attackstart']) < 540) {
                     if (room_has_spawn) {
-                        baseforce['teller-towers'] = 2;
+                        baseforce['teller-towers'] = 1;
                         baseforce['teller'] = 1;
                         patrolforce['guardian'] = 1;
                         patrolforce['rogue'] = 1;
@@ -715,7 +774,7 @@ module.exports.loop = function () {
                     }
                     empire[csector]['defcon'] = 3;
 
-                // defcon 4: big invader, or tougher group, invasion lasting less than >10 minutes  
+                // defcon 4: big invader, or tougher group, invasion lasting > 9 minutes 
                 } else {
                     if (room_has_spawn) {
                         baseforce['teller-towers'] = 2;
@@ -884,8 +943,10 @@ module.exports.loop = function () {
                             } else {
                                 //console.log(spawner.name + ': number creeps renewing: ' + renewing_creeps);
                             }
-                            
-                            if (empire_workers[role]['noresizing'] == undefined) {
+
+                            if(role == 'hauler') {
+                                partlist = CONSTRUCT_HAULER_BODY(rname, skey);
+                            } else if (empire_workers[role]['noresizing'] == undefined) {
                                 for (k = 0; k < part_template.length; k++) {
                                     for (j = 0; j < work_units; j++) {
                                         partlist.push(part_template[k]);
@@ -899,8 +960,8 @@ module.exports.loop = function () {
                             var spawnrole = role;
                             var thecost = global.UNIT_COST(partlist);
                             if (spawner.room.energyCapacityAvailable < thecost) {
-                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as THIS UNIT cost " + thecost + ' for ' + json.stringify(partlist) + ' exceeds MAX STORAGE: ' + 
-                                    spawner.room.energyAvailable + ' ~ ' + JSON.stringify(partlist));
+                                //console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as THIS UNIT cost " + thecost + ' for ' + JSON.stringify(partlist) + ' exceeds MAX STORAGE: ' + 
+                                //    spawner.room.energyAvailable + ' ~ ' + JSON.stringify(partlist));
                                 continue;
                             }
                             if (spawner.room.energyAvailable < thecost) {
@@ -948,9 +1009,9 @@ module.exports.loop = function () {
                             //spawncustom.process(spawner, partlist, spawnrole, skey, rname, thecost, spawner.room.name, target_x, target_y, version);
                         }
                     }
-                    if(Memory['config.reportworkers'] == 1) {
+                    //if(Memory['config.reportworkers'] == 1) {
                         console.log(s_status);
-                    }
+                    //}
                     
                 }
             }
@@ -983,7 +1044,13 @@ module.exports.loop = function () {
     for(var name in Game.creeps) {
         var creep = Game.creeps[name];
         if(creep.memory.role == 'harvester') {
-            roleHarvester.run(creep);
+            roleHarvester.run(creep, 0);
+        } else if(creep.memory.role == 'c15harvester' || creep.memory.role == 'c30harvester') {
+            roleHarvester.run(creep, 1);
+        } else if(creep.memory.role == 'hauler') {
+            roleHauler.run(creep);
+        } else if(creep.memory.role == 'extractor') {
+            roleExtractor.run(creep);
         //} else if(creep.memory.role == 'ldharvester') {
         //    console.log("ALERT: " + creep.name + " has role " + creep.memory.role + " which I reassigned!")
         //   creep.memory['role'] = 'harvester'

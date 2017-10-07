@@ -47,6 +47,7 @@ module.exports =  {
                                     (
                                        (((structure.structureType == STRUCTURE_SPAWN && fill_spawner) || ( structure.structureType == STRUCTURE_EXTENSION && fill_extensions)) && structure.energy < structure.energyCapacity)
                                        || (structure.structureType == STRUCTURE_TOWER && structure.energy < (structure.energyCapacity * tower_factor))
+                                       || (structure.structureType == STRUCTURE_TERMINAL && structure.store.energy < 10000)
                                        || (((structure.structureType == STRUCTURE_CONTAINER && fill_containers) || ( structure.structureType == STRUCTURE_STORAGE && fill_storage)) && structure.store.energy < structure.storeCapacity)
                                     )
                             );

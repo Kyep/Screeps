@@ -6,7 +6,7 @@ var jobUpgrade = require('job.upgrade');
 var jobRenew = require('job.renew');
 
 module.exports = {
-    run: function(creep) {
+    run: function(creep, containermine) {
         if (creep.memory.target == undefined && creep.memory.source != undefined) {
             var source = Game.getObjectById(creep.memory.source);
             if(source) {
@@ -58,7 +58,7 @@ module.exports = {
                     }
                 }
                 creep.say('🚧 hiding!');
-                creep.moveTo(new RoomPosition(hidex, hidey, creep.memory.home))
+                creep.moveTo(new RoomPosition(hidex, hidey, creep.memory.home));
 
             } else {
                 if(creep.memory.target_x == undefined || creep.memory.target_y == undefined) {
@@ -72,22 +72,70 @@ module.exports = {
             }
         }
         if (creep.memory.job == JOB_HARVEST) {
-            if (creep.memory.target in Memory.sectors_under_attack && creep.memory.target != creep.memory.home) {
+            if (creep.memory.target in Memory.sectors_under_attack && creep.memory.target != creep.memory.home && !containermine) {
                 creep.memory.job = JOB_TRAVEL_BACK;
                 creep.announceJob();
             } else if (creep.carry.energy == creep.carryCapacity) { // DO NOT DISABLE THIS OR HARVESTERS WILL GET STUCK AND NEVER RETURN!
-                creep.memory['targetcontainer'] = undefined;
-                creep.memory.job = JOB_BUILD;
-                creep.announceJob();
+                if (containermine) {
+                    var nearby_containers = creep.pos.findInRange(FIND_STRUCTURES, 3, { filter: { structureType: STRUCTURE_CONTAINER } } );
+                    var full_containers = 0;
+                    if (nearby_containers.length > 0) {
+                        var thecontainer = nearby_containers[0];
+                        //if (thecontainer.store.energy == thecontainer.storeCapacity) {
+                        //   full_containers = 1;
+                        //    continue;
+                        //}
+                        var result = creep.transfer(thecontainer, RESOURCE_ENERGY)
+                        if (result == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(thecontainer);
+                        } else if (result == OK) {
+                            creep.repair(thecontainer);
+                        } else if (result == ERR_FULL) {
+                            var human_sourcename = '?';
+                            if (empire[creep.room.name] != undefined) {
+                                if (empire[creep.room.name].sources[creep.memory.source] != undefined) {
+                                    human_sourcename = '|' + empire[creep.room.name].sources[creep.memory.source]['sourcename'] + '|';
+                                }
+                            }
+                            //console.log("MINING ALERT: " + creep.name + " at " + human_sourcename + " cannot deposit into a container because it is full.");
+                        }
+                    } else if (nearby_containers.length == 0) {
+                        // check for construction sites and build one if not.
+                        var csites = creep.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 3);
+                        if (!csites.length) {
+                            creep.room.createConstructionSite(creep.pos.x, creep.pos.y, STRUCTURE_CONTAINER);
+                        } else {
+                            if(creep.build(csites[0]) == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(csites[0], {visualizePathStyle: {stroke: COLOR_BUILD}});
+                            }
+                        }
+                    }
+
+                } else {
+                    creep.memory['targetcontainer'] = undefined;
+                    creep.memory.job = JOB_BUILD;
+                    creep.announceJob();
+                }
             } else {
                 creep.moveTo(new RoomPosition(creep.memory.target_x, creep.memory.target_y, creep.memory.target))
                 //creep.moveTo(new RoomPosition(creep.memory.target_x, creep.memory.target_y, creep.memory.target), {visualizePathStyle: {stroke: '#ffffff'}})
 	            jobHarvest.run(creep);
+                
+                // TEMPORARY PICK UP DROPPED SHIT CODE
+                var source = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {filter: (s) => s.energy > 0});
+                if(source != null){
+                    if (creep.pickup(source) == ERR_NOT_IN_RANGE) {
+                    //creep.moveTo(source, {visualizePathStyle: {stroke: COLOR_SCAVAGE}});
+                    }
+                }
             }
         }
         if(creep.memory.job == JOB_BUILD) {
             if (jobBuild.run(creep) == -1) {
-                if(creep.room.name == creep.memory.home) {
+                if (containermine) {
+                    creep.memory.job = JOB_HARVEST;
+                    creep.announceJob();                    
+                } else if(creep.room.name == creep.memory.home) {
                     creep.memory.job = JOB_RETURN;
                     creep.announceJob();
                 } else {
