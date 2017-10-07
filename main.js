@@ -151,12 +151,12 @@ var spawncustom = require('task.spawncustom');
             'roomname' : '2N',
             'spawns_from': 'W51S18',
             'sources': {
-                '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29, 'steps':86, 'capacity': 3000,
-                    'assigned': {'c30harvester': 1},
+                '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29, 'steps':36, 'capacity': 3000, // really 'steps':86, , but we have a link that bypases ~50
+                    'assigned': {'c30harvester': 1, 'hauler': 1}, 'link_from': '59d850539212a60b7683ce93', 'link_to': '59d84a28947f701c72c375a7', 
                     'expected_income': 40
                 },
-                '59bbc4182052a716c3ce7588': {'sourcename':'2N-W', 'x':4, 'y':26, 'steps':114, 'capacity': 3000,
-                    'assigned': {'c30harvester': 1},
+                '59bbc4182052a716c3ce7588': {'sourcename':'2N-W', 'x':4, 'y':26, 'steps':64, 'capacity': 3000, // really 'steps':114,
+                    'assigned': {'c30harvester': 1, 'hauler': 1}, 'link_from': '59d850539212a60b7683ce93', 'link_to': '59d84a28947f701c72c375a7', 
                     'expected_income': 40
                 },
                 'reserver': {'sourcename':'2N-R', 'x':4, 'y':26,
@@ -330,7 +330,7 @@ global.empire_workers = {
 global.UNIT_COST = (body) => _.sum(body, p => BODYPART_COST[p]);
 global.CREEP_COST = (body) => _.sum(body, p => BODYPART_COST[p.type])
 global.CARRY_PARTS = (capacity, steps) => Math.ceil(capacity / ENERGY_REGEN_TIME * 2 * steps / CARRY_CAPACITY);
-global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid) {
+global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid, max_cost) {
     var sourcecapacity = 1500;
     var steps = 100;
     if (empire[roomid] != undefined) {
@@ -348,7 +348,12 @@ global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid) {
     //console.log("S: " + sourcecapacity + " Y: " + steps);
     var carry_parts = global.CARRY_PARTS(sourcecapacity, steps);
     var partlist = [WORK, MOVE];
-    for (var i = 0; i < carry_parts; i++) {
+    for (var i = 0; i < Math.floor(carry_parts / 2); i++) {
+        if ((UNIT_COST(partlist) + UNIT_COST([CARRY, CARRY, MOVE])) > max_cost) {
+            console.log("Trying to build a hauler of bigger size than our spanwer allows. Capping it.");
+            break;
+        }
+        partlist.push(CARRY);
         partlist.push(CARRY);
         partlist.push(MOVE);
     }
@@ -370,6 +375,7 @@ global.JOB_TRAVEL_BACK = 'go-back';
 global.JOB_IDLE = 'idle';
 global.JOB_EXTRACT ='extract';
 global.JOB_STOREMINERALS = 'storeminerals';
+global.JOB_USELINK = 'uselink'
 
 global.COLOR_HARVEST = '#ffffff';
 global.COLOR_BUILD = '#0000ff';
@@ -945,7 +951,7 @@ module.exports.loop = function () {
                             }
 
                             if(role == 'hauler') {
-                                partlist = CONSTRUCT_HAULER_BODY(rname, skey);
+                                partlist = CONSTRUCT_HAULER_BODY(rname, skey, spawner.room.energyCapacityAvailable);
                             } else if (empire_workers[role]['noresizing'] == undefined) {
                                 for (k = 0; k < part_template.length; k++) {
                                     for (j = 0; j < work_units; j++) {
@@ -1009,9 +1015,9 @@ module.exports.loop = function () {
                             //spawncustom.process(spawner, partlist, spawnrole, skey, rname, thecost, spawner.room.name, target_x, target_y, version);
                         }
                     }
-                    //if(Memory['config.reportworkers'] == 1) {
+                    if(Memory['config.reportworkers'] == 1) {
                         console.log(s_status);
-                    //}
+                    }
                     
                 }
             }
@@ -1051,9 +1057,6 @@ module.exports.loop = function () {
             roleHauler.run(creep);
         } else if(creep.memory.role == 'extractor') {
             roleExtractor.run(creep);
-        //} else if(creep.memory.role == 'ldharvester') {
-        //    console.log("ALERT: " + creep.name + " has role " + creep.memory.role + " which I reassigned!")
-        //   creep.memory['role'] = 'harvester'
         } else if(creep.memory.role == 'upgrader') {
             roleUpgrader.run(creep);
         } else if(creep.memory.role == 'upgraderstorage') {

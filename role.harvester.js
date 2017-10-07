@@ -79,25 +79,35 @@ module.exports = {
                 if (containermine) {
                     var nearby_containers = creep.pos.findInRange(FIND_STRUCTURES, 3, { filter: { structureType: STRUCTURE_CONTAINER } } );
                     var full_containers = 0;
+                    var thecontainer = undefined;
                     if (nearby_containers.length > 0) {
-                        var thecontainer = nearby_containers[0];
-                        //if (thecontainer.store.energy == thecontainer.storeCapacity) {
-                        //   full_containers = 1;
-                        //    continue;
-                        //}
-                        var result = creep.transfer(thecontainer, RESOURCE_ENERGY)
-                        if (result == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(thecontainer);
-                        } else if (result == OK) {
-                            creep.repair(thecontainer);
-                        } else if (result == ERR_FULL) {
-                            var human_sourcename = '?';
-                            if (empire[creep.room.name] != undefined) {
-                                if (empire[creep.room.name].sources[creep.memory.source] != undefined) {
-                                    human_sourcename = '|' + empire[creep.room.name].sources[creep.memory.source]['sourcename'] + '|';
-                                }
+                        for (i = 0; i < nearby_containers.length; i++) {
+                            if(nearby_containers[i].store.energy < nearby_containers[i].storeCapacity) {
+                               thecontainer = nearby_containers[i];
+                               break;
                             }
-                            //console.log("MINING ALERT: " + creep.name + " at " + human_sourcename + " cannot deposit into a container because it is full.");
+                        }
+                        //console.log(creep.name, ' nearby container not full');
+                        if(thecontainer == undefined) {
+                            // we can't store resources anywhere - burn some by repairing the containers a lot.
+                            var csites = creep.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 3);
+                            if (csites.length) {
+                                if(creep.build(csites[0]) == ERR_NOT_IN_RANGE) {
+                                    creep.moveTo(csites[0], {visualizePathStyle: {stroke: COLOR_BUILD}});
+                                }
+                            } else {
+                                creep.repair(nearby_containers[Math.floor(Math.random() * nearby_containers.length)]);
+                                //creep.room.createConstructionSite(creep.pos.x, creep.pos.y, STRUCTURE_CONTAINER);
+                            }
+                        } else {
+                            var result = creep.transfer(thecontainer, RESOURCE_ENERGY)
+                            if (result == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(thecontainer);
+                            } else if (result == OK) {
+                                creep.repair(thecontainer);
+                            } else if (result == ERR_FULL) {
+
+                            }
                         }
                     } else if (nearby_containers.length == 0) {
                         // check for construction sites and build one if not.

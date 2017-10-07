@@ -6,11 +6,18 @@ module.exports =  {
             creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
             return 0;
         }
-        var targets = creep.room.find(FIND_STRUCTURES, {
+        var targets = creep.pos.findInRange(FIND_STRUCTURES, 10, {
                 filter: (structure) => {
-                     return (structure.structureType == STRUCTURE_CONTAINER) && structure.store.energy > 0;
+                     return (structure.structureType == STRUCTURE_LINK) && structure.energy > 0;
                 }
         });
+        if (targets.length == 0) {
+            targets = creep.room.find(FIND_STRUCTURES, {
+                    filter: (structure) => {
+                         return (structure.structureType == STRUCTURE_CONTAINER) && structure.store.energy > 0;
+                    }
+            });
+        }
         if (targets.length == 0) {
             targets = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
@@ -20,7 +27,12 @@ module.exports =  {
         }
         if(targets.length > 0) {
             var target = creep.pos.findClosestByRange(targets);
-            var amount_to_withdraw = Math.min(target.store.energy, creep.carryCapacity - creep.carry.energy);
+            var amount_to_withdraw = 0;
+            if (target.energy == undefined) {
+                amount_to_withdraw = Math.min(target.store.energy, creep.carryCapacity - creep.carry.energy);
+            } else {
+                amount_to_withdraw = Math.min(target.energy, creep.carryCapacity - creep.carry.energy);
+            }
             var result = creep.withdraw(target, RESOURCE_ENERGY, amount_to_withdraw);
             
             if(result == ERR_NOT_IN_RANGE) {
