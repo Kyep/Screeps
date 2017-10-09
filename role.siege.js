@@ -39,7 +39,7 @@ module.exports = {
         }
 
         var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_CONTAINER, STRUCTURE_EXTENSION, STRUCTURE_RAMPART]; // be careful with rampart.
-        var enemy_structures = creep.room.find(FIND_STRUCTURES); 
+        var enemy_structures = creep.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType != STRUCTURE_CONTROLLER}); 
         var valid_targets = [];
         var target = undefined;
         var champ_range = 99999999999999;
@@ -66,6 +66,20 @@ module.exports = {
                 creep.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}});
             }
         } else {
+            if (creep.room.controller != undefined) {
+                if (creep.room.controller.owner != undefined) {
+                    if (creep.room.controller.owner.username != creep.owner.username) {
+                        var csites = creep.room.find(FIND_CONSTRUCTION_SITES);
+                        if (csites.length) {
+                            csite = creep.pos.findClosestByPath(csites);
+                            creep.moveTo(csite, {visualizePathStyle: {stroke: COLOR_PATROL}});
+                            creep.attack(csite);
+                            return 0;
+                        }
+                    }
+                }
+            }
+
             if (Game.time % 20 === 0) {
                 console.log("ALERT: SIEGE CREEP " + creep.name + " IN " + creep.room.name + " HAS NO TARGET! GIVE THEM A JOB!");
             }

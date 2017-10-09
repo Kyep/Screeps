@@ -81,10 +81,11 @@ module.exports =  {
         
 
         //console.log(empire_defaults['repairmax_towers']);
+        var repairMax = tower.getRepairMax();
         var repairTargets = tower.pos.findInRange(FIND_STRUCTURES, 50, {
             filter: function(structure){
                 if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
-                    return (structure.hits < empire_defaults['repairmax_towers'])
+                    return (structure.hits < repairMax)
                 }else{
                     return (structure.hits < structure.hitsMax)
                 }

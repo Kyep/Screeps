@@ -8,7 +8,7 @@ module.exports =  {
         var heal_parts = creep.getActiveBodyparts(HEAL);
         var target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
         if (!target) {
-            target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES);
+            target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES,{filter: (s) => s.structureType != STRUCTURE_CONTROLLER});
         }
         var rangetotarget = 0;
         if (target) {
@@ -54,62 +54,56 @@ module.exports =  {
                 if (theirdirection == TOP_LEFT) { directions = [RIGHT, BOTTOM_RIGHT, BOTTOM]; }
                 creep.move(_.sample(directions)); // always run away such that no matter how they move, they can't end up next to us - unless our move fails because the path is blocked.
             }
-        } else {
-            // otherwise, random movement.
+        } else if (heal_parts > 0 && hurtfriendly != undefined && rangetohurtfriendly > 1) {
+            creep.moveTo(hurtfriendly);
+        } else if (creep.hits < creep.hitsMax) {
+            // stay still. If there are healers present, they will heal you.
+        } else if (heal_parts == 0 || hurtfriendly == undefined) {
+            // otherwise, if we are not a healer trying to heal someone, move randomly.-
             var directions = [TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT];
             creep.move(_.sample(directions));
         }
         
         // 2nd, should we ATTACK, rangedHeal, or heal?
 
-        if (heal_parts > 0 && creep.hits < creep.hitsMax) {
-            creep.heal(creep);
-        } else if (target && heal_parts == 0) {
-            creep.attack(target);
-        } else if (hurtfriendly != undefined && heal_parts > 0) {
-            if (rangetohurtfriendly == 1) {
-                creep.heal(hurtfriendly);
-            } else if (rangetohurtfriendly <= 3) {
-                creep.rangedHeal(hurtfriendly);
+        var healPower = heal_parts * HEAL_POWER;
+        var attackPower = melee_parts * ATTACK_POWER;
+        var rangedAttackPower = ranged_parts * RANGED_ATTACK_POWER;
+        if (attackPower >= healPower) {
+            if (target && rangetotarget == 1) {
+                creep.attack(target);
+            } else if (creep.hits < creep.hitsMax && heal_parts > 0) {
+                creep.heal(creep);
+            } else if (hurtfriendly != undefined && heal_parts > 0) {
+                if (rangetohurtfriendly == 1) {
+                    creep.heal(hurtfriendly);
+                } else if (rangetohurtfriendly <= 3) {
+                    creep.rangedHeal(hurtfriendly);
+                }
+            }
+        } else {
+            if (creep.hits < creep.hitsMax) {
+                creep.heal(creep);
+            } else if (hurtfriendly != undefined && heal_parts > 0) {
+                if (rangetohurtfriendly == 1) {
+                    creep.heal(hurtfriendly);
+                } else if (rangetohurtfriendly <= 3 && heal_parts > ranged_parts) {
+                    creep.rangedHeal(hurtfriendly);
+                }
+            } else if (target && rangetotarget == 1) {
+                creep.attack(target);
             }
         }
 
         // 3rd, should we rangedHeal, rangedAttack, or rangedMassattack?
 
-        if (ranged_parts > 0 || heal_parts > 0) {
-            if (ranged_parts > heal_parts) {
-                var nearby_enemies = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
-                if (nearby_enemies.length >= 2) {
-                    creep.rangedMassAttack();
-                } else {
-                    creep.rangedAttack(target);
-                }
-            } else if(hurtfriendly) {
-                if (rangetohurtfriendly > 1) {
-                    creep.rangedHeal(hurtfriendly);
-                } else {
-                    creep.heal(hurtfriendly);
-                }
+        if (rangedAttackPower > healPower || hurtfriendly == undefined || rangetohurtfriendly > 3) {
+            var nearby_enemies = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
+            if (nearby_enemies.length >= 2) {
+                creep.rangedMassAttack();
+            } else {
+                creep.rangedAttack(target);
             }
         }
-
-        
-        /*
-            if (creep.room.controller != undefined) {
-                if (creep.room.controller.owner != undefined) {
-                    if (creep.room.controller.owner.username != undefined) {
-                        if (creep.room.controller.owner.username != overlord) {
-                            var csites = creep.room.find(FIND_CONSTRUCTION_SITES);
-                            if (csites.length) {
-                                csite = creep.pos.findClosestByPath(csites);
-                                creep.moveTo(csite, {visualizePathStyle: {stroke: COLOR_PATROL}});
-                                return 0;
-                            }
-                        }
-                    }
-                }
-            }
-            
-        */
     }
 };

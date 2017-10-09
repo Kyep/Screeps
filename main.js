@@ -1,6 +1,7 @@
 // requirements ONLY
 
 var roleHarvester = require('role.harvester');
+var roleCHarvester = require('role.charvester');
 var roleHauler = require('role.hauler');
 
 var roleExtractor = require('role.extractor');
@@ -17,29 +18,41 @@ var roleTeller = require('role.teller');
 var roleRemoteconstructor = require('role.remoteconstructor');
 var roleSiege = require('role.siege');
 var roleDrainer = require('role.drainer');
+var roleDrainerhealer = require('role.drainerhealer');
+var roleSigner = require('role.signer');
+var roleLabtech = require('role.labtech');
 
 var structureTower = require('structure.tower');
+var structureLink = require('structure.link');
+var structureLab = require('structure.lab');
 
 var cleaner = require('task.cleanmemory');
 var spawncustom = require('task.spawncustom');
 
 // ---------------------------
-// GLOBALS
+// CONFIG
 // ---------------------------
-    global.overlord = 'Phisec';
 
-    global.empire_defaults = { 
+    overlord = 'Phisec';
+    
+    empire_defaults = {
         'spawner': '59ce24a6b1421365236708e4',
         'room': 'W53S18',
         'sourceid': '59bbc3f82052a716c3ce7289',
         'priority_roles': ['teller', 'teller-towers'],
-        'military_roles': ['scout', 'adventurer', 'scout', 'rogue', 'apprentice', 'wizard', 'healer', 'champion', 'guardian', 'siege', 'siegefar', 'drainer'],
+        'military_roles': ['scout', 'slasher', 'rogue', 'ninja', 'dragon', 'wizard', 'healer', 'siege', 'siegefar', 'drainer', 'drainerhealer'],
+        'defense_roles': ['dragon', 'ninja', 'rogue', 'slasher', 'scout'], // LIST MOST POWERFUL FIRST.
         'alerts_duration' : 300,
         'alerts_recycle' : 0,
         'repairmax_creeps' : 250000,
-        'repairmax_towers' : 150000
-    }
-    global.empire = {
+        'repairmax_towers' : 150000,
+        'room_reserves_required' : 50000,
+        'room_reserves_critical' : 25000,
+        'room_history_ticks': 50,
+        'room_minimum_energy_pc': 60 // what % of max stored energy (spawn/extensions) should rooms maintain? If we're below this avg % for room_history_ticks then we will spawn tellers to refill the room from storage.
+        }
+    
+    empire = {
         // 1st base
         'W53S18': {
             'roomname' : '1',
@@ -47,70 +60,83 @@ var spawncustom = require('task.spawncustom');
             'sources': {
                 'base-maint': {
                     'sourcename': '1-base', 'x':20, 'y':20, 
-                    'assigned': {'scavenger':1}, 
-                    'expected_income': 100
+                    'assigned': {}, 
+                    'expected_income': 90
                 },
+                'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40 },
                 '59bbc3f82052a716c3ce7289': {
                     'sourcename':'1-E', 'x':25, 'y':18, 'steps':15,
                     'assigned': {'harvester': 1},
-                    'expected_income': 90
+                    'expected_income': 85
                 },
                 '59bbc3f82052a716c3ce728b': {
                     'sourcename':'1-W', 'x':16, 'y':26, 'steps':15,
-                    'assigned': {'upgrader': 1},
-                    'expected_income': 80
+                    'assigned': {'upgclose': 1},
+                    'expected_income': 75
                 },
                 '59bbc644ae9e1411a425ad40': {
                     'sourcename':'1-mine', 'x':15, 'y':40, 'steps':20,
                     'assigned': {'extractor': 1},
-                    'expected_income': 40
+                    'expected_income': 70
                 }
             },
-            'safespot': {'x': 16, 'y':32 }
+            'safespot': {'x': 9, 'y':25 }
         },
 
         // 1st base remote mining
         'W52S18': {
             'roomname' : '1E',
+            'spawns_from': 'W53S18',
             'sources': {
                 '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14, 'steps':33,
-                    'assigned': {'c15harvester': 1, 'hauler': 1, 'reserver': 1}, //, 'reserver': 1
-                    'expected_income': 1
-                },
+                    'assigned': {'c15harvester': 1, 'hauler': 1},
+                    'expected_income': 65
+                }/*,
+                'reserver': {'sourcename':'1E-R', 'x':11, 'y':14, 'steps':33,
+                    'assigned': {'reserver': 1},
+                    'expected_income': 63
+                }*/
             }
         },
         'W53S17': {
             'roomname' : '1N',
+            'spawns_from': 'W53S18',
             'sources': {
                 '59bbc3f72052a716c3ce7287': {'sourcename':'1N', 'x':4, 'y':44, 'steps':32,
                     'assigned': {'c15harvester': 1, 'hauler': 1}, // , 'reserver': 1
-                    'expected_income': 10
-                },
+                    'expected_income': 70
+                }/*,
+                'reserver': {'sourcename':'1N-R', 'x':4, 'y':44, 'steps':32,
+                    'assigned': {'reserver': 1}, // , 'reserver': 1
+                    'expected_income': 69
+                },*/
             } 
         },
         'W54S18': {
             'roomname' : '1W',
+            'spawns_from': 'W53S18',
             'sources': {
                 '59bbc3e92052a716c3ce70b6': {'sourcename':'1W-E', 'x':42, 'y':6, 'steps':29, 'capacity': 3000,
                     'assigned': {'c30harvester': 1, 'hauler': 1},
-                    'expected_income': 10
+                    'expected_income': 60
                 },
                 '59bbc3e92052a716c3ce70b7': {'sourcename':'1W-W', 'x':5, 'y':37, 'steps':63, 'capacity': 3000,
                     'assigned': {'c30harvester': 1, 'hauler': 1},
-                    'expected_income': 5
+                    'expected_income': 55
                 },
                 'reserver': {'sourcename':'1W-R', 'x':5, 'y':37,
                     'assigned': {'reserver': 1},
-                    'expected_income': 1
-                }
+                    'expected_income': 50
+                } //ANOTHER -3/TICK UNIT. NOT WORTH IT!
             }
         },
         'W54S17': {
             'roomname' : '1NW',
+            'spawns_from': 'W53S18',
             'sources': {
                 '59bbc3e82052a716c3ce70b4': {'sourcename':'1NW', 'x':38, 'y':31, 'steps':60, 
                     'assigned': {'c15harvester': 1, 'hauler': 1}, 
-                    'expected_income': 10
+                    'expected_income': 45
                 }
             } 
         },
@@ -120,17 +146,18 @@ var spawncustom = require('task.spawncustom');
             'roomname' : '2',
             'spawns_from': 'W51S18',
             'sources': {
+                'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40 },
                 'base-maint': {'sourcename': '2-base', 'x':16, 'y':24, 
-                    'assigned': {'scavenger': 1, 'teller': 1}, 
-                    'expected_income': 100 
+                    'assigned': {}, 
+                    'expected_income': 90 
                 }, 
                 '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20, 'steps':10,
-                    'assigned': {'harvester':1, 'upgrader':1},
+                    'assigned': {'harvester':1, 'upgclose':1},
                     'expected_income': 80
                 },
                 '59bbc4182052a716c3ce758d': {'sourcename':'2-W', 'x':3, 'y':27, 'steps':10,
                     'assigned': {'harvester':2},
-                    'expected_income': 90
+                    'expected_income': 85
                 }
             },
             'safespot': {'x': 17, 'y':14 }
@@ -143,7 +170,7 @@ var spawncustom = require('task.spawncustom');
             'sources': {
                 '59bbc4182052a716c3ce758f': {'sourcename':'2S', 'x':34, 'y':6, 'steps':32,
                     'assigned': {'c15harvester': 1, 'hauler': 1},
-                    'expected_income': 50
+                    'expected_income': 70
                 }
             }
         },
@@ -152,23 +179,63 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'W51S18',
             'sources': {
                 '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29, 'steps':36, 'capacity': 3000, // really 'steps':86, , but we have a link that bypases ~50
-                    'assigned': {'c30harvester': 1, 'hauler': 1}, 'link_from': '59d850539212a60b7683ce93', 'link_to': '59d84a28947f701c72c375a7', 
-                    'expected_income': 40
+                    'assigned': {'c15harvester': 1, 'hauler': 1}, 'link_from': '59d850539212a60b7683ce93', 'link_to': '59d84a28947f701c72c375a7', 
+                    'expected_income': 60
                 },
                 '59bbc4182052a716c3ce7588': {'sourcename':'2N-W', 'x':4, 'y':26, 'steps':64, 'capacity': 3000, // really 'steps':114,
-                    'assigned': {'c30harvester': 1, 'hauler': 1}, 'link_from': '59d850539212a60b7683ce93', 'link_to': '59d84a28947f701c72c375a7', 
-                    'expected_income': 40
-                },
+                    'assigned': {'c15harvester': 1, 'hauler': 1}, 'link_from': '59d850539212a60b7683ce93', 'link_to': '59d84a28947f701c72c375a7', 
+                    'expected_income': 50
+                }/*,  // 2N-E RESERVERS GIVE -3 E/TICK. THAT IS ABOUT WHAT A HARVESTER BRINGS IN WITH RESERVATION. PLUS THEY TAKE UP SPAWN TIME. DO NOT USE.
                 'reserver': {'sourcename':'2N-R', 'x':4, 'y':26,
                     'assigned': {'reserver': 1},
                     'expected_income': 40
-                }
+                }*/
             }
         },
         
-        
+        // 3rd base
+        'W51S14': {
+            'roomname' : '3',
+            'spawns_from': 'W51S14',
+            'sources': {
+                '59bbc4172052a716c3ce757d': {'sourcename': '3-W', 'x':31, 'y':15,
+                    'assigned': {'upgfar': 4},
+                    'expected_income': 85
+                },
+                '59bbc4172052a716c3ce757c': {'sourcename': '3-E', 'x':42, 'y':13,
+                    'assigned': {'upgfar': 2, 'harvester': 2},
+                    'expected_income': 90
+                }
+            }
+        },
+        // 3rd base remote mining
+        'W51S13': {
+            'roomname' : '3N',
+            'spawns_from': 'W51S14',
+            'sources': {
+                '59bbc4172052a716c3ce757a': {'sourcename': '3N', 'x':34, 'y':33, 'steps':36, 
+                    'assigned': {'c15harvester': 1, 'hauler': 1},
+                    'expected_income': 80
+                }
+            }
+        },
+        'W51S15': {
+            'roomname' : '3S',
+            'spawns_from': 'W51S14',
+            'sources': {
+                '59bbc4172052a716c3ce7580': {'sourcename': '3S-W', 'x':14, 'y':3, 'steps':43, 
+                    'assigned': {'c15harvester': 1, 'hauler': 1}, // 'c15harvester': 1, 'hauler': 1
+                    'expected_income': 70
+                },
+                '59bbc4172052a716c3ce7582': {'sourcename': '3S-E', 'x':36, 'y':16, 'steps':66, 
+                    'assigned': {'c15harvester': 1, 'hauler': 1}, // 'c15harvester': 1, 'hauler': 1
+                    'expected_income': 60
+                }
+            }
+        }
         // 3rd base (planned)
 
+        /*
         'W52S17': {
             'roomname' : '3',
             'ignoreattacks': 1,
@@ -210,7 +277,7 @@ var spawncustom = require('task.spawncustom');
                 'expected_income': 1
                 }
             }
-        }
+        },*/
 
         /*
         // GUARDIAN north 
@@ -227,15 +294,15 @@ var spawncustom = require('task.spawncustom');
                     'expected_income': 1
                 }
             }
-        },
+        },  
 
         // GUARDIAN north STAGING EAST
         'W55S17': {
             'ignoreattacks': 1,
-            'spawns_from': 'W51S18',
+            //'spawns_from': 'W51S18',
             'sources': {
                 '59bbc3da2052a716c3ce6e76': {'sourcename': 'GNS-N', 'x':45, 'y':21,
-                    'assigned': {}, // 'siegefar': 3
+                    'assigned': {'drainerhealer' : 2}, // 'siegefar': 3
                     'expected_income': 90
                 },
                 '59bbc3da2052a716c3ce6e77': {'sourcename': 'GNS-S', 'x':29, 'y':40,
@@ -243,7 +310,7 @@ var spawncustom = require('task.spawncustom');
                     'expected_income': 1
                 }
             }
-        },
+        }, 
         // GUARDIAN home / south
         'W56S18': {
             'ignoreattacks': 1,
@@ -258,7 +325,7 @@ var spawncustom = require('task.spawncustom');
                     'expected_income': 1
                 }
             }
-        },
+        }, 
         // GUARDIAN WEST OF HOME
         'W57S18': {
             'ignoreattacks': 1,
@@ -291,40 +358,54 @@ var spawncustom = require('task.spawncustom');
     }
 
 // rule: must have  1 move part for 1 every other part, or 2 every other parts if creep uses roads exclusively
-global.empire_workers = {
-	'upgrader': { 'version': 1, 'body': [WORK, WORK, CARRY, MOVE] },
-	'remoteupgrader': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
-	'remoteconstructor': { 'version': 1, 'body': [WORK, CARRY, CARRY, MOVE, MOVE] },
+empire_workers = {
+	'upgclose': { 'body': [WORK, WORK, CARRY, MOVE] },
+	'upgfar': { 'body': [WORK, CARRY, MOVE] },
+	'remoteupgrader': { 'body': [WORK, CARRY, MOVE, MOVE] },
+	'remoteconstructor': { 'body': [WORK, CARRY, CARRY, MOVE, MOVE] },
 
-	'harvester': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
-	'c15harvester': { 'version': 1, 'body': [WORK, WORK, WORK, CARRY, MOVE, MOVE], 'noresizing': 1 },
-	'c30harvester': { 'version': 1, 'body': [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
-	'hauler': { 'version': 1, 'body': [WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
+	'harvester': { 'body': [WORK, CARRY, MOVE] },
+	'c15harvester': { 'body': [WORK, WORK, WORK, CARRY, MOVE, MOVE], 'noresizing': 1 },
+	'c30harvester': { 'body': [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
+	'hauler': { 'body': [WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
 
-	'extractor': { 'version': 1, 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE] },
-	'scavenger': { 'version': 1, 'body': [WORK, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
-	'bigscavenger': { 'version': 1, 'body': [CARRY, MOVE] },
-	'builder': { 'version': 1, 'body': [WORK, CARRY, MOVE] },
-	'builderstorage': { 'version': 1, 'body': [WORK, WORK, WORK, CARRY, CARRY, MOVE] }, // halfspeed on roads, quarter speed offroad
-	'upgraderstorage': { 'version': 1, 'body': [WORK, WORK, CARRY, MOVE] },  // halfspeed on roads, quarter speed offroad
+	'extractor': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE] },
+	'scavenger': { 'body': [WORK, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
+	'bigscavenger': { 'body': [CARRY, MOVE] },
+	'builder': { 'body': [WORK, CARRY, MOVE] },
+	'builderstorage': { 'body': [WORK, WORK, WORK, CARRY, CARRY, MOVE], 'renew_allowed': 0 }, // halfspeed on roads, quarter speed offroad
+	'upgraderstorage': { 'body': [WORK, WORK, CARRY, MOVE], 'renew_allowed': 0 },  // halfspeed on roads, quarter speed offroad
 
-	'scout': { 'version': 1, 'body':    [TOUGH, MOVE, MOVE, MOVE, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0 }, // cheap, fast-moving defender. $320.
-	'adventurer': { 'version': 1, 'body':[TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // scout's bigger brother, 2x the attack, 2x the tough, still self-heals a little. $680
-	'rogue': { 'version': 1, 'body':    [TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // what you send when you absolutely have to get rid of people... fast and high damage. $580
-	'apprentice': { 'version': 1, 'body':[TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // weak ranged combatant. $560
-	'wizard': { 'version': 1, 'body':   [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // designed for attacking groups. 1220
-	'healer': { 'version': 1, 'body':   [MOVE, HEAL, HEAL], 'renew_allowed': 0}, // 
-	'champion': { 'version': 1, 'body': [TOUGH, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, ATTACK, HEAL], 'renew_allowed': 0}, // not very effective, it turns out.
-	'guardian': { 'version': 1, 'body': [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, 
+    // MILITARY CREEP DESIGN RULES:
+    // 1. all NPC invaders have 1:1 move speed offroad, 2/3 (4/6 counting RCL>=4 invaders) have a ranged attack, and another 1/3rd have ranged heals. Thus creeps MUST have 1:1 movespeed. If they do not, they might get kited.
+    // 2. costs are ATTACK:80, RANGED_ATTACK:150, HEAL:250. ATTACK also has power 30, RANGED_ATTACK 10 and HEAL 12. Thus in MOST situations ATTACK is clearly preferable to all other options, as it is both cheapest AND strongest.
+    // 3. notably, TOUGH only costs ***TEN*** energy (60 with MOVE), so its worthwhile to put TOUGH parts on everything. The only question is: how many.
+    
+    // Anti-invader defense classes.
+    'scout': { 'body':    [TOUGH, MOVE, MOVE, ATTACK], 'noresizing': 1, 'renew_allowed': 0 }, // $190, 400 HP, 30 DPS. Won't kill anything on its own, but dirt-cheap and quick to produce. Used by low-level bases and scouting parties.
+    'slasher': { 'body':    [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0 }, // $380, 800 HP, 60 DPS. Bread-and-butter defender, should be able to take most RCL<4 invaders by itself.
+	'rogue': { 'body':    [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // $640, 1,200 HP, 120 DPS. Capable of out-damaging a RCL<4 healer.
+    'ninja': { 'body':    [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // $900, 1,600 HP, 180 DPS. 
+    'dragon': { 'body':    [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, HEAL, HEAL], 'noresizing': 1, 'renew_allowed': 0},
+    // This one breaks my normal philosophy, as it is slow (1/2 movement speed) and expensive ($1390) and only suitable for RCL+ rooms. However, it has 2,100 HP, deals 360 DPS/tick, and self-heals for 24/tick.
+    
+    // Anti-player defense classes
+	'wizard': { 'body':   [MOVE, RANGED_ATTACK], 'renew_allowed': 0}, // horrificly expensive anti-crowd unit
+	'healer': { 'body':   [MOVE, HEAL, HEAL], 'renew_allowed': 0}, // extremely expensive healer.
 
-	'siege': { 'version': 1, 'body': [MOVE, ATTACK, ATTACK], 'renew_allowed': 0}, // half speed, strong but slow
-	'siegefar': { 'version': 1, 'body': [MOVE, ATTACK], 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
-	'drainer': { 'version': 1, 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
+    // Anti-player ATTACK classes
+	'siege': { 'body': [MOVE, ATTACK, ATTACK], 'renew_allowed': 0}, // half speed, strong but slow
+	'siegefar': { 'body': [MOVE, ATTACK], 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
+	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
+	'drainerhealer': { 'body': [HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, MOVE, MOVE, MOVE, MOVE, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
 
-	'claimer': { 'version': 1, 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
-	'reserver' : { 'version': 1, 'body': [CLAIM, CLAIM, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
-	'teller': { 'version': 1, 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0},
-	'teller-towers': { 'version': 1, 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 }
+    // Territory control classes
+	'reserver' : { 'body': [CLAIM, CLAIM, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
+	'claimer': { 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
+
+    // Base maint/defense classes.
+	'teller': { 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0},
+	'teller-towers': { 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 }
 }
 
 global.UNIT_COST = (body) => _.sum(body, p => BODYPART_COST[p]);
@@ -350,7 +431,7 @@ global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid, max_cost) {
     var partlist = [WORK, MOVE];
     for (var i = 0; i < Math.floor(carry_parts / 2); i++) {
         if ((UNIT_COST(partlist) + UNIT_COST([CARRY, CARRY, MOVE])) > max_cost) {
-            console.log("Trying to build a hauler of bigger size than our spanwer allows. Capping it.");
+            console.log("Trying to build a hauler of " + ((carry_parts / 2) - i) + " bigger size than our spawner allows. Capping it.");
             break;
         }
         partlist.push(CARRY);
@@ -376,6 +457,7 @@ global.JOB_IDLE = 'idle';
 global.JOB_EXTRACT ='extract';
 global.JOB_STOREMINERALS = 'storeminerals';
 global.JOB_USELINK = 'uselink'
+global.JOB_HIDE = 'hide';
 
 global.COLOR_HARVEST = '#ffffff';
 global.COLOR_BUILD = '#0000ff';
@@ -428,6 +510,33 @@ Creep.prototype.getEarningsPerTick = function() {
     return (this.getEarnings() / this.getTicksAlive()); 
 }
 
+Creep.prototype.disableRenew = function() {
+    this.memory['renew_allowed'] = 0;
+}
+
+Creep.prototype.getRenewEnabled = function() {
+    if (this.memory['renew_allowed'] == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+Creep.prototype.getShouldHide = function() {
+    if (this.memory.home == this.memory.target) {
+        return 0;
+    }
+    if (this.room.name in Memory['sectors_under_attack']) {
+        return 1;        
+    }
+    if (this.memory.attackedin != undefined) {
+        if (this.memory.attackedin in Memory['sectors_under_attack']) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
 Room.prototype.getMyStructuresCount = function() {
     var mystructures = this.find(FIND_MY_STRUCTURES);
     var mywalls = this.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_WALL } } );
@@ -445,12 +554,68 @@ StructureTower.prototype.getPowerForRange = function(initialpower, dist) {
     return Math.floor(expected_effect);
 }
 
+StructureTower.prototype.getRepairMax = function() {
+    var lvl = this.room.controller.level;
+    if (lvl == 2) {
+        return 1000;
+    } else if (lvl == 3) {
+        return 5000;
+    } else if (lvl == 4) {
+        return 25000;
+    } else {
+        return 50000 * lvl;
+    }
+}
+
+Creep.prototype.getRepairMax = function() {
+    if (this.room.controller == undefined) {
+        return 0;
+    }
+    var lvl = this.room.controller.level;
+    if (lvl == 2) {
+        return 1000;
+    } else if (lvl == 3) {
+        return 5000;
+    } else if (lvl == 4) {
+        return 25000;
+    } else {
+        return 50000 * lvl;
+    }
+}
+
 global.REPORT_EARNINGS = function() {
     for (var cr in Game.creeps) {
         var earnings = Game.creeps[cr].getEarnings(); 
         var ept = Math.round(Game.creeps[cr].getEarningsPerTick()); 
         var tal = Game.creeps[cr].getTicksAlive();
+        if (!Game.creeps[cr].getRenewEnabled()) {
+            var projected_life_cost = global.CREEP_COST(Game.creeps[cr].body) * -1;
+            ept = projected_life_cost / 1500;
+            //console.log("CREEP " + cr + " HAS PLC: " + projected_life_cost + " and EPT: " + ept);
+        }
         if (Game.creeps[cr].memory['source'] == undefined) {
+            console.log("CREEP " + cr + " HAS NO SOURCE");
+            continue;
+        }
+        if (Game.creeps[cr].memory['target'] == undefined) {
+            console.log("CREEP " + cr + " HAS NO TARGET");
+            continue;
+        }
+        if (empire[Game.creeps[cr].memory['target']] == undefined) {
+            // target not in our empire.
+            continue;
+        }
+        if (Game.creeps[cr].memory['source'] == '') {
+            continue;
+        }
+        if (empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']] == undefined) {
+            console.log(cr + ": SOURCE " + Game.creeps[cr].memory['source'] + " IS MISSING FROM EMPIRE DEFINITION.");
+            Game.creeps[cr].disableRenew();
+            continue;
+        }
+        if (empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']]['sourcename'] == undefined) {
+            console.log("CREEP " + cr + " HAS NO SOURCENAME FOR SOURCE: " + creep.memory.source);
+            Game.creeps[cr].disableRenew();
             continue;
         }
         console.log("Creep " + cr + " working on " + empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']]['sourcename'] + " has earned " + ept + " energy per tick over its " + tal + ' tick lifespan, ' + earnings + ' energy in total.'); 
@@ -462,6 +627,35 @@ global.REPORT_EARNINGS_SOURCES = function() {
         var earnings = Game.creeps[cr].getEarnings(); 
         var ept = Math.round(Game.creeps[cr].getEarningsPerTick()); 
         var tal = Game.creeps[cr].getTicksAlive();
+
+        if (Game.creeps[cr].memory['source'] == undefined) {
+            console.log("CREEP " + cr + " HAS NO SOURCE");
+            continue;
+        }
+        if (Game.creeps[cr].memory['target'] == undefined) {
+            console.log("CREEP " + cr + " HAS NO TARGET");
+            continue;
+        }
+        if (empire[Game.creeps[cr].memory['target']] == undefined) {
+            // target not in our empire.
+            continue;
+        }
+        if (empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']] == undefined) {
+            console.log(cr + ": SOURCE " + Game.creeps[cr].memory['source'] + " IS MISSING FROM EMPIRE DEFINITION.");
+            Game.creeps[cr].disableRenew();
+            continue;
+        }
+        if (empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']]['sourcename'] == undefined) {
+            console.log("CREEP " + cr + " HAS NO SOURCENAME FOR SOURCE: " + creep.memory.source);
+            Game.creeps[cr].disableRenew();
+            continue;
+        }
+
+        if (!Game.creeps[cr].getRenewEnabled()) {
+            var projected_life_cost = global.CREEP_COST(Game.creeps[cr].body) * -1;
+            ept = projected_life_cost / 1500;
+            //console.log("CREEP " + cr + " HAS PLC: " + projected_life_cost + " and EPT: " + ept);
+        }
 
         if(empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']] != undefined) {
             if (empire[Game.creeps[cr].memory['target']].sources[Game.creeps[cr].memory['source']]['earnings'] == undefined) {
@@ -504,14 +698,46 @@ global.REPORT_EARNINGS_SOURCES = function() {
 
 }
 
+global.REPORT_CREEPS = function(prune) {
+    for (var cr in Game.creeps) {
+        if(Game.creeps[cr].memory['needed'] == 0) {
+            console.log(cr + ", doing " + Game.creeps[cr].memory['job'] + ", is not needed. Renewal: " + Game.creeps[cr].memory['renew_allowed'] + ". Expires in: " + Game.creeps[cr].ticksToLive);
+            if (prune == undefined) {
+                // do nothing.
+            } else if (prune == 1) {
+               Game.creeps[cr].disableRenew(); 
+            } else if (prune == 2) {
+                Game.creeps[cr].suicide();
+            }
+        }
+    }
+}
+
+global.SPAWN_UNIT = function (spawnername, role, targetroomname) {
+    if (Game.spawns[spawnername] == undefined) {
+        console.log("No such spawner.");
+        return 0;
+    }
+    if ( empire_workers[role] == undefined) {
+        console.log("Invalid role");
+        return 0;
+    }
+    spawncustom.process(Game.spawns[spawnername], '', empire_workers[role]['body'], role, 
+                        '', targetroomname, global.UNIT_COST(empire_workers[role]['body']), 
+                        Game.spawns[spawnername].room.name, 25, 
+                        25, 0);
+    return "DONE";
+}
+
 // ---------------------------
 // BEGIN MAIN LOOP 
 // ---------------------------
 
 module.exports.loop = function () {
 
-
-    //console.log('Account: ' + Game.cpu.limit + ', Cycle: ' + Game.cpu.tickLimit + ', Bucket: ' + Game.cpu.bucket);
+    if (Game.cpu.bucket < 9000) {
+        console.log('Account: ' + Game.cpu.limit + ', Cycle: ' + Game.cpu.tickLimit + ', Bucket: ' + Game.cpu.bucket);
+    }
     //return;
 
     cleaner.process()
@@ -525,31 +751,30 @@ module.exports.loop = function () {
     };
 
 
-    if(Game.time % 5 === 0) {
+    if(Game.time % 3 === 0) {
 
         // EXPANSION CONTROLLER
         
         /*
         var myusername = overlord;
-        var expansiontarget = Game.rooms['W51S18'];
-        var expansiontargetname = 'W51S18';
-        var expansionsource = '59bbc4182052a716c3ce758c';
-        var controllertarget = Game.getObjectById('59bbc4182052a716c3ce758b');
-        var gcltarget = 2;
-        var spawner_posx = 16;
-        var spawner_posy = 24;
-        // CASE 1: I have nothing in the room OR I have something but I lack the GCL to claim the room. Instead, send a reserver & guard.
+        var expansiontarget = Game.rooms['W51S14'];
+        var expansiontargetname = 'W51S14';
+        var expansionsource = '59bbc4172052a716c3ce757c';
+        var controllertarget = Game.getObjectById('59bbc4172052a716c3ce757e');
+        var gcltarget = 3;
+        var spawner_posx = 37;
+        var spawner_posy = 17;
+        // CASE 1: My GCL is too low.
         if (Game.gcl.level < gcltarget) {
-            //empire[expansiontargetname].sources[expansionsource].assigned = {'reserver': 1}; // , 'adventurer': 1
-            console.log("EXPAND: " + expansiontargetname + ": reserver");
+            // don't do anything, reservers are pointless.
         // ERROR CHECK: controller
         } else if (controllertarget == undefined) {
             console.log("EXPAND: CONTROLLER TARGET UNDEFINED - CHECK YOU HAVE UNITS THERE.");
-            empire[expansiontargetname].sources[expansionsource].assigned = {'claimer': 1, 'builderstorage': 4};
+            empire[expansiontargetname].sources[expansionsource].assigned = {'claimer': 1, 'remoteconstructor': 4};
         // CASE 2: I can claim the room.
         } else if (controllertarget.owner['username'] != myusername) {
             console.log("EXPAND: " + expansiontarget + ": TRYING TO CLAIM CONTROLLER ");
-            empire[expansiontargetname].sources[expansionsource].assigned = {'claimer': 1, 'builderstorage': 4};
+            empire[expansiontargetname].sources[expansionsource].assigned = {'claimer': 1, 'remoteconstructor': 4};
         // CASE 3: I have already claimed the room.
         } else {
             var has_spawn = 0;
@@ -568,10 +793,11 @@ module.exports.loop = function () {
             //} else 
             if (!has_spawn) {
                 // CASE 5: I own the room, the controller is level 1 (can have spawn) but there is no spawn
-                var csites = expansiontarget.find(FIND_CONSTRUCTION_SITES);
+                var csites = expansiontarget.find(FIND_MY_CONSTRUCTION_SITES);
                 if(csites.length) {
                     var csite = csites[0];
                     console.log("EXPAND: " + expansiontarget + ": WAIT FOR SPAWNER TO BE BUILT, PROGRESS: " + csite.progress + '/' + csite.progressTotal);
+                    empire[expansiontargetname].sources[expansionsource].assigned = {'claimer': 1, 'remoteconstructor': 6};
                     // we have a spawn construction site, we just need to wait for it to be built.
                 } else {
                     console.log("EXPAND: " + expansiontarget + ": CREATE SPAWNER");
@@ -580,8 +806,9 @@ module.exports.loop = function () {
                 empire[expansiontargetname].sources[expansionsource].assigned = {'remoteconstructor': 6};
             } else { 
                 console.log("EXPAND: " + expansiontarget + ": SUCCESS");
-                empire[expansiontargetname].sources['59bbc4182052a716c3ce758c'].assigned = {'upgrader': 3}; // EE room, upgrader slot
-                empire[expansiontargetname].sources['59bbc4182052a716c3ce758d'].assigned = {'harvester': 3};
+                empire[expansiontargetname].spawn_from = expansiontargetname;
+                empire[expansiontargetname].sources['59bbc4172052a716c3ce757c'].assigned = {'upgrader': 3}; // 3 slots, some travel time.
+                empire[expansiontargetname].sources['59bbc4172052a716c3ce757d'].assigned = {'harvester': 3}; // 4 slots, no travel time.
                 // CASE 6: I own the room, and there is a spawn there.
                 // SUCCESS?
             } 
@@ -596,10 +823,11 @@ module.exports.loop = function () {
             // ENERGY MANAGEMENT
             var energy_reserves = 0;
             if(Game.rooms[rname]['storage'] != undefined) {
-                if (Game.rooms[rname]['storage'].store.energy) {
+                if (Game.rooms[rname]['storage'].store.energy > 0) {
 
                     energy_reserves = Game.rooms[rname]['storage'].store.energy;
 
+                    // In case we know of an enemy room with storage.
                     if(empire[rname] == undefined) {
                         continue;
                     }
@@ -608,22 +836,79 @@ module.exports.loop = function () {
                     // Adjust builders depending on unfinished projects.
                     var projectsList = Game.rooms[rname].find(FIND_MY_CONSTRUCTION_SITES);
                     if(projectsList.length > 0) {
-                        if(energy_reserves > 200000) {
-                            empire[rname].sources['builder'] = {'sourcename': rname + '-build', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5}
+                        if(energy_reserves > empire_defaults['room_reserves_required']) {
+                            empire[rname].sources['builder'] = {'sourcename': rname + '-B', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5}
                             empire[rname].sources['builder'].assigned['builderstorage'] = 2;
                         }
                     }
 
-                    empire[rname].sources['upgrader'] = {'sourcename': rname + '-upgrade', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 10}
+                    empire[rname].sources['upgrader'] = {'sourcename': empire[rname]['roomname'] + '-U', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 10}
                     
-                    if(energy_reserves > 700000) {
-                        empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 4;
-                    } else if(energy_reserves > 500000) {
-                        empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 2;
-                    } else if(energy_reserves > 300000) {
-                        empire[rname].sources['upgrader'].assigned['upgraderstorage'] = 1;
+                    if(energy_reserves > (empire_defaults['room_reserves_required'] * 4)) {
+                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 4, 'teller': 2};
+                    } else if(energy_reserves > (empire_defaults['room_reserves_required'] * 3)) {
+                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 3, 'teller': 2};
+                    } else if(energy_reserves > (empire_defaults['room_reserves_required'] * 2)) {
+                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 2, 'teller': 2};
+                    } else if(energy_reserves > empire_defaults['room_reserves_required']) {
+                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 1, 'teller': 1};
                     }                    
                     
+                }
+            }
+            
+            // ENERGY AVAILABILITY MANAGEMENT
+            if(Game.rooms[rname].energyCapacityAvailable > 0) {
+                if (Game.rooms[rname].memory == undefined) {
+                    Game.rooms[rname].memory = {};
+                }
+                if (Game.rooms[rname]['storage'] == undefined) {
+                    continue;
+                }
+                var rmem = Game.rooms[rname].memory;
+                var max_history = empire_defaults['room_history_ticks'];
+                if (rmem['energyhistory'] == undefined) {
+                    rmem['energyhistory'] = [];
+                }
+                if (rmem['energyhistory'].length >= max_history) {
+                    rmem['energyhistory'].pop();
+                }
+                rmem['energyhistory'].unshift(Game.rooms[rname].energyAvailable);
+                var e_hist_total = 0;
+                for (var i = 0; i < rmem['energyhistory'].length; i++) {
+                    e_hist_total += rmem['energyhistory'][i];
+                }
+                var e_hist_avg = Math.round(e_hist_total / rmem['energyhistory'].length);
+                var e_hist_avg_pc = Math.round(e_hist_avg / Game.rooms[rname].energyCapacityAvailable * 100);
+                if (e_hist_avg_pc < empire_defaults['room_minimum_energy_pc']) {
+                    var rhid = empire[rname]['roomname'];
+                    var mysname = rhid + '-T';
+                    if(empire[rname].sources[mysname] == undefined) {
+                        empire[rname].sources[mysname] = { 'sourcename': mysname, 'x':20, 'y':20, 'assigned': {}, 'expected_income': 100 }
+                    }
+                    empire[rname].sources[mysname].assigned['teller'] = 1;
+                    //console.log(rname + ' requires a teller: ' + e_hist_avg_pc + ' < ' + empire_defaults['room_minimum_energy_pc']);
+                }
+                //console.log(rname + ' no requires a teller: ' + e_hist_avg_pc + ' > ' + empire_defaults['room_minimum_energy_pc']);
+                Game.rooms[rname].memory = rmem;
+            }
+            
+            // SCAVENGER MANAGEMENT
+            if(Game.rooms[rname].energyCapacityAvailable > 0) {
+                var dropped_resources = Game.rooms[rname].find(FIND_DROPPED_RESOURCES, {filter: (s) => s.energy > 0});
+                if (dropped_resources.length > 0) {
+                    var energy_on_ground = 0;
+                    for (var i = 0; i < dropped_resources.length; i++) {
+                        energy_on_ground += dropped_resources[i].energy;
+                    }
+                    if (energy_on_ground > (1.5 * UNIT_COST(empire_workers['scavenger']['body']))) {
+                        var rhid = empire[rname]['roomname'];
+                        var mysname = rhid + '-scavenger';
+                        if(empire[rname].sources[mysname] == undefined) {
+                            empire[rname].sources[mysname] = { 'sourcename': mysname, 'x':20, 'y':20, 'assigned': {}, 'expected_income': 90 }
+                        }
+                    empire[rname].sources[mysname].assigned['scavenger'] = 1;
+                    }
                 }
             }
 
@@ -722,6 +1007,26 @@ module.exports.loop = function () {
                     continue;
                 }
 
+                if (Game.rooms[csector] != undefined) {
+                    var enemiesList = Game.rooms[csector].find(FIND_HOSTILE_CREEPS);
+                    var enemiesCost = 0;
+                    var attacker_username = 'Invader';
+                    if(enemiesList.length) {
+                        for(var i = 0; i < enemiesList.length; i++) {
+                            var ebody = enemiesList[i].body;
+                            
+                            enemiesCost += global.CREEP_COST(enemiesList[i].body);
+                            if (enemiesList[i].owner != undefined) {
+                                if (enemiesList[i].owner.username != undefined) {
+                                    if (enemiesList[i].owner.username != attacker_username) {
+                                        attacker_username = enemiesList[i].owner.username;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 var baseforce = {};
                 var patrolforce = {};
                 var room_has_spawn = 0;
@@ -729,6 +1034,11 @@ module.exports.loop = function () {
                     if (Game.spawns[thisspawn].room.name == csector) {
                         room_has_spawn = 1;
                     }
+                }
+                var towercount = 0;
+                if (Game.rooms[csector] != undefined) {
+                    var towerlist = Game.rooms[csector].find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } } );
+                    towercount = towerlist.length;
                 }
 
                 if(room_has_spawn) {
@@ -747,9 +1057,52 @@ module.exports.loop = function () {
                     }
                 }
 
+                //scout (190) slasher (380), rogue (640), ninja (900), dragon(1390)
+                var theirthreat = sectors_under_attack[csector]['threat'];
+                if (towercount > 0) {
+                    theirthreat -= (400 * towercount);
+                    baseforce['teller-towers'] = 1;
+                    if (theirthreat > 3000) {
+                        baseforce['teller'] = 1;
+                    }
+                }
 
+            
+                if (empire[csector]['spawns_from'] == undefined) {
+                    console.log("ATTACK CONFIG WARNING, SECTOR " + csector + " HAS NO SPAWNS_FROM SET ON ITS ROOM!");
+                    patrolforce['rogue'] = 1; // the sad default.
+                } else if (theirthreat > 0) {
+                    //console.log("XAT: Deciding what to spawn for the " + theirthreat + " attack on " + csector);
+                    var enow = Game.rooms[empire[csector]['spawns_from']].energyAvailable;
+                    var emax = Game.rooms[empire[csector]['spawns_from']].energyCapacityAvailable;
+                    for (var i = 0; i < empire_defaults['defense_roles'].length; i++) {
+                        var oname = empire_defaults['defense_roles'][i];
+                        //console.log("checking cost for" + oname);
+                        var obody = empire_workers[oname]['body'];
+                        var outfit_cost = global.UNIT_COST(obody);
+                        if (outfit_cost > emax) {
+                            //console.log("XAT: No point using " + oname + " as it exceeds our spawn power " + emax);
+                            // no point using this... we can't possibly afford it.
+                            continue;
+                        }
+                        if (outfit_cost > theirthreat) {
+                            //console.log("XAT: No point using " + oname + " as it exceeds their threat " + theirthreat);
+                            continue; // overkill...
+                        }
+                        if (patrolforce[oname] == undefined) {
+                            patrolforce[oname] = 1;
+                        } else {
+                            patrolforce[oname] += 1;
+                        }
+                        theirthreat -= outfit_cost;
+                        //console.log("XAT: Using " + oname + " (cost: " + outfit_cost + ") to match their threat, it is now: " + theirthreat);
+                    }
+                }
+                /*
+                if (csector == 'W51S14') {
+                    patrolforce['scout'] = 1;
                 // defcon 1: single invader, invasion lasting less than 3m, not very strong
-                if (sectors_under_attack[csector]['threat'] < 3000 && (timenow - sectors_under_attack[csector]['attackstart']) < 180 && sectors_under_attack[csector]['enemycount'] == 1) {
+                } else if (sectors_under_attack[csector]['threat'] < 3000 && (timenow - sectors_under_attack[csector]['attackstart']) < 180 && sectors_under_attack[csector]['enemycount'] == 1) {
                     if (room_has_spawn) {
                         baseforce['teller-towers'] = 1;
                     } else {
@@ -794,23 +1147,30 @@ module.exports.loop = function () {
                     }
                     empire[csector]['defcon'] = 4;
                 }
-                empire[csector].sources['BASEFORCE'] = {'sourcename': csector + '-base', 'x':25, 'y':25,
-                    'assigned': baseforce, 'expected_income': 100}
-                empire[csector].sources['PATROLFORCE'] = {'sourcename': csector + '-patrol', 'x':25, 'y':25,
-                    'assigned': patrolforce, 'expected_income': 99}
+                */
+                
+                empire[csector].sources['BASEFORCE'] = {'sourcename': empire[csector]['roomname'] + '-bforce', 'x':25, 'y':25,
+                    'assigned': baseforce, 'expected_income': 95}
+                empire[csector].sources['PATROLFORCE'] = {'sourcename': empire[csector]['roomname'] + '-pforce', 'x':25, 'y':25,
+                    'assigned': patrolforce, 'expected_income': 94}
                 if (tgap > 0) {
-                    console.log("ATTACK: TIMING OUT IN: " + csector + ', age: ' + tgap + ' DEFCON: ' + empire[csector]['defcon']);
+                    //console.log("ATTACK: TIMING OUT IN: " + csector + ', age: ' + tgap + ' DEFCON: ' + empire[csector]['defcon']);
+                    console.log("ATTACK: TIMING OUT IN: " + csector + ', age: ' + tgap);
                 } else {
-                    console.log("ATTACK: HOSTILES STILL IN " + csector + '! DEFCON: ' + empire[csector]['defcon']);
+                    //console.log("ATTACK: HOSTILES STILL IN " + csector + '! 'DEFCON: ' + empire[csector]['defcon']');
+                    console.log("ATTACK: HOSTILES STILL IN " + csector + '! ');
                 }
             }
         }
         Memory['sectors_under_attack'] = sectors_under_attack;
 
         // SPAWNING MANAGER
-        var sources_actual = [];
+        for (var rname in empire) {
+            empire[rname].living = {};
+        }
         var spawner_parts = {};
         for(var name in Memory.creeps) {
+            Game.creeps[name].memory['needed'] = 0;
             if(Game.creeps[name].memory.spawner == undefined) {
                 var pcount = Game.creeps[name].body.length;
                 if (Game.creeps[name].memory.spawnername == undefined) {
@@ -834,16 +1194,38 @@ module.exports.loop = function () {
             if(Game.creeps[name].memory.role) {
                 myrole = Game.creeps[name].memory.role;
                 if(Game.creeps[name].memory.source != undefined) {
-                    if(sources_actual[Game.creeps[name].memory.source] == undefined) { 
-                        sources_actual[Game.creeps[name].memory.source] = {id:sources_actual[Game.creeps[name].memory.source]};
+                    var mysource = Game.creeps[name].memory.source;
+                    var myroom = Game.creeps[name].memory.target;
+                    if(empire[myroom] == undefined) {
+                        //console.log("WARN: " + Game.creeps[name] + " in " + Game.creeps[name].room.name + " has a room defined as target that has no empire definition.");
+                        continue;
                     }
-                    if(sources_actual[Game.creeps[name].memory.source][myrole] == undefined) {
-                        sources_actual[Game.creeps[name].memory.source][myrole] = 1;
+                    if(empire[myroom].living == undefined) {
+                        empire[myroom].living = {};
+                    }
+                    if(empire[myroom].living[mysource] == undefined) {
+                        empire[myroom].living[mysource] = {};
+                    }
+                    if(empire[myroom].living[mysource][myrole] == undefined) {
+                        empire[myroom].living[mysource][myrole] = 1;
                     } else {
-                        sources_actual[Game.creeps[name].memory.source][myrole] = sources_actual[Game.creeps[name].memory.source][myrole] + 1;
+                        empire[myroom].living[mysource][myrole] += 1;
+                    }
+                    //console.log(name + ": Source " + myroom + '/' + mysource +'/'+ myrole + " set to " + empire[myroom].living[mysource][myrole]);
+                    var desired = 0;
+                    if(Game.creeps[name].memory.target != undefined && Game.creeps[name].memory.source != undefined && Game.creeps[name].memory.role != undefined) {
+                        if (empire[Game.creeps[name].memory.target] != undefined) {
+                            if (empire[Game.creeps[name].memory.target].sources[Game.creeps[name].memory.source] != undefined) {
+                                if (empire[Game.creeps[name].memory.target].sources[Game.creeps[name].memory.source].assigned[Game.creeps[name].memory.role] != undefined) {
+                                    desired = empire[Game.creeps[name].memory.target].sources[Game.creeps[name].memory.source].assigned[Game.creeps[name].memory.role];
+                                    if (empire[myroom].living[mysource][myrole] <= desired) {
+                                        Game.creeps[name].memory['needed'] = 1;
+                                    } 
+                                }
+                            }
+                        }
                     }
                 } else {
-                    Game.creeps[name].memory.source = '59bbc3f82052a716c3ce728b'; // :((( ******************
                     console.log("Creep " + name + " has NO SOURCE! THIS IS BAD, FIX IT!");
                 }
             } else {
@@ -851,6 +1233,7 @@ module.exports.loop = function () {
                 continue;
             }
         }
+
         for(var spawner in spawner_parts) {
             if(spawner_parts[spawner] > 400) {
                 console.log("ALERT: spawner " + spawner + " is maintaining " + spawner_parts[spawner] + " > 400 creep parts. Not sustainable.");
@@ -874,18 +1257,24 @@ module.exports.loop = function () {
                 }
             }
             var spawn_queue = {};
+            if(Memory['config.reportworkers'] == undefined) {
+                Memory['config.reportworkers'] = 0;
+            }
             for (var rname in empire) {
                 for (var skey in empire[rname].sources) {
                     var s_status = 'Source: |' + empire[rname].sources[skey]['sourcename'] + '|: ';
-                    if (sources_actual[skey] == undefined) {
-                        sources_actual[skey] = {};
+                    if (empire[rname].living == undefined) {
+                        empire[rname].living = {};
+                    }
+                    if (empire[rname].living[skey] == undefined) {
+                        empire[rname].living[skey] = {};
                     }
                     for (var role in empire[rname].sources[skey].assigned) {
-                        if (sources_actual[skey][role] == undefined) {
-                            sources_actual[skey][role] = 0;
+                        if (empire[rname].living[skey][role] == undefined) {
+                            empire[rname].living[skey][role] = 0;
                         }
-                        s_status += role + ': ' + sources_actual[skey][role] + '/' + empire[rname].sources[skey].assigned[role] + ' ';
-                        if ( sources_actual[skey][role] < empire[rname].sources[skey].assigned[role]) {
+                        s_status += role + ': ' + empire[rname].living[skey][role] + '/' + empire[rname].sources[skey].assigned[role] + ' ';
+                        if ( empire[rname].living[skey][role] < empire[rname].sources[skey].assigned[role]) {
                             if(sectors_under_attack[csector] != undefined && !empire_defaults['military_roles'].includes(role) && !empire_defaults['priority_roles'].includes(role)) {
                                 //console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| until attack is over.");
                                 continue;
@@ -898,6 +1287,7 @@ module.exports.loop = function () {
                                 for (key in Game.spawns) {
                                     if (Game.spawns[key].room.name == empire[rname]['spawns_from']) {
                                         spawner = Game.spawns[key];
+                                        break;
                                     }
                                 }
                             }
@@ -911,74 +1301,7 @@ module.exports.loop = function () {
                                 console.log(spawner.name + ': UNDEFINED ROLE: ' + role)
                                 continue;
                             }
-                            if (spawner.room.energyAvailable < 300) {
-                                //console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as cost exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
-                                //continue;
-                            }
-                            var part_template = empire_workers[role]['body'];
-                            var partlist = [];
-                            var work_units = Math.max(1, Math.floor(spawner.room.energyCapacityAvailable / global.UNIT_COST(part_template)));
-                            var renew_allowed = 1;
-                            
-                            if (spawner_mobs[spawner.name] == undefined ) {
-                                work_units = 1;
-                                renew_allowed = 0;
-                                console.log(spawner.name + ': ALLOWING ONLY ONE WORK UNIT, AS MY MOB LIST IS UNDEFINED. ');
-                            } else  {
-                                if (spawner_mobs[spawner.name].length < 5) {
-                                    work_units = 1;
-                                    renew_allowed = 0;
-                                    console.log(spawner.name + ': ALLOWING ONLY ONE WORK UNIT, AS MY MOB LIST HAS LESS THAN 5 MOBS. ');
-                                }
-                            }
-                            if (empire_workers[role]['renew_allowed'] != undefined) {
-                                if (empire_workers[role]['renew_allowed'] == 0) {
-                                    renew_allowed = 0;   
-                                }
-                            }
-                            var renewing_creeps = 0;
-                            for (var cr in Game.creeps) {
-                                //console.log(Game.creeps[cr].room['name'] + ' v ' + spawner.room.name);
-                                if(Game.creeps[cr].room.name == spawner.room.name && Game.creeps[cr].memory.job == 'renew' && spawner.pos.getRangeTo(Game.creeps[cr]) < 3) {
-                                    renewing_creeps++;
-                                } 
-                            }
-                            if (renewing_creeps >= 1) {
-                                console.log(spawner.name + ' BLOCKED: number creeps renewing: ' + renewing_creeps);
-                                continue;
-                            } else {
-                                //console.log(spawner.name + ': number creeps renewing: ' + renewing_creeps);
-                            }
 
-                            if(role == 'hauler') {
-                                partlist = CONSTRUCT_HAULER_BODY(rname, skey, spawner.room.energyCapacityAvailable);
-                            } else if (empire_workers[role]['noresizing'] == undefined) {
-                                for (k = 0; k < part_template.length; k++) {
-                                    for (j = 0; j < work_units; j++) {
-                                        partlist.push(part_template[k]);
-                                    }
-                                }
-                            } else {
-                                partlist = part_template;
-                            }
-                            var version = empire_workers[role]['version'];
-
-                            var spawnrole = role;
-                            var thecost = global.UNIT_COST(partlist);
-                            if (spawner.room.energyCapacityAvailable < thecost) {
-                                //console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as THIS UNIT cost " + thecost + ' for ' + JSON.stringify(partlist) + ' exceeds MAX STORAGE: ' + 
-                                //    spawner.room.energyAvailable + ' ~ ' + JSON.stringify(partlist));
-                                continue;
-                            }
-                            if (spawner.room.energyAvailable < thecost) {
-                                //console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as we lack the cost " + thecost + ' exceeds storage: ' + spawner.room.energyAvailable);
-                                continue;
-                            }
-                            var target_x = 25;
-                            var target_y = 25;
-                            if(empire[rname].sources[skey]['x'] != undefined) { target_x = empire[rname].sources[skey]['x']; }
-                            if(empire[rname].sources[skey]['y'] != undefined) { target_y = empire[rname].sources[skey]['y']; }
-                            
                             var expected_income = 0;
                             if(empire[rname].sources[skey]['expected_income'] != undefined) {
                                 expected_income = empire[rname].sources[skey]['expected_income'];
@@ -1003,23 +1326,94 @@ module.exports.loop = function () {
                             } else {
                                 //console.log(spawner.name + ': permitting spawn queue set as there is nothing in queue.');
                             }
+
+
+                            if (spawner.room.energyAvailable < 300) {
+                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as cost exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
+                                //continue;
+                            }
+                            var part_template = empire_workers[role]['body'];
+                            var partlist = [];
+                            var work_units = Math.max(1, Math.floor(spawner.room.energyCapacityAvailable / global.UNIT_COST(part_template)));
+                            var renew_allowed = 1;
+                            
+                            if (spawner_mobs[spawner.name] == undefined ) {
+                                work_units = 1;
+                                renew_allowed = 0;
+                                console.log(spawner.name + ': ALLOWING ONLY ONE WORK UNIT, AS MY MOB LIST IS UNDEFINED. ');
+                            } else  {
+                                if (spawner_mobs[spawner.name].length < 6) {
+                                    work_units = 1;
+                                    renew_allowed = 0;
+                                    console.log(spawner.name + ': ALLOWING ONLY ONE WORK UNIT, AS MY MOB LIST HAS LESS THAN 6 MOBS. ');
+                                }
+                            }
+                            if (empire_workers[role]['renew_allowed'] != undefined) {
+                                if (empire_workers[role]['renew_allowed'] == 0) {
+                                    renew_allowed = 0;   
+                                }
+                            }
+                            var renewing_creeps = 0;
+                            for (var cr in Game.creeps) {
+                                //console.log(Game.creeps[cr].room['name'] + ' v ' + spawner.room.name);
+                                if(Game.creeps[cr].room.name == spawner.room.name && Game.creeps[cr].memory.job == 'renew' && spawner.pos.getRangeTo(Game.creeps[cr]) < 3) {
+                                    renewing_creeps++;
+                                } 
+                            }
+                            if (renewing_creeps >= 3) {
+                                console.log(spawner.name + ' BLOCKED: number creeps renewing: ' + renewing_creeps);
+                                continue;
+                            } else {
+                                //console.log(spawner.name + ': number creeps renewing: ' + renewing_creeps);
+                            }
+
+                            if(role == 'hauler') {
+                                partlist = CONSTRUCT_HAULER_BODY(rname, skey, spawner.room.energyCapacityAvailable);
+                            } else if (empire_workers[role]['noresizing'] == undefined) {
+                                for (k = 0; k < part_template.length; k++) {
+                                    for (j = 0; j < work_units; j++) {
+                                        partlist.push(part_template[k]);
+                                    }
+                                }
+                            } else {
+                                partlist = part_template;
+                            }
+
+                            var spawnrole = role;
+                            var thecost = global.UNIT_COST(partlist);
+                            if (spawner.room.energyCapacityAvailable < thecost) {
+                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as THIS UNIT cost " + thecost + ' for ' + JSON.stringify(partlist) + ' exceeds MAX STORAGE: ' + 
+                                    spawner.room.energyAvailable + ' ~ ' + JSON.stringify(partlist));
+                                continue;
+                            }
+                            if (spawner.room.energyAvailable < thecost) {
+                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + "| as we lack the cost " + thecost + ' exceeds storage: ' + spawner.room.energyAvailable);
+                                continue;
+                            }
+                            var target_x = 25;
+                            var target_y = 25;
+                            if(empire[rname].sources[skey]['x'] != undefined) { target_x = empire[rname].sources[skey]['x']; }
+                            if(empire[rname].sources[skey]['y'] != undefined) { target_y = empire[rname].sources[skey]['y']; }
+                            
                             console.log("SPAWNING: " + spawner.name + " created " + spawnrole + " for |" + empire[rname].sources[skey]['sourcename'] + 
                             '| cost: ' + thecost + '/' + spawner.room.energyAvailable + ' based out of ' + spawner.room.name + ' with renew: ' + renew_allowed);
 
                             spawn_queue[spawner.name] = {
                                 'spawner': spawner.name, 'sname': empire[rname].sources[skey]['sourcename'], 'partlist': partlist, 'spawnrole': spawnrole, 'skey': skey, 'rname': rname, 
-                                'thecost': thecost, 'myroomname': spawner.room.name, 'target_x': target_x, 'target_y': target_y, 'version': version, 
+                                'thecost': thecost, 'myroomname': spawner.room.name, 'target_x': target_x, 'target_y': target_y,  
                                 'expected_income': expected_income, 'renew_allowed': renew_allowed
                             }
                             //console.log(JSON.stringify(spawn_queue));
-                            //spawncustom.process(spawner, partlist, spawnrole, skey, rname, thecost, spawner.room.name, target_x, target_y, version);
                         }
                     }
-                    if(Memory['config.reportworkers'] == 1) {
+                    if (Memory['config.reportworkers'] > 0) {
                         console.log(s_status);
                     }
                     
                 }
+            }
+            if (Memory['config.reportworkers'] > 0) {
+                Memory['config.reportworkers'] -= 1;
             }
             //console.log(JSON.stringify(spawn_queue));
             for(var spawnername in Game.spawns) {
@@ -1030,7 +1424,7 @@ module.exports.loop = function () {
                         thespawner, spawn_queue[spawnername]['sname'], spawn_queue[spawnername]['partlist'], spawn_queue[spawnername]['spawnrole'], 
                         spawn_queue[spawnername]['skey'], spawn_queue[spawnername]['rname'], spawn_queue[spawnername]['thecost'], 
                         spawn_queue[spawnername]['myroomname'], spawn_queue[spawnername]['target_x'], 
-                        spawn_queue[spawnername]['target_y'], spawn_queue[spawnername]['version'], spawn_queue[spawnername]['renew_allowed']
+                        spawn_queue[spawnername]['target_y'], spawn_queue[spawnername]['renew_allowed']
                     )
                 } else {
                     // spawner ~thespawner~ has a full queue.
@@ -1043,21 +1437,29 @@ module.exports.loop = function () {
     
     for(var id in Game.structures){
         if(Game.structures[id].structureType == STRUCTURE_TOWER){
-            structureTower.run(Game.structures[id])
+            structureTower.run(Game.structures[id]);
+        }
+        if(Game.structures[id].structureType == STRUCTURE_LINK){
+            structureLink.run(Game.structures[id]);
+        }
+        if(Game.structures[id].structureType == STRUCTURE_LAB){
+            structureLab.run(Game.structures[id]);
         }
     }
 
     for(var name in Game.creeps) {
         var creep = Game.creeps[name];
-        if(creep.memory.role == 'harvester') {
-            roleHarvester.run(creep, 0);
+        if (creep.spawning) {
+            // don't even process this creep, it cannot do anything while it is being spawned, and even attempting to do so just wastes CPU.
+        } else if(creep.memory.role == 'harvester') {
+            roleHarvester.run(creep);
         } else if(creep.memory.role == 'c15harvester' || creep.memory.role == 'c30harvester') {
-            roleHarvester.run(creep, 1);
+            roleCHarvester.run(creep);
         } else if(creep.memory.role == 'hauler') {
             roleHauler.run(creep);
         } else if(creep.memory.role == 'extractor') {
             roleExtractor.run(creep);
-        } else if(creep.memory.role == 'upgrader') {
+        } else if(creep.memory.role == 'upgclose' || creep.memory.role == 'upgfar') {
             roleUpgrader.run(creep);
         } else if(creep.memory.role == 'upgraderstorage') {
             roleUpgraderstorage.run(creep);
@@ -1072,6 +1474,8 @@ module.exports.loop = function () {
 
         } else if(creep.memory.role == 'drainer') {
             roleDrainer.run(creep, 1);
+        } else if(creep.memory.role == 'drainerhealer') {
+            roleDrainerhealer.run(creep, 1);
         } else if(creep.memory.role == 'siege') {
             roleSiege.run(creep);
         } else if (empire_defaults['military_roles'].includes(creep.memory.role)) {
@@ -1085,8 +1489,12 @@ module.exports.loop = function () {
             roleReserver.run(creep);
         } else if(creep.memory.role == 'recycler') {
             roleRecycler.run(creep);
+        } else if(creep.memory.role == 'signer') {
+            roleSigner.run(creep);
         } else if(creep.memory.role == 'remoteconstructor') {
             roleRemoteconstructor.run(creep);
+        } else if(creep.memory.role == 'labtech') {
+            roleLabtech.run(creep);
         } else {
             console.log("ALERT: " + creep.name + " has role " + creep.memory.role + " which I don't know how to handle!")
         }

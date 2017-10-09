@@ -19,7 +19,6 @@ module.exports = {
                 //creep.memory.role = 'recycler'; // this is super-dangerous, it can create an endless loop when a room without a container spawns a teller :P
             }
 	    } else if(creep.memory.job == JOB_RETURN) {
-            // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
             if (towersonly) {
     	        if (jobReturnresources.run(creep, 0, 0, 0.75, 0, 0) == -1) { // fill towers first.
     	            if (jobReturnresources.run(creep, 1, 1, 0.5, 0, 0) == -1) { // fill other things.
@@ -31,18 +30,6 @@ module.exports = {
                     //
                 }
             }
-        /*
-        } else if (creep.memory.job == JOB_RENEW) {
-            if (creep.ticksToLive > 1000) {
-	            creep.memory.job = 'build';
-                creep.announceJob();
-            } else {
-                if (jobRenew.run(creep) == -1){
-                    creep.memory.job = JOB_GFS;
-                    creep.announceJob();
-                }
-            }
-        */ // tellers never renew.
         } else {
             console.log("WARNING: " + creep.name + " has no job! " + creep.memory.job);
             creep.memory.job = JOB_GFS;

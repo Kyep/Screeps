@@ -122,9 +122,14 @@ module.exports = {
                     }
 
                 } else {
-                    creep.memory['targetcontainer'] = undefined;
-                    creep.memory.job = JOB_BUILD;
-                    creep.announceJob();
+                    if(creep.room.name == creep.memory.home) {
+                        creep.memory.job = JOB_RETURN;
+                    } else {
+                        creep.memory['targetcontainer'] = undefined;
+                        creep.memory.job = JOB_BUILD;
+                        creep.announceJob();
+                    }
+
                 }
             } else {
                 creep.moveTo(new RoomPosition(creep.memory.target_x, creep.memory.target_y, creep.memory.target))
@@ -145,21 +150,28 @@ module.exports = {
                 if (containermine) {
                     creep.memory.job = JOB_HARVEST;
                     creep.announceJob();                    
-                } else if(creep.room.name == creep.memory.home) {
-                    creep.memory.job = JOB_RETURN;
+                } else if(creep.room.name != creep.memory.home) {
+                    creep.memory.job = JOB_TRAVEL_BACK;
                     creep.announceJob();
                 } else {
-                    //creep.memory.job = JOB_REPAIR;
-                    //creep.announceJob();
-                    creep.memory.job = JOB_TRAVEL_BACK;
+                    if (creep.room.controller) {
+                        if (creep.room.controller.level) {
+                            if (creep.room.controller.level < 3) {
+                                creep.memory.job = JOB_REPAIR;
+                                creep.announceJob();
+                                return;
+                            }
+                        }
+                    }
+                    creep.memory.job = JOB_UPGRADE;
                     creep.announceJob();
                 }
             }
 	    }
 	    if(creep.memory.job == JOB_REPAIR) {
             if (jobRepair.run(creep) == -1) {
-                creep.memory.job = JOB_TRAVEL_BACK;
-                    creep.announceJob();
+                creep.memory.job = JOB_UPGRADE;
+                creep.announceJob();
             }
         }
         if(creep.memory.job == JOB_UPGRADE) {

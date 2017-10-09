@@ -2,10 +2,11 @@ module.exports = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
+        var repairMax = creep.getRepairMax();
         var repairTargets = creep.room.find(FIND_STRUCTURES, {
             filter: function(structure){
                 if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
-                    return (structure.hits < empire_defaults['repairmax_creeps'])
+                    return (structure.hits < repairMax)
                 }else{
                     return (structure.hits < structure.hitsMax)
                 }
