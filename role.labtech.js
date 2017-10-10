@@ -9,11 +9,34 @@
 
 module.exports = {
     run: function(creep) {
+        if (creep.memory.mode == 'clear2') {
+            if(_.sum(creep.carry) > 0) {
+                var keyslist = Object.keys(creep.carry);
+                var myterminal = creep.room.terminal;
+                //console.log("T: " + keyslist[1]);
+                if (creep.transfer(myterminal, keyslist[1]) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(myterminal);
+                }
+                return 0;
+            }
+            var thelab = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { filter: function(structure){ if(structure.structureType == STRUCTURE_LAB && structure.mineralAmount > 0) { return 1; } else { return 0; } } });
+            if (thelab == null || thelab == undefined) {
+                return;
+            }
+            if (thelab.mineralAmount == 0) {
+                return;
+            }
+            if (creep.withdraw(thelab, thelab.mineralType) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(thelab);
+            }
+            return 0;
+
+        }
         //return 0;
         var input_labs = {'59daf99e9e788d67402f810e': RESOURCE_ZYNTHIUM_KEANITE, '59db1bdee7ccce1d3faa8bef': RESOURCE_UTRIUM_LEMERGITE}
-        var reaction_minerals = 2000;
+        //var input_labs = {'59db1bdee7ccce1d3faa8bef': RESOURCE_HYDROGEN, '59d7d7888d8fe05f258c5bb4': RESOURCE_GHODIUM}
+        var reaction_minerals = 750;
 
-        var output_lab = Game.getObjectById('59d7d7888d8fe05f258c5bb4');
         var myterminal = creep.room.terminal;
         for (var labid in input_labs) {
             var lab = Game.getObjectById(labid);
@@ -36,15 +59,5 @@ module.exports = {
                 return 0;
             }
         }
-        /*
-        var first_lab = Game.getObjectById(Object.keys(input_labs)[0]);
-        var second_lab = Game.getObjectById(Object.keys(input_labs)[1]);
-        var result = output_lab.runReaction(first_lab, second_lab);
-        if (result == ERR_NOT_IN_RANGE) {
-            creep.moveTo(output_lab);
-        } else {
-            //console.log("RUN LAB REACTION< RESULT: " + result);
-        }
-        */
 	}
 };

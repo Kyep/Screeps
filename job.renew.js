@@ -11,13 +11,14 @@ module.exports = {
             //creep.memory['role'] = 'recycler';
         } else {
             if(creep.memory['renew_allowed'] == 0) {
-               creep.memory['role'] = 'recycler';
+                creep.memory['role'] = 'recycler';
+                return -1;
             }
         }
 
         var targets = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_SPAWN);
+                    return (structure.structureType == STRUCTURE_SPAWN && structure.spawning == null);
                 }
         });
         //creep.room.visual.circle(creep.pos, {fill: 'transparent', radius: 0.5, stroke: COLOR_RENEW});
@@ -57,7 +58,7 @@ module.exports = {
             }
             if (result != OK && result != ERR_NOT_IN_RANGE) { console.log('creep ' + creep.name + ' at ' + creep.pos.x + ',' + creep.pos.y + ':' + creep.room.name + ' failed renew: ' + result) }
         } else {
-            console.log('creep ' + creep.name + ' failed renew (no spawn) ')
+            //console.log('creep ' + creep.name + ' failed renew (no spawn) ')
             return -1;
         }
 	}

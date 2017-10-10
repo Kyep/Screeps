@@ -35,8 +35,17 @@ module.exports = {
             if (creep.memory.container) {
                 var thecontainer = Game.getObjectById(creep.memory.container);
                 if (thecontainer) {
-                    if (creep.withdraw(thecontainer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(thecontainer);
+                    if (thecontainer.store.energy > 0) {
+                        if (creep.withdraw(thecontainer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(thecontainer);
+                        }
+                    } else {
+                        var energypile = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 10, {filter: (s) => s.energy > 0});
+                        if(energypile != null){
+                            if (creep.pickup(energypile) == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(energypile, {visualizePathStyle: {stroke: COLOR_SCAVAGE}});
+                            }
+                        }
                     }
                 } else {
                     creep.memory.container = undefined;

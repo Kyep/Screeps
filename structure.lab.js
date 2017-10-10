@@ -9,7 +9,9 @@
 
 module.exports = {
     run: function(lab){
+        //return 0;
         var lab_config = {'59d7d7888d8fe05f258c5bb4': ['59daf99e9e788d67402f810e', '59db1bdee7ccce1d3faa8bef'] }
+        //var lab_config = {'59daf99e9e788d67402f810e': ['59db1bdee7ccce1d3faa8bef', '59d7d7888d8fe05f258c5bb4'] }
         if (lab.cooldown > 0) {
             return 0;
         }

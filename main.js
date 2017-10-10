@@ -65,12 +65,12 @@ var spawncustom = require('task.spawncustom');
                 },
                 'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40 },
                 '59bbc3f82052a716c3ce7289': {
-                    'sourcename':'1-E', 'x':25, 'y':18, 'steps':15,
+                    'sourcename':'1-E', 'x':25, 'y':18,  'target_x': 24, 'target_y': 19, 'steps':15,
                     'assigned': {'harvester': 1},
                     'expected_income': 85
                 },
                 '59bbc3f82052a716c3ce728b': {
-                    'sourcename':'1-W', 'x':16, 'y':26, 'steps':15,
+                    'sourcename':'1-W', 'x':16, 'y':26, 'target_x': 16, 'target_y': 15,'steps':15,
                     'assigned': {'upgclose': 1},
                     'expected_income': 75
                 },
@@ -88,7 +88,7 @@ var spawncustom = require('task.spawncustom');
             'roomname' : '1E',
             'spawns_from': 'W53S18',
             'sources': {
-                '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14, 'steps':33,
+                '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14, 'target_x': 10, 'target_y': 13, 'steps':33,
                     'assigned': {'c15harvester': 1, 'hauler': 1},
                     'expected_income': 65
                 }/*,
@@ -102,7 +102,7 @@ var spawncustom = require('task.spawncustom');
             'roomname' : '1N',
             'spawns_from': 'W53S18',
             'sources': {
-                '59bbc3f72052a716c3ce7287': {'sourcename':'1N', 'x':4, 'y':44, 'steps':32,
+                '59bbc3f72052a716c3ce7287': {'sourcename':'1N', 'x':4, 'y':44, 'target_x': 5, 'target_y': 43, 'steps':32,
                     'assigned': {'c15harvester': 1, 'hauler': 1}, // , 'reserver': 1
                     'expected_income': 70
                 }/*,
@@ -116,11 +116,11 @@ var spawncustom = require('task.spawncustom');
             'roomname' : '1W',
             'spawns_from': 'W53S18',
             'sources': {
-                '59bbc3e92052a716c3ce70b6': {'sourcename':'1W-E', 'x':42, 'y':6, 'steps':29, 'capacity': 3000,
+                '59bbc3e92052a716c3ce70b6': {'sourcename':'1W-E', 'x':42, 'y':6, 'target_x': 41, 'target_y': 7, 'steps':29, 'capacity': 3000,
                     'assigned': {'c30harvester': 1, 'hauler': 1},
                     'expected_income': 60
                 },
-                '59bbc3e92052a716c3ce70b7': {'sourcename':'1W-W', 'x':5, 'y':37, 'steps':63, 'capacity': 3000,
+                '59bbc3e92052a716c3ce70b7': {'sourcename':'1W-W', 'x':5, 'y':37, 'target_x': 5, 'target_y': 38,'steps':63, 'capacity': 3000,
                     'assigned': {'c30harvester': 1, 'hauler': 1},
                     'expected_income': 55
                 },
@@ -134,7 +134,7 @@ var spawncustom = require('task.spawncustom');
             'roomname' : '1NW',
             'spawns_from': 'W53S18',
             'sources': {
-                '59bbc3e82052a716c3ce70b4': {'sourcename':'1NW', 'x':38, 'y':31, 'steps':60, 
+                '59bbc3e82052a716c3ce70b4': {'sourcename':'1NW', 'x':38, 'y':31, 'target_x': 37, 'target_y': 32, 'steps':60, 
                     'assigned': {'c15harvester': 1, 'hauler': 1}, 
                     'expected_income': 45
                 }
@@ -151,11 +151,11 @@ var spawncustom = require('task.spawncustom');
                     'assigned': {}, 
                     'expected_income': 90 
                 }, 
-                '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20, 'steps':10,
+                '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20, 'target_x': 15, 'target_y': 21, 'steps':10,
                     'assigned': {'harvester':1, 'upgclose':1},
                     'expected_income': 80
                 },
-                '59bbc4182052a716c3ce758d': {'sourcename':'2-W', 'x':3, 'y':27, 'steps':10,
+                '59bbc4182052a716c3ce758d': {'sourcename':'2-W', 'x':3, 'y':27, 'target_x': 4, 'target_y': 27, 'steps':10,
                     'assigned': {'harvester':2},
                     'expected_income': 85
                 }
@@ -168,7 +168,7 @@ var spawncustom = require('task.spawncustom');
             'roomname' : '2S',
             'spawns_from': 'W51S18',
             'sources': {
-                '59bbc4182052a716c3ce758f': {'sourcename':'2S', 'x':34, 'y':6, 'steps':32,
+                '59bbc4182052a716c3ce758f': {'sourcename':'2S', 'x':34, 'y':6, 'target_x': 33, 'target_y': 5,'steps':32,
                     'assigned': {'c15harvester': 1, 'hauler': 1},
                     'expected_income': 70
                 }
@@ -178,18 +178,18 @@ var spawncustom = require('task.spawncustom');
             'roomname' : '2N',
             'spawns_from': 'W51S18',
             'sources': {
-                '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29, 'steps':36, 'capacity': 3000, // really 'steps':86, , but we have a link that bypases ~50
-                    'assigned': {'c15harvester': 1, 'hauler': 1}, 'link_from': '59d850539212a60b7683ce93', 'link_to': '59d84a28947f701c72c375a7', 
+                '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29, 'target_x': 45, 'target_y': 29, 'steps':36, 'capacity': 3000, // really 'steps':86, , but we have a link that bypases ~50
+                    'assigned': {'c30harvester': 1, 'hauler': 2}, 'link_from': '59d850539212a60b7683ce93', 'link_to': '59d84a28947f701c72c375a7', 
                     'expected_income': 60
                 },
-                '59bbc4182052a716c3ce7588': {'sourcename':'2N-W', 'x':4, 'y':26, 'steps':64, 'capacity': 3000, // really 'steps':114,
-                    'assigned': {'c15harvester': 1, 'hauler': 1}, 'link_from': '59d850539212a60b7683ce93', 'link_to': '59d84a28947f701c72c375a7', 
+                '59bbc4182052a716c3ce7588': {'sourcename':'2N-W', 'x':4, 'y':26, 'target_x': 3, 'target_y': 26, 'steps':64, 'capacity': 3000, // really 'steps':114,
+                    'assigned': {'c30harvester': 1, 'hauler': 2}, 'link_from': '59d850539212a60b7683ce93', 'link_to': '59d84a28947f701c72c375a7', 
                     'expected_income': 50
-                }/*,  // 2N-E RESERVERS GIVE -3 E/TICK. THAT IS ABOUT WHAT A HARVESTER BRINGS IN WITH RESERVATION. PLUS THEY TAKE UP SPAWN TIME. DO NOT USE.
+                },
                 'reserver': {'sourcename':'2N-R', 'x':4, 'y':26,
                     'assigned': {'reserver': 1},
                     'expected_income': 40
-                }*/
+                }
             }
         },
         
@@ -199,11 +199,11 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'W51S14',
             'sources': {
                 '59bbc4172052a716c3ce757d': {'sourcename': '3-W', 'x':31, 'y':15,
-                    'assigned': {'upgfar': 4},
+                    'assigned': {'harvester': 3},
                     'expected_income': 85
                 },
                 '59bbc4172052a716c3ce757c': {'sourcename': '3-E', 'x':42, 'y':13,
-                    'assigned': {'upgfar': 2, 'harvester': 2},
+                    'assigned': {'harvester': 4},
                     'expected_income': 90
                 }
             }
@@ -213,7 +213,7 @@ var spawncustom = require('task.spawncustom');
             'roomname' : '3N',
             'spawns_from': 'W51S14',
             'sources': {
-                '59bbc4172052a716c3ce757a': {'sourcename': '3N', 'x':34, 'y':33, 'steps':36, 
+                '59bbc4172052a716c3ce757a': {'sourcename': '3N', 'x':34, 'y':33, 'target_x': 33, 'target_y': 34, 'steps':36, 
                     'assigned': {'c15harvester': 1, 'hauler': 1},
                     'expected_income': 80
                 }
@@ -223,11 +223,11 @@ var spawncustom = require('task.spawncustom');
             'roomname' : '3S',
             'spawns_from': 'W51S14',
             'sources': {
-                '59bbc4172052a716c3ce7580': {'sourcename': '3S-W', 'x':14, 'y':3, 'steps':43, 
+                '59bbc4172052a716c3ce7580': {'sourcename': '3S-W', 'x':14, 'y':3, 'target_x': 14, 'target_y': 2, 'steps':43, 
                     'assigned': {'c15harvester': 1, 'hauler': 1}, // 'c15harvester': 1, 'hauler': 1
                     'expected_income': 70
                 },
-                '59bbc4172052a716c3ce7582': {'sourcename': '3S-E', 'x':36, 'y':16, 'steps':66, 
+                '59bbc4172052a716c3ce7582': {'sourcename': '3S-E', 'x':36, 'y':16, 'target_x': 35, 'target_y': 15, 'steps':66, 
                     'assigned': {'c15harvester': 1, 'hauler': 1}, // 'c15harvester': 1, 'hauler': 1
                     'expected_income': 60
                 }
@@ -397,7 +397,7 @@ empire_workers = {
 	'siege': { 'body': [MOVE, ATTACK, ATTACK], 'renew_allowed': 0}, // half speed, strong but slow
 	'siegefar': { 'body': [MOVE, ATTACK], 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
 	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
-	'drainerhealer': { 'body': [HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, MOVE, MOVE, MOVE, MOVE, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
+	'drainerhealer': { 'body': [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
 
     // Territory control classes
 	'reserver' : { 'body': [CLAIM, CLAIM, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
@@ -423,8 +423,14 @@ global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid, max_cost) {
                 if (empire[roomid].sources[sourceid]['steps'] != undefined) {
                     steps = empire[roomid].sources[sourceid]['steps'];
                 }
+            } else {
+                console.log("Warning: CONSTRUCT_HAULER_BODY is creating a hauler for room " + roomid + " using a source that does not exist: " + sourceid);
             }
+        } else {
+            console.log("Warning: CONSTRUCT_HAULER_BODY is creating a hauler for a room with no sources in its empire definition: " + roomid);
         }
+    } else {
+        console.log("Warning: CONSTRUCT_HAULER_BODY is creating a hauler for a room not defined in empire: " + roomid);
     }
     //console.log("S: " + sourcecapacity + " Y: " + steps);
     var carry_parts = global.CARRY_PARTS(sourcecapacity, steps);
@@ -441,6 +447,13 @@ global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid, max_cost) {
     return partlist;
 }
 
+global.CONSTRUCT_RESERVER_BODY = function (resticksremaining) {
+    if (resticksremaining > 2000) {
+        return [MOVE, CLAIM];
+    } else {
+        return [MOVE, MOVE, CLAIM, CLAIM];
+    }
+}
 
 global.JOB_HARVEST = 'mine';
 global.JOB_BUILD = 'build';
@@ -561,7 +574,7 @@ StructureTower.prototype.getRepairMax = function() {
     } else if (lvl == 3) {
         return 5000;
     } else if (lvl == 4) {
-        return 25000;
+        return 10000;
     } else {
         return 50000 * lvl;
     }
@@ -577,7 +590,7 @@ Creep.prototype.getRepairMax = function() {
     } else if (lvl == 3) {
         return 5000;
     } else if (lvl == 4) {
-        return 25000;
+        return 10000;
     } else {
         return 50000 * lvl;
     }
@@ -845,13 +858,13 @@ module.exports.loop = function () {
                     empire[rname].sources['upgrader'] = {'sourcename': empire[rname]['roomname'] + '-U', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 10}
                     
                     if(energy_reserves > (empire_defaults['room_reserves_required'] * 4)) {
-                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 4, 'teller': 2};
+                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 4};
                     } else if(energy_reserves > (empire_defaults['room_reserves_required'] * 3)) {
-                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 3, 'teller': 2};
+                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 3};
                     } else if(energy_reserves > (empire_defaults['room_reserves_required'] * 2)) {
-                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 2, 'teller': 2};
+                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 2};
                     } else if(energy_reserves > empire_defaults['room_reserves_required']) {
-                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 1, 'teller': 1};
+                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 1};
                     }                    
                     
                 }
@@ -1062,7 +1075,7 @@ module.exports.loop = function () {
                 if (towercount > 0) {
                     theirthreat -= (400 * towercount);
                     baseforce['teller-towers'] = 1;
-                    if (theirthreat > 3000) {
+                    if (theirthreat > 8000) {
                         baseforce['teller'] = 1;
                     }
                 }
@@ -1158,7 +1171,7 @@ module.exports.loop = function () {
                     console.log("ATTACK: TIMING OUT IN: " + csector + ', age: ' + tgap);
                 } else {
                     //console.log("ATTACK: HOSTILES STILL IN " + csector + '! 'DEFCON: ' + empire[csector]['defcon']');
-                    console.log("ATTACK: HOSTILES STILL IN " + csector + '! ');
+                    //console.log("ATTACK: HOSTILES STILL IN " + csector + '! ');
                 }
             }
         }
@@ -1360,14 +1373,28 @@ module.exports.loop = function () {
                                     renewing_creeps++;
                                 } 
                             }
-                            if (renewing_creeps >= 3) {
-                                console.log(spawner.name + ' BLOCKED: number creeps renewing: ' + renewing_creeps);
+                            if (renewing_creeps >= 1) {
+                                if (renewing_creeps >= 6) {
+                                    console.log(spawner.name + ' BLOCKED: number creeps renewing: ' + renewing_creeps);
+                                }
                                 continue;
                             } else {
                                 //console.log(spawner.name + ': number creeps renewing: ' + renewing_creeps);
                             }
 
-                            if(role == 'hauler') {
+                            if(role == 'reserver') {
+                                var ticksrem = 0;
+                                if (Game.rooms[rname] != undefined) {
+                                    if (Game.rooms[rname].controller != undefined) {
+                                        if (Game.rooms[rname].controller.reservation != undefined) {
+                                            if (Game.rooms[rname].controller.reservation.ticksToEnd != undefined) {
+                                                ticksrem = Game.rooms[rname].controller.reservation.ticksToEnd;
+                                            }
+                                        }
+                                    }   
+                                }
+                                partlist = CONSTRUCT_RESERVER_BODY(ticksrem);
+                            } else if(role == 'hauler') {
                                 partlist = CONSTRUCT_HAULER_BODY(rname, skey, spawner.room.energyCapacityAvailable);
                             } else if (empire_workers[role]['noresizing'] == undefined) {
                                 for (k = 0; k < part_template.length; k++) {

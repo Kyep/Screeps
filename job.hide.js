@@ -31,7 +31,7 @@ module.exports = {
         var enemiesList = creep.room.find(FIND_HOSTILE_CREEPS);
         if (!enemiesList.length) {
             // do nothing, we are safe here until we are told to stop hiding.
-            if (creep.pos.x < 1 || creep.pos.x > 48 || creep.pos.y < 1 || creep.pos.y > 48) {
+            if (creep.pos.x < 2 || creep.pos.x > 47 || creep.pos.y < 2 || creep.pos.y > 47) {
                 creep.moveTo(25, 25);
             }
             creep.say('SAFE?');

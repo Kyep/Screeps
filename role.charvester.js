@@ -31,12 +31,19 @@ module.exports = {
         }
         if (creep.memory.job == JOB_HIDE) {
             if (creep.getShouldHide()) {
-                jobHide.run();
+                jobHide.run(creep);
             } else {
                 creep.memory.job = JOB_TRAVEL_OUT;
             }
         }
         if (creep.memory.job == JOB_HARVEST) {
+            var target_x = empire[creep.room.name].sources[creep.memory.source]['target_x'];
+            var target_y = empire[creep.room.name].sources[creep.memory.source]['target_y'];
+            //console.log(creep.name + " " + creep.memory.source + " " + target_x + " " + target_y)
+            if (creep.pos.x != target_x || creep.pos.y != target_y) {
+                creep.moveTo(target_x, target_y);
+                return;
+            }
             jobHarvest.run(creep);
             if (creep.carry.energy == 0) {
                 return 0;
@@ -54,7 +61,7 @@ module.exports = {
                 }
                 return 0;
             }
-            var nearby_containers = creep.pos.findInRange(FIND_STRUCTURES, 2, { filter: { structureType: STRUCTURE_CONTAINER } } );
+            var nearby_containers = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: { structureType: STRUCTURE_CONTAINER } } );
             if (nearby_containers.length > 0) {
                 creep.memory.container = nearby_containers[0].id;
                 return 0;
