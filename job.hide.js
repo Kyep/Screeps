@@ -14,18 +14,18 @@ module.exports = {
             console.log(creep.name + ": You are calling jobHide.run without a creep as a param.");
             return 0;
         }
-        if (creep.room.name == creep.memory.home) {
+        if (creep.room.name == creep.memory[MEMORY_HOME]) {
             // inside base, we identify the base safespot and hide there.
             var hidex = 25;
             var hidey = 25;
-            if (empire[creep.memory.home]['safespot'] != undefined) {
-                if (empire[creep.memory.home]['safespot']['x'] != undefined && empire[creep.memory.home]['safespot']['y'] != undefined) {
-                    hidex = empire[creep.memory.home]['safespot']['x'];
-                    hidey = empire[creep.memory.home]['safespot']['y'];
+            if (empire[creep.memory[MEMORY_HOME]]['safespot'] != undefined) {
+                if (empire[creep.memory[MEMORY_HOME]]['safespot']['x'] != undefined && empire[creep.memory[MEMORY_HOME]]['safespot']['y'] != undefined) {
+                    hidex = empire[creep.memory[MEMORY_HOME]]['safespot']['x'];
+                    hidey = empire[creep.memory[MEMORY_HOME]]['safespot']['y'];
                 }
             }
             creep.say('🚧 safespot!');
-            creep.moveTo(new RoomPosition(hidex, hidey, creep.memory.home), {visualizePathStyle: {stroke: COLOR_HARVEST}});
+            creep.moveTo(new RoomPosition(hidex, hidey, creep.memory[MEMORY_HOME]), {visualizePathStyle: {stroke: COLOR_HARVEST}});
             return 0;
         }
         var enemiesList = creep.room.find(FIND_HOSTILE_CREEPS);
@@ -36,6 +36,9 @@ module.exports = {
             }
             creep.say('SAFE?');
             return 0;
+        }
+        if (creep.memory[MEMORY_ATTACKEDIN] == undefined) {
+            
         }
         // We're in danger. 
         // List the exits to this room. Find the ones that are NOT under attack.

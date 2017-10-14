@@ -18,13 +18,13 @@ module.exports = {
                 }
             });
             if (!spawners.length) {
-                console.log("LINK: no spawner in: " + link.room.name);
+                console.log('LINK: no spawner in: ' + link.room.name);
                 return 0;
             }
             var thespawn = spawners[0];
             if (link.pos.getRangeTo(thespawn) < 10) {
                 Memory[memaddr] = ''; // we are a receive-only link.
-                //console("LINK at " + link.room.name + ':' + link.pos.x + ',' + link.pos.y + ' decided it was receive-only');
+                //console('LINK at ' + link.room.name + ':' + link.pos.x + ',' + link.pos.y + ' decided it was receive-only');
                 return 0;
             }
             var links_in_room = thespawn.pos.findInRange(FIND_STRUCTURES, 10, {
@@ -36,7 +36,7 @@ module.exports = {
                 return 0;
             }
             Memory[memaddr] = links_in_room[0].id;
-            //console.log("LINK at " + link.room.name + ':' + link.pos.x + ',' + link.pos.y + ' assigned ' + Memory[memaddr] + ' as its send target.');
+            //console.log('LINK at ' + link.room.name + ':' + link.pos.x + ',' + link.pos.y + ' assigned ' + Memory[memaddr] + ' as its send target.');
             return 0;
         }
         var ourmem = Memory[memaddr];
@@ -58,6 +58,6 @@ module.exports = {
             return 0;
         }
         var result = link.transferEnergy(destlink);
-        //console.log("LINK at " + link.room.name + ':' + link.pos.x + ',' + link.pos.y + ' sent energy to ' + Memory[memaddr] + ' with result: ' + result);
+        //console.log('LINK at ' + link.room.name + ':' + link.pos.x + ',' + link.pos.y + ' sent energy to ' + Memory[memaddr] + ' with result: ' + result);
     }
 };

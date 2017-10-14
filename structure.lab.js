@@ -22,7 +22,7 @@ module.exports = {
         var lab_a = Game.getObjectById(lab_config[lab.id][0]);
         var lab_b = Game.getObjectById(lab_config[lab.id][1]);
         if (lab_a == undefined || lab_b == undefined) {
-            console.log("Lab error. A/B undefined!");
+            console.log('Lab error. A/B undefined!');
             return -1;
         }
         var result = lab.runReaction(lab_a, lab_b);

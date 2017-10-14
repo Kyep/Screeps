@@ -5,28 +5,28 @@ module.exports = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
-        if(creep.memory.job != JOB_GFS && creep.carry.energy == 0) {
-            creep.memory.job = JOB_GFS;
+        if(creep.memory[MEMORY_JOB] != JOB_GFS && creep.carry.energy == 0) {
+            creep.memory[MEMORY_JOB] = JOB_GFS;
             //creep.announceJob();
-        } else if(creep.memory.job == JOB_GFS && creep.carry.energy == creep.carryCapacity) {
-            creep.memory.job = JOB_UPGRADE;
+        } else if(creep.memory[MEMORY_JOB] == JOB_GFS && creep.carry.energy == creep.carryCapacity) {
+            creep.memory[MEMORY_JOB] = JOB_UPGRADE;
             //creep.announceJob();
         }
-        if(creep.memory.job == JOB_GFS) {
-            if (creep.room.name != creep.memory.home) {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
+        if(creep.memory[MEMORY_JOB] == JOB_GFS) {
+            if (creep.room.name != creep.memory[MEMORY_HOME]) {
+                creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_HOME]));
             } else if (jobGetstoredenergy.run(creep) == -1){
-                creep.memory.role = 'recycler';
+                creep.memory[MEMORY_ROLE] = 'recycler';
             }
-        } else if(creep.memory.job == JOB_UPGRADE) {
-            if (creep.room.name != creep.memory.target) {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory.target));
+        } else if(creep.memory[MEMORY_JOB] == JOB_UPGRADE) {
+            if (creep.room.name != creep.memory[MEMORY_DEST]) {
+                creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]));
             } else {
                 jobUpgrade.run(creep);
             }
         } else {
-            console.log("WARNING: " + creep.name + " has no job: " + creep.memory.job);
-            creep.memory.job = JOB_GFS;
+            console.log('WARNING: ' + creep.name + ' has no job: ' + creep.memory[MEMORY_JOB]);
+            creep.memory[MEMORY_JOB] = JOB_GFS;
         }
 	}
 };

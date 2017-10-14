@@ -24,10 +24,10 @@ module.exports =  {
         var desired_distance = 1;
         // if at sim border, always move in. Don't get stuck on sim borders.
         if (creep.pos.x < 1 || creep.pos.x > 48 || creep.pos.y < 1 || creep.pos.y > 48) {
-            if (creep.memory.target == undefined) {
+            if (creep.memory[MEMORY_DEST] == undefined) {
                 creep.moveTo(25, 25);
             } else {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory.target))
+                creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]))
             }
         // if we are a dedicated healer, keep the wounded in range.
         } else if (heal_parts > (ranged_parts + melee_parts) && hurtfriendly != undefined && rangetohurtfriendly > 1) {
@@ -60,8 +60,9 @@ module.exports =  {
             // stay still. If there are healers present, they will heal you.
         } else if (heal_parts == 0 || hurtfriendly == undefined) {
             // otherwise, if we are not a healer trying to heal someone, move randomly.-
-            var directions = [TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT];
-            creep.move(_.sample(directions));
+            
+            //var directions = [TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT];
+            //creep.move(_.sample(directions));
         }
         
         // 2nd, should we ATTACK, rangedHeal, or heal?

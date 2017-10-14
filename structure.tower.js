@@ -53,19 +53,19 @@ module.exports =  {
                 var actual_range = tower.pos.getRangeTo(enemiesList[i]);
                 var expected_damage = tower.getPowerForRange(TOWER_POWER_ATTACK, actual_range);
 
-                //console.log("TOWER: " + ownername + " mob, " + hp + "HP, " + classification + " type, " + actual_range + ' range, ' + threat + " threat, " + my_score + " pri, v " + primetarget_score + "CurPri, projected dmg: " + expected_damage);
+                //console.log('TOWER: ' + ownername + ' mob, ' + hp + 'HP, ' + classification + ' type, ' + actual_range + ' range, ' + threat + ' threat, ' + my_score + ' pri, v ' + primetarget_score + 'CurPri, projected dmg: ' + expected_damage);
                 //console.log(JSON.stringify(enemiesList[i]));
                 if(expected_damage <= hps) {
-                    console.log("TOWER: Setting mob score to 0, because they can heal themselves for " + hps + ", which is more than the " + expected_damage + " we can hurt them with at their current position.");
+                    console.log('TOWER: Setting mob score to 0, because they can heal themselves for ' + hps + ', which is more than the ' + expected_damage + ' we can hurt them with at their current position.');
                     my_score = 0;
                 }
                 if (my_score > primetarget_score) {
-                    //console.log("TOWER: switched targeting to this mob, as its score " + my_score + " is higher than previous score " + primetarget_score);
+                    //console.log('TOWER: switched targeting to this mob, as its score ' + my_score + ' is higher than previous score ' + primetarget_score);
                     primetarget = enemiesList[i];
                     primetarget_score = my_score;
                 }
             }
-            //console.log("TOWER: WINNER: " +primetarget_score + ' at ' + tower.pos.getRangeTo(primetarget));
+            //console.log('TOWER: WINNER: ' +primetarget_score + ' at ' + tower.pos.getRangeTo(primetarget));
             //console.log(JSON.stringify(primetarget));
             tower.room.visual.circle(tower.pos, {fill: 'transparent', radius: TOWER_OPTIMAL_RANGE, stroke: 'green'});
             tower.room.visual.circle(tower.pos, {fill: 'transparent', radius: TOWER_FALLOFF_RANGE, stroke: 'yellow'});
@@ -84,13 +84,24 @@ module.exports =  {
         var repairMax = tower.getRepairMax();
         var repairTargets = tower.pos.findInRange(FIND_STRUCTURES, 50, {
             filter: function(structure){
-                if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
+                if(structure.structureType == STRUCTURE_RAMPART){
                     return (structure.hits < repairMax)
                 }else{
-                    return (structure.hits < structure.hitsMax)
+                    return 0
                 }
             }
         });
+        if (!repairTargets.length) {
+            repairTargets = tower.pos.findInRange(FIND_STRUCTURES, 50, {
+                filter: function(structure){
+                    if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
+                        return (structure.hits < repairMax)
+                    }else{
+                        return (structure.hits < structure.hitsMax)
+                    }
+                }
+            });
+        }
         if(repairTargets.length){
             //console.log(repairTargets.length);
             //tower.room.visual.circle(tower.pos, {fill: 'transparent', radius: TOWER_FALLOFF_RANGE, stroke: 'green'});

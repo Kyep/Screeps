@@ -2,8 +2,8 @@ module.exports =  {
 
     /** @param {Creep} creep **/
     run: function(creep) {
-        if (creep.room.name != creep.memory.home) {
-            creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
+        if (creep.room.name != creep.memory[MEMORY_HOME]) {
+            creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_HOME]));
             return 0;
         }
         var targets = creep.pos.findInRange(FIND_STRUCTURES, 10, {
@@ -21,7 +21,8 @@ module.exports =  {
         if (targets.length == 0) {
             targets = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                     return (structure.structureType == STRUCTURE_STORAGE) && structure.store.energy > 0;
+                     return (structure.structureType == STRUCTURE_STORAGE && structure.store.energy > 0)
+                     || (structure.structureType == STRUCTURE_TERMINAL && structure.store.energy > 110000);
                 }
             });
         }

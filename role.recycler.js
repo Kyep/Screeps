@@ -1,7 +1,7 @@
 var roleRecycle = {
     run: function(creep) {
-        if (creep.room.name != creep.memory.home) {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
+        if (creep.room.name != creep.memory[MEMORY_HOME]) {
+                creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_HOME]));
                 return 0;
         }
         var targets = creep.room.find(FIND_STRUCTURES, {

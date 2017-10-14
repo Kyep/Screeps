@@ -1,13 +1,13 @@
 module.exports = {
     run: function(creep){
-        if(creep.memory.target != creep.room.name){
-            creep.moveTo(new RoomPosition(25, 25, creep.memory.target), {visualizePathStyle: {stroke: '#ffffff'}})
+        if(creep.memory[MEMORY_DEST] != creep.room.name){
+            creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]), {visualizePathStyle: {stroke: '#ffffff'}})
         } else {
             if (creep.memory['nexttarget'] != undefined) {
                 if (creep.memory['nexttarget'].length > 0) {
                     creep.memory['target'] = creep.memory['nexttarget'][0];
                     creep.memory['nexttarget'].shift();
-                    console.log("SIGNER: " + creep.name + " has reached " + creep.room.name + ", continuing on to " + creep.memory.target);
+                    console.log('SIGNER: ' + creep.name + ' has reached ' + creep.room.name + ', continuing on to ' + creep.memory[MEMORY_DEST]);
                     return;
                 }
             }

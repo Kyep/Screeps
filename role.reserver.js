@@ -1,7 +1,7 @@
 module.exports = {
     run: function(creep){
-        if(creep.memory.target != creep.room.name){
-            creep.moveTo(new RoomPosition(25, 25, creep.memory.target), {visualizePathStyle: {stroke: '#ffffff'}})
+        if(creep.memory[MEMORY_DEST] != creep.room.name){
+            creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]), {visualizePathStyle: {stroke: '#ffffff'}})
         }else{
             if(creep.room.controller) {
                 result = creep.reserveController(creep.room.controller)

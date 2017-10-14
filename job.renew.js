@@ -2,15 +2,15 @@ module.exports = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
-        if(creep.room.name != creep.memory['home']) {
-            creep.moveTo(new RoomPosition(25, 25, creep.memory.home));
+        if(creep.room.name != creep.memory[MEMORY_HOME]) {
+            creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_HOME]));
             return 0;
         }
         
-        if(creep.memory['renew_allowed'] == undefined) {
-            //creep.memory['role'] = 'recycler';
+        if(creep.memory[MEMORY_RENEW] == undefined) {
+            // 
         } else {
-            if(creep.memory['renew_allowed'] == 0) {
+            if(creep.memory[MEMORY_RENEW] == 0) {
                 creep.memory['role'] = 'recycler';
                 return -1;
             }
@@ -49,10 +49,10 @@ module.exports = {
                 return -1;
             } else {
 
-                if (creep.memory['renewals'] == undefined) {
-                    creep.memory['renewals'] = 1;
+                if (creep.memory[MEMORY_RENEWALS] == undefined) {
+                    creep.memory[MEMORY_RENEWALS] = 1;
                 } else {
-                    creep.memory['renewals']++;
+                    creep.memory[MEMORY_RENEWALS]++;
                 }
                 
             }
