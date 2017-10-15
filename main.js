@@ -1199,10 +1199,10 @@ module.exports.loop = function () {
                         var cc = Game.rooms[csector].controller;
                         if (cc.safeModeAvailable) {
                             cc.activateSafeMode();
-                            Game.notify('SAFEMODE ACTIVATION DUE TO STRUCTURE LOSS: ' + rname + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
+                            Game.notify('SAFEMODE ACTIVATION DUE TO STRUCTURE LOSS: ' + csector + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
                             console.log('SAFE MODE ACTIVATED: ATTACK: ' + csector + ' only has ' + newcount + ' structures versus original count of ' + oldcount + '!');
                         } else {
-                            Game.notify('CANNOT ACTIVATE SAFEMODE DESPITE STRUCTURE LOSS: ' + rname + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
+                            Game.notify('CANNOT ACTIVATE SAFEMODE DESPITE STRUCTURE LOSS: ' + csector + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
                             console.log('SAFE MODE UNAVAILABLE: ATTACK: ' + csector + ' only has ' + newcount + ' structures versus original count of ' + oldcount + '!');
                         }
                     }
@@ -1487,7 +1487,7 @@ module.exports.loop = function () {
                             var work_units = Math.max(1, Math.floor(energy_cap / global.UNIT_COST(part_template)));
                             var max_units = Math.floor(50 / part_template.length);
                             if (work_units > max_units) {
-                                console.log('Warning: when building body for ' + role + ' work_units got to be ' + work_units + ' but we can only support ' + max_units + ' of this template.');
+                                //console.log('Warning: when building body for ' + role + ' work_units got to be ' + work_units + ' but we can only support ' + max_units + ' of this template.');
                                 work_units = max_units;
                             }
                             
