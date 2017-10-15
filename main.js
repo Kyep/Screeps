@@ -40,7 +40,7 @@ var spawncustom = require('task.spawncustom');
         'room': 'W53S18',
         'sourceid': '59bbc3f82052a716c3ce7289',
         'priority_roles': ['teller', 'teller-towers'],
-        'military_roles': ['slasher', 'rogue', 'ninja', 'ninjaheals', 'dragon', 'siegedragon', 'boss', 'wizard', 'healer', 'siege', 'siegefar', 'siegemini', 'drainer', 'drainerhealer'],
+        'military_roles': ['scout', 'slasher', 'rogue', 'ninja', 'ninjaheals', 'dragon', 'siegedragon', 'boss', 'wizard', 'healer', 'siege', 'siegefar', 'siegemini', 'drainer', 'drainerhealer'],
         'defense_roles': ['boss', 'dragon', 'ninja', 'rogue', 'slasher'], // LIST MOST POWERFUL FIRST.
         'alerts_duration' : 300,
         'alerts_recycle' : 0,
@@ -306,7 +306,7 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'Spawn4',
             'sources': {
                 '59bbc3da2052a716c3ce6e76': {'sourcename': 'GNS-N', 'x':45, 'y':21,
-                    'assigned': {'boss': 1}, // 'siegefar': 3, 'rogue' : 0
+                    'assigned': {'boss': 0}, // 'siegefar': 3, 'rogue' : 0
                     'expected_income': 90
                 },
                 '59bbc3da2052a716c3ce6e77': {'sourcename': 'GNS-S', 'x':29, 'y':40,
@@ -356,12 +356,27 @@ var spawncustom = require('task.spawncustom');
                 }
             }
         },
+        // TCCKI
+        'W53S12': {
+            'ignoreattacks': 1,
+            'spawns_from': 'Spawn3',
+            'sources': {
+                '59bbc3f72052a716c3ce7275': {'sourcename': 'TCCKI-N', 'x':31, 'y':17,
+                    'assigned': {'scout': 0},
+                    'expected_income': 10
+                },
+                '59bbc3f72052a716c3ce7276': {'sourcename': 'TCCKI-S', 'x':32, 'y':28,
+                    'assigned': {},
+                    'expected_income': 10
+                }
+            }
+        },
         // DARN WOLFE NORTH BASE
         'W53S11': {
             'ignoreattacks': 1,
             'spawns_from': 'Spawn3',
             'sources': {
-                '59e117760a70e4046c980872': {'sourcename': 'XN', 'x':23, 'y':25,
+                '59e117760a70e4046c980872': {'sourcename': 'WOLFE', 'x':23, 'y':25,
                     'assigned': {'ninjaheals': 0, 'wizard': 0},
                     'expected_income': 60
                 }
@@ -398,6 +413,7 @@ empire_workers = {
     // 3. notably, TOUGH only costs ***TEN*** energy (60 with MOVE), so its worthwhile to put TOUGH parts on everything. The only question is: how many.
     
     // Anti-invader defense classes.
+    'scout': { 'body':    [MOVE, ATTACK], 'noresizing': 1, 'renew_allowed': 0 }, // $130, 200 HP, 30 DPS. Disposable scout.
     'slasher': { 'body':    [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0 }, // $380, 800 HP, 60 DPS. Bread-and-butter defender, should be able to take most RCL<4 invaders by itself.
 	'rogue': { 'body':    [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // $640, 1,200 HP, 120 DPS. Capable of out-damaging a RCL<4 healer.
     'ninja': { 'body':    [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // $900, 1,600 HP, 180 DPS. 
@@ -480,6 +496,8 @@ global.CONSTRUCT_RESERVER_BODY = function (resticksremaining) {
 global.MEMORY_ROLE = 'role';
 global.MEMORY_SOURCE = 'source';
 global.MEMORY_HOME = 'home';
+global.MEMORY_HOME_X = 'home_x';
+global.MEMORY_HOME_Y = 'home_y';
 global.MEMORY_DEST = 'target';
 global.MEMORY_DEST_X = 'target_x';
 global.MEMORY_DEST_Y = 'target_y';
@@ -491,6 +509,7 @@ global.MEMORY_CREATED_AT = 'created_at';
 global.MEMORY_NEEDED = 'needed';
 global.MEMORY_JOB = 'job';
 global.MEMORY_CONTAINER = 'container';
+global.MEMORY_H_CONTAINER = 'container_h';
 global.MEMORY_EARNINGS = 'earnings';
 global.MEMORY_JOURNEYSTART = 'journeystart';
 global.MEMORY_ATTACKEDIN = 'attackedin'
@@ -592,6 +611,21 @@ Creep.prototype.getShouldHide = function() {
     return 0;
 }
 
+Creep.prototype.getHomePos = function() {
+    var home_x = 25;
+    var home_y = 25;
+    if (this.memory[MEMORY_HOME_X] != undefined && this.memory[MEMORY_HOME_Y] != undefined) {
+        home_x = this.memory[MEMORY_HOME_X];
+        home_y = this.memory[MEMORY_HOME_Y];
+    } else if (Game.spawns[this.memory[MEMORY_SPAWNERNAME]] != undefined) {
+        var thespawn = Game.spawns[this.memory[MEMORY_SPAWNERNAME]];
+        this.memory[MEMORY_HOME_X] = thespawn.pos.x;
+        this.memory[MEMORY_HOME_Y] = thespawn.pos.y;
+    } else {
+        console.log(this.name + ': has no home co-ords in JOB_TRAVEL_BACK');
+    }
+    return new RoomPosition(home_x, home_y, this.memory[MEMORY_HOME]);
+}
 
 Room.prototype.getMyStructuresCount = function() {
     var mystructures = this.find(FIND_MY_STRUCTURES);

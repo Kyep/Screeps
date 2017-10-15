@@ -14,7 +14,7 @@ module.exports = {
         }
         if(creep.memory[MEMORY_JOB] == JOB_GFS) {
             if (creep.room.name != creep.memory[MEMORY_HOME]) {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_HOME]));
+                creep.moveTo(creep.getHomePos());
             } else if (jobGetstoredenergy.run(creep) == -1){
                 creep.memory[MEMORY_ROLE] = 'recycler';
             }

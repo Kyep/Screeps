@@ -47,14 +47,13 @@ module.exports = {
 	            creep.memory[MEMORY_JOB] = JOB_PATROL;
                 creep.announceJob();
             } else {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_HOME]), {visualizePathStyle: {stroke: '#ff0000'}})
+                creep.moveTo(creep.getHomePos(), {visualizePathStyle: {stroke: '#ff0000'}})
             }
 	    } else if(creep.memory[MEMORY_JOB] == JOB_PATROL) {
             if(creep.ticksToLive < 400 && creep.room.name == creep.memory[MEMORY_HOME]) {
                 creep.memory[MEMORY_JOB] = JOB_RENEW;
                 creep.announceJob();
             } else if (creep.room.name == creep.memory[MEMORY_DEST]) {
-                //creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_HOME]), {visualizePathStyle: {stroke: '#ff0000'}})
                 jobPatrol.run(creep);
             } else {
                 target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);

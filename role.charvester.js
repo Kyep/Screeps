@@ -45,7 +45,7 @@ module.exports = {
             }
             //console.log(creep.name + " " + creep.memory[MEMORY_SOURCE] + " " + target_x + " " + target_y)
             if (creep.pos.x != target_x || creep.pos.y != target_y) {
-                creep.moveTo(target_x, target_y);
+                creep.moveTo(new RoomPosition(target_x, target_y, creep.memory[MEMORY_DEST]));
                 return;
             }
             jobHarvest.run(creep);

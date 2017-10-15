@@ -204,7 +204,7 @@ module.exports = {
                     creep.repair(target);
                 }
             }
-            creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_HOME]))
+            creep.moveTo(creep.getHomePos());
             if (creep.room.name == creep.memory[MEMORY_HOME]) {
                 creep.memory[MEMORY_JOB] = JOB_IDLE;
                 creep.announceJob();
@@ -216,7 +216,7 @@ module.exports = {
                 creep.moveTo(25, 25, creep.room);
             }
 	        if (creep.room.name != creep.memory[MEMORY_HOME]) {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_HOME]))
+                creep.moveTo(creep.getHomePos());
                 //var exit = creep.room.findExitTo(creep.memory[MEMORY_HOME]);
                 //creep.moveTo(creep.pos.findClosestByRange(exit));
             } else if(creep.ticksToLive < 400 && creep.getRenewEnabled()) {

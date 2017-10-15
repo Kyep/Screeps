@@ -3,7 +3,7 @@ module.exports = {
     /** @param {Creep} creep **/
     run: function(creep) {
         if(creep.room.name != creep.memory[MEMORY_HOME]) {
-            creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_HOME]));
+            creep.moveTo(creep.getHomePos());
             return 0;
         }
         
@@ -18,13 +18,19 @@ module.exports = {
 
         var targets = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_SPAWN && structure.spawning == null);
+                    return (structure.structureType == STRUCTURE_SPAWN);
                 }
         });
         //creep.room.visual.circle(creep.pos, {fill: 'transparent', radius: 0.5, stroke: COLOR_RENEW});
         creep.say(creep.ticksToLive);
         if(targets.length > 0) {
             var target = creep.pos.findClosestByRange(targets)
+            if(target.spawning != null) {
+                if(creep.pos.getRangeTo(target) > 3) {
+                    creep.moveTo(target);
+                }
+                return 0;
+            }
             var result = target.renewCreep(creep);
             if(result == OK) {
                 var creep_cost = CREEP_COST(creep.body);
