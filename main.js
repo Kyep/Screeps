@@ -22,7 +22,6 @@ var roleDrainerhealer = require('role.drainerhealer');
 var roleSigner = require('role.signer');
 var roleLabtech = require('role.labtech');
 
-var structureTower = require('structure.tower');
 var structureLink = require('structure.link');
 var structureLab = require('structure.lab');
 
@@ -34,6 +33,7 @@ var spawncustom = require('task.spawncustom');
 // ---------------------------
 
     overlord = 'Phisec';
+    allies = ['Kamots'];
     
     empire_defaults = {
         'spawner': '59ce24a6b1421365236708e4',
@@ -150,11 +150,11 @@ var spawncustom = require('task.spawncustom');
                     'expected_income': 90 
                 }, 
                 '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20, 'target_x': 15, 'target_y': 21, 'steps':10,
-                    'assigned': {'harvester':1, 'upgclose':1},
+                    'assigned': {'upgclose':1},
                     'expected_income': 80
                 },
                 '59bbc4182052a716c3ce758d': {'sourcename':'2-W', 'x':3, 'y':27, 'target_x': 4, 'target_y': 27, 'steps':10,
-                    'assigned': {'harvester':2},
+                    'assigned': {'bharvester':2},
                     'expected_income': 85
                 }
             },
@@ -165,7 +165,7 @@ var spawncustom = require('task.spawncustom');
         // 2nd base remote mining
         'W51S19': {
             'roomname' : '2S',
-            'spawns_from': 'Spawn2',
+            'spawns_from': 'Spawn5',
             'sources': {
                 '59bbc4182052a716c3ce758f': {'sourcename':'2S', 'x':34, 'y':6, 'target_x': 33, 'target_y': 5,'steps':32,
                     'assigned': {'c15harvester': 1, 'hauler': 1},
@@ -175,7 +175,7 @@ var spawncustom = require('task.spawncustom');
         },
         'W51S17': {
             'roomname' : '2N',
-            'spawns_from': 'Spawn2',
+            'spawns_from': 'Spawn5',
             'sources': {
                 '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29, 'target_x': 45, 'target_y': 29, 'steps':36, 'capacity': 3000, // really 'steps':86, , but we have a link that bypases ~50
                     'assigned': {'c30harvester': 1, 'hauler': 2}, 'link_from': '59d850539212a60b7683ce93', 'link_to': '59d84a28947f701c72c375a7', 
@@ -432,7 +432,8 @@ empire_workers = {
 
     // Anti-player ATTACK classes
 	'siege': { 'body': [MOVE, ATTACK, ATTACK], 'renew_allowed': 0}, // half speed, strong but slow
-	'siegemini': { 'body': [MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // half speed, strong but slow
+	'siegemini': { 'body': [MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // small.
+	'siegebig': { 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // bigger
 	'siegefar': { 'body': [MOVE, ATTACK], 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
 	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
 	'drainerhealer': { 'body': [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
@@ -644,8 +645,8 @@ StructureTower.prototype.getPowerForRange = function(initialpower, dist) {
     return Math.floor(expected_effect);
 }
 
-StructureTower.prototype.getRepairMax = function() {
-    var lvl = this.room.controller.level;
+Room.prototype.getTowerRepairMax = function() {
+    var lvl = this.controller.level;
     if (lvl == 2) {
         return 1000;
     } else if (lvl == 3) {
@@ -671,6 +672,17 @@ Creep.prototype.getRepairMax = function() {
     } else {
         return 50000 * lvl;
     }
+}
+
+Creep.prototype.getTargetPriority = function() {
+    var heal_parts = this.getActiveBodyparts(HEAL);
+    var attack_parts = this.getActiveBodyparts(ATTACK);
+    var ranged_parts = this.getActiveBodyparts(RANGED_ATTACK);
+    var dps = ((attack_parts * ATTACK_POWER) + (ranged_parts * RANGED_ATTACK_POWER));
+    var hps = (heal_parts * HEAL_POWER);
+    var hp = this.hits;
+    var threat = dps + hps;
+    return threat / hp;
 }
 
 global.REPORT_EARNINGS = function() {
@@ -823,13 +835,19 @@ global.SPAWN_UNIT = function (spawnername, role, targetroomname, roompath) {
         console.log('Invalid role');
         return 0;
     }
+    if ( empire_workers[role]['noresize'] != undefined) {
+        if ( empire_workers[role]['noresize'] == 1) {
+            console.log('That role requires resizing.');
+            return 0;
+        }        
+    }
     if (roompath == undefined) {
         roompath = [];
     }
     spawncustom.process(Game.spawns[spawnername], '', empire_workers[role]['body'], role, 
                         '', targetroomname, global.UNIT_COST(empire_workers[role]['body']), 
                         Game.spawns[spawnername].room.name, 25, 
-                        25, 0);
+                        25, 0, roompath);
     return 'DONE';
 }
 
@@ -1070,6 +1088,9 @@ module.exports.loop = function () {
                         }
                     }
                 }
+                if(allies.includes(attacker_username)) {
+                    continue;
+                }
                 if(empire[rname] == undefined) {
                     //console.log('ATTACK: cannot do anything about enemies in a non-empire sector: ' + rname);
                     continue;
@@ -1147,6 +1168,7 @@ module.exports.loop = function () {
                         for(var name in Game.creeps) {
                             if(Game.creeps[name].memory.target == csector && (empire_defaults['military_roles'].includes(Game.creeps[name].memory[MEMORY_ROLE]))) {
                                 Game.creeps[name].memory.target = empire_defaults['alerts_reassign'];
+                                Game.creeps[name].notifyWhenAttacked(false);
                             }
                         }
                     }
@@ -1574,7 +1596,7 @@ module.exports.loop = function () {
                             spawn_queue[spawner.name] = {
                                 'spawner': spawner.name, 'sname': empire[rname].sources[skey]['sourcename'], 'partlist': partlist, 'spawnrole': spawnrole, 'skey': skey, 'rname': rname, 
                                 'thecost': thecost, 'myroomname': spawner.room.name, 'target_x': target_x, 'target_y': target_y,  
-                                'expected_income': expected_income, 'renew_allowed': renew_allowed
+                                'expected_income': expected_income, 'renew_allowed': renew_allowed, 'nextdest': []
                             }
                             //console.log(JSON.stringify(spawn_queue));
                         }
@@ -1598,7 +1620,7 @@ module.exports.loop = function () {
                             thespawner, spawn_queue[spawnername]['sname'], spawn_queue[spawnername]['partlist'], spawn_queue[spawnername]['spawnrole'], 
                             spawn_queue[spawnername]['skey'], spawn_queue[spawnername]['rname'], spawn_queue[spawnername]['thecost'], 
                             spawn_queue[spawnername]['myroomname'], spawn_queue[spawnername]['target_x'], 
-                            spawn_queue[spawnername]['target_y'], spawn_queue[spawnername]['renew_allowed']
+                            spawn_queue[spawnername]['target_y'], spawn_queue[spawnername]['renew_allowed'], spawn_queue[spawnername]['nextdest']
                         );
                     } else {
                         console.log(spawn_queue[spawnername]['sname'] + ': ' + spawn_queue[spawnername]['spawnrole'] + ' too expensive (' + spawn_queue[spawnername]['thecost'] + '/' + thespawner.room.energyAvailable + '), saving up.');
@@ -1612,9 +1634,16 @@ module.exports.loop = function () {
     
     }
     
+    // STRUCTURE MANAGEMENT, TOWER SETUP
+    var rtowers = {};
     for(var id in Game.structures){
         if(Game.structures[id].structureType == STRUCTURE_TOWER){
-            structureTower.run(Game.structures[id]);
+            var thistower = Game.structures[id];
+            var rname = thistower.room.name;
+            if (rtowers[rname] == undefined) {
+                rtowers[rname] = [];
+            }
+            rtowers[rname].push(thistower);
         }
         if(Game.structures[id].structureType == STRUCTURE_LINK){
             structureLink.run(Game.structures[id]);
@@ -1622,6 +1651,90 @@ module.exports.loop = function () {
         if(Game.structures[id].structureType == STRUCTURE_LAB){
             structureLab.run(Game.structures[id]);
         }
+    }
+
+    // TOWER MANAGEMENT
+    for(var rname in rtowers) {
+        var theroom = Game.rooms[rname];
+        
+        // If hostiles in room, focus fire.        
+        var enemiesList = theroom.find(FIND_HOSTILE_CREEPS);
+        if (enemiesList.length) {
+            var highest_threat = -1;
+            var best_target = undefined;
+            for (var i = 0; i < enemiesList.length; i++) {
+                var this_pri = enemiesList[i].getTargetPriority();
+                if (this_pri > highest_threat) {
+                    highest_threat = this_pri;
+                    best_target = enemiesList[i];
+                }
+            }
+
+            for (tnum in rtowers[rname]) {
+                var thistower = rtowers[rname][tnum];
+                thistower.attack(best_target);
+                thistower.room.visual.circle(thistower.pos, {fill: 'transparent', radius: TOWER_OPTIMAL_RANGE, stroke: 'green'});
+                thistower.room.visual.circle(thistower.pos, {fill: 'transparent', radius: TOWER_FALLOFF_RANGE, stroke: 'yellow'});
+                thistower.room.visual.line(thistower.pos, best_target.pos, {color: 'red'});
+            }
+            continue;
+        }
+
+        // If no hostiles in room, repair.
+        var repairMax = theroom.getTowerRepairMax();
+        var repairTargets = theroom.find(FIND_STRUCTURES, {
+                filter: function(structure){
+                    if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
+                        return (structure.hits < repairMax)
+                    }else{
+                        return (structure.hits < (structure.hitsMax - TOWER_POWER_REPAIR))
+                    }
+                }
+        });
+
+        if (!repairTargets.length) {
+            continue;
+        }
+        // move the most damaged thing to the front.
+        repairTargets.sort(function(a, b){
+            return a.hits - b.hits
+        });
+
+        var available_towers = [];
+        for (tnum in rtowers[rname]) {
+            var thistower = rtowers[rname][tnum];
+            if (thistower.energy >= 50) {
+                available_towers.push(thistower);
+            }
+        }
+        //console.log(rname + ' ' + repairTargets.length + ' rts, ' + ' ' + available_towers.length + ' avts');
+        if (repairTargets.length >= 3) {
+            for (avtower in available_towers) {
+                var near_rep = available_towers[avtower].pos.findClosestByRange(repairTargets);
+                available_towers[avtower].repair(near_rep);
+            }
+        } else {
+            var thingtorepair = repairTargets[0];
+            var chosen_tower = thingtorepair.pos.findClosestByRange(available_towers);
+            chosen_tower.repair(thingtorepair);
+        }
+
+        var healTargets = theroom.find(FIND_MY_CREEPS, {
+            filter: function(creep){
+                return (creep.hits < creep.hitsMax)
+            }
+        })
+        if(healTargets.length){
+            healTargets.sort(function(a, b){
+                return a.hits - b.hits
+            });
+            for (tnum in rtowers[rname]) {
+                var thistower = rtowers[rname][tnum];
+                var target = healTargets[0];
+                thistower.heal(target);
+            }
+        }
+
     }
 
     //console.log('after divisor loop: ' + Game.cpu.getUsed());
@@ -1655,7 +1768,7 @@ module.exports.loop = function () {
             roleDrainer.run(creep, 1);
         } else if(creep.memory[MEMORY_ROLE] == 'drainerhealer') {
             roleDrainerhealer.run(creep, 1);
-        } else if(creep.memory[MEMORY_ROLE] == 'siege' || creep.memory[MEMORY_ROLE] == 'siegefar' || creep.memory[MEMORY_ROLE] == 'siegemini') {
+        } else if(creep.memory[MEMORY_ROLE] == 'siege' || creep.memory[MEMORY_ROLE] == 'siegefar' || creep.memory[MEMORY_ROLE] == 'siegemini' || creep.memory[MEMORY_ROLE] == 'siegebig') {
             roleSiege.run(creep);
         } else if (empire_defaults['military_roles'].includes(creep.memory[MEMORY_ROLE])) {
             roleAdventurer.run(creep);

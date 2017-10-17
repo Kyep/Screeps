@@ -1,5 +1,5 @@
 module.exports = {
-    process: function(spawner, sname, partlist, roletext, sourcetext, targettext, thecost, homesector, target_x, target_y, renew_allowed){
+    process: function(spawner, sname, partlist, roletext, sourcetext, targettext, thecost, homesector, target_x, target_y, renew_allowed, nextdest){
         if (Memory['spawn_count'] == undefined) {
             Memory['spawn_count'] = 0;
         }
@@ -23,6 +23,7 @@ module.exports = {
         crmemory[MEMORY_DEST_Y] = target_y;
         crmemory[MEMORY_SPAWNERNAME] = spawner.name;
         crmemory[MEMORY_RENEW] = renew_allowed;
+        crmemory[MEMORY_NEXTDEST] = nextdest;
         //console.log("SPAWNING: " + roletext + " for (" + sourcetext + ') target: ' + targettext + ' (' + target_x + ',' + target_y + ') with cost: ' + thecost + ' based out of ' + homesector);
         //var result = spawner.createCreep(partlist, crname, 
         //    {'role': roletext, 'source': sourcetext, 'target': targettext, 'home': homesector, 'target_x': target_x, 'target_y': target_y, 'spawnername': spawner.name, 'renew_allowed': renew_allowed});

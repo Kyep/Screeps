@@ -39,9 +39,11 @@ module.exports = {
         if (creep.memory[MEMORY_JOB] == JOB_HARVEST) {
             var target_x = 25;
             var target_y = 25;
-            if (empire[creep.room.name].sources[creep.memory[MEMORY_SOURCE]] != undefined) {
-                target_x = empire[creep.room.name].sources[creep.memory[MEMORY_SOURCE]]['target_x'];
-                target_y = empire[creep.room.name].sources[creep.memory[MEMORY_SOURCE]]['target_y'];
+            if (empire[creep.room.name] != undefined) {
+                if (empire[creep.room.name].sources[creep.memory[MEMORY_SOURCE]] != undefined) {
+                    target_x = empire[creep.room.name].sources[creep.memory[MEMORY_SOURCE]]['target_x'];
+                    target_y = empire[creep.room.name].sources[creep.memory[MEMORY_SOURCE]]['target_y'];
+                }
             }
             //console.log(creep.name + " " + creep.memory[MEMORY_SOURCE] + " " + target_x + " " + target_y)
             if (creep.pos.x != target_x || creep.pos.y != target_y) {
