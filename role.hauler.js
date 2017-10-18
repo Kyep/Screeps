@@ -9,7 +9,7 @@ module.exports = {
         // FLOW: JOB_TRAVEL_OUT -> JOB_TRAVEL_BACK -> JOB_USELINK -> JOB_RETURN -> JOB_RENEW -> JOB_TRAVEL_OUT.
         // If attacked, -> JOB_HIDE, then back to JOB_TRAVEL_OUT.
         if (creep.memory[MEMORY_JOB] == undefined) {
-            console.log(creep.name + ': UNDEFINED JOB');
+            //console.log(creep.name + ': UNDEFINED JOB');
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
         }
         if (creep.getShouldHide()) {
@@ -144,6 +144,7 @@ module.exports = {
                     'at ' + creep.pos.x + ',' + creep.pos.y + ' v ' + creep.memory[MEMORY_HOME] + ' carrying: ' + creep.carry.energy + ' of ' + creep.carryCapacity);
                 } else*/ 
                 if (jobReturnresources.run(creep, 1, 1, 1, 1, 1, 0) == -1) { // if room has no storage unit, return to extensions.
+                    //console.log(creep.name + ' stuck');
                     // wait.
                 }
             } else if (jobReturnresources.run(creep, 1, 1, 0.5, 1, 1, 0) == -1) {

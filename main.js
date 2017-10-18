@@ -58,7 +58,7 @@ var spawncustom = require('task.spawncustom');
         // 1st base
         'W53S18': {
             'roomname' : '1',
-            'spawns_from': 'Spawn1',
+            'spawns_from': 'Spawn4',
             'sources': {
                 'base-maint': {
                     'sourcename': '1-base', 'x':20, 'y':20, 
@@ -68,7 +68,7 @@ var spawncustom = require('task.spawncustom');
                 'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40 },
                 '59bbc3f82052a716c3ce7289': {
                     'sourcename':'1-E', 'x':25, 'y':18,  'target_x': 24, 'target_y': 19, 'steps':15,
-                    'assigned': {'harvester': 1},
+                    'assigned': {'bharvester': 2},
                     'expected_income': 85
                 },
                 '59bbc3f82052a716c3ce728b': {
@@ -84,7 +84,7 @@ var spawncustom = require('task.spawncustom');
         // 1st base remote mining
         'W52S18': {
             'roomname' : '1E',
-            'spawns_from': 'Spawn1',
+            'spawns_from': 'Spawn4',
             'sources': {
                 '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14, 'target_x': 10, 'target_y': 13, 'steps':33,
                     'assigned': {'c15harvester': 1, 'hauler': 1},
@@ -142,7 +142,7 @@ var spawncustom = require('task.spawncustom');
         // 2ND BASE
         'W51S18': {
             'roomname' : '2',
-            'spawns_from': 'Spawn2',
+            'spawns_from': 'Spawn5',
             'sources': {
                 'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40 },
                 'base-maint': {'sourcename': '2-base', 'x':16, 'y':24, 
@@ -224,11 +224,11 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'Spawn3',
             'sources': {
                 '59bbc4172052a716c3ce7580': {'sourcename': '3S-W', 'x':14, 'y':3, 'target_x': 14, 'target_y': 2, 'steps':43, 
-                    'assigned': {'c30harvester': 1, 'hauler': 2}, // 'c15harvester': 1, 'hauler': 1
+                    'assigned': {'c30harvester': 1, 'hauler': 1}, // 'c15harvester': 1, 'hauler': 1
                     'expected_income': 70
                 },
                 '59bbc4172052a716c3ce7582': {'sourcename': '3S-E', 'x':36, 'y':16, 'target_x': 35, 'target_y': 15, 'steps':66, 
-                    'assigned': {'c30harvester': 1, 'hauler': 2}, // 'c15harvester': 1, 'hauler': 1
+                    'assigned': {'c30harvester': 1, 'hauler': 1}, // 'c15harvester': 1, 'hauler': 1
                     'expected_income': 60
                 },
                 'reserver': {'sourcename':'3S-R', 'x':20, 'y':15,
@@ -306,7 +306,7 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'Spawn4',
             'sources': {
                 '59bbc3da2052a716c3ce6e76': {'sourcename': 'GNS-N', 'x':45, 'y':21,
-                    'assigned': {'boss': 0}, // 'siegefar': 3, 'rogue' : 0
+                    'assigned': {'boss': 0}, 
                     'expected_income': 90
                 },
                 '59bbc3da2052a716c3ce6e77': {'sourcename': 'GNS-S', 'x':29, 'y':40,
@@ -434,7 +434,7 @@ empire_workers = {
 	'siege': { 'body': [MOVE, ATTACK, ATTACK], 'renew_allowed': 0}, // half speed, strong but slow
 	'siegemini': { 'body': [MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // small.
 	'siegebig': { 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // bigger
-	'siegefar': { 'body': [MOVE, ATTACK], 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
+	'siegefar': { 'body': [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
 	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
 	'drainerhealer': { 'body': [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
 

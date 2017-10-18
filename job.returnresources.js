@@ -108,8 +108,8 @@ module.exports =  {
             if (creep.carry.energy == 0) {
                 creep.memory[MEMORY_CONTAINER] = undefined;
             }
-
-
+            
+            return result;
 
         } else {
             return -1;

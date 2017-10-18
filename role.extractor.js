@@ -13,7 +13,12 @@ module.exports = {
             var mineral = undefined;
             if (creep.memory.mineralid == undefined) {
                 mineral = creep.pos.findClosestByPath(FIND_MINERALS, {filter: (s) => s.mineralAmount > 0});
-                creep.memory.mineralid = mineral.id;
+                if (mineral != undefined) {
+                    creep.memory.mineralid = mineral.id;
+                } else {
+                    // mineral is empty. Do nothing.
+                    return;
+                }
             }
 
             mineral = Game.getObjectById(creep.memory.mineralid);

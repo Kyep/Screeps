@@ -38,7 +38,8 @@ module.exports = {
             return;
         }
 
-        var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_EXTENSION, STRUCTURE_RAMPART]; // be careful with rampart. STRUCTURE_CONTAINER, 
+        var valid_structure_targets = [STRUCTURE_SPAWN, STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB]; 
+        //[STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB]; // be careful with rampart. STRUCTURE_CONTAINER, STRUCTURE_RAMPART
         var enemy_structures = creep.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType != STRUCTURE_CONTROLLER}); 
         var valid_targets = [];
         var target = undefined;

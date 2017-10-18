@@ -182,7 +182,11 @@ module.exports = {
         }
 	    if(creep.memory[MEMORY_JOB] == JOB_RETURN) {
             // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage, ext_priority) {
-            if (jobReturnresources.run(creep, 1, 1, 0.6, 1, 1, 1) == -1) {
+            var result = jobReturnresources.run(creep, 1, 1, 0.6, 1, 1, 1);
+            /*if (result != OK && result != ERR_NOT_IN_RANGE) {
+                console.log(creep.name + ': ' + result);
+            }*/
+            if (result == -1) {
                 creep.memory[MEMORY_JOB] = JOB_IDLE;
                 creep.announceJob();
             }

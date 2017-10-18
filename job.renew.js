@@ -18,7 +18,7 @@ module.exports = {
 
         var targets = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_SPAWN);
+                    return (structure.structureType == STRUCTURE_SPAWN && structure.spawning == undefined);
                 }
         });
         //creep.room.visual.circle(creep.pos, {fill: 'transparent', radius: 0.5, stroke: COLOR_RENEW});
