@@ -241,9 +241,9 @@ var spawncustom = require('task.spawncustom');
 
         /*
         'W52S17': {
-            'roomname' : '3',
+            'roomname' : 'X3',
             'ignoreattacks': 1,
-            'spawns_from': 'Spawn1',
+            'spawns_from': 'Spawn4',
             'sources': {
                 '59bbc4062052a716c3ce7404': {'sourcename': '3-N', 'x':10, 'y':19,
                     'assigned': {},
@@ -258,8 +258,9 @@ var spawncustom = require('task.spawncustom');
 
         // 3rd base expansions (planned)
         'W52S16': {
+            'roomname' : 'X3-N',
             'ignoreattacks': 1,
-            'spawns_from': 'Spawn1',
+            'spawns_from': 'Spawn4',
             'sources': {
                 '59bbc4062052a716c3ce7401': {'sourcename': '3N-E', 'x':45, 'y':26,
                     'assigned': {},
@@ -273,8 +274,9 @@ var spawncustom = require('task.spawncustom');
         },
         
         'W51S15': {
+            'roomname' : 'X3-NN',
             'ignoreattacks': 1,
-            'spawns_from': 'Spawn1',
+            'spawns_from': 'Spawn4',
             'sources': {
                 '59bbc4172052a716c3ce7582': {'sourcename': '4S-E', 'x':36, 'y':16,
                 'assigned': {},
@@ -286,8 +288,9 @@ var spawncustom = require('task.spawncustom');
         
         // GUARDIAN north 
         'W56S17': {
+            'roomname' : 'GN',
             'ignoreattacks': 1,
-            'spawns_from': 'Spawn1',
+            'spawns_from': 'Spawn4',
             'sources': {
                 '59bbc3c92052a716c3ce6c42': {'sourcename': 'GN-N', 'x':24, 'y':29,
                     'assigned': {}, // 'drainer': 0
@@ -302,14 +305,15 @@ var spawncustom = require('task.spawncustom');
 
         // GUARDIAN north STAGING EAST
         'W55S17': {
+            'roomname' : 'GN-E',
             'ignoreattacks': 1,
             'spawns_from': 'Spawn4',
             'sources': {
-                '59bbc3da2052a716c3ce6e76': {'sourcename': 'GNS-N', 'x':45, 'y':21,
+                '59bbc3da2052a716c3ce6e76': {'sourcename': 'GNE-N', 'x':45, 'y':21,
                     'assigned': {'boss': 0}, 
                     'expected_income': 90
                 },
-                '59bbc3da2052a716c3ce6e77': {'sourcename': 'GNS-S', 'x':29, 'y':40,
+                '59bbc3da2052a716c3ce6e77': {'sourcename': 'GNE-S', 'x':29, 'y':40,
                     'assigned': {},
                     'expected_income': 1
                 }
@@ -317,14 +321,15 @@ var spawncustom = require('task.spawncustom');
         }, 
         // GUARDIAN home / south
         'W56S18': {
+            'roomname' : 'GS',
             'ignoreattacks': 1,
             'spawns_from': 'Spawn4',
             'sources': {
-                '59bbc3c92052a716c3ce6c47': {'sourcename': 'G-N', 'x':31, 'y':30,
+                '59bbc3c92052a716c3ce6c47': {'sourcename': 'GS-N', 'x':31, 'y':30,
                     'assigned': {}, // 'drainer': 66
                     'expected_income': 1
                 },
-                '59bbc3c92052a716c3ce6c48': {'sourcename': 'G-S', 'x':35, 'y':39,
+                '59bbc3c92052a716c3ce6c48': {'sourcename': 'GS-S', 'x':35, 'y':39,
                     'assigned': {},
                     'expected_income': 1
                 }
@@ -332,14 +337,15 @@ var spawncustom = require('task.spawncustom');
         }, 
         // GUARDIAN WEST OF HOME
         'W57S18': {
+            'roomname' : 'GS-W',
             'ignoreattacks': 1,
             'spawns_from': 'Spawn4',
             'sources': {
-                '59bbc3c92052a716c3ce6c47': {'sourcename': 'G-N', 'x':31, 'y':30,
+                '59bbc3c92052a716c3ce6c47': {'sourcename': 'GSW-N', 'x':31, 'y':30,
                     'assigned': {}, // 'drainer': 66
                     'expected_income': 1
                 },
-                '59bbc3c92052a716c3ce6c48': {'sourcename': 'G-S', 'x':35, 'y':39,
+                '59bbc3c92052a716c3ce6c48': {'sourcename': 'GSW-S', 'x':35, 'y':39,
                     'assigned': {},
                     'expected_income': 1
                 }
@@ -347,10 +353,11 @@ var spawncustom = require('task.spawncustom');
         },
         // GUARDIAN SOUTH STAGING EAST
         'W55S18': {
+            'roomname' : 'GS-E',
             'ignoreattacks': 1,
             'spawns_from': 'Spawn4',
             'sources': {
-                '59bbc3db2052a716c3ce6e79': {'sourcename': 'GSS-N', 'x':9, 'y':3,
+                '59bbc3db2052a716c3ce6e79': {'sourcename': 'GS-E', 'x':9, 'y':3,
                     'assigned': {'boss': 0},
                     'expected_income': 90
                 }
@@ -358,6 +365,7 @@ var spawncustom = require('task.spawncustom');
         },
         // TCCKI
         'W53S12': {
+            'roomname' : 'TCCKI',
             'ignoreattacks': 1,
             'spawns_from': 'Spawn3',
             'sources': {
@@ -373,6 +381,7 @@ var spawncustom = require('task.spawncustom');
         },
         // DARN WOLFE NORTH BASE
         'W53S11': {
+            'roomname' : 'WOLFE',
             'ignoreattacks': 1,
             'spawns_from': 'Spawn3',
             'sources': {
@@ -975,6 +984,26 @@ module.exports.loop = function () {
                         }
                     }
 
+                    if(Game.rooms[rname].controller == undefined) {
+                        //console.log(rname + 'undef');
+                        continue;
+                    }
+                    if(Game.rooms[rname].controller.level == undefined) {
+                        //console.log(rname + ' L undef');
+                        continue;
+                    }
+                    if(Game.rooms[rname].controller.level < 3) {
+                        //console.log(rname + ' L <3');
+                        continue;
+                    }
+                    if(Game.rooms[rname].controller.owner == undefined) {
+                        //console.log(rname + 'owner undef');
+                        continue;
+                    }
+                    if(Game.rooms[rname].controller.owner.username != overlord) {
+                        //console.log(rname + 'owner <3 ' + Game.rooms[rname].controller.owner.username);
+                        continue;
+                    }
                     empire[rname].sources['upgrader'] = {'sourcename': empire[rname]['roomname'] + '-U', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5}
                     
                     
@@ -1024,10 +1053,10 @@ module.exports.loop = function () {
                     }
                     if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc']) {
                         empire[rname].sources[mysname].assigned['teller'] = 2;
-                        console.log(rname + ' requires 2x teller: ' + e_hist_avg_pc + ' < ' + empire_defaults['room_minimum_energy_pc']);
+                        //console.log(rname + ' requires 2x teller: ' + e_hist_avg_pc + ' < ' + empire_defaults['room_minimum_energy_pc']);
                     } else {
                         empire[rname].sources[mysname].assigned['teller'] = 1;
-                        console.log(rname + ' requires a teller: ' + e_hist_avg_pc + ' < ' + empire_defaults['room_minimum_energy_pc']);
+                        //console.log(rname + ' requires a teller: ' + e_hist_avg_pc + ' < ' + empire_defaults['room_minimum_energy_pc']);
                     }
                     
                 } else { 
@@ -1125,6 +1154,7 @@ module.exports.loop = function () {
                         }
                         Game.creeps[tc].memory[MEMORY_DEST] = rname;
                         console.log('REASSIGN: sent ' + Game.creeps[tc].name + ' to defend' + rname);
+                        Game.notify('REASSIGN: sent ' + Game.creeps[tc].name + ' to defend' + rname);
                     }
                 }
                 sectors_under_attack[Game.rooms[rname].name]['time'] = timenow;
@@ -1169,6 +1199,8 @@ module.exports.loop = function () {
                             if(Game.creeps[name].memory.target == csector && (empire_defaults['military_roles'].includes(Game.creeps[name].memory[MEMORY_ROLE]))) {
                                 Game.creeps[name].memory.target = empire_defaults['alerts_reassign'];
                                 Game.creeps[name].notifyWhenAttacked(false);
+                                console.log('REASSIGN: sent ' + name + ' to harass' + empire_defaults['alerts_reassign']);
+                                Game.notify('REASSIGN: sent ' + name + ' to harass' + empire_defaults['alerts_reassign']);
                             }
                         }
                     }
@@ -1333,7 +1365,7 @@ module.exports.loop = function () {
                     'assigned': patrolforce, 'expected_income': 94}
                 if (tgap > 0) {
                     //console.log('ATTACK: TIMING OUT IN: ' + csector + ', age: ' + tgap + ' DEFCON: ' + empire[csector]['defcon']);
-                    console.log('ATTACK: TIMING OUT IN: ' + csector + ', age: ' + tgap);
+                    //console.log('ATTACK: TIMING OUT IN: ' + csector + ', age: ' + tgap);
                 } else {
                     //console.log('ATTACK: HOSTILES STILL IN ' + csector + '! 'DEFCON: ' + empire[csector]['defcon']');
                     //console.log('ATTACK: HOSTILES STILL IN ' + csector + '! ');
@@ -1476,35 +1508,38 @@ module.exports.loop = function () {
                             if(spawn_queue[spawner.name] != undefined) {
                                 if(spawn_queue[spawner.name]['expected_income'] != undefined) {
                                     if (expected_income > spawn_queue[spawner.name]['expected_income']) {
-                                        //console.log(spawner.name + ': permitting spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| because its expected_income ' + 
-                                        //    expected_income + ' is > than the ' + spawn_queue[spawner.name]['expected_income'] + ' of ' +
-                                        //    spawn_queue[spawner.name]['spawnrole'] + ' working on |' + empire[spawn_queue[spawner.name]['rname']].sources[spawn_queue[spawner.name]['skey']]['sourcename']  + '|');
+                                        /*console.log(spawner.name + ': permitting spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| because its expected_income ' + 
+                                            expected_income + ' is > than the ' + spawn_queue[spawner.name]['expected_income'] + ' of ' +
+                                            spawn_queue[spawner.name]['spawnrole'] + ' working on |' + empire[spawn_queue[spawner.name]['rname']].sources[spawn_queue[spawner.name]['skey']]['sourcename']  + '|');
+                                        */
                                     } else {
-                                        console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| because its expected_income ' + 
+                                        /* console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| because its expected_income ' + 
                                             expected_income + ' is <= than the ' + spawn_queue[spawner.name]['expected_income'] + ' of ' +
                                             spawn_queue[spawner.name]['spawnrole'] + ' working on |' + empire[spawn_queue[spawner.name]['rname']].sources[spawn_queue[spawner.name]['skey']]['sourcename']  + '|');
+                                        */
                                         continue;
                                     }
                                 } else {
-                                    console.log(spawner.name + ': permitting spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| because its expected_income ' + 
+                                    /* console.log(spawner.name + ': permitting spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| because its expected_income ' + 
                                         expected_income + ' is > than the (undefined) of ' +
                                         spawn_queue[spawner.name]['spawnrole'] + ' working on |' + empire[spawn_queue[spawner.name]['rname']].sources[spawn_queue[spawner.name]['skey']]['sourcename'] + '|');
+                                    */
                                 }
                             } else {
                                 //console.log(spawner.name + ': permitting spawn queue set as there is nothing in queue.');
                             }
 
-                            /*
+                            
                             if (spawner.room.energyAvailable < 300) {
                                 console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as cost exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
                                 //continue;
                             }
-                            */
+                            
                             var part_template = empire_workers[role]['body'];
                             var partlist = [];
                             var energy_cap = spawner.room.energyCapacityAvailable;
-                            if (energy_cap > 5000) {
-                                energy_cap = 5000;
+                            if (energy_cap > 4500) {
+                                energy_cap = 4500;
                             }
                             var work_units = Math.max(1, Math.floor(energy_cap / global.UNIT_COST(part_template)));
                             var max_units = Math.floor(50 / part_template.length);
@@ -1591,7 +1626,7 @@ module.exports.loop = function () {
                             if(empire[rname].sources[skey]['y'] != undefined) { target_y = empire[rname].sources[skey]['y']; }
                             
                             console.log('SPAWNING: ' + spawner.name + ' created ' + spawnrole + ' for |' + empire[rname].sources[skey]['sourcename'] + 
-                            '| cost: ' + thecost + '/' + spawner.room.energyAvailable + ' capacity:' + spawner.room.energyCapacityAvailable + ' based out of ' + spawner.room.name + ' with renew: ' + renew_allowed);
+                            '| cost: ' + thecost + '/' + spawner.room.energyAvailable + ' capacity:' + energy_cap + ' based out of ' + spawner.room.name + ' with renew: ' + renew_allowed);
 
                             spawn_queue[spawner.name] = {
                                 'spawner': spawner.name, 'sname': empire[rname].sources[skey]['sourcename'], 'partlist': partlist, 'spawnrole': spawnrole, 'skey': skey, 'rname': rname, 

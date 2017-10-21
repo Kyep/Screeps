@@ -2,6 +2,9 @@ var jobRenew = require('job.renew');
 
 module.exports = {
     run: function(creep) {
+        if (creep.memory[MEMORY_JOB] == undefined) {
+            creep.memory[MEMORY_JOB] = JOB_EXTRACT;
+        }
         if (creep.ticksToLive < 400 && creep.memory[MEMORY_JOB] != JOB_RENEW) {
             creep.memory[MEMORY_JOB] = JOB_RENEW;
         } else if  (_.sum(creep.carry) == 0 && creep.memory[MEMORY_JOB] == JOB_STOREMINERALS) {
