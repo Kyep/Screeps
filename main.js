@@ -196,6 +196,7 @@ var spawncustom = require('task.spawncustom');
         'W51S14': {
             'roomname' : '3',
             'spawns_from': 'Spawn3',
+            'mineralid': '59bbc645ae9e1411a425ae14',
             'sources': {
                 '59bbc4172052a716c3ce757d': {'sourcename': '3-W', 'x':31, 'y':15,
                     'assigned': {'bharvester': 2},
