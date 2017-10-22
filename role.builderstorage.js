@@ -1,3 +1,5 @@
+"use strict";
+
 var jobReturnresources = require('job.returnresources');
 var jobBuild = require('job.build');
 var jobRepair = require('job.repair');

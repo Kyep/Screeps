@@ -1,3 +1,5 @@
+"use strict";
+
 /*
  * Module code goes here. Use 'module.exports' to export things:
  * module.exports.thing = 'a thing';
@@ -9,7 +11,10 @@
 
 module.exports = {
     run: function(creep) {
-        if (creep.memory.mode == 'clear2') {
+        if (creep.memory.mode == undefined) {
+            creep.memory.mode = 'standard';
+        }
+        if (creep.memory.mode == 'clear') {
             if(_.sum(creep.carry) > 0) {
                 var keyslist = Object.keys(creep.carry);
                 var myterminal = creep.room.terminal;

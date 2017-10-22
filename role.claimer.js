@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports = {
     run: function(creep){
         if(creep.memory[MEMORY_DEST] != creep.room.name){

@@ -1,3 +1,5 @@
+"use strict";
+
 var jobHarvest = require('job.harvest');
 var jobHide = require('job.hide');
 

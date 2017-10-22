@@ -1,3 +1,5 @@
+"use strict";
+
 var jobRenew = require('job.renew');
 var jobPatrol = require('job.patrol');
 
@@ -24,7 +26,7 @@ module.exports = {
                 }
             }
             if (checktargets) {
-                target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
+                var target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
                 if(target) {
                     creep.memory[MEMORY_JOB] = JOB_PATROL;
                     return;

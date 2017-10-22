@@ -1,3 +1,5 @@
+"use strict";
+
 var jobUpgrade = require('job.upgrade');
 var jobRenew = require('job.renew');
 var jobGetstoredenergy = require('job.getstoredenergy');

@@ -1,3 +1,5 @@
+"use strict";
+
 var jobHarvest = require('job.harvest');
 var jobBuild = require('job.build');
 var jobUpgrade = require('job.upgrade');

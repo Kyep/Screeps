@@ -1,4 +1,6 @@
-var roleRecycle = {
+"use strict";
+
+module.exports = {
     run: function(creep) {
         if (creep.room.name != creep.memory[MEMORY_HOME]) {
                 creep.moveTo(creep.getHomePos());
@@ -16,5 +18,3 @@ var roleRecycle = {
         }
 	}
 };
-
-module.exports = roleRecycle;

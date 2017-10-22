@@ -1,3 +1,5 @@
+"use strict";
+
 var jobReturnresources = require('job.returnresources');
 var jobRenew = require('job.renew');
 var jobGetstoredenergy = require('job.gfs');

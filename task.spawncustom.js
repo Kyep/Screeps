@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports = {
     process: function(spawner, sname, partlist, roletext, sourcetext, targettext, thecost, homesector, target_x, target_y, renew_allowed, nextdest){
         if (Memory['spawn_count'] == undefined) {

@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports =  {
     run: function(creep) {
         var source = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {filter: (s) => s.energy > 0});

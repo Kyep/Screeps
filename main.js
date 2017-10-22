@@ -1,3 +1,5 @@
+"use strict";
+
 // requirements ONLY
 
 var roleHarvester = require('role.harvester');
@@ -32,10 +34,10 @@ var spawncustom = require('task.spawncustom');
 // CONFIG
 // ---------------------------
 
-    overlord = 'Phisec';
-    allies = ['Kamots'];
+    global.overlord = 'Phisec';
+    global.allies = ['Kamots'];
     
-    empire_defaults = {
+    global.empire_defaults = {
         'spawner': '59ce24a6b1421365236708e4',
         'room': 'W53S18',
         'sourceid': '59bbc3f82052a716c3ce7289',
@@ -54,7 +56,7 @@ var spawncustom = require('task.spawncustom');
         'room_crit_energy_pc': 40 // if below this, spawn 2 tellers
         }
     
-    empire = {
+    global.empire = {
         // 1st base
         'W53S18': {
             'roomname' : '1',
@@ -387,7 +389,7 @@ var spawncustom = require('task.spawncustom');
             'spawns_from': 'Spawn3',
             'sources': {
                 '59e117760a70e4046c980872': {'sourcename': 'WOLFE', 'x':23, 'y':25,
-                    'assigned': {'ninjaheals': 0, 'wizard': 0},
+                    'assigned': {},
                     'expected_income': 60
                 }
             }
@@ -397,8 +399,29 @@ var spawncustom = require('task.spawncustom');
        
     }
 
+
+global.CONSTRUCT_MILITARY_BODY = function (tough_parts, move_parts, attack_parts, rangedattack_parts, heal_parts) {
+    var partlist = [];
+    for (var i = 0; i < tough_parts; i++) {
+        partlist.push(TOUGH);
+    }
+    for (var i = 0; i < move_parts; i++) {
+        partlist.push(MOVE);
+    }
+    for (var i = 0; i < attack_parts; i++) {
+        partlist.push(ATTACK);
+    }
+    for (var i = 0; i < rangedattack_parts; i++) {
+        partlist.push(RANGED_ATTACK);
+    }
+    for (var i = 0; i < heal_parts; i++) {
+        partlist.push(HEAL);
+    }
+    return partlist;
+}
+
 // rule: must have  1 move part for 1 every other part, or 2 every other parts if creep uses roads exclusively
-empire_workers = {
+global.empire_workers = { 
 	'upgclose': { 'body': [WORK, WORK, CARRY, MOVE] },
 	'upgfar': { 'body': [WORK, CARRY, MOVE] },
 	'remoteupgrader': { 'body': [WORK, CARRY, MOVE, MOVE] },
@@ -416,37 +439,34 @@ empire_workers = {
 	'builder': { 'body': [WORK, CARRY, MOVE] },
 	'builderstorage': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 'renew_allowed': 0 }, // full speed on roads
 	'upgraderstorage': { 'body': [WORK, WORK, CARRY, MOVE], 'renew_allowed': 0 },  // halfspeed on roads, quarter speed offroad
+	'labtech': { 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE] },
 
     // MILITARY CREEP DESIGN RULES:
     // 1. all NPC invaders have 1:1 move speed offroad, 2/3 (4/6 counting RCL>=4 invaders) have a ranged attack, and another 1/3rd have ranged heals. Thus creeps MUST have 1:1 movespeed. If they do not, they might get kited.
     // 2. costs are ATTACK:80, RANGED_ATTACK:150, HEAL:250. ATTACK also has power 30, RANGED_ATTACK 10 and HEAL 12. Thus in MOST situations ATTACK is clearly preferable to all other options, as it is both cheapest AND strongest.
     // 3. notably, TOUGH only costs ***TEN*** energy (60 with MOVE), so its worthwhile to put TOUGH parts on everything. The only question is: how many.
-    
+    // global.CONSTRUCT_MILITARY_BODY(tough_parts, move_parts, attack_parts, rangedattack_parts, heal_parts)
     // Anti-invader defense classes.
-    'scout': { 'body':    [MOVE, ATTACK], 'noresizing': 1, 'renew_allowed': 0 }, // $130, 200 HP, 30 DPS. Disposable scout.
-    'slasher': { 'body':    [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0 }, // $380, 800 HP, 60 DPS. Bread-and-butter defender, should be able to take most RCL<4 invaders by itself.
-	'rogue': { 'body':    [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // $640, 1,200 HP, 120 DPS. Capable of out-damaging a RCL<4 healer.
-    'ninja': { 'body':    [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // $900, 1,600 HP, 180 DPS. 
-    'ninjaheals': { 'body':    [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // $1050, 1,800 HP, 180 DPS. 
-    'dragon': { 'body':    [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, HEAL, HEAL], 'noresizing': 1, 'renew_allowed': 0},
-    'siegedragon': { 'body':    [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0},
-    // This one breaks my normal philosophy, as it is slow (1/2 movement speed) and expensive ($1390) and only suitable for RCL+ rooms. However, it has 2,100 HP, deals 360 DPS/tick, and self-heals for 24/tick.
-    'boss': { 'body':    [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, 
-                          MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE,
-                          ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK,
-                          HEAL, HEAL, HEAL], 'noresizing': 1, 'renew_allowed': 0},
+    'scout': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 1, 1, 0, 0), 'noresizing': 1, 'renew_allowed': 0 }, // 130e, 200 HP, 30 DPS. Disposable scout.
+    'slasher': { 'body':    global.CONSTRUCT_MILITARY_BODY(2, 4, 2, 0, 0), 'noresizing': 1, 'renew_allowed': 0 }, // 380e, 800 HP, 60 DPS. Bread-and-butter defender, should be able to take most RCL<4 invaders by itself.
+	'rogue': { 'body':      global.CONSTRUCT_MILITARY_BODY(2, 6, 4, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 640e, 1,200 HP, 120 DPS. Capable of out-damaging a RCL<4 healer.
+    'ninja': { 'body':      global.CONSTRUCT_MILITARY_BODY(2, 8, 6, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 900e, 1,600 HP, 180 DPS. 
+    'ninjaheals': { 'body': global.CONSTRUCT_MILITARY_BODY(2, 9, 6, 0, 1), 'noresizing': 1, 'renew_allowed': 0}, // 1,050e, 1,800 HP, 180 DPS. 
+    'dragon': { 'body':     global.CONSTRUCT_MILITARY_BODY(6, 14, 6, 0, 2), 'noresizing': 1, 'renew_allowed': 0}, // 1,740e, 2,800 HP, 180 DPS, 24 HPS.
+    'siegedragon': { 'body':global.CONSTRUCT_MILITARY_BODY(4, 14, 10, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1,540e, 2,800 HP, 300 DPS.
+    'boss': { 'body':       global.CONSTRUCT_MILITARY_BODY(10, 20, 8, 0, 2), 'noresizing': 1, 'renew_allowed': 0}, // 2,240e, 4,000 HP, 240 DPS, 24 HPS.
     
     // Anti-player defense classes
 	'wizard': { 'body':   [MOVE, RANGED_ATTACK], 'renew_allowed': 0}, // horrificly expensive anti-crowd unit
 	'healer': { 'body':   [MOVE, HEAL, HEAL], 'renew_allowed': 0}, // extremely expensive healer.
 
     // Anti-player ATTACK classes
-	'siege': { 'body': [MOVE, ATTACK, ATTACK], 'renew_allowed': 0}, // half speed, strong but slow
-	'siegemini': { 'body': [MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // small.
-	'siegebig': { 'body': [TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // bigger
-	'siegefar': { 'body': [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK], 'noresizing': 1, 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
+	'siege': { 'body':         global.CONSTRUCT_MILITARY_BODY(0, 1, 2, 0, 0), 'renew_allowed': 0}, // half speed, strong but slow
+	'siegemini': { 'body':     global.CONSTRUCT_MILITARY_BODY(0, 3, 3, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // small.
+	'siegebig': { 'body':      global.CONSTRUCT_MILITARY_BODY(3, 10, 6, 0, 1), 'noresizing': 1, 'renew_allowed': 0}, // bigger
+	'siegefar': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 6, 6, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
 	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
-	'drainerhealer': { 'body': [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
+	'drainerhealer': { 'body': global.CONSTRUCT_MILITARY_BODY(7, 14, 0, 0, 7), 'noresizing': 1, 'renew_allowed': 0}, 
 
     // Territory control classes
 	'reserver' : { 'body': [CLAIM, CLAIM, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
@@ -495,6 +515,7 @@ global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid, max_cost) {
     }
     return partlist;
 }
+
 
 global.CONSTRUCT_RESERVER_BODY = function (resticksremaining) {
     if (resticksremaining > 2000) {
@@ -920,7 +941,7 @@ module.exports.loop = function () {
         // CASE 3: I have already claimed the room.
         } else {
             var has_spawn = 0;
-            for (key in Game.spawns) {
+            for (var key in Game.spawns) {
                 if (Game.spawns[key].room.name == expansiontargetname) {
                     has_spawn = 1;
                 }
@@ -1127,7 +1148,7 @@ module.exports.loop = function () {
                 } else if (empire[rname]['ignoreattacks'] != undefined) {
                     continue;
                 }
-                console.log('ALERT: ' + Game.rooms[rname].name + ' has ' + enemiesList.length + ' enemies, worth body cost: ' + enemiesCost + '!'); 
+                //console.log('ALERT: ' + Game.rooms[rname].name + ' has ' + enemiesList.length + ' enemies, worth body cost: ' + enemiesCost + '!'); 
                 if(sectors_under_attack[Game.rooms[rname].name] == undefined) {
                     console.log('ATTACK: NEW ATTACK DETECTED: ' + Game.rooms[rname].name);
                     sectors_under_attack[Game.rooms[rname].name] = {}
@@ -1292,8 +1313,8 @@ module.exports.loop = function () {
                             // no point using this... we can't possibly afford it.
                             continue;
                         }
-                        if (outfit_cost > theirthreat) {
-                            //console.log('XAT: No point using ' + oname + ' as it exceeds their threat ' + theirthreat);
+                        if (outfit_cost > (theirthreat * 1.2)) {
+                            //console.log('XAT: No point using ' + oname + ' as it is > 1.2*their_threat ' + theirthreat);
                             continue; // overkill...
                         }
                         if (patrolforce[oname] == undefined) {
@@ -1398,7 +1419,7 @@ module.exports.loop = function () {
                 console.log('WARN: ' + Game.creeps[name] + ' in ' + Game.creeps[name].room.name + ' has no source defined.');
             }
             if(Game.creeps[name].memory[MEMORY_ROLE]) {
-                myrole = Game.creeps[name].memory[MEMORY_ROLE];
+                var myrole = Game.creeps[name].memory[MEMORY_ROLE];
                 if(Game.creeps[name].memory.source != undefined) {
                     var mysource = Game.creeps[name].memory.source;
                     var myroom = Game.creeps[name].memory.target;
@@ -1453,7 +1474,7 @@ module.exports.loop = function () {
         EmpireSpawning: {
             var spawner_mobs = {};
             var spawnerless_mobs = [];
-            for (mname in Game.creeps) {
+            for (var mname in Game.creeps) {
                 if (Game.creeps[mname].memory[MEMORY_SPAWNERNAME] != undefined) {
                     var theirsname = Game.creeps[mname].memory[MEMORY_SPAWNERNAME];
                     if(spawner_mobs[theirsname] == undefined) {
@@ -1599,8 +1620,8 @@ module.exports.loop = function () {
                             } else if(role == 'hauler') {
                                 partlist = CONSTRUCT_HAULER_BODY(rname, skey, spawner.room.energyCapacityAvailable);
                             } else if (empire_workers[role]['noresizing'] == undefined) {
-                                for (k = 0; k < part_template.length; k++) {
-                                    for (j = 0; j < work_units; j++) {
+                                for (var k = 0; k < part_template.length; k++) {
+                                    for (var j = 0; j < work_units; j++) {
                                         partlist.push(part_template[k]);
                                     }
                                 }
@@ -1626,8 +1647,8 @@ module.exports.loop = function () {
                             if(empire[rname].sources[skey]['x'] != undefined) { target_x = empire[rname].sources[skey]['x']; }
                             if(empire[rname].sources[skey]['y'] != undefined) { target_y = empire[rname].sources[skey]['y']; }
                             
-                            console.log('SPAWNING: ' + spawner.name + ' created ' + spawnrole + ' for |' + empire[rname].sources[skey]['sourcename'] + 
-                            '| cost: ' + thecost + '/' + spawner.room.energyAvailable + ' capacity:' + energy_cap + ' based out of ' + spawner.room.name + ' with renew: ' + renew_allowed);
+                            //console.log('SPAWNING: ' + spawner.name + ' created ' + spawnrole + ' for |' + empire[rname].sources[skey]['sourcename'] + 
+                            //'| cost: ' + thecost + '/' + spawner.room.energyAvailable + ' capacity:' + energy_cap + ' based out of ' + spawner.room.name + ' with renew: ' + renew_allowed);
 
                             spawn_queue[spawner.name] = {
                                 'spawner': spawner.name, 'sname': empire[rname].sources[skey]['sourcename'], 'partlist': partlist, 'spawnrole': spawnrole, 'skey': skey, 'rname': rname, 
@@ -1706,7 +1727,7 @@ module.exports.loop = function () {
                 }
             }
 
-            for (tnum in rtowers[rname]) {
+            for (var tnum in rtowers[rname]) {
                 var thistower = rtowers[rname][tnum];
                 thistower.attack(best_target);
                 thistower.room.visual.circle(thistower.pos, {fill: 'transparent', radius: TOWER_OPTIMAL_RANGE, stroke: 'green'});
@@ -1737,7 +1758,7 @@ module.exports.loop = function () {
         });
 
         var available_towers = [];
-        for (tnum in rtowers[rname]) {
+        for (var tnum in rtowers[rname]) {
             var thistower = rtowers[rname][tnum];
             if (thistower.energy >= 50) {
                 available_towers.push(thistower);
@@ -1745,7 +1766,7 @@ module.exports.loop = function () {
         }
         //console.log(rname + ' ' + repairTargets.length + ' rts, ' + ' ' + available_towers.length + ' avts');
         if (repairTargets.length >= 3) {
-            for (avtower in available_towers) {
+            for (var avtower in available_towers) {
                 var near_rep = available_towers[avtower].pos.findClosestByRange(repairTargets);
                 available_towers[avtower].repair(near_rep);
             }
@@ -1764,7 +1785,7 @@ module.exports.loop = function () {
             healTargets.sort(function(a, b){
                 return a.hits - b.hits
             });
-            for (tnum in rtowers[rname]) {
+            for (var tnum in rtowers[rname]) {
                 var thistower = rtowers[rname][tnum];
                 var target = healTargets[0];
                 thistower.heal(target);

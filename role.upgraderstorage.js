@@ -1,3 +1,5 @@
+"use strict";
+
 var jobUpgrade = require('job.upgrade');
 var jobGetstoredenergy = require('job.gfs');
 

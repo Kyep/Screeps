@@ -1,3 +1,5 @@
+"use strict";
+
 var jobRenew = require('job.renew');
 
 module.exports = {

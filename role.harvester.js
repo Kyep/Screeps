@@ -1,3 +1,5 @@
+"use strict";
+
 var jobHarvest = require('job.harvest');
 var jobReturnresources = require('job.returnresources');
 var jobBuild = require('job.build');

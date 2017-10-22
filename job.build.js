@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports =  {
     run: function(creep) {
         var targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
