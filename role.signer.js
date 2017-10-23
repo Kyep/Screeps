@@ -5,6 +5,9 @@ module.exports = {
         if(creep.memory[MEMORY_DEST] != creep.room.name){
             creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]), {visualizePathStyle: {stroke: '#ffffff'}})
         } else {
+            if (creep.memory.sign == undefined) {
+                creep.memory.sign = 'Reserved.';
+            }
             if (creep.memory['nexttarget'] != undefined) {
                 if (creep.memory['nexttarget'].length > 0) {
                     creep.memory['target'] = creep.memory['nexttarget'][0];

@@ -21,5 +21,6 @@ module.exports = {
                 creep.memory[MEMORY_JOURNEYSTART] = undefined;
             }
         }
+        return result;
 	}
 };

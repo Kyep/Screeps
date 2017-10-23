@@ -134,8 +134,16 @@ module.exports = {
                 }
             } else {
                 creep.moveTo(new RoomPosition(creep.memory[MEMORY_DEST_X], creep.memory[MEMORY_DEST_Y], creep.memory[MEMORY_DEST]))
-	            jobHarvest.run(creep);
-                
+	            var retval = jobHarvest.run(creep);
+                if (retval == ERR_NOT_ENOUGH_RESOURCES && !containermine && creep.carry.energy > 0) {
+                    if(creep.room.name == creep.memory[MEMORY_HOME]) {
+                        creep.memory[MEMORY_JOB] = JOB_RETURN;
+                    } else {
+                        creep.memory[MEMORY_CONTAINER] = undefined;
+                        creep.memory[MEMORY_JOB] = JOB_BUILD;
+                        creep.announceJob();
+                    }
+                }
                 // TEMPORARY PICK UP DROPPED SHIT CODE
                 var source = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {filter: (s) => s.energy > 0});
                 if(source != null){
@@ -156,10 +164,18 @@ module.exports = {
                 } else {
                     if (creep.room.controller) {
                         if (creep.room.controller.level) {
+                            
                             if (creep.room.controller.level < 3) {
                                 creep.memory[MEMORY_JOB] = JOB_REPAIR;
                                 creep.announceJob();
                                 return;
+                            } else if (creep.room.controller.level == 3) {
+                                var towerlist = creep.room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } } );
+                                if (!towerlist.length) {
+                                    creep.memory[MEMORY_JOB] = JOB_REPAIR;
+                                    creep.announceJob();
+                                    return;
+                                }
                             }
                         }
                     }
@@ -179,7 +195,8 @@ module.exports = {
                 jobUpgrade.run(creep);
             } else { 
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
-                    creep.announceJob();
+                creep.announceJob();
+                console.log(creep.room.name + ' v ' + creep.memory[MEMORY_HOME]);
             }
         }
 	    if(creep.memory[MEMORY_JOB] == JOB_RETURN) {

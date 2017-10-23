@@ -29,6 +29,7 @@ var structureLab = require('structure.lab');
 
 var cleaner = require('task.cleanmemory');
 var spawncustom = require('task.spawncustom');
+var expansionplanner = require('task.expansion');
 
 // ---------------------------
 // CONFIG
@@ -43,7 +44,7 @@ var spawncustom = require('task.spawncustom');
         'sourceid': '59bbc3f82052a716c3ce7289',
         'priority_roles': ['teller', 'teller-towers'],
         'military_roles': ['scout', 'slasher', 'rogue', 'ninja', 'ninjaheals', 'dragon', 'siegedragon', 'boss', 'wizard', 'healer', 'siege', 'siegefar', 'siegemini', 'drainer', 'drainerhealer'],
-        'defense_roles': ['boss', 'dragon', 'ninja', 'rogue', 'slasher'], // LIST MOST POWERFUL FIRST.
+        'defense_roles': ['boss', 'dragon', 'ninja', 'rogue', 'slasher', 'scout'], // LIST MOST POWERFUL FIRST.
         'alerts_duration' : 300,
         'alerts_recycle' : 0,
         'alerts_reassign': 'W55S17', // W55S17
@@ -240,42 +241,118 @@ var spawncustom = require('task.spawncustom');
                 }
             }
         },
-        // 3rd base (planned)
 
-        /*
+        // 4th Base
+        'W53S12': {
+            'roomname' : '4',
+            'spawns_from': 'Spawn6',
+            
+            'sources': {
+                '59bbc3f72052a716c3ce7275': {'sourcename': '4-N', 'x':31, 'y':17,
+                    'assigned': {'upgfar': 1, 'harvester': 1},
+                    'expected_income': 90
+                },
+                '59bbc3f72052a716c3ce7276': {'sourcename': '4-S', 'x':32, 'y':28,
+                    'assigned': {'harvester': 2},
+                    'expected_income': 80
+                }
+            }
+        },
+        // 4th base expansions
+        'W53S11': {
+            'roomname' : '4N',
+            'spawns_from': 'Spawn6',
+            'sources': {
+                '59bbc3f62052a716c3ce7272': {'sourcename': '4N-S', 'x':31, 'y':34, 'target_x': 30, 'target_y': 35, 
+                    'assigned': {'c15harvester': 1},
+                    'expected_income': 50
+                },
+                '59bbc3f62052a716c3ce7270': {'sourcename': '4N-N', 'x':21, 'y':8, 'target_x': 21, 'target_y': 8, 
+                    'assigned': {'c15harvester': 1},
+                    'expected_income': 40
+                }/*,
+                'reserver': {'sourcename':'4N-R', 'x':25, 'y':25,
+                    'assigned': {'sreserver': 1},
+                    'expected_income': 30
+                }*/
+            }
+        },
+        'W52S12': {
+            'roomname' : '4E',
+            'spawns_from': 'Spawn6',
+            'sources': {
+                '59bbc4062052a716c3ce73f5': {'sourcename': '4E', 'x':24, 'y':11, 'target_x': 23, 'target_y': 11, 
+                    'assigned': {'harvester': 3},
+                    'expected_income': 45
+                }
+            }
+        },
+        'W54S12': {
+            'roomname' : '4W',
+            'spawns_from': 'Spawn6',
+            'sources': {
+                '59bbc3e82052a716c3ce7092': {'sourcename': '4W', 'x':37, 'y':5, 'target_x': 37, 'target_y': 6, 
+                    'assigned': {'harvester': 4},
+                    'expected_income': 10
+                }
+            }
+        },
+        'W52S11': {
+            'roomname' : '4NE',
+            'spawns_from': 'Spawn6',
+            'sources': {
+                '59bbc3e82052a716c3ce7092': {'sourcename': '4W', 'x':23, 'y':44, 'target_x': 23, 'target_y': 44, 
+                    'assigned': {'harvester': 2},
+                    'expected_income': 5
+                }
+            }
+        },
+        // 5th base
         'W52S17': {
-            'roomname' : 'X3',
-            'ignoreattacks': 1,
-            'spawns_from': 'Spawn4',
+            'roomname' : '5',
+            'spawns_from': 'Spawn7',
+
+            'expansion': {
+                'gcltarget': 5,
+                'controllerid': '59bbc4062052a716c3ce7405',
+                'spawner_x': 24,
+                'spawner_y': 28,
+                'expansionsource': '59bbc4062052a716c3ce7406'
+            },
+
             'sources': {
-                '59bbc4062052a716c3ce7404': {'sourcename': '3-N', 'x':10, 'y':19,
-                    'assigned': {},
-                    'expected_income': 1
+                '59bbc4062052a716c3ce7404': {'sourcename': '5-W', 'x':11, 'y':18, 'target_x': 11, 'target_y': 18, 
+                    'assigned': {'harvester': 2},
+                    'expected_income': 90
                 },
-                '59bbc4062052a716c3ce7406': {'sourcename': '3-S', 'x':21, 'y':31,
-                    'assigned': {},
-                    'expected_income': 1
+                '59bbc4062052a716c3ce7406': {'sourcename': '5-E', 'x':21, 'y':30, 'target_x': 20, 'target_y': 30, 
+                    'assigned': {'harvester': 1, 'upgclose': 1},
+                    'expected_income': 80
                 }
             }
         },
 
-        // 3rd base expansions (planned)
+        // 5th base expansions
         'W52S16': {
-            'roomname' : 'X3-N',
+            'roomname' : '5N',
             'ignoreattacks': 1,
-            'spawns_from': 'Spawn4',
+            'spawns_from': 'Spawn7',
             'sources': {
-                '59bbc4062052a716c3ce7401': {'sourcename': '3N-E', 'x':45, 'y':26,
-                    'assigned': {},
-                    'expected_income': 1
+                '59bbc4062052a716c3ce7401': {'sourcename': '5N-E', 'x':44, 'y':27, 'target_x': 44, 'target_y': 27, 
+                    'assigned': {'c15harvester': 1, 'hauler': 1},
+                    'expected_income': 50
                 },
-                '59bbc4062052a716c3ce7402': {'sourcename': '3N-W', 'x':8, 'y':44,
-                    'assigned': {},
-                    'expected_income': 1
-                }
+                '59bbc4062052a716c3ce7402': {'sourcename': '5N-W', 'x':9, 'y':43, 'target_x': 9, 'target_y': 43, 
+                    'assigned': {'c15harvester': 1, 'hauler': 1},
+                    'expected_income': 40
+                }/*,
+                'reserver': {'sourcename':'5N-R', 'x':25, 'y':25,
+                    'assigned': {'sreserver': 1},
+                    'expected_income': 30
+                }*/
             }
         },
-        
+        /*
         'W51S15': {
             'roomname' : 'X3-NN',
             'ignoreattacks': 1,
@@ -366,34 +443,7 @@ var spawncustom = require('task.spawncustom');
                 }
             }
         },
-        // TCCKI
-        'W53S12': {
-            'roomname' : 'TCCKI',
-            'ignoreattacks': 1,
-            'spawns_from': 'Spawn3',
-            'sources': {
-                '59bbc3f72052a716c3ce7275': {'sourcename': 'TCCKI-N', 'x':31, 'y':17,
-                    'assigned': {'scout': 0},
-                    'expected_income': 10
-                },
-                '59bbc3f72052a716c3ce7276': {'sourcename': 'TCCKI-S', 'x':32, 'y':28,
-                    'assigned': {},
-                    'expected_income': 10
-                }
-            }
-        },
-        // DARN WOLFE NORTH BASE
-        'W53S11': {
-            'roomname' : 'WOLFE',
-            'ignoreattacks': 1,
-            'spawns_from': 'Spawn3',
-            'sources': {
-                '59e117760a70e4046c980872': {'sourcename': 'WOLFE', 'x':23, 'y':25,
-                    'assigned': {},
-                    'expected_income': 60
-                }
-            }
-        }
+
         
          
        
@@ -428,7 +478,7 @@ global.empire_workers = {
 	'remoteconstructor': { 'body': [WORK, CARRY, CARRY, MOVE, MOVE] },
 
 	'harvester': { 'body': [WORK, CARRY, MOVE] },
-	'bharvester': { 'body': [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], 'noresizing': 1 }, // takes 6 WORK units to deplete a c30 vein. These have 4. So you need 2 per base, allowing some refill time.
+	'bharvester': { 'body': [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], 'noresizing': 1 }, // 800e. takes 6 WORK units to deplete a c30 vein. These have 4. So you need 2 per base, allowing some refill time.
 	'c15harvester': { 'body': [WORK, WORK, WORK, CARRY, MOVE, MOVE], 'noresizing': 1 },
 	'c30harvester': { 'body': [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
 	'hauler': { 'body': [WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
@@ -458,19 +508,22 @@ global.empire_workers = {
     
     // Anti-player defense classes
 	'wizard': { 'body':   [MOVE, RANGED_ATTACK], 'renew_allowed': 0}, // horrificly expensive anti-crowd unit
-	'healer': { 'body':   [MOVE, HEAL, HEAL], 'renew_allowed': 0}, // extremely expensive healer.
 
     // Anti-player ATTACK classes
 	'siege': { 'body':         global.CONSTRUCT_MILITARY_BODY(0, 1, 2, 0, 0), 'renew_allowed': 0}, // half speed, strong but slow
 	'siegemini': { 'body':     global.CONSTRUCT_MILITARY_BODY(0, 3, 3, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // small.
-	'siegebig': { 'body':      global.CONSTRUCT_MILITARY_BODY(3, 10, 6, 0, 1), 'noresizing': 1, 'renew_allowed': 0}, // bigger
 	'siegefar': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 6, 6, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
 	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
 	'drainerhealer': { 'body': global.CONSTRUCT_MILITARY_BODY(7, 14, 0, 0, 7), 'noresizing': 1, 'renew_allowed': 0}, 
 
+	'siegebig': { 'body':      global.CONSTRUCT_MILITARY_BODY(10, 8, 30, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 2,900e
+	'healer': { 'body':   global.CONSTRUCT_MILITARY_BODY(10, 8, 0, 0, 20), 'renew_allowed': 0}, // 5,600e!
+
     // Territory control classes
 	'reserver' : { 'body': [CLAIM, CLAIM, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
+	'sreserver' : { 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 	'claimer': { 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
+	'signer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, 
 
     // Base maint/defense classes.
 	'teller': { 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0},
@@ -565,6 +618,7 @@ global.JOB_USELINK = 'uselink'
 global.JOB_HIDE = 'hide';
 
 global.COLOR_HARVEST = '#ffffff';
+global.COLOR_UPGRADE = '#0000ff';
 global.COLOR_BUILD = '#0000ff';
 global.COLOR_REPAIR = '#0000ff';
 global.COLOR_PATROL = '#ff0000';
@@ -916,69 +970,12 @@ module.exports.loop = function () {
 
     if(Game.time % divisor === 0) {
 
-        // EXPANSION CONTROLLER
-        
-        /*
-        var myusername = overlord;
-        var expansiontarget = Game.rooms['W51S14'];
-        var expansiontargetname = 'W51S14';
-        var expansionsource = '59bbc4172052a716c3ce757c';
-        var controllertarget = Game.getObjectById('59bbc4172052a716c3ce757e');
-        var gcltarget = 3;
-        var spawner_posx = 37;
-        var spawner_posy = 17;
-        // CASE 1: My GCL is too low.
-        if (Game.gcl.level < gcltarget) {
-            // don't do anything, reservers are pointless.
-        // ERROR CHECK: controller
-        } else if (controllertarget == undefined) {
-            console.log('EXPAND: CONTROLLER TARGET UNDEFINED - CHECK YOU HAVE UNITS THERE.');
-            empire[expansiontargetname].sources[expansionsource].assigned = {'claimer': 1, 'remoteconstructor': 4};
-        // CASE 2: I can claim the room.
-        } else if (controllertarget.owner['username'] != myusername) {
-            console.log('EXPAND: ' + expansiontarget + ': TRYING TO CLAIM CONTROLLER ');
-            empire[expansiontargetname].sources[expansionsource].assigned = {'claimer': 1, 'remoteconstructor': 4};
-        // CASE 3: I have already claimed the room.
-        } else {
-            var has_spawn = 0;
-            for (var key in Game.spawns) {
-                if (Game.spawns[key].room.name == expansiontargetname) {
-                    has_spawn = 1;
-                }
-            }
-            var controller_level = controllertarget.level;
-            //Apparently you don't have to upgrade controllers in rooms you capture before you can place a spawn.
-            //
-            //if(!has_spawn && controller_level == 0) {
-            //    console.log('EXPAND: ' + expansiontarget + ': UPGRADE CONTROLLER TO 1');
-            //    // CASE 4: I own the room, but the controller is level 0
-            //    empire[expansiontargetname].sources[expansionsource].assigned = {'remoteupgrader': 3};
-            //} else 
-            if (!has_spawn) {
-                // CASE 5: I own the room, the controller is level 1 (can have spawn) but there is no spawn
-                var csites = expansiontarget.find(FIND_MY_CONSTRUCTION_SITES);
-                if(csites.length) {
-                    var csite = csites[0];
-                    console.log('EXPAND: ' + expansiontarget + ': WAIT FOR SPAWNER TO BE BUILT, PROGRESS: ' + csite.progress + '/' + csite.progressTotal);
-                    empire[expansiontargetname].sources[expansionsource].assigned = {'claimer': 1, 'remoteconstructor': 6};
-                    // we have a spawn construction site, we just need to wait for it to be built.
-                } else {
-                    console.log('EXPAND: ' + expansiontarget + ': CREATE SPAWNER');
-                    expansiontarget.createConstructionSite(spawner_posx, spawner_posy, STRUCTURE_SPAWN);
-                }
-                empire[expansiontargetname].sources[expansionsource].assigned = {'remoteconstructor': 6};
-            } else { 
-                console.log('EXPAND: ' + expansiontarget + ': SUCCESS');
-                empire[expansiontargetname].spawn_from = expansiontargetname;
-                empire[expansiontargetname].sources['59bbc4172052a716c3ce757c'].assigned = {'upgrader': 3}; // 3 slots, some travel time.
-                empire[expansiontargetname].sources['59bbc4172052a716c3ce757d'].assigned = {'harvester': 3}; // 4 slots, no travel time.
-                // CASE 6: I own the room, and there is a spawn there.
-                // SUCCESS?
-            } 
-        }
-        */
-
         //console.log('Prior to divisor loop: ' + Game.cpu.getUsed());
+
+
+        // EXPANSION CONTROLLER
+        expansionplanner.process()
+
 
         // ROOM MANAGER
         var timenow = Game.time;
@@ -1313,9 +1310,11 @@ module.exports.loop = function () {
                             // no point using this... we can't possibly afford it.
                             continue;
                         }
-                        if (outfit_cost > (theirthreat * 1.2)) {
-                            //console.log('XAT: No point using ' + oname + ' as it is > 1.2*their_threat ' + theirthreat);
-                            continue; // overkill...
+                        if ((i + 1) != empire_defaults['defense_roles'].length) {
+                            if (outfit_cost > (theirthreat * 1.2)) { 
+                                //console.log('XAT: No point using ' + oname + ' as it is > 1.2*their_threat ' + theirthreat + ' (i: ' + i +  ', DRL:' + empire_defaults['defense_roles'].length + ')');
+                                continue; // overkill...
+                            }
                         }
                         if (patrolforce[oname] == undefined) {
                             if (i == empire_defaults['defense_roles'].length && theirthreat > (outfit_cost * 2)) {
@@ -1834,7 +1833,7 @@ module.exports.loop = function () {
             roleScavenger.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'claimer') {
             roleClaimer.run(creep);
-        } else if(creep.memory[MEMORY_ROLE] == 'reserver') {
+        } else if(creep.memory[MEMORY_ROLE] == 'reserver' || creep.memory[MEMORY_ROLE] == 'sreserver') {
             roleReserver.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'recycler') {
             roleRecycler.run(creep);
