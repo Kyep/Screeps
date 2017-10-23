@@ -64,15 +64,9 @@ module.exports =  {
         }
 
         if(targets.length > 0 || target != undefined) {
-            //if(targets.indexOf(target) > -1) {
-                //console.log(creep.name + " using saved target: " + target.id);
-            //} else {
-                //
-            //}
             if (target == undefined) {
                 target = creep.pos.findClosestByRange(targets);
                 creep.memory[MEMORY_CONTAINER] = target.id;
-                //console.log(JSON.stringify(target));
             }
 
             var structure_max_storage = 0;
@@ -97,13 +91,9 @@ module.exports =  {
             }
             var result = creep.transfer(target, RESOURCE_ENERGY, amount_to_deposit);
             
-            //var result = creep.transfer(target, RESOURCE_ENERGY);
             if(result == ERR_NOT_IN_RANGE) {
                 creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_DROPOFF}});
             } else if (result == OK) {
-                creep.memory[MEMORY_CONTAINER] = undefined;
-                //console.log(creep.name + ": RR DEPOSIT: " + amount_to_deposit + ' of ' + creep.carry.energy + ' v. ' + structure_max_storage +'/'+ structure_contents + '~' + using_memory);
-                
                 creep.memory[MEMORY_CONTAINER] = undefined;
                 creep.adjustEarnings(amount_to_deposit);
             }

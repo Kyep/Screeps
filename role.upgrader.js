@@ -8,7 +8,6 @@ var jobRenew = require('job.renew');
 
 module.exports =  {
 
-    /** @param {Creep} creep **/
     run: function(creep) {
 
         if(creep.memory[MEMORY_JOB] != JOB_HARVEST && creep.memory[MEMORY_JOB] != JOB_RENEW && creep.carry.energy == 0) {

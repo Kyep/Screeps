@@ -6,7 +6,6 @@ var jobUpgrade = require('job.upgrade');
 
 module.exports =  {
 
-    /** @param {Creep} creep **/
     run: function(creep) {
 
         if(creep.memory[MEMORY_JOB] != JOB_HARVEST && creep.carry.energy == 0) {

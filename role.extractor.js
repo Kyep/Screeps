@@ -21,7 +21,6 @@ module.exports = {
                 if (mineral != undefined) {
                     creep.memory.mineralid = mineral.id;
                 } else {
-                    // mineral is empty. Do nothing.
                     return;
                 }
             }
@@ -43,18 +42,6 @@ module.exports = {
         }
         if (creep.memory[MEMORY_JOB] == JOB_STOREMINERALS) {
             var terminal = creep.room.terminal;
-            
-            //terminal = Game.getObjectById(creep.memory.terminalid);
-
-            /*
-            var mystorage = undefined;
-            if (creep.memory.storageid == undefined) {
-                mystorage = creep.pos.findClosestByPath(FIND_STRUCTURES, 50, { filter: function(structure){ return structure.structureType == STRUCTURE_STORAGE } });
-                creep.memory.storageid = mystorage.id;
-            }
-            mystorage = Game.getObjectById(creep.memory.storageid);
-            */
-
             var result = creep.transfer(terminal, _.last(Object.keys(creep.carry)));
             if (result == ERR_NOT_IN_RANGE) {
                 creep.moveTo(terminal);

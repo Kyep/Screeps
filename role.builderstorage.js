@@ -8,7 +8,6 @@ var jobGetstoredenergy = require('job.gfs');
 
 module.exports =  {
 
-    /** @param {Creep} creep **/
     run: function(creep) {
         if(creep.memory[MEMORY_JOB] != JOB_GFS && creep.memory[MEMORY_JOB] != JOB_RENEW && creep.carry.energy == 0) {
             var projectsList = creep.room.find(FIND_CONSTRUCTION_SITES);
@@ -36,8 +35,7 @@ module.exports =  {
             if(creep.memory[MEMORY_DEST] != creep.room.name){
                 creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]), {visualizePathStyle: {stroke: '#ffffff'}})
             } else if(jobBuild.run(creep) == -1){
-                // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
-	            jobReturnresources.run(creep, 1, 1, 0.5, 1, 1);
+                jobReturnresources.run(creep, 1, 1, 0.5, 1, 1);
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_RENEW) {
             if (creep.ticksToLive > 1000) {

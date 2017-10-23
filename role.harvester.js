@@ -41,14 +41,6 @@ module.exports = {
                 //creep.announceJob();
             } else if (creep.memory[MEMORY_DEST] in Memory.sectors_under_attack || (creep.memory[MEMORY_DEST] != creep.memory[MEMORY_HOME] && creep.memory[MEMORY_HOME] in Memory.sectors_under_attack)) {
                 // hide in base.
-                /*
-                if(creep.ticksToLive < 400) {
-                    if(creep.room.name == creep.memory[MEMORY_HOME]) {
-                        creep.memory[MEMORY_JOB] = JOB_RENEW;
-                        creep.announceJob();
-                        return;
-                    }
-                } */
                 // I would rather they not block spawning of combat mobs by renewing.
                 // Also, for long attacks, I would rather not pay their energy cost to maintain them.
                 var hidex = 25;
@@ -68,8 +60,6 @@ module.exports = {
                     creep.memory[MEMORY_DEST_Y] = 25;
                 }
                 creep.moveTo(new RoomPosition(creep.memory[MEMORY_DEST_X], creep.memory[MEMORY_DEST_Y], creep.memory[MEMORY_DEST]))
-                //var exit = creep.room.findExitTo(creep.memory[MEMORY_DEST]);
-                //creep.moveTo(creep.pos.findClosestByRange(exit), {visualizePathStyle: {stroke: '#ffffff'}});
             }
         }
         if (creep.memory[MEMORY_JOB] == JOB_HARVEST) {
@@ -88,7 +78,6 @@ module.exports = {
                                break;
                             }
                         }
-                        //console.log(creep.name, ' nearby container not full');
                         if(thecontainer == undefined) {
                             // we can't store resources anywhere - burn some by repairing the containers a lot.
                             var csites = creep.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 3);
@@ -98,7 +87,6 @@ module.exports = {
                                 }
                             } else {
                                 creep.repair(nearby_containers[Math.floor(Math.random() * nearby_containers.length)]);
-                                //creep.room.createConstructionSite(creep.pos.x, creep.pos.y, STRUCTURE_CONTAINER);
                             }
                         } else {
                             var result = creep.transfer(thecontainer, RESOURCE_ENERGY)
@@ -144,13 +132,15 @@ module.exports = {
                         creep.announceJob();
                     }
                 }
-                // TEMPORARY PICK UP DROPPED SHIT CODE
+                // TEMPORARY PICK UP DROPPED ENERGY CODE
+                /*
                 var source = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {filter: (s) => s.energy > 0});
                 if(source != null){
                     if (creep.pickup(source) == ERR_NOT_IN_RANGE) {
                     //creep.moveTo(source, {visualizePathStyle: {stroke: COLOR_SCAVAGE}});
                     }
                 }
+                */
             }
         }
         if(creep.memory[MEMORY_JOB] == JOB_BUILD) {
@@ -200,11 +190,7 @@ module.exports = {
             }
         }
 	    if(creep.memory[MEMORY_JOB] == JOB_RETURN) {
-            // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage, ext_priority) {
             var result = jobReturnresources.run(creep, 1, 1, 0.6, 1, 1, 1);
-            /*if (result != OK && result != ERR_NOT_IN_RANGE) {
-                console.log(creep.name + ': ' + result);
-            }*/
             if (result == -1) {
                 creep.memory[MEMORY_JOB] = JOB_IDLE;
                 creep.announceJob();
@@ -223,7 +209,6 @@ module.exports = {
                 })
                 if(targets.length) {
                     var target = creep.pos.findClosestByRange(targets)
-                    //console.log(creep.name + " attempts to repair an object at " + target.pos.x + '/' + target.pos.y);
                     creep.repair(target);
                 }
             }
@@ -240,12 +225,9 @@ module.exports = {
             }
 	        if (creep.room.name != creep.memory[MEMORY_HOME]) {
                 creep.moveTo(creep.getHomePos());
-                //var exit = creep.room.findExitTo(creep.memory[MEMORY_HOME]);
-                //creep.moveTo(creep.pos.findClosestByRange(exit));
             } else if(creep.ticksToLive < 400 && creep.getRenewEnabled()) {
                 creep.memory[MEMORY_JOB] = JOB_RENEW;
                 creep.announceJob();
-            // function(creep, fill_spawner, fill_extensions, tower_factor, fill_containers, fill_storage) {
 	        } else if (jobReturnresources.run(creep, 1, 1, 0.3, 1, 1) == -1) {
                 creep.memory[MEMORY_JOB] = JOB_BUILD;
                 creep.announceJob();
@@ -263,9 +245,7 @@ module.exports = {
                 if(jobRenew.run(creep) == -1) {
                     if (creep.carry.energy > 0) { // trying this again, see if it helps avoid them wasting time standing around.
                         creep.memory[MEMORY_JOB] = JOB_RETURN;
-                    }// else {
-                    //   creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
-                    //}
+                    }
                 }
             }
         }

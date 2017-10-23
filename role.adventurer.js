@@ -75,7 +75,7 @@ module.exports = {
                     creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
                 }
             }
-        } else { // check for hostiles in the local room. if none found, travel to destination.
+        } else { // check for hostiles in the local room. If none found, travel to destination.
             if (jobPatrol.run(creep) == -1) {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
             }

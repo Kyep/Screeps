@@ -4,8 +4,6 @@ module.exports = {
     
     run: function(creep) {
 
-        //creep.say('😈');
-
         if(creep.room.name != creep.memory[MEMORY_DEST]) {
             creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]));
             return;
@@ -63,7 +61,6 @@ module.exports = {
             
         }
         if (target) {
-        //target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES);
             new RoomVisual(creep.room.name).line(creep.pos, target.pos, {color: 'red'});
             if(creep.attack(target) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}});
@@ -122,8 +119,6 @@ module.exports = {
             target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
         }
         if(target) {
-            //console.log('SIEGE: ' + creep.name + ' TARGETTING: ' + target.id);
-            //console.log(JSON.stringify(target));
             if(creep.attack(target) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}});
             }

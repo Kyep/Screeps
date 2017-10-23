@@ -47,7 +47,6 @@ module.exports = {
                     target_y = empire[creep.room.name].sources[creep.memory[MEMORY_SOURCE]]['target_y'];
                 }
             }
-            //console.log(creep.name + " " + creep.memory[MEMORY_SOURCE] + " " + target_x + " " + target_y)
             if (creep.pos.x != target_x || creep.pos.y != target_y) {
                 creep.moveTo(new RoomPosition(target_x, target_y, creep.memory[MEMORY_DEST]));
                 return;

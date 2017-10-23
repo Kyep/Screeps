@@ -16,7 +16,7 @@ module.exports = {
         if (result == ERR_NOT_IN_RANGE || result == ERR_NOT_ENOUGH_RESOURCES) {
             creep.moveTo(source);
         } else if (result == OK) {
-            // DO NOT register earnings here. That doesn't account for harvesters who spend their money on the way back repairing roads.
+            // DO NOT adjustEarnings here. That doesn't account for harvesters who spend their money on the way back repairing roads.
             if (creep.memory[MEMORY_JOURNEYSTART] != undefined ) {
                 creep.memory[MEMORY_JOURNEYSTART] = undefined;
             }

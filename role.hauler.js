@@ -11,7 +11,6 @@ module.exports = {
         // FLOW: JOB_TRAVEL_OUT -> JOB_TRAVEL_BACK -> JOB_USELINK -> JOB_RETURN -> JOB_RENEW -> JOB_TRAVEL_OUT.
         // If attacked, -> JOB_HIDE, then back to JOB_TRAVEL_OUT.
         if (creep.memory[MEMORY_JOB] == undefined) {
-            //console.log(creep.name + ': UNDEFINED JOB');
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
         }
         if (creep.getShouldHide()) {
@@ -19,7 +18,6 @@ module.exports = {
         }
         if (creep.memory[MEMORY_JOB] == JOB_HIDE) {
             if (creep.getShouldHide()) {
-                //creep.say("HIDE");
                 jobHide.run(creep);
             } else if (creep.room.name == creep.memory[MEMORY_DEST]) {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
@@ -81,7 +79,6 @@ module.exports = {
             creep.memory[MEMORY_H_CONTAINER] = thecontainer.id;
         } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_BACK) {
             if (creep.room.name == creep.memory[MEMORY_HOME]) {
-                //console.log(creep.name + ': ' + creep.room.name + ' matches ' + creep.memory[MEMORY_HOME]);
                 if (creep.pos.x < 2 || creep.pos.x > 47 || creep.pos.y < 2 || creep.pos.y > 47) {
                     // Continue in a little bit, get off the edge before changing state.
                 } else {
@@ -161,9 +158,7 @@ module.exports = {
             if (creep.ticksToLive > 500 || !creep.getRenewEnabled()) {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
             } else {
-                 if(jobRenew.run(creep) == -1) {
-                     // we're screwed.
-                 }
+                jobRenew.run(creep);
             }
         } else {
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;

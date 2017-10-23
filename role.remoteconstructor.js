@@ -43,9 +43,6 @@ module.exports = {
                 if(creep.room.name == creep.memory[MEMORY_DEST]) {
                     creep.memory[MEMORY_JOB] = JOB_UPGRADE;
                 creep.announceJob();
-                } else {
-                    //creep.memory[MEMORY_JOB] = JOB_REPAIR;
-                    //creep.announceJob();
                 }
             }
 	    } else if(creep.memory[MEMORY_JOB] == JOB_REPAIR) {

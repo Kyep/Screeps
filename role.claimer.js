@@ -20,7 +20,7 @@ module.exports = {
                     if (result == ERR_NOT_IN_RANGE) {
                         creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#0000ff'}});
                     } else if (result == ERR_NOT_OWNER) {
-                        //creep.attackController(creep.room.controller); // requires FIVE CLAIM PARTS :(((
+                        //creep.attackController(creep.room.controller); // requires FIVE claim parts to work.
                     }
                 }
             }

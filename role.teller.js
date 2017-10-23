@@ -6,9 +6,7 @@ var jobGetstoredenergy = require('job.gfs');
 
 module.exports = {
 
-    /** @param {Creep} creep **/
     run: function(creep, towersonly) {
-        //console.log('DEBUG: TELLER: :' + towersonly)
         if(creep.memory[MEMORY_JOB] != JOB_GFS && creep.memory[MEMORY_JOB] != JOB_RENEW && creep.carry.energy == 0) {
             creep.memory[MEMORY_JOB] = JOB_GFS;
             creep.announceJob();

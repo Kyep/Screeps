@@ -5,14 +5,11 @@ var jobGetstoredenergy = require('job.gfs');
 
 module.exports = {
 
-    /** @param {Creep} creep **/
     run: function(creep) {
         if(creep.memory[MEMORY_JOB] != JOB_GFS && creep.carry.energy == 0) {
             creep.memory[MEMORY_JOB] = JOB_GFS;
-            //creep.announceJob();
         } else if(creep.memory[MEMORY_JOB] == JOB_GFS && creep.carry.energy == creep.carryCapacity) {
             creep.memory[MEMORY_JOB] = JOB_UPGRADE;
-            //creep.announceJob();
         }
         if(creep.memory[MEMORY_JOB] == JOB_GFS) {
             if (creep.room.name != creep.memory[MEMORY_HOME]) {

@@ -2,7 +2,6 @@
 
 module.exports =  {
 
-    /** @param {Creep} creep **/
     run: function(creep) {
         if (creep.room.name != creep.memory[MEMORY_HOME]) {
             creep.moveTo(creep.getHomePos());
@@ -41,7 +40,6 @@ module.exports =  {
             if(result == ERR_NOT_IN_RANGE) {
                 creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_GFS}});
             } else if (result == OK) {
-                //console.log(creep.name + ": GFS WITHDRAW: " + amount_to_withdraw);
                 creep.adjustEarnings(amount_to_withdraw * -1);
             } else if (result == ERR_BUSY) {
                 // creep still being spawned.

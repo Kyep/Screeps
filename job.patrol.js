@@ -2,7 +2,6 @@
 
 module.exports =  {
 
-    /** @param {Creep} creep **/
     run: function(creep) {
 
         var melee_parts = creep.getActiveBodyparts(ATTACK);

@@ -217,13 +217,6 @@ module.exports = {
                             
                 }
             }
-            /*
-                                //console.log('EXPAND: ' + Game.rooms[rname] + ': SUCCESS');
-                    for(var sid in empire[rname].sources) {
-                        empire[rname].sources[sid].assigned = {'harvester': 3}
-                    }
-                
-            */
         }
     }
 };
