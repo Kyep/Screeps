@@ -35,6 +35,8 @@ var expansionplanner = require('task.expansion');
 // CONFIG
 // ---------------------------
 
+    global.cpu_reporting = 0;
+
     global.overlord = 'Phisec';
     global.allies = ['Kamots'];
     
@@ -47,7 +49,7 @@ var expansionplanner = require('task.expansion');
         'defense_roles': ['boss', 'dragon', 'ninja', 'rogue', 'slasher', 'scout'], // LIST MOST POWERFUL FIRST.
         'alerts_duration' : 300,
         'alerts_recycle' : 0,
-        'alerts_reassign': 'W55S17', // W55S17
+        'alerts_reassign': {}, // Don't reassign anything.
         'repairmax_creeps' : 250000,
         'repairmax_towers' : 150000,
         'room_reserves_required' : 50000,
@@ -70,12 +72,12 @@ var expansionplanner = require('task.expansion');
                 },
                 'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40 },
                 '59bbc3f82052a716c3ce7289': {
-                    'sourcename':'1-E', 'x':25, 'y':18,  'target_x': 24, 'target_y': 19, 'steps':15,
+                    'sourcename':'1-E', 'x':25, 'y':18,  'target_x': 24, 'target_y': 19, 'steps':15, 'spaces':4,
                     'assigned': {'bharvester': 2},
                     'expected_income': 85
                 },
                 '59bbc3f82052a716c3ce728b': {
-                    'sourcename':'1-W', 'x':16, 'y':26, 'target_x': 16, 'target_y': 15,'steps':15,
+                    'sourcename':'1-W', 'x':16, 'y':26, 'target_x': 16, 'target_y': 15,'steps':15, 'spaces':3,
                     'assigned': {'upgclose': 1},
                     'expected_income': 75
                 }
@@ -89,7 +91,7 @@ var expansionplanner = require('task.expansion');
             'roomname' : '1E',
             'spawns_from': 'Spawn4',
             'sources': {
-                '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14, 'target_x': 10, 'target_y': 13, 'steps':33,
+                '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14, 'target_x': 10, 'target_y': 13, 'steps':33, 'spaces':3, 
                     'assigned': {'c15harvester': 1, 'hauler': 1},
                     'expected_income': 65
                 }/*,
@@ -103,7 +105,7 @@ var expansionplanner = require('task.expansion');
             'roomname' : '1N',
             'spawns_from': 'Spawn4',
             'sources': {
-                '59bbc3f72052a716c3ce7287': {'sourcename':'1N', 'x':4, 'y':44, 'target_x': 5, 'target_y': 43, 'steps':32,
+                '59bbc3f72052a716c3ce7287': {'sourcename':'1N', 'x':4, 'y':44, 'target_x': 5, 'target_y': 43, 'steps':32, 'spaces':1,
                     'assigned': {'c15harvester': 1, 'hauler': 1}, // , 'reserver': 1
                     'expected_income': 70
                 }/*,
@@ -117,11 +119,11 @@ var expansionplanner = require('task.expansion');
             'roomname' : '1W',
             'spawns_from': 'Spawn4',
             'sources': {
-                '59bbc3e92052a716c3ce70b6': {'sourcename':'1W-E', 'x':42, 'y':6, 'target_x': 41, 'target_y': 7, 'steps':29, 'capacity': 3000,
+                '59bbc3e92052a716c3ce70b6': {'sourcename':'1W-E', 'x':42, 'y':6, 'target_x': 41, 'target_y': 7, 'steps':29, 'capacity': 3000, 'spaces':3,
                     'assigned': {'c30harvester': 1, 'hauler': 1},
                     'expected_income': 60
                 },
-                '59bbc3e92052a716c3ce70b7': {'sourcename':'1W-W', 'x':5, 'y':37, 'target_x': 5, 'target_y': 38,'steps':63, 'capacity': 3000,
+                '59bbc3e92052a716c3ce70b7': {'sourcename':'1W-W', 'x':5, 'y':37, 'target_x': 5, 'target_y': 38,'steps':63, 'capacity': 3000, 'spaces':3,
                     'assigned': {'c30harvester': 1, 'hauler': 1},
                     'expected_income': 55
                 },
@@ -135,7 +137,7 @@ var expansionplanner = require('task.expansion');
             'roomname' : '1NW',
             'spawns_from': 'Spawn4',
             'sources': {
-                '59bbc3e82052a716c3ce70b4': {'sourcename':'1NW', 'x':38, 'y':31, 'target_x': 37, 'target_y': 32, 'steps':60, 
+                '59bbc3e82052a716c3ce70b4': {'sourcename':'1NW', 'x':38, 'y':31, 'target_x': 37, 'target_y': 32, 'steps':60, 'spaces':3,
                     'assigned': {'c15harvester': 1, 'hauler': 1}, 
                     'expected_income': 45
                 }
@@ -152,11 +154,11 @@ var expansionplanner = require('task.expansion');
                     'assigned': {}, 
                     'expected_income': 90 
                 }, 
-                '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20, 'target_x': 15, 'target_y': 21, 'steps':10,
+                '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20, 'target_x': 15, 'target_y': 21, 'steps':10, 'spaces':3,
                     'assigned': {'upgclose':1},
                     'expected_income': 80
                 },
-                '59bbc4182052a716c3ce758d': {'sourcename':'2-W', 'x':3, 'y':27, 'target_x': 4, 'target_y': 27, 'steps':10,
+                '59bbc4182052a716c3ce758d': {'sourcename':'2-W', 'x':3, 'y':27, 'target_x': 4, 'target_y': 27, 'steps':10, 'spaces':2,
                     'assigned': {'bharvester':2},
                     'expected_income': 85
                 }
@@ -170,7 +172,7 @@ var expansionplanner = require('task.expansion');
             'roomname' : '2S',
             'spawns_from': 'Spawn5',
             'sources': {
-                '59bbc4182052a716c3ce758f': {'sourcename':'2S', 'x':34, 'y':6, 'target_x': 33, 'target_y': 5,'steps':32,
+                '59bbc4182052a716c3ce758f': {'sourcename':'2S', 'x':34, 'y':6, 'target_x': 33, 'target_y': 5,'steps':32, 'spaces':1,
                     'assigned': {'c15harvester': 1, 'hauler': 1},
                     'expected_income': 70
                 }
@@ -180,11 +182,11 @@ var expansionplanner = require('task.expansion');
             'roomname' : '2N',
             'spawns_from': 'Spawn5',
             'sources': {
-                '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29, 'target_x': 45, 'target_y': 29, 'steps':36, 'capacity': 3000, // really 'steps':86, , but we have a link that bypases ~50
+                '59bbc4182052a716c3ce7589': {'sourcename':'2N-E', 'x':46, 'y':29, 'target_x': 45, 'target_y': 29, 'steps':36, 'capacity': 3000, 'spaces':3, // really 'steps':86, , but we have a link that bypases ~50
                     'assigned': {'c30harvester': 1, 'hauler': 2}, 'link_from': '59d850539212a60b7683ce93', 'link_to': '59d84a28947f701c72c375a7', 
                     'expected_income': 60
                 },
-                '59bbc4182052a716c3ce7588': {'sourcename':'2N-W', 'x':4, 'y':26, 'target_x': 3, 'target_y': 26, 'steps':64, 'capacity': 3000, // really 'steps':114,
+                '59bbc4182052a716c3ce7588': {'sourcename':'2N-W', 'x':4, 'y':26, 'target_x': 3, 'target_y': 26, 'steps':64, 'capacity': 3000, 'spaces':3, // really 'steps':114,
                     'assigned': {'c30harvester': 1, 'hauler': 2}, 'link_from': '59d850539212a60b7683ce93', 'link_to': '59d84a28947f701c72c375a7', 
                     'expected_income': 50
                 },
@@ -201,11 +203,11 @@ var expansionplanner = require('task.expansion');
             'spawns_from': 'Spawn3',
             'mineralid': '59bbc645ae9e1411a425ae14',
             'sources': {
-                '59bbc4172052a716c3ce757d': {'sourcename': '3-W', 'x':31, 'y':15,
+                '59bbc4172052a716c3ce757d': {'sourcename': '3-W', 'x':31, 'y':15, 'spaces':3,
                     'assigned': {'bharvester': 2},
                     'expected_income': 85
                 },
-                '59bbc4172052a716c3ce757c': {'sourcename': '3-E', 'x':42, 'y':13,
+                '59bbc4172052a716c3ce757c': {'sourcename': '3-E', 'x':42, 'y':13, 'spaces':3,
                     'assigned': {'bharvester': 2},
                     'expected_income': 90
                 }
@@ -217,7 +219,7 @@ var expansionplanner = require('task.expansion');
             'roomname' : '3N',
             'spawns_from': 'Spawn3',
             'sources': {
-                '59bbc4172052a716c3ce757a': {'sourcename': '3N', 'x':34, 'y':33, 'target_x': 33, 'target_y': 34, 'steps':36, 
+                '59bbc4172052a716c3ce757a': {'sourcename': '3N', 'x':34, 'y':33, 'target_x': 33, 'target_y': 34, 'steps':36, 'spaces':2,
                     'assigned': {'c15harvester': 1, 'hauler': 1},
                     'expected_income': 80
                 }
@@ -227,11 +229,11 @@ var expansionplanner = require('task.expansion');
             'roomname' : '3S',
             'spawns_from': 'Spawn3',
             'sources': {
-                '59bbc4172052a716c3ce7580': {'sourcename': '3S-W', 'x':14, 'y':3, 'target_x': 14, 'target_y': 2, 'steps':43, 
+                '59bbc4172052a716c3ce7580': {'sourcename': '3S-W', 'x':14, 'y':3, 'target_x': 14, 'target_y': 2, 'steps':43,  'spaces':3,
                     'assigned': {'c30harvester': 1, 'hauler': 1}, // 'c15harvester': 1, 'hauler': 1
                     'expected_income': 70
                 },
-                '59bbc4172052a716c3ce7582': {'sourcename': '3S-E', 'x':36, 'y':16, 'target_x': 35, 'target_y': 15, 'steps':66, 
+                '59bbc4172052a716c3ce7582': {'sourcename': '3S-E', 'x':36, 'y':16, 'target_x': 35, 'target_y': 15, 'steps':66,  'spaces':5,
                     'assigned': {'c30harvester': 1, 'hauler': 1}, // 'c15harvester': 1, 'hauler': 1
                     'expected_income': 60
                 },
@@ -248,11 +250,11 @@ var expansionplanner = require('task.expansion');
             'spawns_from': 'Spawn6',
             
             'sources': {
-                '59bbc3f72052a716c3ce7275': {'sourcename': '4-N', 'x':31, 'y':17,
+                '59bbc3f72052a716c3ce7275': {'sourcename': '4-N', 'x':31, 'y':17, 'spaces':2,
                     'assigned': {'upgfar': 1, 'harvester': 1},
                     'expected_income': 90
                 },
-                '59bbc3f72052a716c3ce7276': {'sourcename': '4-S', 'x':32, 'y':28,
+                '59bbc3f72052a716c3ce7276': {'sourcename': '4-S', 'x':32, 'y':28, 'spaces':1,
                     'assigned': {'harvester': 2},
                     'expected_income': 80
                 }
@@ -263,11 +265,11 @@ var expansionplanner = require('task.expansion');
             'roomname' : '4N',
             'spawns_from': 'Spawn6',
             'sources': {
-                '59bbc3f62052a716c3ce7272': {'sourcename': '4N-S', 'x':31, 'y':34, 'target_x': 30, 'target_y': 35, 
+                '59bbc3f62052a716c3ce7272': {'sourcename': '4N-S', 'x':31, 'y':34, 'target_x': 30, 'target_y': 35, 'spaces':3,
                     'assigned': {'c15harvester': 1},
                     'expected_income': 50
                 },
-                '59bbc3f62052a716c3ce7270': {'sourcename': '4N-N', 'x':21, 'y':8, 'target_x': 21, 'target_y': 8, 
+                '59bbc3f62052a716c3ce7270': {'sourcename': '4N-N', 'x':21, 'y':8, 'target_x': 21, 'target_y': 8, 'spaces':1,
                     'assigned': {'c15harvester': 1},
                     'expected_income': 40
                 }/*,
@@ -281,7 +283,7 @@ var expansionplanner = require('task.expansion');
             'roomname' : '4E',
             'spawns_from': 'Spawn6',
             'sources': {
-                '59bbc4062052a716c3ce73f5': {'sourcename': '4E', 'x':24, 'y':11, 'target_x': 23, 'target_y': 11, 
+                '59bbc4062052a716c3ce73f5': {'sourcename': '4E', 'x':24, 'y':11, 'target_x': 23, 'target_y': 11, 'spaces':4,
                     'assigned': {'harvester': 3},
                     'expected_income': 45
                 }
@@ -291,7 +293,7 @@ var expansionplanner = require('task.expansion');
             'roomname' : '4W',
             'spawns_from': 'Spawn6',
             'sources': {
-                '59bbc3e82052a716c3ce7092': {'sourcename': '4W', 'x':37, 'y':5, 'target_x': 37, 'target_y': 6, 
+                '59bbc3e82052a716c3ce7092': {'sourcename': '4W', 'x':37, 'y':5, 'target_x': 37, 'target_y': 6, 'spaces':3,
                     'assigned': {'harvester': 4},
                     'expected_income': 10
                 }
@@ -301,13 +303,14 @@ var expansionplanner = require('task.expansion');
             'roomname' : '4NE',
             'spawns_from': 'Spawn6',
             'sources': {
-                '59bbc3e82052a716c3ce7092': {'sourcename': '4W', 'x':23, 'y':44, 'target_x': 23, 'target_y': 44, 
+                '59bbc3e82052a716c3ce7092': {'sourcename': '4W', 'x':23, 'y':44, 'target_x': 23, 'target_y': 44, 'spaces':3,
                     'assigned': {'harvester': 2},
                     'expected_income': 5
                 }
             }
         },
-        // 5th base
+        // 5th base, disabled for the moment.
+        /*
         'W52S17': {
             'roomname' : '5',
             'spawns_from': 'Spawn7',
@@ -345,13 +348,14 @@ var expansionplanner = require('task.expansion');
                 '59bbc4062052a716c3ce7402': {'sourcename': '5N-W', 'x':9, 'y':43, 'target_x': 9, 'target_y': 43, 
                     'assigned': {'c15harvester': 1, 'hauler': 1},
                     'expected_income': 40
-                }/*,
+                },
                 'reserver': {'sourcename':'5N-R', 'x':25, 'y':25,
                     'assigned': {'sreserver': 1},
                     'expected_income': 30
-                }*/
+                }
             }
         },
+        */
         /*
         'W51S15': {
             'roomname' : 'X3-NN',
@@ -366,83 +370,102 @@ var expansionplanner = require('task.expansion');
         },*/
 
         
-        // GUARDIAN north 
-        'W56S17': {
-            'roomname' : 'GN',
-            'ignoreattacks': 1,
-            'spawns_from': 'Spawn4',
+
+
+
+        // Base 6
+        'W56S18': {
+            'roomname' : '6',
+            'spawns_from': 'Spawn8',
             'sources': {
-                '59bbc3c92052a716c3ce6c42': {'sourcename': 'GN-N', 'x':24, 'y':29,
-                    'assigned': {}, // 'drainer': 0
-                    'expected_income': 90
+                '59bbc3c92052a716c3ce6c47': {'sourcename': '6-N', 'x':31, 'y':30, 'spaces':4,
+                    'assigned': {'bharvester': 2},  // 'upgclose': 2, 'harvester': 2
+                    'expected_income': 85
                 },
-                '59bbc3c92052a716c3ce6c44': {'sourcename': 'GN-S', 'x':35, 'y':42,
-                    'assigned': {},
-                    'expected_income': 1
+                '59bbc3c92052a716c3ce6c48': {'sourcename': '6-S', 'x':35, 'y':39, 'spaces':4,
+                    'assigned': {'bharvester': 2}, // 'harvester': 4
+                    'expected_income': 80
+                }
+            },
+            'safespot': {'x': 40, 'y':30 },
+        },  
+        // 6N
+        'W56S17': {
+            'roomname' : '6N',
+            'spawns_from': 'Spawn8',
+            'sources': {
+                '59bbc3c92052a716c3ce6c42': {'sourcename': '6N-N', 'x':24, 'y':29,  'target_x': 25, 'target_y': 30, 'spaces':3,
+                    'assigned': {'c30harvester': 1, 'hauler': 2},
+                    'expected_income': 78
+                },
+                '59bbc3c92052a716c3ce6c44': {'sourcename': '6N-S', 'x':35, 'y':42,  'target_x': 34, 'target_y': 42, 'spaces':2,
+                    'assigned': {'c30harvester': 1, 'hauler': 2},
+                    'expected_income': 76
+                },
+                'reserver': {'sourcename':'6N-R', 'x':25, 'y':25,
+                    'assigned': {'reserver': 1},
+                    'expected_income': 74
                 }
             }
         },  
-
-        // GUARDIAN north STAGING EAST
-        'W55S17': {
-            'roomname' : 'GN-E',
-            'ignoreattacks': 1,
-            'spawns_from': 'Spawn4',
-            'sources': {
-                '59bbc3da2052a716c3ce6e76': {'sourcename': 'GNE-N', 'x':45, 'y':21,
-                    'assigned': {'boss': 0}, 
-                    'expected_income': 90
-                },
-                '59bbc3da2052a716c3ce6e77': {'sourcename': 'GNE-S', 'x':29, 'y':40,
-                    'assigned': {},
-                    'expected_income': 1
-                }
-            }
-        }, 
-        // GUARDIAN home / south
-        'W56S18': {
-            'roomname' : 'GS',
-            'ignoreattacks': 1,
-            'spawns_from': 'Spawn4',
-            'sources': {
-                '59bbc3c92052a716c3ce6c47': {'sourcename': 'GS-N', 'x':31, 'y':30,
-                    'assigned': {}, // 'drainer': 66
-                    'expected_income': 1
-                },
-                '59bbc3c92052a716c3ce6c48': {'sourcename': 'GS-S', 'x':35, 'y':39,
-                    'assigned': {},
-                    'expected_income': 1
-                }
-            }
-        }, 
-        // GUARDIAN WEST OF HOME
-        'W57S18': {
-            'roomname' : 'GS-W',
-            'ignoreattacks': 1,
-            'spawns_from': 'Spawn4',
-            'sources': {
-                '59bbc3c92052a716c3ce6c47': {'sourcename': 'GSW-N', 'x':31, 'y':30,
-                    'assigned': {}, // 'drainer': 66
-                    'expected_income': 1
-                },
-                '59bbc3c92052a716c3ce6c48': {'sourcename': 'GSW-S', 'x':35, 'y':39,
-                    'assigned': {},
-                    'expected_income': 1
-                }
-            }
-        },
-        // GUARDIAN SOUTH STAGING EAST
+        // 6 E
         'W55S18': {
-            'roomname' : 'GS-E',
-            'ignoreattacks': 1,
-            'spawns_from': 'Spawn4',
+            'roomname' : '6E',
+            'spawns_from': 'Spawn8',
             'sources': {
-                '59bbc3db2052a716c3ce6e79': {'sourcename': 'GS-E', 'x':9, 'y':3,
-                    'assigned': {'boss': 0},
-                    'expected_income': 90
+                '59bbc3db2052a716c3ce6e79': {'sourcename': '6E', 'x':9, 'y':3, 'target_x': 10, 'target_y': 4, 'spaces':1,
+                    'assigned': {'c15harvester': 1, 'hauler': 1},
+                    'expected_income': 65
                 }
             }
         },
+        // 6W
+        'W57S18': {
+            'roomname' : '6W',
+            'ignoreattacks': 1,
+            'spawns_from': 'Spawn8',
+            'sources': {
+                '59bbc3bc2052a716c3ce6a3d': {'sourcename': '6W-N', 'x':30, 'y':12, 'target_x': 30, 'target_y': 13, 'spaces':5,
+                    'assigned': {'c15harvester': 1, 'hauler': 1},
+                    'expected_income': 55
+                },
+                '59bbc3bc2052a716c3ce6a3e': {'sourcename': '6W-S', 'x':10, 'y':26, 'target_x': 11, 'target_y': 25, 'spaces':3,
+                    'assigned': {'c15harvester': 1, 'hauler': 1},
+                    'expected_income': 50
+                }
+            }
+        },
+        // 6S
+        'W56S19': {
+            'roomname' : '6S',
+            'spawns_from': 'Spawn8',
+            'sources': {
+                '59bbc3ca2052a716c3ce6c4b': {'sourcename': '6S-W', 'x':9, 'y':31, 'target_x': 10, 'target_y': 32, 'spaces':1,
+                    'assigned': {}, 
+                    'expected_income': 45
+                },
+                '59bbc3ca2052a716c3ce6c4c': {'sourcename': '6S-E', 'x':40, 'y':35, 'target_x': 39, 'target_y': 34, 'spaces':1,
+                    'assigned': {},
+                    'expected_income': 40
+                }
+            }
+        }, 
+
+        // 6NE
+        'W55S17': {
+            'roomname' : '6NE',
+            'spawns_from': 'Spawn8',
+            'sources': {
+                '59bbc3da2052a716c3ce6e76': {'sourcename': '6NE-N', 'x':45, 'y':21, 'target_x': 44, 'target_y': 22, 'spaces':4,
+                    'assigned': {}, 
+                    'expected_income': 90
+                },
+                '59bbc3da2052a716c3ce6e77': {'sourcename': '6NE-S', 'x':29, 'y':40, 'target_x': 28, 'target_y': 41, 'spaces':1,
+                    'assigned': {},
+                    'expected_income': 1
+                }
+            }
+        }, 
 
         
          
@@ -475,7 +498,8 @@ global.empire_workers = {
 	'upgclose': { 'body': [WORK, WORK, CARRY, MOVE] },
 	'upgfar': { 'body': [WORK, CARRY, MOVE] },
 	'remoteupgrader': { 'body': [WORK, CARRY, MOVE, MOVE] },
-	'remoteconstructor': { 'body': [WORK, CARRY, CARRY, MOVE, MOVE] },
+	'remoteconstructor': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], 'renew_allowed': 0 },
+	'minirc': { 'body': [WORK, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 
 	'harvester': { 'body': [WORK, CARRY, MOVE] },
 	'bharvester': { 'body': [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], 'noresizing': 1 }, // 800e. takes 6 WORK units to deplete a c30 vein. These have 4. So you need 2 per base, allowing some refill time.
@@ -559,7 +583,7 @@ global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid, max_cost) {
     var partlist = [WORK, MOVE];
     for (var i = 0; i < Math.floor(carry_parts / 2); i++) {
         if ((UNIT_COST(partlist) + UNIT_COST([CARRY, CARRY, MOVE])) > max_cost) {
-            console.log('Trying to build a hauler of ' + ((carry_parts / 2) - i) + ' bigger size than our spawner allows. Capping it.');
+            console.log(roomid + ': Trying to build a hauler of ' + ((carry_parts / 2) - i) + ' bigger size than our spawner allows. Capping it.');
             break;
         }
         partlist.push(CARRY);
@@ -681,16 +705,16 @@ Creep.prototype.getRenewEnabled = function() {
 }
 
 Creep.prototype.getShouldHide = function() {
-    if (this.memory.home == this.memory.target) {
+    if (this.memory[MEMORY_HOME] == this.memory[MEMORY_DEST]) {
         return 0;
     }
     if (this.memory.attackedin != undefined) {
-        if (this.memory.attackedin in Memory['sectors_under_attack']) {
+        if (this.memory[MEMORY_ATTACKEDIN] in Memory['sectors_under_attack']) {
             return 1;
         }
     }
     if (this.room.name in Memory['sectors_under_attack']) {
-        this.memory.attackedin = this.room.name;
+        this.memory[MEMORY_ATTACKEDIN] = this.room.name;
         return 1;        
     }
 
@@ -737,7 +761,7 @@ Room.prototype.getTowerRepairMax = function() {
     } else if (lvl == 3) {
         return 5000;
     } else if (lvl == 4) {
-        return 10000;
+        return 25000;
     } else {
         return 10000 * lvl;
     }
@@ -757,6 +781,26 @@ Creep.prototype.getRepairMax = function() {
     } else {
         return 50000 * lvl;
     }
+}
+
+StructureSpawn.prototype.recycleObsolete = function() {
+    var nrcount = 0;
+    for (var crname in Game.creeps) {
+        if(Game.creeps[crname].memory[MEMORY_SPAWNERNAME] == undefined) {
+            continue;
+        }
+        if (Game.creeps[crname].memory[MEMORY_SPAWNERNAME] != this.name) {
+            continue;
+        }
+        var unit_cost = global.CREEP_COST(Game.creeps[crname].body);
+        var energy_cap = this.room.energyCapacityAvailable;
+        if (unit_cost < (energy_cap * 0.75)) {
+            nrcount++;
+            //console.log(this.name + ': want to recycle ' + crname + ' as their cost ' + unit_cost + ' < 75% of ' + energy_cap);
+            Game.creeps[crname].disableRenew();
+        }
+    }
+    console.log(this.name + ': set ' + nrcount + ' probably-obsolete creeps to not renew');
 }
 
 Creep.prototype.getTargetPriority = function() {
@@ -937,8 +981,9 @@ global.SPAWN_UNIT = function (spawnername, role, targetroomname, roompath) {
 }
 
 global.ATTACK_WAVE = function () {
-    SPAWN_UNIT('Spawn1','boss','W55S17');
-    SPAWN_UNIT('Spawn4','boss','W55S17');
+    SPAWN_UNIT('Spawn1','siegefar', 'W56S18');
+    SPAWN_UNIT('Spawn4','siegefar', 'W56S18');
+    SPAWN_UNIT('Spawn2','siegefar', 'W56S18');
 }
 
 
@@ -948,6 +993,8 @@ global.ATTACK_WAVE = function () {
 
 module.exports.loop = function () {
 
+    var cpu_setup_use = Game.cpu.getUsed();
+
     var divisor = 3;
     if (Game.cpu.bucket < 9000) {
         console.log('Account: ' + Game.cpu.limit + ', Cycle: ' + Game.cpu.tickLimit + ', Bucket: ' + Game.cpu.bucket);
@@ -956,27 +1003,29 @@ module.exports.loop = function () {
             divisor = 10;
         }
     }
-    //return;
-
     cleaner.process()
     for(var cr in Game.creeps) {
         Game.creeps[cr].setupMemory();
     }
-
     var sectors_under_attack = {};
     if(Memory['sectors_under_attack'] != undefined) {
         sectors_under_attack = Memory['sectors_under_attack'];
     };
 
+    cpu_setup_use = Game.cpu.getUsed() - cpu_setup_use;
+    if (cpu_reporting) { console.log('CPU cpu_setup_use: ' + cpu_setup_use); }
+
+
     if(Game.time % divisor === 0) {
 
-        //console.log('Prior to divisor loop: ' + Game.cpu.getUsed());
-
-
         // EXPANSION CONTROLLER
+        var cpu_planner_use = Game.cpu.getUsed();
         expansionplanner.process()
+        cpu_planner_use = Game.cpu.getUsed() - cpu_planner_use;
+        if (cpu_reporting) { console.log('CPU cpu_planner_use: ' +cpu_planner_use); }
 
 
+        var cpu_rm_use = Game.cpu.getUsed();
         // ROOM MANAGER
         var timenow = Game.time;
         for(var rname in Game.rooms) {
@@ -990,6 +1039,7 @@ module.exports.loop = function () {
 
                     // In case we know of an enemy room with storage.
                     if(empire[rname] == undefined) {
+                        console.log("CONTINUE ON: " + rname);
                         continue;
                     }
                     empire[rname].energy_reserves = energy_reserves;
@@ -1006,38 +1056,57 @@ module.exports.loop = function () {
                     if(Game.rooms[rname].controller == undefined) {
                         //console.log(rname + 'undef');
                         continue;
-                    }
-                    if(Game.rooms[rname].controller.level == undefined) {
+                    } else if(Game.rooms[rname].controller.level == undefined) {
                         //console.log(rname + ' L undef');
                         continue;
-                    }
-                    if(Game.rooms[rname].controller.level < 3) {
+                    } else if(Game.rooms[rname].controller.level < 3) {
                         //console.log(rname + ' L <3');
                         continue;
-                    }
-                    if(Game.rooms[rname].controller.owner == undefined) {
+                    } else if(Game.rooms[rname].controller.owner == undefined) {
                         //console.log(rname + 'owner undef');
                         continue;
-                    }
-                    if(Game.rooms[rname].controller.owner.username != overlord) {
+                    } else if(Game.rooms[rname].controller.owner.username != overlord) {
                         //console.log(rname + 'owner <3 ' + Game.rooms[rname].controller.owner.username);
                         continue;
+                    } else {
+                        empire[rname].sources['upgrader'] = {'sourcename': empire[rname]['roomname'] + '-U', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5}
+                    
+                    
+                        if(energy_reserves > (empire_defaults['room_reserves_required'] * 4)) {
+                            empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 4};
+                        } else if(energy_reserves > (empire_defaults['room_reserves_required'] * 3)) {
+                            empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 3};
+                        } else if(energy_reserves > (empire_defaults['room_reserves_required'] * 2)) {
+                            empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 2};
+                        } else if(energy_reserves > empire_defaults['room_reserves_required']) {
+                            empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 1};
+                        }  
                     }
-                    empire[rname].sources['upgrader'] = {'sourcename': empire[rname]['roomname'] + '-U', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5}
-                    
-                    
-                    if(energy_reserves > (empire_defaults['room_reserves_required'] * 4)) {
-                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 4};
-                    } else if(energy_reserves > (empire_defaults['room_reserves_required'] * 3)) {
-                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 3};
-                    } else if(energy_reserves > (empire_defaults['room_reserves_required'] * 2)) {
-                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 2};
-                    } else if(energy_reserves > empire_defaults['room_reserves_required']) {
-                        empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 1};
-                    }     
-                    
+                        
                     //console.log(rname +': ' + energy_reserves +' v ' + empire_defaults['room_reserves_required'] + ' hence ' + empire[rname].sources['upgrader'].assigned['upgraderstorage']);
                     
+                }
+            } else if (rname in Memory['sectors_under_attack']) {
+                // do nothing
+            } else {
+                var projectsList = Game.rooms[rname].find(FIND_MY_CONSTRUCTION_SITES);
+                var construction_hp = 0;
+                for(var i = 0; i < projectsList.length; i++) {
+                    construction_hp += (projectsList[i].progressTotal - projectsList[i].progress);
+                }
+                var rctype = 'minirc';
+                if (construction_hp > 5000) {
+                    rctype = 'remoteconstructor';
+                }
+                if(projectsList.length > 0) {
+                    for(var sname in empire[rname].sources) {
+                        if (empire[rname].sources[sname]['spaces'] != undefined && empire[rname].sources[sname]['spaces'] == 1) {
+                            empire[rname].sources[sname].assigned = {};
+                            empire[rname].sources[sname].assigned[rctype] = 1;
+                            continue;
+                        }
+                        empire[rname].sources[sname].assigned[rctype] = 1;
+                    }
                 }
             }
             
@@ -1046,42 +1115,41 @@ module.exports.loop = function () {
                 if (Game.rooms[rname].memory == undefined) {
                     Game.rooms[rname].memory = {};
                 }
-                if (Game.rooms[rname]['storage'] == undefined) {
-                    continue;
-                }
-                var rmem = Game.rooms[rname].memory;
-                var max_history = empire_defaults['room_history_ticks'];
-                if (rmem['energyhistory'] == undefined) {
-                    rmem['energyhistory'] = [];
-                }
-                if (rmem['energyhistory'].length >= max_history) {
-                    rmem['energyhistory'].pop();
-                }
-                rmem['energyhistory'].unshift(Game.rooms[rname].energyAvailable);
-                var e_hist_total = 0;
-                for (var i = 0; i < rmem['energyhistory'].length; i++) {
-                    e_hist_total += rmem['energyhistory'][i];
-                }
-                var e_hist_avg = Math.round(e_hist_total / rmem['energyhistory'].length);
-                var e_hist_avg_pc = Math.round(e_hist_avg / Game.rooms[rname].energyCapacityAvailable * 100);
-                if (e_hist_avg_pc < empire_defaults['room_minimum_energy_pc']) {
-                    var rhid = empire[rname]['roomname'];
-                    var mysname = rhid + '-T';
-                    if(empire[rname].sources[mysname] == undefined) {
-                        empire[rname].sources[mysname] = { 'sourcename': mysname, 'x':20, 'y':20, 'assigned': {}, 'expected_income': 100 }
+                if (Game.rooms[rname]['storage'] != undefined) {
+                    var rmem = Game.rooms[rname].memory;
+                    var max_history = empire_defaults['room_history_ticks'];
+                    if (rmem['energyhistory'] == undefined) {
+                        rmem['energyhistory'] = [];
                     }
-                    if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc']) {
-                        empire[rname].sources[mysname].assigned['teller'] = 2;
-                        //console.log(rname + ' requires 2x teller: ' + e_hist_avg_pc + ' < ' + empire_defaults['room_minimum_energy_pc']);
-                    } else {
-                        empire[rname].sources[mysname].assigned['teller'] = 1;
-                        //console.log(rname + ' requires a teller: ' + e_hist_avg_pc + ' < ' + empire_defaults['room_minimum_energy_pc']);
+                    if (rmem['energyhistory'].length >= max_history) {
+                        rmem['energyhistory'].pop();
                     }
-                    
-                } else { 
-                    //console.log(rname + ' no requires a teller: ' + e_hist_avg_pc + ' > ' + empire_defaults['room_minimum_energy_pc']);
+                    rmem['energyhistory'].unshift(Game.rooms[rname].energyAvailable);
+                    var e_hist_total = 0;
+                    for (var i = 0; i < rmem['energyhistory'].length; i++) {
+                        e_hist_total += rmem['energyhistory'][i];
+                    }
+                    var e_hist_avg = Math.round(e_hist_total / rmem['energyhistory'].length);
+                    var e_hist_avg_pc = Math.round(e_hist_avg / Game.rooms[rname].energyCapacityAvailable * 100);
+                    if (e_hist_avg_pc < empire_defaults['room_minimum_energy_pc']) {
+                        var rhid = empire[rname]['roomname'];
+                        var mysname = rhid + '-T';
+                        if(empire[rname].sources[mysname] == undefined) {
+                            empire[rname].sources[mysname] = { 'sourcename': mysname, 'x':20, 'y':20, 'assigned': {}, 'expected_income': 100 }
+                        }
+                        if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc']) {
+                            empire[rname].sources[mysname].assigned['teller'] = 2;
+                            //console.log(rname + ' requires 2x teller: ' + e_hist_avg_pc + ' < ' + empire_defaults['room_minimum_energy_pc']);
+                        } else {
+                            empire[rname].sources[mysname].assigned['teller'] = 1;
+                            //console.log(rname + ' requires a teller: ' + e_hist_avg_pc + ' < ' + empire_defaults['room_minimum_energy_pc']);
+                        }
+                        
+                    } else { 
+                        //console.log(rname + ' no requires a teller: ' + e_hist_avg_pc + ' > ' + empire_defaults['room_minimum_energy_pc']);
+                    }
+                    Game.rooms[rname].memory = rmem;
                 }
-                Game.rooms[rname].memory = rmem;
             }
             
             // SCAVENGER MANAGEMENT
@@ -1125,6 +1193,7 @@ module.exports.loop = function () {
             var enemiesList = Game.rooms[rname].find(FIND_HOSTILE_CREEPS);
             var enemiesCost = 0;
             var attacker_username = 'Invader';
+            //console.log(rname + ':' + enemiesList.length);
             if(enemiesList.length) {
                 for(var i = 0; i < enemiesList.length; i++) {
                     enemiesCost += global.CREEP_COST(enemiesList[i].body);
@@ -1187,6 +1256,10 @@ module.exports.loop = function () {
                 sectors_under_attack[Game.rooms[rname].name]['enemycount'] = 0;
             }
         }
+        cpu_rm_use = Game.cpu.getUsed() - cpu_rm_use;
+        if (cpu_reporting) { console.log('CPU cpu_rm_use: ' +cpu_rm_use); }
+        
+        
         for(var csector in sectors_under_attack) {
             var end_attack_now = 0;
             if( empire[csector] == undefined ) {
@@ -1206,20 +1279,24 @@ module.exports.loop = function () {
                 delete sectors_under_attack[csector];
                 if(empire_defaults['alerts_recycle'] == 1) {
                     for(var name in Game.creeps) {
-                        if(Game.creeps[name].memory.target == csector && (empire_defaults['military_roles'].includes(Game.creeps[name].memory[MEMORY_ROLE]))) {
+                        if(Game.creeps[name].memory[MEMORY_DEST] == csector && (empire_defaults['military_roles'].includes(Game.creeps[name].memory[MEMORY_ROLE]))) {
                             Game.creeps[name].memory[MEMORY_ROLE] = 'recycler';
                             Game.creeps[name].say('🔄 recycle');
                             console.log('RECYCLE: ' + name + ' due to it being part of sector defense forces for a sector that is no longer under attack.');
                         }
                     }
                 } else if (empire_defaults['alerts_reassign'] != undefined) {
-                    if (empire_defaults['alerts_reassign'] != '') {
-                        for(var name in Game.creeps) {
-                            if(Game.creeps[name].memory.target == csector && (empire_defaults['military_roles'].includes(Game.creeps[name].memory[MEMORY_ROLE]))) {
-                                Game.creeps[name].memory.target = empire_defaults['alerts_reassign'];
-                                Game.creeps[name].notifyWhenAttacked(false);
-                                console.log('REASSIGN: sent ' + name + ' to harass' + empire_defaults['alerts_reassign']);
-                                Game.notify('REASSIGN: sent ' + name + ' to harass' + empire_defaults['alerts_reassign']);
+                    for(var crname in Game.creeps) {
+                        if(Game.creeps[crname].memory.target == csector && (empire_defaults['military_roles'].includes(Game.creeps[crname].memory[MEMORY_ROLE]))) {
+                            if (Game.creeps[crname].memory[MEMORY_SPAWNERNAME] == undefined) {
+                                continue;
+                            }
+                            var spname = Game.creeps[crname].memory[MEMORY_SPAWNERNAME];
+                            if (empire_defaults['alerts_reassign'][spname] != undefined) {
+                                Game.creeps[crname].memory[MEMORY_DEST] = empire_defaults['alerts_reassign'][spname];
+                                Game.creeps[crname].notifyWhenAttacked(false);
+                                console.log('HARASS: sent ' + crname + ' to harass' + empire_defaults['alerts_reassign'][spname]);
+                                Game.notify('HARASS: sent ' + crname + ' to harass' + empire_defaults['alerts_reassign'][spname]);
                             }
                         }
                     }
@@ -1270,7 +1347,13 @@ module.exports.loop = function () {
                     var oldcount = sectors_under_attack[Game.rooms[csector].name]['mystructures'];
                     if (newcount < oldcount) {
                         var cc = Game.rooms[csector].controller;
-                        if (cc.safeModeAvailable) {
+                        var is_in_safemode = 0;
+                        if (cc.safeMode != undefined && cc.safeMode > 0) {
+                            is_in_safemode = cc.safeMode;
+                        }
+                        if (is_in_safemode > 0) {
+                            
+                        } else if (cc.safeModeAvailable) {
                             cc.activateSafeMode();
                             Game.notify('SAFEMODE ACTIVATION DUE TO STRUCTURE LOSS: ' + csector + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
                             console.log('SAFE MODE ACTIVATED: ATTACK: ' + csector + ' only has ' + newcount + ' structures versus original count of ' + oldcount + '!');
@@ -1395,7 +1478,9 @@ module.exports.loop = function () {
         }
         Memory['sectors_under_attack'] = sectors_under_attack;
 
+
         // SPAWNING MANAGER
+        var cpu_spawning_use = Game.cpu.getUsed();
         for (var rname in empire) {
             empire[rname].living = {};
         }
@@ -1489,8 +1574,10 @@ module.exports.loop = function () {
                 Memory['config.reportworkers'] = 0;
             }
             for (var rname in empire) {
+                var r_status = rname + ': ';
                 for (var skey in empire[rname].sources) {
                     var s_status = 'Source: |' + empire[rname].sources[skey]['sourcename'] + '|: ';
+                    r_status += empire[rname].sources[skey]['sourcename'] + ': ';
                     if (empire[rname].living == undefined) {
                         empire[rname].living = {};
                     }
@@ -1502,6 +1589,7 @@ module.exports.loop = function () {
                             empire[rname].living[skey][role] = 0;
                         }
                         s_status += role + ': ' + empire[rname].living[skey][role] + '/' + empire[rname].sources[skey].assigned[role] + ' ';
+                        r_status += role + ': ' + empire[rname].living[skey][role] + '/' + empire[rname].sources[skey].assigned[role] + ' ';
                         if ( empire[rname].living[skey][role] < empire[rname].sources[skey].assigned[role]) {
                             if(sectors_under_attack[csector] != undefined && !empire_defaults['military_roles'].includes(role) && !empire_defaults['priority_roles'].includes(role)) {
                                 //console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| until attack is over.');
@@ -1552,8 +1640,7 @@ module.exports.loop = function () {
 
                             
                             if (spawner.room.energyAvailable < 300) {
-                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as cost exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
-                                //continue;
+                                //console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as cost exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
                             }
                             
                             var part_template = empire_workers[role]['body'];
@@ -1637,7 +1724,7 @@ module.exports.loop = function () {
                             }
                             
                             if (spawner.room.energyAvailable < thecost) {
-                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as we lack the cost ' + thecost + ' exceeds storage: ' + spawner.room.energyAvailable);
+                                //console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as we lack the cost ' + thecost + ' exceeds storage: ' + spawner.room.energyAvailable);
                                 continue;
                             }
                             
@@ -1657,19 +1744,34 @@ module.exports.loop = function () {
                             //console.log(JSON.stringify(spawn_queue));
                         }
                     }
-                    if (Memory['config.reportworkers'] > 0) {
+                    /*if (Memory['config.reportworkers'] > 0) {
                         console.log(s_status);
-                    }
+                    }*/
                     
                 }
+                if (Memory['config.reportworkers'] > 0) {
+                    console.log(r_status);
+                }
+                
             }
             if (Memory['config.reportworkers'] > 0) {
                 Memory['config.reportworkers'] -= 1;
             }
             //console.log(JSON.stringify(spawn_queue));
             for(var spawnername in Game.spawns) {
-                if (spawn_queue[spawnername] != undefined) {
-                    var thespawner = Game.getObjectById(Game.spawns[spawnername].id);
+                if (Game.spawns[spawnername].memory['role_spawning'] != undefined) {
+                    if (Game.spawns[spawnername].spawning == undefined) {
+                        Game.spawns[spawnername].memory['role_spawning'] = undefined;
+                        Game.spawns[spawnername].memory['dest_spawning'] = undefined;
+                    } else if (empire_defaults['military_roles'].includes(Game.spawns[spawnername].memory['role_spawning'])) {
+                        Game.spawns[spawnername].room.visual.text(Game.spawns[spawnername].spawning.remainingTime + ': ' + Game.spawns[spawnername].spawning.name, Game.spawns[spawnername].pos.x, Game.spawns[spawnername].pos.y +1.5, {color: 'red', backgroundColor: 'white', font: 0.8});
+                    } else if (Game.spawns[spawnername].memory['dest_spawning'] != undefined && Game.spawns[spawnername].memory['dest_spawning'] == Game.spawns[spawnername].room.name) {
+                        Game.spawns[spawnername].room.visual.text(Game.spawns[spawnername].spawning.remainingTime + ': ' + Game.spawns[spawnername].spawning.name, Game.spawns[spawnername].pos.x, Game.spawns[spawnername].pos.y +1.5, {color: 'green', backgroundColor: 'white', font: 0.8});
+                    } else {
+                        Game.spawns[spawnername].room.visual.text(Game.spawns[spawnername].spawning.remainingTime + ': ' + Game.spawns[spawnername].spawning.name, Game.spawns[spawnername].pos.x, Game.spawns[spawnername].pos.y +1.5, {color: 'blue', backgroundColor: 'white', font: 0.8});
+                    }
+                } else if (spawn_queue[spawnername] != undefined) {
+                    var thespawner = Game.spawns[spawnername];
                     //continue;
                     if (thespawner.room.energyAvailable >= spawn_queue[spawnername]['thecost']) {
                         spawncustom.process(
@@ -1678,6 +1780,8 @@ module.exports.loop = function () {
                             spawn_queue[spawnername]['myroomname'], spawn_queue[spawnername]['target_x'], 
                             spawn_queue[spawnername]['target_y'], spawn_queue[spawnername]['renew_allowed'], spawn_queue[spawnername]['nextdest']
                         );
+                        thespawner.memory['role_spawning'] = spawn_queue[spawnername]['spawnrole'];
+                        thespawner.memory['dest_spawning'] = spawn_queue[spawnername]['rname'];
                     } else {
                         console.log(spawn_queue[spawnername]['sname'] + ': ' + spawn_queue[spawnername]['spawnrole'] + ' too expensive (' + spawn_queue[spawnername]['thecost'] + '/' + thespawner.room.energyAvailable + '), saving up.');
                     }
@@ -1686,7 +1790,8 @@ module.exports.loop = function () {
                 }
             }
         }
-
+        cpu_spawning_use = Game.cpu.getUsed() - cpu_spawning_use;
+        if (cpu_reporting) { console.log('CPU cpu_spawning_use: ' + cpu_spawning_use); }
     
     }
     
@@ -1793,10 +1898,15 @@ module.exports.loop = function () {
 
     }
 
-    //console.log('after divisor loop: ' + Game.cpu.getUsed());
+    var cpu_creep_use = Game.cpu.getUsed();
+
+    var creep_cpu_map = {}
 
     for(var name in Game.creeps) {
         var creep = Game.creeps[name];
+
+        var creep_cpu = Game.cpu.getUsed();
+
         if (creep.spawning) {
             // don't even process this creep, it cannot do anything while it is being spawned, and even attempting to do so just wastes CPU.
         } else if(creep.memory[MEMORY_ROLE] == 'harvester' || creep.memory[MEMORY_ROLE] == 'bharvester') {
@@ -1839,7 +1949,7 @@ module.exports.loop = function () {
             roleRecycler.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'signer') {
             roleSigner.run(creep);
-        } else if(creep.memory[MEMORY_ROLE] == 'remoteconstructor') {
+        } else if(creep.memory[MEMORY_ROLE] == 'remoteconstructor' || creep.memory[MEMORY_ROLE] == 'minirc') {
             roleRemoteconstructor.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'labtech') {
             roleLabtech.run(creep);
@@ -1847,9 +1957,44 @@ module.exports.loop = function () {
             console.log('ALERT: ' + creep.name + ' has role ' + creep.memory[MEMORY_ROLE] + ' which I do not know how to handle!')
             creep.suicide();
         }
+        
+        creep_cpu = Game.cpu.getUsed() - creep_cpu;
+        
+        if(creep_cpu_map[creep.memory[MEMORY_ROLE]] == undefined) {
+            creep_cpu_map[creep.memory[MEMORY_ROLE]] = [];
+        }
+        creep_cpu_map[creep.memory[MEMORY_ROLE]].unshift(creep_cpu);
+        
     }
+    if (cpu_reporting) { 
+        for (var pname in creep_cpu_map) {
+            var this_total = 0;
+            for (var i = 0; i < creep_cpu_map[pname].length; i++){
+                this_total += creep_cpu_map[pname][i];
+            }
+            console.log(pname + ': ' + creep_cpu_map[pname].length + ' creeps taking ' + this_total + ' cpu, avg: ' + this_total / creep_cpu_map[pname].length);
+        }
+    }
+    
+    cpu_creep_use = Game.cpu.getUsed() - cpu_creep_use;
+    if (cpu_reporting) { console.log('CPU cpu_creep_use: ' + cpu_creep_use); }
 
-    //console.log('after creep loop: ' + Game.cpu.getUsed());
+    var total_cpu_used_this_tick = Math.round(Game.cpu.getUsed());
+    var cpu_history_max = 100;
+    if (Memory['cpu_history'] == undefined) {
+        Memory['cpu_history'] = [];
+    }
+    if (Memory['cpu_history'].length >= cpu_history_max) {
+        Memory['cpu_history'].pop();
+    }
+    Memory['cpu_history'].unshift(total_cpu_used_this_tick);
+    var total_cpu_alltime = 0;
+    for (var i = 0; i < Memory['cpu_history'].length; i++) {
+        total_cpu_alltime += Memory['cpu_history'][i];
+    }
+    var avg_cpu = Math.round(total_cpu_alltime / Memory['cpu_history'].length);
+
+    if (cpu_reporting) { console.log('CPU final: ' + total_cpu_used_this_tick + ', avg/tick: ' + avg_cpu); }
 
     
 }
