@@ -54,7 +54,7 @@ module.exports = {
             } else if (result == ERR_BUSY) {
                 creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_RENEW}});
             }
-            if (result != OK && result != ERR_NOT_IN_RANGE) { console.log('creep ' + creep.name + ' at ' + creep.pos.x + ',' + creep.pos.y + ':' + creep.room.name + ' failed renew: ' + result) }
+            //if (result != OK && result != ERR_NOT_IN_RANGE) { console.log('creep ' + creep.name + ' at ' + creep.pos.x + ',' + creep.pos.y + ':' + creep.room.name + ' failed renew: ' + result) }
             return result;
         } else {
             //console.log('creep ' + creep.name + ' failed renew (no spawn) ')

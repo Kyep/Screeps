@@ -3,9 +3,8 @@
 module.exports = {
     
     run: function(creep) {
-
         if(creep.room.name != creep.memory[MEMORY_DEST]) {
-            creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]));
+            creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST])); // , {ignoreDestructibleStructures: true}
             return;
         } else if (creep.pos.x < 1 || creep.pos.x > 48 || creep.pos.y < 1 || creep.pos.y > 48) {
             creep.moveTo(25, 25, creep.room);
@@ -38,8 +37,10 @@ module.exports = {
             return;
         }
 
-        var valid_structure_targets = [STRUCTURE_SPAWN, STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB]; 
-        //[STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB]; // be careful with rampart. STRUCTURE_CONTAINER, STRUCTURE_RAMPART
+        //var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_RAMPART];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
+        //var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_TERMINAL, STRUCTURE_LAB];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
+        var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_RAMPART, STRUCTURE_EXTENSION, STRUCTURE_SPAWN, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_LINK, STRUCTURE_EXTRACTOR];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
+        
         var enemy_structures = creep.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType != STRUCTURE_CONTROLLER}); 
         var valid_targets = [];
         var target = undefined;
@@ -50,6 +51,9 @@ module.exports = {
                 continue;
             }
             if (them == creep.room.controller) { // yes, this needed.
+                continue;
+            }
+            if (them.owner.username == creep.owner.username) {
                 continue;
             }
             valid_targets.push(them);
@@ -77,7 +81,7 @@ module.exports = {
             if (destroy_csites) {
                 var csites = creep.room.find(FIND_HOSTILE_CONSTRUCTION_SITES);
                 if (csites.length) {
-                    csite = creep.pos.findClosestByPath(csites);
+                    var csite = creep.pos.findClosestByPath(csites);
                     creep.moveTo(csite, {visualizePathStyle: {stroke: COLOR_PATROL}});
                     creep.attack(csite);
                     return 0;

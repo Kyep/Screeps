@@ -39,6 +39,7 @@ module.exports = {
             }
         }
         if (creep.memory[MEMORY_JOB] == JOB_HARVEST) {
+
             var target_x = 25;
             var target_y = 25;
             if (empire[creep.room.name] != undefined) {

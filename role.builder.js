@@ -15,7 +15,11 @@ module.exports =  {
             creep.memory[MEMORY_JOB] = JOB_BUILD;
             creep.announceJob();
 	    } else if(creep.memory[MEMORY_JOB] == JOB_HARVEST) {
-	        jobHarvest.run(creep);
+	        var harvestresult = jobHarvest.run(creep);
+	        if (harvestresult == ERR_NOT_ENOUGH_RESOURCES) {
+                creep.memory[MEMORY_JOB] = JOB_BUILD;
+                creep.announceJob();
+	        }
         } else if(creep.memory[MEMORY_JOB] == JOB_BUILD) {
             if (jobBuild.run(creep) == -1) {
                 creep.memory[MEMORY_JOB] = JOB_UPGRADE;

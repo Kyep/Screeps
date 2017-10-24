@@ -36,6 +36,7 @@ module.exports = {
             if (creep.memory[MEMORY_H_CONTAINER] != undefined) {
                 var thecontainer = Game.getObjectById(creep.memory[MEMORY_H_CONTAINER]);
                 if (thecontainer != undefined) {
+                    var crange = creep.pos.getRangeTo(thecontainer);
                     if (thecontainer.store.energy > 0) {
                         if (creep.withdraw(thecontainer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                             creep.moveTo(thecontainer);
@@ -47,17 +48,17 @@ module.exports = {
                             creep.moveTo(thecontainer);
                         }
                     }
+
+                    if(crange < 2) {
+                        var energypile = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: (s) => s.energy > 0});
+                        if(energypile.length){
+                            creep.say('pile!');
+                            creep.pickup(energypile[0]);
+                        }
+                    }
                 } else {
                     creep.memory[MEMORY_H_CONTAINER] = undefined;
                 }
-                
-                var energypile = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: (s) => s.energy > 0});
-                if(energypile != undefined){
-                    if (creep.pickup(energypile) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(energypile, {visualizePathStyle: {stroke: COLOR_SCAVAGE}});
-                    }
-                }
-                
                 return 0;
             }
             var target_source = Game.getObjectById(creep.memory[MEMORY_SOURCE]);
@@ -102,6 +103,9 @@ module.exports = {
             }
             creep.moveTo(creep.getHomePos());
         } else if (creep.memory[MEMORY_JOB] == JOB_USELINK) {
+            if(empire[creep.memory[MEMORY_DEST]] == undefined) {
+                return 0;
+            }
             if (empire[creep.memory[MEMORY_DEST]].sources[creep.memory[MEMORY_SOURCE]] == undefined) {
                 creep.memory[MEMORY_JOB] = JOB_RETURN; 
                 console.log(creep.name + 'undefined source: ' + creep.memory[MEMORY_DEST] + ' / ' + creep.memory[MEMORY_SOURCE]);
@@ -109,7 +113,7 @@ module.exports = {
             }
             var targets = creep.pos.findInRange(FIND_STRUCTURES, 10, {
                 filter: function(structure){
-                    return (structure.structureType == STRUCTURE_LINK) && (structure.energy < structure.energyCapacity)
+                    return (structure.structureType == STRUCTURE_LINK) && (structure.energy < structure.energyCapacity && structure.cooldown == 0)
                 }
             });
             if (!targets.length) {

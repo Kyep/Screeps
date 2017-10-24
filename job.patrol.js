@@ -22,16 +22,18 @@ module.exports =  {
         }
 
         var follow_target = undefined;
-        if (creep.memory['follow'] == undefined) {
-            creep.memory['follow'] = creep.name;
-        } else {
-            follow_target = Game.creeps[creep.memory['follow']];
+        if (creep.memory['follow'] != undefined) {
+            if (Game.creeps[creep.memory['follow']] != undefined) {
+                follow_target = Game.creeps[creep.memory['follow']];
+            }
         }
         
         // 1st, where should we move to?
         var desired_distance = 1;
         // if at sim border, always move in. Don't get stuck on sim borders.
-        if (follow_target != undefined) {
+
+        if (follow_target != undefined && follow_target != creep) {
+            creep.say('follow');
             creep.moveTo(follow_target);
         } else if (creep.pos.x < 1 || creep.pos.x > 48 || creep.pos.y < 1 || creep.pos.y > 48) {
             if (creep.memory[MEMORY_DEST] == undefined) {
