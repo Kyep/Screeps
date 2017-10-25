@@ -47,7 +47,7 @@ var expansionplanner = require('task.expansion');
         'priority_roles': ['teller', 'teller-towers'],
         'military_roles': ['scout', 'slasher', 'rogue', 'ninja', 'ninjaheals', 'dragon', 'siegedragon', 'boss', 'wizard', 'healer', 'siege', 'siegefar', 'siegemini', 'drainer', 'drainerhealer'],
         'defense_roles': ['boss', 'dragon', 'ninja', 'rogue', 'slasher', 'scout'], // LIST MOST POWERFUL FIRST.
-        'alerts_duration' : 300,
+        'alerts_duration' : 34560, // alerts last ~24h, or until we've verified that whatever caused them is dead.
         'alerts_recycle' : 0,
         'alerts_reassign': {}, // Don't reassign anything.
         'repairmax_creeps' : 250000,
@@ -68,9 +68,9 @@ var expansionplanner = require('task.expansion');
                 'base-maint': {
                     'sourcename': '1-base', 'x':20, 'y':20, 
                     'assigned': {}, 
-                    'expected_income': 90
+                    'expected_income': 90, 'dynamic': 1
                 },
-                'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40 },
+                'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40, 'dynamic': 1 },
                 '59bbc3f82052a716c3ce7289': {
                     'sourcename':'1-E', 'x':25, 'y':18,  'target_x': 24, 'target_y': 19, 'steps':15, 'spaces':4,
                     'assigned': {'bharvester': 2},
@@ -97,7 +97,7 @@ var expansionplanner = require('task.expansion');
                 }/*,
                 'reserver': {'sourcename':'1E-R', 'x':11, 'y':14, 'steps':33,
                     'assigned': {'reserver': 1},
-                    'expected_income': 63
+                    'expected_income': 63, 'dynamic': 1
                 }*/
             }
         },
@@ -111,7 +111,7 @@ var expansionplanner = require('task.expansion');
                 }/*,
                 'reserver': {'sourcename':'1N-R', 'x':4, 'y':44, 'steps':32,
                     'assigned': {'reserver': 1}, // , 'reserver': 1
-                    'expected_income': 69
+                    'expected_income': 69, 'dynamic': 1
                 },*/
             } 
         },
@@ -129,7 +129,7 @@ var expansionplanner = require('task.expansion');
                 },
                 'reserver': {'sourcename':'1W-R', 'x':5, 'y':37,
                     'assigned': {'reserver': 1},
-                    'expected_income': 50
+                    'expected_income': 50, 'dynamic': 1
                 } //ANOTHER -3/TICK UNIT. NOT WORTH IT!
             }
         },
@@ -192,7 +192,7 @@ var expansionplanner = require('task.expansion');
                 },
                 'reserver': {'sourcename':'2N-R', 'x':4, 'y':26,
                     'assigned': {'reserver': 1},
-                    'expected_income': 40
+                    'expected_income': 40, 'dynamic': 1
                 }
             }
         },
@@ -239,7 +239,7 @@ var expansionplanner = require('task.expansion');
                 },
                 'reserver': {'sourcename':'3S-R', 'x':20, 'y':15,
                     'assigned': {'reserver': 1},
-                    'expected_income': 40
+                    'expected_income': 40, 'dynamic': 1
                 }
             }
         },
@@ -251,11 +251,11 @@ var expansionplanner = require('task.expansion');
             
             'sources': {
                 '59bbc3f72052a716c3ce7275': {'sourcename': '4-N', 'x':31, 'y':17, 'spaces':2,
-                    'assigned': {'upgfar': 1, 'harvester': 1},
+                    'assigned': {'upgfar': 1, 'harvester': 1}, // only two slots...
                     'expected_income': 90
                 },
                 '59bbc3f72052a716c3ce7276': {'sourcename': '4-S', 'x':32, 'y':28, 'spaces':1,
-                    'assigned': {'harvester': 2},
+                    'assigned': {'harvester': 1}, // only one slot...
                     'expected_income': 80
                 }
             }
@@ -266,17 +266,17 @@ var expansionplanner = require('task.expansion');
             'spawns_from': 'Spawn6',
             'sources': {
                 '59bbc3f62052a716c3ce7272': {'sourcename': '4N-S', 'x':31, 'y':34, 'target_x': 30, 'target_y': 35, 'spaces':3,
-                    'assigned': {'c15harvester': 1},
+                    'assigned': {'c30harvester': 1, 'hauler': 2},
                     'expected_income': 50
                 },
                 '59bbc3f62052a716c3ce7270': {'sourcename': '4N-N', 'x':21, 'y':8, 'target_x': 21, 'target_y': 8, 'spaces':1,
-                    'assigned': {'c15harvester': 1},
+                    'assigned': {'c30harvester': 1, 'hauler': 2},
                     'expected_income': 40
-                }/*,
+                },
                 'reserver': {'sourcename':'4N-R', 'x':25, 'y':25,
-                    'assigned': {'sreserver': 1},
-                    'expected_income': 30
-                }*/
+                    'assigned': {'reserver': 1},
+                    'expected_income': 30, 'dynamic': 1
+                }
             }
         },
         'W52S12': {
@@ -294,7 +294,7 @@ var expansionplanner = require('task.expansion');
             'spawns_from': 'Spawn6',
             'sources': {
                 '59bbc3e82052a716c3ce7092': {'sourcename': '4W', 'x':37, 'y':5, 'target_x': 37, 'target_y': 6, 'spaces':3,
-                    'assigned': {'harvester': 4},
+                    'assigned': {'c15harvester': 1, 'hauler': 1},
                     'expected_income': 10
                 }
             }
@@ -303,8 +303,8 @@ var expansionplanner = require('task.expansion');
             'roomname' : '4NE',
             'spawns_from': 'Spawn6',
             'sources': {
-                '59bbc3e82052a716c3ce7092': {'sourcename': '4W', 'x':23, 'y':44, 'target_x': 23, 'target_y': 44, 'spaces':3,
-                    'assigned': {'harvester': 2},
+                '59bbc4052052a716c3ce73f2': {'sourcename': '4NE', 'x':24, 'y':43, 'target_x': 23, 'target_y': 44, 'spaces':3,
+                    'assigned': {},
                     'expected_income': 5
                 }
             }
@@ -351,7 +351,7 @@ var expansionplanner = require('task.expansion');
                 },
                 'reserver': {'sourcename':'5N-R', 'x':25, 'y':25,
                     'assigned': {'sreserver': 1},
-                    'expected_income': 30
+                    'expected_income': 30, 'dynamic': 1
                 }
             }
         },
@@ -404,7 +404,7 @@ var expansionplanner = require('task.expansion');
                 },
                 'reserver': {'sourcename':'6N-R', 'x':25, 'y':25,
                     'assigned': {'reserver': 1},
-                    'expected_income': 74
+                    'expected_income': 74, 'dynamic': 1
                 }
             }
         },  
@@ -422,7 +422,6 @@ var expansionplanner = require('task.expansion');
         // 6W
         'W57S18': {
             'roomname' : '6W',
-            'ignoreattacks': 1,
             'spawns_from': 'Spawn8',
             'sources': {
                 '59bbc3bc2052a716c3ce6a3d': {'sourcename': '6W-N', 'x':30, 'y':12, 'target_x': 30, 'target_y': 13, 'spaces':5,
@@ -1048,7 +1047,7 @@ module.exports.loop = function () {
                     var projectsList = Game.rooms[rname].find(FIND_MY_CONSTRUCTION_SITES);
                     if(projectsList.length > 0) {
                         if(energy_reserves > empire_defaults['room_reserves_required']) {
-                            empire[rname].sources['builder'] = {'sourcename': rname + '-B', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 10}
+                            empire[rname].sources['builder'] = {'sourcename': empire[rname]['roomname'] + '-B', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 10, 'dynamic': 1}
                             empire[rname].sources['builder'].assigned['builderstorage'] = 2;
                         }
                     }
@@ -1068,10 +1067,9 @@ module.exports.loop = function () {
                     } else if(Game.rooms[rname].controller.owner.username != overlord) {
                         //console.log(rname + 'owner <3 ' + Game.rooms[rname].controller.owner.username);
                         continue;
-                    } else {
-                        empire[rname].sources['upgrader'] = {'sourcename': empire[rname]['roomname'] + '-U', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5}
-                    
-                    
+                    } else if (Game.rooms[rname] != undefined && Game.rooms[rname].controller != undefined && Game.rooms[rname].controller.level != 8) {
+                        // No point spawning upgraders to upgrade a level 8 room.
+                        empire[rname].sources['upgrader'] = {'sourcename': empire[rname]['roomname'] + '-U', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5, 'dynamic': 1}
                         if(energy_reserves > (empire_defaults['room_reserves_required'] * 4)) {
                             empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 4};
                         } else if(energy_reserves > (empire_defaults['room_reserves_required'] * 3)) {
@@ -1100,11 +1098,16 @@ module.exports.loop = function () {
                 }
                 if(projectsList.length > 0) {
                     for(var sname in empire[rname].sources) {
-                        if (empire[rname].sources[sname]['spaces'] != undefined && empire[rname].sources[sname]['spaces'] == 1) {
-                            empire[rname].sources[sname].assigned = {};
-                            empire[rname].sources[sname].assigned[rctype] = 1;
+                        if (empire[rname].sources[sname]['dynamic'] != undefined) {
                             continue;
                         }
+                        if (empire[rname].sources[sname]['spaces'] != undefined && empire[rname].sources[sname]['spaces'] == 1) {
+                            // If source can't handle another miner, do not assign one.
+                            //empire[rname].sources[sname].assigned = {};
+                            //empire[rname].sources[sname].assigned[rctype] = 1;
+                            continue;
+                        }
+
                         empire[rname].sources[sname].assigned[rctype] = 1;
                     }
                 }
@@ -1214,13 +1217,27 @@ module.exports.loop = function () {
                 } else if (empire[rname]['ignoreattacks'] != undefined) {
                     continue;
                 }
-                //console.log('ALERT: ' + Game.rooms[rname].name + ' has ' + enemiesList.length + ' enemies, worth body cost: ' + enemiesCost + '!'); 
-                if(sectors_under_attack[Game.rooms[rname].name] == undefined) {
-                    console.log('ATTACK: NEW ATTACK DETECTED: ' + Game.rooms[rname].name);
-                    sectors_under_attack[Game.rooms[rname].name] = {}
-                    sectors_under_attack[Game.rooms[rname].name]['attackstart'] = timenow;
-                    sectors_under_attack[Game.rooms[rname].name]['mystructures'] = Game.rooms[rname].getMyStructuresCount();
-                    sectors_under_attack[Game.rooms[rname].name]['attacker_username'] = attacker_username;
+                if(Game.rooms[rname] != undefined && Game.rooms[rname].controller != undefined && Game.rooms[rname].controller.owner != undefined && Game.rooms[rname].controller.owner.username != overlord) {
+                    // This is someone else's base.
+                    continue;
+                }
+                //console.log('ALERT: ' + rname + ' has ' + enemiesList.length + ' enemies, worth body cost: ' + enemiesCost + '!'); 
+                if(sectors_under_attack[rname] == undefined) {
+                    console.log('ATTACK: NEW ATTACK DETECTED: ' + rname);
+                    sectors_under_attack[rname] = {}
+                    sectors_under_attack[rname]['attackstart'] = timenow;
+                    sectors_under_attack[rname]['mystructures'] = Game.rooms[rname].getMyStructuresCount();
+                    sectors_under_attack[rname]['attacker_username'] = attacker_username;
+                    
+                    sectors_under_attack[rname]['structure_list'] = {};
+                    var my_structures = Game.rooms[rname].find(FIND_STRUCTURES);
+                    for (var i = 0; i < my_structures.length; i++) {
+                        if(sectors_under_attack[rname]['structure_list'][my_structures[i].structureType] == undefined) {
+                            sectors_under_attack[rname]['structure_list'][my_structures[i].structureType] = [];
+                        }
+                        sectors_under_attack[rname]['structure_list'][my_structures[i].structureType].unshift(my_structures[i].pos);
+                    }
+
                     var texits = Game.map.describeExits(rname);
                     var exit_arr = []
                     for (var ex in texits) {
@@ -1245,15 +1262,15 @@ module.exports.loop = function () {
                         Game.notify('REASSIGN: sent ' + Game.creeps[tc].name + ' to defend' + rname);
                     }
                 }
-                sectors_under_attack[Game.rooms[rname].name]['time'] = timenow;
-                sectors_under_attack[Game.rooms[rname].name]['threat'] = enemiesCost;
-                sectors_under_attack[Game.rooms[rname].name]['enemycount'] = enemiesList.length;
+                sectors_under_attack[rname]['time'] = timenow;
+                sectors_under_attack[rname]['threat'] = enemiesCost;
+                sectors_under_attack[rname]['enemycount'] = enemiesList.length;
                 if(attacker_username != 'Invader') {
-                    Game.notify('NON-NPC ATTACK! ' + rname + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[rname].name]));
+                    Game.notify('NON-NPC ATTACK! ' + rname + ': ' + JSON.stringify(sectors_under_attack[rname]));
                 }
-            } else if(sectors_under_attack[Game.rooms[rname].name] != undefined) {
-                sectors_under_attack[Game.rooms[rname].name]['threat'] = 0;
-                sectors_under_attack[Game.rooms[rname].name]['enemycount'] = 0;
+            } else if(sectors_under_attack[rname] != undefined) {
+                sectors_under_attack[rname]['threat'] = 0;
+                sectors_under_attack[rname]['enemycount'] = 0;
             }
         }
         cpu_rm_use = Game.cpu.getUsed() - cpu_rm_use;
@@ -1276,6 +1293,27 @@ module.exports.loop = function () {
                 end_attack_now = 1;
             }
             if (end_attack_now) {
+                var old_structurelist = sectors_under_attack[Game.rooms[csector].name]['structure_list'];
+                for (var stype in old_structurelist) {
+                    for (var i = 0; i < old_structurelist[stype].length; i++) {
+                        var structure_pos = old_structurelist[stype][i];
+                    	var structures_at = Game.rooms[csector].lookForAt(LOOK_STRUCTURES, structure_pos.x, structure_pos.y, structure_pos);
+                    	var is_intact = 0;
+                    	for (var j = 0; j < structures_at.length; j++) {
+                    		if (structures_at[j].structureType == stype) {
+                    			is_intact = 1;
+                    		}
+                    	}
+                    	if (is_intact) {
+                    	    //console.log(csector +': ' + stype + ' AT: ' +structure_pos.x + ',' + structure_pos.y + ' appears to be intact.');
+                    	} else {
+                    	    var alert_string = csector +': MISSING ' + stype + ' AT: ' +structure_pos.x + ',' + structure_pos.y + ' after attack from ' + sectors_under_attack[rname]['attacker_username'] + ' - REBUILDING!';
+                    	    console.log(alert_string);
+                    	    Game.notify(alert_string);
+                    		Game.rooms[csector].createConstructionSite(structure_pos.x, structure_pos.y, stype);
+                    	}
+                    }
+                }
                 delete sectors_under_attack[csector];
                 if(empire_defaults['alerts_recycle'] == 1) {
                     for(var name in Game.creeps) {
@@ -1364,7 +1402,6 @@ module.exports.loop = function () {
                     }
                 }
 
-                //rogue (640), ninja (900), dragon(1390)
                 var theirthreat = sectors_under_attack[csector]['threat'];
                 if (towercount > 0) {
                     theirthreat -= (400 * towercount);
@@ -1373,7 +1410,6 @@ module.exports.loop = function () {
                         baseforce['teller'] = 1;
                     }
                 }
-
             
                 if (empire[csector]['spawns_from'] == undefined) {
                     console.log('ATTACK CONFIG WARNING, SECTOR ' + csector + ' HAS NO SPAWNS_FROM SET ON ITS ROOM!');
@@ -1409,8 +1445,13 @@ module.exports.loop = function () {
                             patrolforce[oname] += 1;
                         }
                         theirthreat -= outfit_cost;
-                        //console.log('XAT: Using ' + oname + ' (cost: ' + outfit_cost + ') to match their threat, it is now: ' + theirthreat);
+                        //console.log('DEFENSE: Defending ' + csector + ' with ' + patrolforce[oname] + ' ' + oname + ' (cost: ' + outfit_cost + ' ea) against threat of: ' + sectors_under_attack[csector]['threat'] + '. ' + theirthreat + ' threat remaining');
+                        if (theirthreat < 0) {
+                            break;
+                        }
                     }
+                } else {
+                    console.log('DEFENSE: Decided that  ' + csector + ' can handle the incoming threat of ' + theirthreat + ' without any units being spawned');
                 }
                 /*
                 if (csector == 'W51S14') {
@@ -1464,9 +1505,9 @@ module.exports.loop = function () {
                 */
                 
                 empire[csector].sources['BASEFORCE'] = {'sourcename': empire[csector]['roomname'] + '-bforce', 'x':25, 'y':25,
-                    'assigned': baseforce, 'expected_income': 95}
+                    'assigned': baseforce, 'expected_income': 95, 'dynamic': 1}
                 empire[csector].sources['PATROLFORCE'] = {'sourcename': empire[csector]['roomname'] + '-pforce', 'x':25, 'y':25,
-                    'assigned': patrolforce, 'expected_income': 94}
+                    'assigned': patrolforce, 'expected_income': 94, 'dynamic': 1}
                 if (tgap > 0) {
                     //console.log('ATTACK: TIMING OUT IN: ' + csector + ', age: ' + tgap + ' DEFCON: ' + empire[csector]['defcon']);
                     //console.log('ATTACK: TIMING OUT IN: ' + csector + ', age: ' + tgap);
@@ -1845,14 +1886,24 @@ module.exports.loop = function () {
         var repairMax = theroom.getTowerRepairMax();
         var repairTargets = theroom.find(FIND_STRUCTURES, {
                 filter: function(structure){
+                    if(structure.structureType == STRUCTURE_RAMPART){
+                        return (structure.hits < repairMax)
+                    }else{
+                        return 0
+                    }
+                }
+        });
+        if (!repairTargets.length) {
+            repairTargets = theroom.find(FIND_STRUCTURES, {
+                filter: function(structure){
                     if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
                         return (structure.hits < repairMax)
                     }else{
                         return (structure.hits < (structure.hitsMax - TOWER_POWER_REPAIR))
                     }
                 }
-        });
-
+            });
+        }
         if (!repairTargets.length) {
             continue;
         }

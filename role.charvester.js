@@ -52,7 +52,14 @@ module.exports = {
                 creep.moveTo(new RoomPosition(target_x, target_y, creep.memory[MEMORY_DEST]));
                 return;
             }
-            jobHarvest.run(creep);
+            var harvestresult = jobHarvest.run(creep);
+            if (harvestresult == ERR_NOT_ENOUGH_ENERGY && Game.time % 3 == 0) {
+                var energypile = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: (s) => s.energy > 0});
+                if(energypile.length){
+                    creep.say('pile!');
+                    creep.pickup(energypile[0]);
+                }
+            }
             if (creep.carry.energy == 0) {
                 return 0;
             }
