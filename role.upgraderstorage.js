@@ -18,8 +18,8 @@ module.exports = {
                 creep.memory[MEMORY_ROLE] = 'recycler';
             }
         } else if(creep.memory[MEMORY_JOB] == JOB_UPGRADE) {
-            if (creep.room.name != creep.memory[MEMORY_DEST]) {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]));
+            if(!creep.isAtDestinationRoom()){
+                creep.moveToDestination();
             } else {
                 jobUpgrade.run(creep);
             }

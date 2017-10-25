@@ -31,8 +31,8 @@ module.exports = {
                 // do nothing until we get enough
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_OUT) {
-            creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]))
-            if (creep.room.name == creep.memory[MEMORY_DEST]) {
+            creep.moveToDestination();
+            if (creep.isAtDestinationRoom()) {
                 creep.memory[MEMORY_JOB] = JOB_BUILD;
                 creep.announceJob();
             }

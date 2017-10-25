@@ -2,6 +2,16 @@
 
 module.exports = {
     run: function(creep){
-        creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST])); // , {ignoreDestructibleStructures: true}
+        if (creep.isAtDestinationRoom()) {
+            if (creep.updateDestination()) {
+                return;
+            }
+            creep.redRally();
+        } else {
+            creep.moveToDestination();
+        }
+        if(creep.hits < creep.hitsMax) {
+            creep.heal(creep);
+        }
     }
 }

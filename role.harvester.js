@@ -36,7 +36,7 @@ module.exports = {
             if (creep.memory[MEMORY_JOURNEYSTART] == undefined ) {
                 creep.memory[MEMORY_JOURNEYSTART] = Game.time;
             }
-            if (creep.room.name == creep.memory[MEMORY_DEST]) {
+            if (creep.isAtDestinationRoom()) {
 	            creep.memory[MEMORY_JOB] = JOB_HARVEST;
                 //creep.announceJob();
             } else if (creep.memory[MEMORY_DEST] in Memory.sectors_under_attack || (creep.memory[MEMORY_DEST] != creep.memory[MEMORY_HOME] && creep.memory[MEMORY_HOME] in Memory.sectors_under_attack)) {
@@ -55,11 +55,7 @@ module.exports = {
                 creep.moveTo(new RoomPosition(hidex, hidey, creep.memory[MEMORY_HOME]));
 
             } else {
-                if(creep.memory[MEMORY_DEST_X]== undefined || creep.memory[MEMORY_DEST_Y] == undefined) {
-                    creep.memory[MEMORY_DEST_X]= 25;
-                    creep.memory[MEMORY_DEST_Y] = 25;
-                }
-                creep.moveTo(new RoomPosition(creep.memory[MEMORY_DEST_X], creep.memory[MEMORY_DEST_Y], creep.memory[MEMORY_DEST]))
+                creep.moveToDestination();
             }
         }
         if (creep.memory[MEMORY_JOB] == JOB_HARVEST) {
@@ -121,7 +117,7 @@ module.exports = {
 
                 }
             } else {
-                creep.moveTo(new RoomPosition(creep.memory[MEMORY_DEST_X], creep.memory[MEMORY_DEST_Y], creep.memory[MEMORY_DEST]))
+                creep.moveToDestination();
 	            var retval = jobHarvest.run(creep);
                 if (retval == ERR_NOT_ENOUGH_RESOURCES && !containermine && creep.carry.energy > 0) {
                     if(creep.room.name == creep.memory[MEMORY_HOME]) {

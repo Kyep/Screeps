@@ -2,9 +2,9 @@
 
 module.exports = {
     run: function(creep){
-        if(creep.memory[MEMORY_DEST] != creep.room.name){
-            creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]), {visualizePathStyle: {stroke: '#ffffff'}})
-        }else{
+        if(!creep.isAtDestinationRoom()){
+            creep.moveToDestination();
+        } else {
             if(creep.room.controller) {
                 if (creep.room.controller.owner != undefined) {
                     if (creep.room.controller.owner.username != undefined) {
@@ -21,6 +21,8 @@ module.exports = {
                         creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#0000ff'}});
                     } else if (result == ERR_NOT_OWNER) {
                         //creep.attackController(creep.room.controller); // requires FIVE claim parts to work.
+                    } else if (result == OK) {
+                        creep.suicide();
                     }
                 }
             }

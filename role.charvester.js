@@ -21,14 +21,10 @@ module.exports = {
             if (creep.memory[MEMORY_JOURNEYSTART] == undefined ) {
                 creep.memory[MEMORY_JOURNEYSTART] = Game.time;
             }
-            if (creep.room.name == creep.memory[MEMORY_DEST]) {
+            if (creep.isAtDestination()) {
 	            creep.memory[MEMORY_JOB] = JOB_HARVEST;
             } else {
-                if(creep.memory[MEMORY_DEST_X] == undefined || creep.memory[MEMORY_DEST_Y] == undefined) {
-                    creep.memory[MEMORY_DEST_X] = 25;
-                    creep.memory[MEMORY_DEST_Y] = 25;
-                }
-                creep.moveTo(new RoomPosition(creep.memory[MEMORY_DEST_X], creep.memory[MEMORY_DEST_Y], creep.memory[MEMORY_DEST]))
+                creep.moveToDestination();
             }
         }
         if (creep.memory[MEMORY_JOB] == JOB_HIDE) {
@@ -40,16 +36,8 @@ module.exports = {
         }
         if (creep.memory[MEMORY_JOB] == JOB_HARVEST) {
 
-            var target_x = 25;
-            var target_y = 25;
-            if (empire[creep.room.name] != undefined) {
-                if (empire[creep.room.name].sources[creep.memory[MEMORY_SOURCE]] != undefined) {
-                    target_x = empire[creep.room.name].sources[creep.memory[MEMORY_SOURCE]]['target_x'];
-                    target_y = empire[creep.room.name].sources[creep.memory[MEMORY_SOURCE]]['target_y'];
-                }
-            }
-            if (creep.pos.x != target_x || creep.pos.y != target_y) {
-                creep.moveTo(new RoomPosition(target_x, target_y, creep.memory[MEMORY_DEST]));
+            if (!creep.isAtDestination()) {
+                creep.moveToDestination();
                 return;
             }
             var harvestresult = jobHarvest.run(creep);

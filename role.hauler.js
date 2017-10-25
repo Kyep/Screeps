@@ -29,9 +29,9 @@ module.exports = {
             if (creep.carry.energy == creep.carryCapacity) {
 	            creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
 	            return 0;
-            } else if (creep.room.name != creep.memory[MEMORY_DEST]) {
-                creep.moveTo(new RoomPosition(creep.memory[MEMORY_DEST_X], creep.memory[MEMORY_DEST_Y], creep.memory[MEMORY_DEST]), {reusePath: 10})
-                return 0;
+            } else if (!creep.isAtDestinationRoom()) {
+                creep.moveToDestination();
+                return 0
             }
             if (creep.memory[MEMORY_H_CONTAINER] != undefined) {
                 var thecontainer = Game.getObjectById(creep.memory[MEMORY_H_CONTAINER]);

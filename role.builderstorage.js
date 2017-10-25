@@ -33,7 +33,7 @@ module.exports =  {
             }
         } else if(creep.memory[MEMORY_JOB] == JOB_BUILD) {
             if(creep.memory[MEMORY_DEST] != creep.room.name){
-                creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]), {visualizePathStyle: {stroke: '#ffffff'}})
+                creep.moveToDestination();
             } else if(jobBuild.run(creep) == -1){
                 jobReturnresources.run(creep, 1, 1, 0.5, 1, 1);
             }

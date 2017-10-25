@@ -39,9 +39,9 @@ module.exports =  {
             if (creep.memory[MEMORY_DEST] == undefined) {
                 creep.moveTo(25, 25);
             } else {
-                creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]))
+                creep.moveToDestination();
             }
-        // if we are a dedicated healer, keep the wounded in range.
+        // if we are a dedicated healer, keep the wounded in range. 
         } else if (heal_parts > (ranged_parts + melee_parts) && hurtfriendly != undefined && rangetohurtfriendly > 1) {
             creep.moveTo(hurtfriendly);
         // if we have a target, try to keep correct range.
@@ -70,11 +70,12 @@ module.exports =  {
             creep.moveTo(hurtfriendly);
         } else if (creep.hits < creep.hitsMax) {
             // stay still. If there are healers present, they will heal you.
-        } else if (heal_parts == 0 || hurtfriendly == undefined) {
+//        } else if (heal_parts == 0 || hurtfriendly == undefined) {
+        } else {
             // otherwise, if we are not a healer trying to heal someone, move randomly.-
-            
             //var directions = [TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT];
             //creep.move(_.sample(directions));
+            creep.redRally();
         }
         
         // 2nd, should we ATTACK, rangedHeal, or heal?

@@ -16,7 +16,7 @@ module.exports = {
         }
         
         if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_OUT) {
-            creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]), {visualizePathStyle: {stroke: '#ff0000'}})
+            creep.moveToDestination();
             var checktargets = 1;
             if (creep.room.controller) {
                 if (creep.room.controller.safeMode) {
@@ -33,13 +33,8 @@ module.exports = {
                 }
             }
             if (creep.room.name == creep.memory[MEMORY_DEST]) {
-                if (creep.memory[MEMORY_NEXTDEST] != undefined) {
-                   if (creep.memory[MEMORY_NEXTDEST].length > 0) {
-                    creep.memory[MEMORY_DEST] = creep.memory[MEMORY_NEXTDEST][0];
-                    creep.memory[MEMORY_NEXTDEST].shift();
-                    console.log("ADVR: " + creep.name + " has reached " + creep.room.name + ", continuing on to " + creep.memory[MEMORY_DEST]);
+                if (creep.updateDestination()) {
                     return;
-                    }
                 }
 	            creep.memory[MEMORY_JOB] = JOB_PATROL;
                 creep.announceJob();

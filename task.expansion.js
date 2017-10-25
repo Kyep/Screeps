@@ -256,8 +256,8 @@ module.exports = {
                     }
                     var linkflags = Game.rooms[rname].find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_PURPLE && flag.secondaryColor == COLOR_WHITE) { return 1; } else { return 0; } } });
                     if(linkflags.length) {
-                        for(var i = 0; i < towerflags.length; i++) {
-                            Game.rooms[rname].createConstructionSite(linkflags[i].pos.x, linkflags[i].pos.y, STRUCTURE_TOWER);
+                        for(var i = 0; i < linkflags.length; i++) {
+                            Game.rooms[rname].createConstructionSite(linkflags[i].pos.x, linkflags[i].pos.y, STRUCTURE_LINK);
                             linkflags[i].remove();
                         }
                         Game.notify(rname +': deployed level ' + (rmem+1) + ' links.');

@@ -2,19 +2,16 @@
 
 module.exports = {
     run: function(creep){
-        if(creep.memory[MEMORY_DEST] != creep.room.name){
-            creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST]), {visualizePathStyle: {stroke: '#ffffff'}})
+        if(!creep.isAtDestinationRoom()){
+            creep.moveToDestination();
+        } else if (creep.updateDestination()) {
+            return;
+        } else if (creep.pos.x < 1 || creep.pos.x > 48 || creep.pos.y < 1 || creep.pos.y > 48) {
+            creep.moveTo(25, 25, creep.room);
+            return;
         } else {
             if (creep.memory.sign == undefined) {
                 creep.memory.sign = 'Reserved.';
-            }
-            if (creep.memory['nexttarget'] != undefined) {
-                if (creep.memory['nexttarget'].length > 0) {
-                    creep.memory['target'] = creep.memory['nexttarget'][0];
-                    creep.memory['nexttarget'].shift();
-                    console.log('SIGNER: ' + creep.name + ' has reached ' + creep.room.name + ', continuing on to ' + creep.memory[MEMORY_DEST]);
-                    return;
-                }
             }
             if(creep.room.controller) { 
                 if (creep.signController(creep.room.controller, creep.memory.sign) == ERR_NOT_IN_RANGE) { 

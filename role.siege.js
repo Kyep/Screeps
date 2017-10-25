@@ -3,19 +3,10 @@
 module.exports = {
     
     run: function(creep) {
-        if(creep.room.name != creep.memory[MEMORY_DEST]) {
-            creep.moveTo(new RoomPosition(25, 25, creep.memory[MEMORY_DEST])); // , {ignoreDestructibleStructures: true}
+        if(!creep.isAtDestinationRoom()){
+            creep.moveToDestination();
+        } else if (creep.updateDestination()) {
             return;
-        } else if (creep.pos.x < 1 || creep.pos.x > 48 || creep.pos.y < 1 || creep.pos.y > 48) {
-            creep.moveTo(25, 25, creep.room);
-            return;
-        } else if (creep.memory[MEMORY_NEXTDEST] != undefined) {
-            if (creep.memory[MEMORY_NEXTDEST].length > 0) {
-                creep.memory[MEMORY_DEST] = creep.memory[MEMORY_NEXTDEST][0];
-                creep.memory[MEMORY_NEXTDEST].shift();
-                console.log('SIEGE: ' + creep.name + ' has reached ' + creep.room.name + ', continuing on to ' + creep.memory[MEMORY_DEST]);
-                return;
-            }
         }
 
         var enemy_creeps = creep.room.find(FIND_HOSTILE_CREEPS); 
@@ -37,9 +28,27 @@ module.exports = {
             return;
         }
 
-        //var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_RAMPART];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
+
+        //var redflags = creep.pos.findClosestByPath(FIND_FLAGS, {filter: (f) => f.color == COLOR_RED && f.secondaryColor == COLOR_ORANGE});
+        // the above does not work the below does, find out why.
+        var redflags = creep.room.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_RED && flag.secondaryColor == COLOR_ORANGE) { return 1; } else { return 0; } } });
+        if(redflags.length) {
+            var theflag = redflags[0];
+            var structures_at = creep.room.lookForAt(LOOK_STRUCTURES, theflag.pos.x, theflag.pos.y, theflag.pos);
+        	if(structures_at.length == 0) {
+        	    theflag.remove();
+        	} else {
+        	    var target_structure = structures_at[0];
+                if(creep.attack(target_structure) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(target_structure, {visualizePathStyle: {stroke: '#ff0000'}});
+                }
+                return 0;
+        	}
+        }
+
+        var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_STORAGE];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
         //var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_TERMINAL, STRUCTURE_LAB];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
-        var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_RAMPART, STRUCTURE_EXTENSION, STRUCTURE_SPAWN, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_LINK, STRUCTURE_EXTRACTOR];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
+        //var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_RAMPART, STRUCTURE_EXTENSION, STRUCTURE_SPAWN, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_LINK, STRUCTURE_EXTRACTOR];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
         
         var enemy_structures = creep.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType != STRUCTURE_CONTROLLER}); 
         var valid_targets = [];
@@ -63,6 +72,9 @@ module.exports = {
                 champ_range = theirrange;
             }
             
+        }
+        if(!target) {
+            target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: (s) => s.structureType != STRUCTURE_CONTROLLER});
         }
         if (target) {
             new RoomVisual(creep.room.name).line(creep.pos, target.pos, {color: 'red'});
@@ -88,13 +100,12 @@ module.exports = {
                 }
             }
 
-            if (Game.time % 20 === 0) {
+            if (Game.time % 200 === 0) {
                 console.log('ALERT: SIEGE CREEP ' + creep.name + ' IN ' + creep.room.name + ' HAS NO TARGET! GIVE THEM A JOB!');
             }
         }
-        return 0;
-            
-
+        creep.redRally();
+        /*
         for(var i = 0; i < enemy_structures.length; i++) {
             var them = enemy_structures[i];
             if(!priority_structures.includes(them.structureType)) {
@@ -127,11 +138,12 @@ module.exports = {
                 creep.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}});
             }
         } else {
+            creep.redRally();
             if (Game.time % 20 === 0) {
                 console.log('ALERT: SIEGE CREEP ' + creep.name + ' IN ' + creep.room.name + ' HAS NO TARGET! GIVE THEM A JOB!');
             }
         }
-        
+        */
     }
 
 };
