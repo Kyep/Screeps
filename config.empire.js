@@ -16,8 +16,10 @@
         'alerts_reassign': {}, // Don't reassign anything.
         'repairmax_creeps' : 250000,
         'repairmax_towers' : 150000,
-        'room_reserves_required' : 50000,
-        'room_reserves_critical' : 25000,
+        'terminal_energy_min' : 50000,
+        'terminal_energy_max' : 60000,
+        'room_energy_min' : 100000, // 50k in terminal, 50k in storage
+        'room_energy_max' : 300000, // 50k in termal, 250k in storage
         'room_history_ticks': 50,
         'room_minimum_energy_pc': 60, // what % of max stored energy (spawn/extensions) should rooms maintain? If we're below this avg % for room_history_ticks then we will spawn a teller
         'room_crit_energy_pc': 40 // if below this, spawn 2 tellers
@@ -192,6 +194,7 @@
         'W51S15': {
             'roomname' : '3S',
             'spawns_from': 'Spawn3',
+            'farcontroller': 1,
             'sources': {
                 '59bbc4172052a716c3ce7580': {'sourcename': '3S-W', 'x':14, 'y':3, 'target_x': 14, 'target_y': 2, 'steps':43,  'spaces':3,
                     'assigned': {'c30harvester': 1, 'hauler': 1}, // 'c15harvester': 1, 'hauler': 1
@@ -212,7 +215,7 @@
         'W53S12': {
             'roomname' : '4',
             'spawns_from': 'Spawn6',
-            
+            'farcontroller': 1,
             'sources': {
                 '59bbc3f72052a716c3ce7275': {'sourcename': '4-N', 'x':31, 'y':17, 'spaces':2,
                     'assigned': {'upgfar': 1, 'harvester': 1}, // only two slots...

@@ -3,9 +3,11 @@
 // requirements ONLY
 
 require('global_functions');
+
 require('config.empire');
 require('config.units');
 require('config.defines');
+
 require('prototype.creep');
 require('prototype.room');
 require('prototype.structure');
@@ -16,7 +18,7 @@ var roleHauler = require('role.hauler');
 
 var roleExtractor = require('role.extractor');
 var roleUpgrader = require('role.upgrader');
-var roleUpgraderstorage = require('role.upgraderstorage');
+var roleugstorclose = require('role.upgraderstorage');
 var roleBuilder = require('role.builder');
 var roleAdventurer = require('role.adventurer');
 var roleScavenger = require('role.scavenger');
@@ -86,61 +88,67 @@ module.exports.loop = function () {
         var cpu_rm_use = Game.cpu.getUsed();
         // ROOM MANAGER
         var timenow = Game.time;
+        var energy_network = { }
+
         for(var rname in Game.rooms) {
+            // ENERGY MANAGEMENT - PER ROOM
+            var energy_reserves = Game.rooms[rname].getStoredEnergy();
+            var energy_class = Game.rooms[rname].classifyStoredEnergy(energy_reserves);
+            if (empire[rname] != undefined) {
+                empire[rname]['energy_reserves'] = energy_reserves;
+                empire[rname]['energy_class'] = energy_class;
+            }
+            if(Game.rooms[rname].hasTerminalNetwork()) {
+                if (energy_network[energy_class] == undefined) {
+                    energy_network[energy_class] = [];
+                }
+                energy_network[energy_class].push(rname);
+            }
             
-            // ENERGY MANAGEMENT
-            var energy_reserves = 0;
-            if(Game.rooms[rname]['storage'] != undefined) {
-                if (Game.rooms[rname]['storage'].store.energy > 0) {
+            if(energy_class != ENERGY_EMPTY) {
+                // In case we know of an enemy room with storage.
+                if(empire[rname] == undefined) {
+                    continue;
+                }
 
-                    energy_reserves = Game.rooms[rname]['storage'].store.energy;
-
-                    // In case we know of an enemy room with storage.
-                    if(empire[rname] == undefined) {
-                        continue;
+                // Adjust builders depending on unfinished projects.
+                var projectsList = Game.rooms[rname].find(FIND_MY_CONSTRUCTION_SITES);
+                if(projectsList.length > 0) {
+                    if(energy_reserves > empire_defaults['room_energy_min']) {
+                        empire[rname].sources['builder'] = {'sourcename': empire[rname]['roomname'] + '-B', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 10, 'dynamic': 1}
+                        empire[rname].sources['builder'].assigned['builderstorage'] = 2;
                     }
-                    empire[rname].energy_reserves = energy_reserves;
+                }
 
-                    // Adjust builders depending on unfinished projects.
-                    var projectsList = Game.rooms[rname].find(FIND_MY_CONSTRUCTION_SITES);
-                    if(projectsList.length > 0) {
-                        if(energy_reserves > empire_defaults['room_reserves_required']) {
-                            empire[rname].sources['builder'] = {'sourcename': empire[rname]['roomname'] + '-B', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 10, 'dynamic': 1}
-                            empire[rname].sources['builder'].assigned['builderstorage'] = 2;
-                        }
+                if(Game.rooms[rname].controller == undefined) {
+                    //console.log(rname + 'undef');
+                    continue;
+                } else if(Game.rooms[rname].controller.level == undefined) {
+                    //console.log(rname + ' L undef');
+                    continue;
+                } else if(Game.rooms[rname].controller.level < 3) {
+                    //console.log(rname + ' L <3');
+                    continue;
+                } else if(Game.rooms[rname].controller.owner == undefined) {
+                    //console.log(rname + 'owner undef');
+                    continue;
+                } else if(Game.rooms[rname].controller.owner.username != overlord) {
+                    //console.log(rname + 'owner <3 ' + Game.rooms[rname].controller.owner.username);
+                    continue;
+                } else if (Game.rooms[rname] != undefined && Game.rooms[rname].controller != undefined && Game.rooms[rname].controller.level != 8) {
+                    // No point spawning upgraders to upgrade a level 8 room.
+                    empire[rname].sources['upgrader'] = {'sourcename': empire[rname]['roomname'] + '-U', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5, 'dynamic': 1}
+                    var ugtype = 'upstorclose';
+                    if(empire[rname]['farcontroller'] != undefined) {
+                        ugtype = 'upstorfar';
                     }
-
-                    if(Game.rooms[rname].controller == undefined) {
-                        //console.log(rname + 'undef');
-                        continue;
-                    } else if(Game.rooms[rname].controller.level == undefined) {
-                        //console.log(rname + ' L undef');
-                        continue;
-                    } else if(Game.rooms[rname].controller.level < 3) {
-                        //console.log(rname + ' L <3');
-                        continue;
-                    } else if(Game.rooms[rname].controller.owner == undefined) {
-                        //console.log(rname + 'owner undef');
-                        continue;
-                    } else if(Game.rooms[rname].controller.owner.username != overlord) {
-                        //console.log(rname + 'owner <3 ' + Game.rooms[rname].controller.owner.username);
-                        continue;
-                    } else if (Game.rooms[rname] != undefined && Game.rooms[rname].controller != undefined && Game.rooms[rname].controller.level != 8) {
-                        // No point spawning upgraders to upgrade a level 8 room.
-                        empire[rname].sources['upgrader'] = {'sourcename': empire[rname]['roomname'] + '-U', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5, 'dynamic': 1}
-                        if(energy_reserves > (empire_defaults['room_reserves_required'] * 4)) {
-                            empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 4};
-                        } else if(energy_reserves > (empire_defaults['room_reserves_required'] * 3)) {
-                            empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 3};
-                        } else if(energy_reserves > (empire_defaults['room_reserves_required'] * 2)) {
-                            empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 2};
-                        } else if(energy_reserves > empire_defaults['room_reserves_required']) {
-                            empire[rname].sources['upgrader'].assigned = {'upgraderstorage': 1};
-                        }  
+                    var r_multiplier = Math.round(energy_reserves / empire_defaults['room_energy_min']);
+                    if (r_multiplier > 6) { 
+                        r_multiplier = 6; 
                     }
-                        
-                    //console.log(rname +': ' + energy_reserves +' v ' + empire_defaults['room_reserves_required'] + ' hence ' + empire[rname].sources['upgrader'].assigned['upgraderstorage']);
-                    
+                    if (r_multiplier > 0) {
+                        empire[rname].sources['upgrader'].assigned[ugtype] = r_multiplier;
+                    }
                 }
             } else if (rname in Memory['sectors_under_attack']) {
                 // do nothing
@@ -323,7 +331,7 @@ module.exports.loop = function () {
                 sectors_under_attack[rname]['time'] = timenow;
                 sectors_under_attack[rname]['threat'] = enemiesCost;
                 sectors_under_attack[rname]['enemycount'] = enemiesList.length;
-                if(attacker_username != 'Invader') {
+                if(sectors_under_attack[rname]['attacker_username'] != 'Invader') {
                     Game.notify('NON-NPC ATTACK! ' + rname + ': ' + JSON.stringify(sectors_under_attack[rname]));
                 }
             } else if(sectors_under_attack[rname] != undefined) {
@@ -331,6 +339,40 @@ module.exports.loop = function () {
                 sectors_under_attack[rname]['enemycount'] = 0;
             }
         }
+        //console.log(JSON.stringify(energy_network));
+
+        if (energy_network[ENERGY_EMPTY] != undefined) {
+            if(energy_network[ENERGY_EMPTY].length > 0) {
+                var dest_room = energy_network[ENERGY_EMPTY][0];
+                var potential_senders = [];
+                if(energy_network[ENERGY_FULL] != undefined && energy_network[ENERGY_FULL].length > 0) {
+                    potential_senders = potential_senders.concat(energy_network[ENERGY_FULL]);
+                }
+                if(energy_network[ENERGY_OK] != undefined && energy_network[ENERGY_OK].length > 0) {
+                    potential_senders = potential_senders.concat(energy_network[ENERGY_OK]);
+                }
+                for (var i = 0; i < potential_senders.length; i++) {
+                    var source_room = potential_senders[i];
+                    var send_result = Game.rooms[source_room].terminal.send(RESOURCE_ENERGY, 25000, dest_room, 'empty room pulls energy from full');
+                    console.log('ENERGYNET: ' + source_room + ' sends energy to (starving) room: ' + dest_room + ', result:' + send_result);
+                    if (send_result == OK) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (energy_network[ENERGY_FULL] != undefined) {
+            if(energy_network[ENERGY_FULL].length > 0) {
+               if(energy_network[ENERGY_OK] != undefined && energy_network[ENERGY_OK].length > 0) {
+                   var source_room = energy_network[ENERGY_FULL][0];
+                   var dest_room = energy_network[ENERGY_OK][0];
+                   var send_result = Game.rooms[source_room].terminal.send(RESOURCE_ENERGY, 25000, dest_room, 'full room pushes energy to ok');
+                   console.log('ENERGYNET: ' + source_room + ' (FULL) pushes energy to (OK) room: ' + dest_room + ', result:' + send_result);
+               }
+            }
+        }
+
+
         cpu_rm_use = Game.cpu.getUsed() - cpu_rm_use;
         if (cpu_reporting) { console.log('CPU cpu_rm_use: ' +cpu_rm_use); }
         
@@ -365,7 +407,7 @@ module.exports.loop = function () {
                     	if (is_intact) {
                     	    //console.log(csector +': ' + stype + ' AT: ' +structure_pos.x + ',' + structure_pos.y + ' appears to be intact.');
                     	} else {
-                    	    var alert_string = csector +': MISSING ' + stype + ' AT: ' +structure_pos.x + ',' + structure_pos.y + ' after attack from ' + sectors_under_attack[rname]['attacker_username'] + ' - REBUILDING!';
+                    	    var alert_string = csector +': MISSING ' + stype + ' AT: ' +structure_pos.x + ',' + structure_pos.y + ' after attack from ' + sectors_under_attack[csector]['attacker_username'] + ' - REBUILDING!';
                     	    console.log(alert_string);
                     	    Game.notify(alert_string);
                     		Game.rooms[csector].createConstructionSite(structure_pos.x, structure_pos.y, stype);
@@ -979,33 +1021,34 @@ module.exports.loop = function () {
             }
         }
         //console.log(rname + ' ' + repairTargets.length + ' rts, ' + ' ' + available_towers.length + ' avts');
-        if (repairTargets.length >= 3) {
-            for (var avtower in available_towers) {
-                var near_rep = available_towers[avtower].pos.findClosestByRange(repairTargets);
-                available_towers[avtower].repair(near_rep);
+        if (available_towers.length) {
+            if (repairTargets.length >= 3) {
+                for (var avtower in available_towers) {
+                    var near_rep = available_towers[avtower].pos.findClosestByRange(repairTargets);
+                    available_towers[avtower].repair(near_rep);
+                }
+            } else {
+                var thingtorepair = repairTargets[0];
+                var chosen_tower = thingtorepair.pos.findClosestByRange(available_towers);
+                chosen_tower.repair(thingtorepair);
             }
-        } else {
-            var thingtorepair = repairTargets[0];
-            var chosen_tower = thingtorepair.pos.findClosestByRange(available_towers);
-            chosen_tower.repair(thingtorepair);
+    
+            var healTargets = theroom.find(FIND_MY_CREEPS, {
+                filter: function(creep){
+                    return (creep.hits < creep.hitsMax)
+                }
+            })
+            if(healTargets.length){
+                healTargets.sort(function(a, b){
+                    return a.hits - b.hits
+                });
+                for (var tnum in rtowers[rname]) {
+                    var thistower = rtowers[rname][tnum];
+                    var target = healTargets[0];
+                    thistower.heal(target);
+                }
+            }
         }
-
-        var healTargets = theroom.find(FIND_MY_CREEPS, {
-            filter: function(creep){
-                return (creep.hits < creep.hitsMax)
-            }
-        })
-        if(healTargets.length){
-            healTargets.sort(function(a, b){
-                return a.hits - b.hits
-            });
-            for (var tnum in rtowers[rname]) {
-                var thistower = rtowers[rname][tnum];
-                var target = healTargets[0];
-                thistower.heal(target);
-            }
-        }
-
     }
 
     var cpu_creep_use = Game.cpu.getUsed();
@@ -1027,10 +1070,10 @@ module.exports.loop = function () {
             roleHauler.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'extractor') {
             roleExtractor.run(creep);
-        } else if(creep.memory[MEMORY_ROLE] == 'upgclose' || creep.memory[MEMORY_ROLE] == 'upgfar') {
+        } else if(creep.memory[MEMORY_ROLE] == 'upclose' || creep.memory[MEMORY_ROLE] == 'upfar') {
             roleUpgrader.run(creep);
-        } else if(creep.memory[MEMORY_ROLE] == 'upgraderstorage') {
-            roleUpgraderstorage.run(creep);
+        } else if(creep.memory[MEMORY_ROLE] == 'upstorclose' || creep.memory[MEMORY_ROLE] == 'upstorclose') {
+            roleugstorclose.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'builder') {
             roleBuilder.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'builderstorage') {

@@ -17,7 +17,8 @@ global.empire_workers = {
 	'bigscavenger': { 'body': [CARRY, MOVE] },
 	'builder': { 'body': [WORK, CARRY, MOVE] },
 	'builderstorage': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 'renew_allowed': 0 }, // full speed on roads
-	'upgraderstorage': { 'body': [WORK, WORK, CARRY, MOVE], 'renew_allowed': 0 },  // halfspeed on roads, quarter speed offroad
+	'upstorclose': { 'body': [WORK, WORK, CARRY, MOVE], 'renew_allowed': 0 },  // halfspeed on roads, quarter speed offroad
+	'upstorfar': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 'renew_allowed': 0 },  // halfspeed on roads, quarter speed offroad
 	'labtech': { 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE] },
 
     // MILITARY CREEP DESIGN RULES:
