@@ -91,14 +91,14 @@ Creep.prototype.getRepairMax = function() {
         return 0;
     }
     var lvl = this.room.controller.level;
-    if (lvl == 2) {
+    if (lvl < 3) {
         return 1000;
     } else if (lvl == 3) {
-        return 5000;
-    } else if (lvl == 4) {
         return 10000;
+    } else if (lvl == 4) {
+        return 25000;
     } else {
-        return 50000 * lvl;
+        return 40000 * lvl;
     }
 }
 
@@ -186,12 +186,58 @@ Creep.prototype.updateDestination = function() {
             return 1;
         }
     }
-    this.memory[MEMORY_DEST] = creep.memory[MEMORY_NEXTDEST][0];
+    this.memory[MEMORY_DEST] = this.memory[MEMORY_NEXTDEST][0];
     this.memory[MEMORY_NEXTDEST].shift();
-    console.log('SIEGE: ' + creep.name + ' has reached ' + creep.room.name + ', continuing on to ' + creep.memory[MEMORY_DEST]);
+    console.log('SIEGE: ' + this.name + ' has reached ' + this.room.name + ', continuing on to ' + this.memory[MEMORY_DEST]);
     return 1;
 }
 
+
+Creep.prototype.classifyMilitaryType = function() {
+    var attack_parts = this.getActiveBodyparts(ATTACK)
+    var ranged_parts = this.getActiveBodyparts(RANGED_ATTACK);
+    var heal_parts = this.getActiveBodyparts(HEAL);
+    var total_parts = this.body.length;
+    var interesting_parts = attack_parts + ranged_parts + heal_parts;
+    if (attack_parts >= (ranged_parts + heal_parts)) {
+        return ATTACK;
+    } else if (ranged_parts >= (attack_parts + heal_parts)) {
+        return RANGED_ATTACK;
+    } else if (heal_parts >= (attack_parts + ranged_parts)) {
+        return HEAL;
+    } else {
+        return WORK;
+    }
+}
+
+/*
+Creep.prototype.isFullSpeed = function() {
+    // assumes no roads.
+    var move_parts = this.getActiveBodyparts(MOVE);
+    var total_parts = this.body.length;
+    var move_factor = move_parts / total_parts;
+    if (move_factor >= 0.5) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+Creep.prototype.isKiter = function() {
+    var move_factor = this.getMoveSpeed();
+    if (move_factor < 1) {
+        return 0;
+    }
+    var ranged_parts = this.getActiveBodyparts(RANGED_ATTACK);
+    var tough_parts = this.getActiveBodyparts(TOUGH);
+    var move_parts = this.getActiveBodyparts(MOVE);
+    var total_parts = this.body.length;
+    var interesting_parts = total_parts - (tough_parts + move_parts);
+    if (ranged_parts > (interesting_parts * 0.5)) {
+        return 1;
+    }
+    return 0;
+}
+*/
 
 Creep.prototype.getTargetPriority = function() {
     var heal_parts = this.getActiveBodyparts(HEAL);

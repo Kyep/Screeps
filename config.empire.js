@@ -44,7 +44,7 @@
                 },
                 '59bbc3f82052a716c3ce728b': {
                     'sourcename':'1-W', 'x':16, 'y':26, 'target_x': 16, 'target_y': 15,'steps':15, 'spaces':3,
-                    'assigned': {'upgclose': 1},
+                    'assigned': {'upclose': 1},
                     'expected_income': 75
                 }
             },
@@ -121,7 +121,7 @@
                     'expected_income': 90 
                 }, 
                 '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20, 'target_x': 15, 'target_y': 21, 'steps':10, 'spaces':3,
-                    'assigned': {'upgclose':1},
+                    'assigned': {'upclose':1},
                     'expected_income': 80
                 },
                 '59bbc4182052a716c3ce758d': {'sourcename':'2-W', 'x':3, 'y':27, 'target_x': 4, 'target_y': 27, 'steps':10, 'spaces':2,
@@ -218,7 +218,7 @@
             'farcontroller': 1,
             'sources': {
                 '59bbc3f72052a716c3ce7275': {'sourcename': '4-N', 'x':31, 'y':17, 'spaces':2,
-                    'assigned': {'upgfar': 1, 'harvester': 1}, // only two slots...
+                    'assigned': {'upfar': 1, 'harvester': 1}, // only two slots...
                     'expected_income': 90
                 },
                 '59bbc3f72052a716c3ce7276': {'sourcename': '4-S', 'x':32, 'y':28, 'spaces':1,
@@ -296,7 +296,7 @@
                     'expected_income': 90
                 },
                 '59bbc4062052a716c3ce7406': {'sourcename': '5-E', 'x':21, 'y':30, 'target_x': 20, 'target_y': 30, 
-                    'assigned': {'harvester': 1, 'upgclose': 1},
+                    'assigned': {'harvester': 1, 'upclose': 1},
                     'expected_income': 80
                 }
             }
@@ -346,7 +346,7 @@
             'spawns_from': 'Spawn8',
             'sources': {
                 '59bbc3c92052a716c3ce6c47': {'sourcename': '6-N', 'x':31, 'y':30, 'spaces':4,
-                    'assigned': {'bharvester': 2},  // 'upgclose': 2, 'harvester': 2
+                    'assigned': {'bharvester': 2},  // 'upclose': 2, 'harvester': 2
                     'expected_income': 85
                 },
                 '59bbc3c92052a716c3ce6c48': {'sourcename': '6-S', 'x':35, 'y':39, 'spaces':4,
@@ -361,11 +361,11 @@
             'roomname' : '6N',
             'spawns_from': 'Spawn8',
             'sources': {
-                '59bbc3c92052a716c3ce6c42': {'sourcename': '6N-N', 'x':24, 'y':29,  'target_x': 25, 'target_y': 30, 'spaces':3,
+                '59bbc3c92052a716c3ce6c42': {'sourcename': '6N-N', 'x':24, 'y':29,  'target_x': 25, 'target_y': 30, 'spaces':3, 'steps':75,
                     'assigned': {'c30harvester': 1, 'hauler': 2},
                     'expected_income': 78
                 },
-                '59bbc3c92052a716c3ce6c44': {'sourcename': '6N-S', 'x':35, 'y':42,  'target_x': 34, 'target_y': 42, 'spaces':2,
+                '59bbc3c92052a716c3ce6c44': {'sourcename': '6N-S', 'x':35, 'y':42,  'target_x': 34, 'target_y': 42, 'spaces':2, 'steps':75,
                     'assigned': {'c30harvester': 1, 'hauler': 2},
                     'expected_income': 76
                 },
@@ -380,7 +380,7 @@
             'roomname' : '6E',
             'spawns_from': 'Spawn8',
             'sources': {
-                '59bbc3db2052a716c3ce6e79': {'sourcename': '6E', 'x':9, 'y':3, 'target_x': 10, 'target_y': 4, 'spaces':1,
+                '59bbc3db2052a716c3ce6e79': {'sourcename': '6E', 'x':9, 'y':3, 'target_x': 10, 'target_y': 4, 'spaces':1, 'steps':60,
                     'assigned': {'c15harvester': 1, 'hauler': 1},
                     'expected_income': 65
                 }
@@ -391,13 +391,17 @@
             'roomname' : '6W',
             'spawns_from': 'Spawn8',
             'sources': {
-                '59bbc3bc2052a716c3ce6a3d': {'sourcename': '6W-N', 'x':30, 'y':12, 'target_x': 30, 'target_y': 13, 'spaces':5,
-                    'assigned': {'c15harvester': 1, 'hauler': 1},
+                '59bbc3bc2052a716c3ce6a3d': {'sourcename': '6W-N', 'x':30, 'y':12, 'target_x': 30, 'target_y': 13, 'spaces':5, 'steps':75,
+                    'assigned': {'c30harvester': 1, 'hauler': 2},
                     'expected_income': 55
                 },
-                '59bbc3bc2052a716c3ce6a3e': {'sourcename': '6W-S', 'x':10, 'y':26, 'target_x': 11, 'target_y': 25, 'spaces':3,
-                    'assigned': {'c15harvester': 1, 'hauler': 1},
+                '59bbc3bc2052a716c3ce6a3e': {'sourcename': '6W-S', 'x':10, 'y':26, 'target_x': 11, 'target_y': 25, 'spaces':3, 'steps':75,
+                    'assigned': {'c30harvester': 1, 'hauler': 2},
                     'expected_income': 50
+                },
+                'reserver': {'sourcename':'6W-R', 'x':25, 'y':25,
+                    'assigned': {'reserver': 1},
+                    'expected_income': 48, 'dynamic': 1
                 }
             }
         },
@@ -406,11 +410,11 @@
             'roomname' : '6S',
             'spawns_from': 'Spawn8',
             'sources': {
-                '59bbc3ca2052a716c3ce6c4b': {'sourcename': '6S-W', 'x':9, 'y':31, 'target_x': 10, 'target_y': 32, 'spaces':1,
+                '59bbc3ca2052a716c3ce6c4b': {'sourcename': '6S-W', 'x':9, 'y':31, 'target_x': 10, 'target_y': 32, 'spaces':1, 'steps':75,
                     'assigned': {}, 
                     'expected_income': 45
                 },
-                '59bbc3ca2052a716c3ce6c4c': {'sourcename': '6S-E', 'x':40, 'y':35, 'target_x': 39, 'target_y': 34, 'spaces':1,
+                '59bbc3ca2052a716c3ce6c4c': {'sourcename': '6S-E', 'x':40, 'y':35, 'target_x': 39, 'target_y': 34, 'spaces':1, 'steps':75,
                     'assigned': {},
                     'expected_income': 40
                 }

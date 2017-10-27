@@ -36,6 +36,8 @@ global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid, max_cost) {
                 }
                 if (empire[roomid].sources[sourceid]['steps'] != undefined) {
                     steps = empire[roomid].sources[sourceid]['steps'];
+                } else {
+                    console.log('Warning: CONSTRUCT_HAULER_BODY is creating a hauler for room ' + roomid + ' using a source that no steps value defined: ' + sourceid);
                 }
             } else {
                 console.log('Warning: CONSTRUCT_HAULER_BODY is creating a hauler for room ' + roomid + ' using a source that does not exist: ' + sourceid);
@@ -232,11 +234,45 @@ global.SPAWN_UNIT = function (spawnername, role, targetroomname, roompath) {
     if (roompath == undefined) {
         roompath = [];
     }
-    spawncustom.process(Game.spawns[spawnername], '', empire_workers[role]['body'], role, 
+    SPAWNCUSTOM(Game.spawns[spawnername], '', empire_workers[role]['body'], role, 
                         '', targetroomname, global.UNIT_COST(empire_workers[role]['body']), 
                         Game.spawns[spawnername].room.name, 25, 
                         25, 0, roompath);
     return 'DONE';
+}
+
+global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, targettext, thecost, homesector, target_x, target_y, renew_allowed, nextdest){
+    if (Memory['spawn_count'] == undefined) {
+        Memory['spawn_count'] = 0;
+    }
+    if (Memory['spawn_count'] > 999) {
+        Memory['spawn_count'] = 0;
+    }
+    var crname = sname + '_' + roletext + '_' + Memory['spawn_count'];
+    if (Game.creeps[crname] != undefined) {
+        console.log("SPAWN: failed to create: " + crname + " as that name is already taken.");
+        Memory['spawn_count'] += 1;
+        return -1;
+    }
+    var crmemory = {};
+    crmemory[MEMORY_ROLE] = roletext;
+    crmemory[MEMORY_SOURCE] = sourcetext;
+    crmemory[MEMORY_DEST] = targettext;
+    crmemory[MEMORY_HOME] = homesector;
+    crmemory[MEMORY_HOME_X] = spawner.pos.x;
+    crmemory[MEMORY_HOME_Y] = spawner.pos.y;
+    crmemory[MEMORY_DEST_X] = target_x;
+    crmemory[MEMORY_DEST_Y] = target_y;
+    crmemory[MEMORY_SPAWNERNAME] = spawner.name;
+    crmemory[MEMORY_RENEW] = renew_allowed;
+    crmemory[MEMORY_NEXTDEST] = nextdest;
+    //console.log("SPAWNING: " + roletext + " for (" + sourcetext + ') target: ' + targettext + ' (' + target_x + ',' + target_y + ') with cost: ' + thecost + ' based out of ' + homesector);
+    //var result = spawner.createCreep(partlist, crname, 
+    //    {'role': roletext, 'source': sourcetext, 'target': targettext, 'home': homesector, 'target_x': target_x, 'target_y': target_y, 'spawnername': spawner.name, 'renew_allowed': renew_allowed});
+    var result = spawner.createCreep(partlist, crname, crmemory);
+    console.log(spawner.name + ': ' + result);
+    Memory['spawn_count'] += 1;
+    return result;
 }
 
 global.ATTACK_WAVE = function (spawn_list, unit_type, target_room, roompath) {
@@ -258,11 +294,14 @@ global.ATTACK_WAVE = function (spawn_list, unit_type, target_room, roompath) {
     }
 }
 
-global.MASS_RETARGET = function (role, newtarget) {
+global.MASS_RETARGET = function (role, newtarget, waypoints) {
     for (var crname in Game.creeps) {
         if (Game.creeps[crname].memory[MEMORY_ROLE] == role) {
             Game.creeps[crname].memory[MEMORY_DEST] = newtarget;
-            Game.creeps[crname].memory[MEMORY_NEXTDEST] = [];
+            if (waypoints == undefined || waypoints == null) {
+                waypoints = [];
+            }
+            Game.creeps[crname].memory[MEMORY_NEXTDEST] = waypoints;
         }
     }
 }

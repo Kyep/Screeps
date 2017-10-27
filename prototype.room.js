@@ -45,9 +45,13 @@ Room.prototype.classifyStoredEnergy = function(energyamount) {
     } else if (energyamount > energy_maximum) {
         return ENERGY_FULL; 
     } else {
-        if(energyamount >= (energy_minimum + 50000) && this.controller && this.controller.level && this.controller.level == 8) {
-            // Level 8 rooms actively try to get rid of their energy, in favor of pushing it to other rooms that can better use it.
-            return ENERGY_FULL;
+        if(energyamount >= (energy_minimum + 50000)) {
+            if (this.controller && this.controller.level && this.controller.level == 8) {
+                // Level 8 rooms actively try to get rid of their energy, in favor of pushing it to other rooms that can better use it.
+                return ENERGY_FULL;
+            } else {
+                return ENERGY_SPARE;
+            }
         }
         return ENERGY_OK;
     }

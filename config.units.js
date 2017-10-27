@@ -1,8 +1,8 @@
 
 // rule: must have  1 move part for 1 every other part, or 2 every other parts if creep uses roads exclusively
 global.empire_workers = { 
-	'upgclose': { 'body': [WORK, WORK, CARRY, MOVE] },
-	'upgfar': { 'body': [WORK, CARRY, MOVE] },
+	'upclose': { 'body': [WORK, WORK, CARRY, MOVE] },
+	'upfar': { 'body': [WORK, CARRY, MOVE] },
 	'remoteconstructor': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], 'renew_allowed': 0 },
 	'minirc': { 'body': [WORK, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 
@@ -36,6 +36,12 @@ global.empire_workers = {
     'siegedragon': { 'body':global.CONSTRUCT_MILITARY_BODY(4, 14, 10, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1,540e, 2,800 HP, 300 DPS.
     'boss': { 'body':       global.CONSTRUCT_MILITARY_BODY(10, 20, 8, 0, 2), 'noresizing': 1, 'renew_allowed': 0}, // 2,240e, 4,000 HP, 240 DPS, 24 HPS.
     
+    // ANTIKITE
+    'antikite1': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 1, 0, 1, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1}, 
+    'antikite2': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 2, 0, 2, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1}, 
+    'antikite4': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 4, 0, 4, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1}, 
+    'antikite8': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 8, 0, 8, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1}, 
+
     // Anti-player defense classes
 	'wizard': { 'body':   [MOVE, RANGED_ATTACK], 'renew_allowed': 0}, // horrificly expensive anti-crowd unit
 
@@ -44,7 +50,7 @@ global.empire_workers = {
 	'siegemini': { 'body':     global.CONSTRUCT_MILITARY_BODY(0, 3, 3, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // small.
 	'siegefar': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 6, 6, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
 	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
-	//'drainer': { 'body': global.CONSTRUCT_MILITARY_BODY(12, 12, 0, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
+	'drainerbig': { 'body': global.CONSTRUCT_MILITARY_BODY(12, 12, 0, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, 
 
 	'siegebig': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 15, 15, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1950?
 	'healer': { 'body':   global.CONSTRUCT_MILITARY_BODY(10, 8, 0, 0, 20), 'renew_allowed': 0}, // 5,600e!

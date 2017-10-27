@@ -18,14 +18,14 @@ var roleHauler = require('role.hauler');
 
 var roleExtractor = require('role.extractor');
 var roleUpgrader = require('role.upgrader');
-var roleugstorclose = require('role.upgraderstorage');
+var roleUpgraderStorage = require('role.upgraderstorage');
 var roleBuilder = require('role.builder');
 var roleAdventurer = require('role.adventurer');
 var roleScavenger = require('role.scavenger');
 var roleClaimer = require('role.claimer');
 var roleReserver = require('role.reserver');
 var roleRecycler = require('role.recycler'); 
-var roleBuilderstorage = require('role.builderstorage');
+var roleBuilderStorage = require('role.builderstorage');
 var roleTeller = require('role.teller');
 var roleRemoteconstructor = require('role.remoteconstructor');
 var roleSiege = require('role.siege');
@@ -37,7 +37,6 @@ var structureLink = require('structure.link');
 var structureLab = require('structure.lab');
 
 var cleaner = require('task.cleanmemory');
-var spawncustom = require('task.spawncustom');
 var expansionplanner = require('task.expansion');
 
 // ---------------------------
@@ -143,10 +142,11 @@ module.exports.loop = function () {
                         ugtype = 'upstorfar';
                     }
                     var r_multiplier = Math.round(energy_reserves / empire_defaults['room_energy_min']);
-                    if (r_multiplier > 6) { 
-                        r_multiplier = 6; 
+                    if (r_multiplier > 5) { 
+                        r_multiplier = 5; 
                     }
                     if (r_multiplier > 0) {
+                        //console.log(rname + ' ' + r_multiplier + ' ' + ugtype);
                         empire[rname].sources['upgrader'].assigned[ugtype] = r_multiplier;
                     }
                 }
@@ -261,6 +261,7 @@ module.exports.loop = function () {
             // DEFCON MANAGEMENT
             var enemiesList = Game.rooms[rname].find(FIND_HOSTILE_CREEPS);
             var enemiesCost = 0;
+            var enemiesRanged = 0;
             var attacker_username = 'Invader';
             //console.log(rname + ':' + enemiesList.length);
             if(enemiesList.length) {
@@ -272,6 +273,9 @@ module.exports.loop = function () {
                                 attacker_username = enemiesList[i].owner.username;
                             }
                         }
+                    }
+                    if (attacker_username == 'Invader' && enemiesList[i].classifyMilitaryType() == RANGED_ATTACK && enemiesList[i].getActiveBodyparts(HEAL) == 0 ) {
+                        enemiesRanged++;
                     }
                 }
                 if(allies.includes(attacker_username)) {
@@ -289,7 +293,6 @@ module.exports.loop = function () {
                 }
                 //console.log('ALERT: ' + rname + ' has ' + enemiesList.length + ' enemies, worth body cost: ' + enemiesCost + '!'); 
                 if(sectors_under_attack[rname] == undefined) {
-                    console.log('ATTACK: NEW ATTACK DETECTED: ' + rname);
                     sectors_under_attack[rname] = {}
                     sectors_under_attack[rname]['attackstart'] = timenow;
                     sectors_under_attack[rname]['mystructures'] = Game.rooms[rname].getMyStructuresCount();
@@ -324,16 +327,20 @@ module.exports.loop = function () {
                             continue;
                         }
                         Game.creeps[tc].memory[MEMORY_DEST] = rname;
-                        console.log('REASSIGN: sent ' + Game.creeps[tc].name + ' to defend' + rname);
-                        Game.notify('REASSIGN: sent ' + Game.creeps[tc].name + ' to defend' + rname);
+                        console.log('REASSIGN: sent ' + Game.creeps[tc].name + ' to defend ' + rname);
+                        Game.notify('REASSIGN: sent ' + Game.creeps[tc].name + ' to defend ' + rname);
+                    }
+                    if(sectors_under_attack[rname]['attacker_username'] != 'Invader') {
+                        Game.notify('NON-NPC ATTACK! ' + rname + ': ' + JSON.stringify(sectors_under_attack[rname]));
+                        console.log('ATTACK: NEW *PLAYER* ATTACK DETECTED: ' + rname + ': ' + JSON.stringify(sectors_under_attack[rname]));
+                    } else {
+                        console.log('ATTACK: NEW NPC ATTACK DETECTED: ' + rname + ': ' + JSON.stringify(sectors_under_attack[rname]));
                     }
                 }
                 sectors_under_attack[rname]['time'] = timenow;
                 sectors_under_attack[rname]['threat'] = enemiesCost;
                 sectors_under_attack[rname]['enemycount'] = enemiesList.length;
-                if(sectors_under_attack[rname]['attacker_username'] != 'Invader') {
-                    Game.notify('NON-NPC ATTACK! ' + rname + ': ' + JSON.stringify(sectors_under_attack[rname]));
-                }
+                sectors_under_attack[rname]['enemiesRanged'] = enemiesRanged;
             } else if(sectors_under_attack[rname] != undefined) {
                 sectors_under_attack[rname]['threat'] = 0;
                 sectors_under_attack[rname]['enemycount'] = 0;
@@ -348,8 +355,8 @@ module.exports.loop = function () {
                 if(energy_network[ENERGY_FULL] != undefined && energy_network[ENERGY_FULL].length > 0) {
                     potential_senders = potential_senders.concat(energy_network[ENERGY_FULL]);
                 }
-                if(energy_network[ENERGY_OK] != undefined && energy_network[ENERGY_OK].length > 0) {
-                    potential_senders = potential_senders.concat(energy_network[ENERGY_OK]);
+                if(energy_network[ENERGY_SPARE] != undefined && energy_network[ENERGY_SPARE].length > 0) {
+                    potential_senders = potential_senders.concat(energy_network[ENERGY_SPARE]);
                 }
                 for (var i = 0; i < potential_senders.length; i++) {
                     var source_room = potential_senders[i];
@@ -363,9 +370,9 @@ module.exports.loop = function () {
         }
         if (energy_network[ENERGY_FULL] != undefined) {
             if(energy_network[ENERGY_FULL].length > 0) {
-               if(energy_network[ENERGY_OK] != undefined && energy_network[ENERGY_OK].length > 0) {
+               if(energy_network[ENERGY_SPARE] != undefined && energy_network[ENERGY_SPARE].length > 0) {
                    var source_room = energy_network[ENERGY_FULL][0];
-                   var dest_room = energy_network[ENERGY_OK][0];
+                   var dest_room = energy_network[ENERGY_SPARE][0];
                    var send_result = Game.rooms[source_room].terminal.send(RESOURCE_ENERGY, 25000, dest_room, 'full room pushes energy to ok');
                    console.log('ENERGYNET: ' + source_room + ' (FULL) pushes energy to (OK) room: ' + dest_room + ', result:' + send_result);
                }
@@ -519,6 +526,11 @@ module.exports.loop = function () {
                     var spawner = Game.spawns[empire[csector]['spawns_from']];
                     var enow = spawner.room.energyAvailable;
                     var emax = spawner.room.energyCapacityAvailable;
+                    var prepare_for_kiting = 0;
+                    if (sectors_under_attack[csector]['enemycount'] == 1 && sectors_under_attack[csector]['enemiesRanged'] == 1) {
+                        // there is one guy, he's ranged, and he cannot heal. This is probably a kiting attack.
+                        prepare_for_kiting = 1;
+                    }
                     for (var i = 0; i < empire_defaults['defense_roles'].length; i++) {
                         var oname = empire_defaults['defense_roles'][i];
                         //console.log('checking cost for' + oname);
@@ -528,6 +540,11 @@ module.exports.loop = function () {
                             //console.log('XAT: No point using ' + oname + ' as it exceeds our spawn power ' + emax);
                             // no point using this... we can't possibly afford it.
                             continue;
+                        }
+                        if(prepare_for_kiting) {
+                            if (empire_workers[oname]['antikite'] != undefined) {
+                                continue;
+                            }
                         }
                         if ((i + 1) != empire_defaults['defense_roles'].length) {
                             if (outfit_cost > (theirthreat * 1.2)) { 
@@ -916,7 +933,7 @@ module.exports.loop = function () {
                     var thespawner = Game.spawns[spawnername];
                     //continue;
                     if (thespawner.room.energyAvailable >= spawn_queue[spawnername]['thecost']) {
-                        spawncustom.process(
+                        SPAWNCUSTOM(
                             thespawner, spawn_queue[spawnername]['sname'], spawn_queue[spawnername]['partlist'], spawn_queue[spawnername]['spawnrole'], 
                             spawn_queue[spawnername]['skey'], spawn_queue[spawnername]['rname'], spawn_queue[spawnername]['thecost'], 
                             spawn_queue[spawnername]['myroomname'], spawn_queue[spawnername]['target_x'], 
@@ -1072,18 +1089,17 @@ module.exports.loop = function () {
             roleExtractor.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'upclose' || creep.memory[MEMORY_ROLE] == 'upfar') {
             roleUpgrader.run(creep);
-        } else if(creep.memory[MEMORY_ROLE] == 'upstorclose' || creep.memory[MEMORY_ROLE] == 'upstorclose') {
-            roleugstorclose.run(creep);
+        } else if(creep.memory[MEMORY_ROLE] == 'upstorclose' || creep.memory[MEMORY_ROLE] == 'upstorfar') {
+            roleUpgraderStorage.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'builder') {
             roleBuilder.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'builderstorage') {
-            roleBuilderstorage.run(creep);
+            roleBuilderStorage.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'teller') {
             roleTeller.run(creep, 0);
         } else if(creep.memory[MEMORY_ROLE] == 'teller-towers') {
             roleTeller.run(creep, 1);
-
-        } else if(creep.memory[MEMORY_ROLE] == 'drainer') {
+        } else if(creep.memory[MEMORY_ROLE] == 'drainer' || creep.memory[MEMORY_ROLE] == 'drainerbig') {
             roleDrainer.run(creep, 1);
         } else if(creep.memory[MEMORY_ROLE] == 'siege' || creep.memory[MEMORY_ROLE] == 'siegefar' || creep.memory[MEMORY_ROLE] == 'siegemini' || creep.memory[MEMORY_ROLE] == 'siegebig') {
             roleSiege.run(creep);
@@ -1105,8 +1121,8 @@ module.exports.loop = function () {
         } else if(creep.memory[MEMORY_ROLE] == 'labtech') {
             roleLabtech.run(creep);
         } else {
-            console.log('ALERT: ' + creep.name + ' has role ' + creep.memory[MEMORY_ROLE] + ' which I do not know how to handle!')
-            creep.suicide();
+            console.log('ALERT: ' + creep.name + ' in room' + creep.room.name + ' has role ' + creep.memory[MEMORY_ROLE] + ' which I do not know how to handle!')
+            //creep.suicide();
         }
         
         creep_cpu = Game.cpu.getUsed() - creep_cpu;

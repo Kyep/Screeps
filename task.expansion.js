@@ -91,7 +91,7 @@ module.exports = {
                 continue;
             }
             var controller_level = Game.rooms[rname].controller.level;
-            if (controller_level >= 6) {
+            if (controller_level >= 7) {
                 continue;
             }
             var csites = Game.rooms[rname].find(FIND_MY_CONSTRUCTION_SITES);
@@ -264,6 +264,50 @@ module.exports = {
                         continue;
                     }
                     Game.rooms[rname].memory['known_level'] = 5;
+                    if(empire[rname]['spawns_from'] != undefined) {
+                        Game.spawns[empire[rname]['spawns_from']].recycleObsolete();
+                    }
+                }
+            } else if (rmem == 5) {
+                if (controller_level >= 6) {
+                    // +10 extensions, +2 links, +1 tower
+                    var linkflags = Game.rooms[rname].find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_PURPLE && flag.secondaryColor == COLOR_GREY) { return 1; } else { return 0; } } });
+                    if(linkflags.length) {
+                        for(var i = 0; i < linkflags.length; i++) {
+                            Game.rooms[rname].createConstructionSite(linkflags[i].pos.x, linkflags[i].pos.y, STRUCTURE_LINK);
+                            linkflags[i].remove();
+                        }
+                        Game.notify(rname +': deployed level ' + (rmem+1) + ' links.');
+                        continue;
+                    }
+                    var extflags = Game.rooms[rname].find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_YELLOW && flag.secondaryColor == COLOR_GREY) { return 1; } else { return 0; } } });
+                    if(extflags.length) {
+                        for(var i = 0; i < extflags.length; i++) {
+                            Game.rooms[rname].createConstructionSite(extflags[i].pos.x, extflags[i].pos.y, STRUCTURE_EXTENSION);
+                            extflags[i].remove();
+                        }
+                        Game.notify(rname +': deployed level ' + (rmem+1) + ' extensions.');
+                        continue;
+                    }
+                    var terminalflags = Game.rooms[rname].find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_PURPLE && flag.secondaryColor == COLOR_BLUE) { return 1; } else { return 0; } } });
+                    if(terminalflags.length) {
+                        for(var i = 0; i < terminalflags.length; i++) {
+                            Game.rooms[rname].createConstructionSite(terminalflags[i].pos.x, terminalflags[i].pos.y, STRUCTURE_TERMINAL);
+                            terminalflags[i].remove();
+                        }
+                        Game.notify(rname +': deployed level ' + (rmem+1) + ' terminal.');
+                        continue;
+                    }
+                    var extractorflags = Game.rooms[rname].find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_PURPLE && flag.secondaryColor == COLOR_CYAN) { return 1; } else { return 0; } } });
+                    if(extractorflags.length) {
+                        for(var i = 0; i < extractorflags.length; i++) {
+                            Game.rooms[rname].createConstructionSite(extractorflags[i].pos.x, extractorflags[i].pos.y, STRUCTURE_EXTRACTOR);
+                            extractorflags[i].remove();
+                        }
+                        Game.notify(rname +': deployed level ' + (rmem+1) + ' extractor.');
+                        continue;
+                    }
+                    Game.rooms[rname].memory['known_level'] = 6;
                     if(empire[rname]['spawns_from'] != undefined) {
                         Game.spawns[empire[rname]['spawns_from']].recycleObsolete();
                     }
