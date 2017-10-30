@@ -5,6 +5,7 @@ module.exports = {
     run: function(creep) {
         if(!creep.isAtDestinationRoom()){
             creep.moveToDestination();
+            return;
         } else if (creep.updateDestination()) {
             return;
         }

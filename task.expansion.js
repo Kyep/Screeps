@@ -10,9 +10,8 @@ module.exports = {
         for(var rname in empire) {
             if(rooms_to_claim[rname] != undefined) {
                 // To claim a room, define it like this:
-                // Memory['rooms_to_claim'] = {'W56S18': {'expansionsource': '59bbc3c92052a716c3ce6c47', 'controllerid': '59bbc3c92052a716c3ce6c46', 'gcltarget': 4 }}
+                // Memory['rooms_to_claim'] = {'W58S17': {'controllerid': '59bbc3ad2052a716c3ce68a7', 'gcltarget': 6 }}
                 var expansiontarget = Game.rooms[rname];
-                var expansionsource = rooms_to_claim[rname]['expansionsource'];
                 var controllertarget = Game.getObjectById(rooms_to_claim[rname]['controllerid']);
                 var gcltarget = rooms_to_claim[rname]['gcltarget'];
     
@@ -42,20 +41,18 @@ module.exports = {
                 for (var key in Game.spawns) {
                     if (Game.spawns[key].room.name == rname) {
                         spawner_name = Game.spawns[key].name;
-                        empire[rname]['spawns_from'] = spawner_name;
                     }
                 }
                 var controller_level = controllertarget.level;
                 if (spawner_name == '') {
                     // CASE 5: I own the room, the controller is level 1 (can have spawn) but there is no spawn
+                    for(var sid in empire[rname].sources) {
+                        empire[rname].sources[sid].assigned = {'remoteconstructor': 1}
+                    }
                     var csites = expansiontarget.find(FIND_MY_CONSTRUCTION_SITES);
                     if(csites.length) {
                         var csite = csites[0];
                         console.log('EXPAND: ' + expansiontarget + ': WAIT FOR SPAWNER TO BE BUILT, PROGRESS: ' + csite.progress + '/' + csite.progressTotal);
-                        for(var sid in empire[rname].sources) {
-                            empire[rname].sources[sid].assigned = {'remoteconstructor': 1}
-                        }
-                        // we have a spawn construction site, we just need to wait for it to be built.
                     } else {
                         console.log('EXPAND: ' + expansiontarget + ': CREATE SPAWNER');
                         var spawnerflags = expansiontarget.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_YELLOW && flag.secondaryColor == COLOR_RED) { return 1; } else { return 0; } } });
@@ -69,7 +66,6 @@ module.exports = {
                             console.log('***** ' + ' EXPAND: ' + expansiontarget + ': ERROR: NO YELLOW/RED SPAWNER POSITION FLAG!');
                         }
                     }
-                    empire[rname].sources[expansionsource].assigned = {'remoteconstructor': 2};
                 } else { 
                     var claimstring = '***** ' + rname + ' EXPANSION: ROOM HAS BEEN SUCCESSFULLY CLAIMED, AND A SPAWN BUILT! DELETING ROOM FROM ROOMS_TO_CLAIM';
                     console.log(claimstring);
@@ -123,13 +119,11 @@ module.exports = {
                 continue;
             }
             if (rmem == 0) {
-                // Change the room's spawns_from until we can get it set up properly.
                 if (controller_level >= 1) {
                     var spawner_name = '';
                     for (var key in Game.spawns) {
                         if (Game.spawns[key].room.name == rname) {
                             spawner_name = Game.spawns[key].name;
-                            empire[rname]['spawns_from'] = spawner_name;
                         }
                     }
                     if (spawner_name != '') {

@@ -16,7 +16,6 @@ module.exports = {
         if (creep.memory[MEMORY_HOME] == undefined) {
             creep.memory[MEMORY_HOME] = creep.room.name;
         }
-
         if(creep.carry.energy == creep.carryCapacity && creep.memory[MEMORY_JOB] != JOB_TRAVEL_OUT && creep.memory[MEMORY_JOB] != JOB_BUILD) {
 	        creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
             creep.announceJob();
@@ -31,11 +30,14 @@ module.exports = {
                 // do nothing until we get enough
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_OUT) {
-            creep.moveToDestination();
-            if (creep.isAtDestinationRoom()) {
-                creep.memory[MEMORY_JOB] = JOB_BUILD;
-                creep.announceJob();
+            if(!creep.isAtDestinationRoom()){
+                creep.moveToDestination();
+                return;
+            } else if (creep.updateDestination()) {
+                return;
             }
+            creep.memory[MEMORY_JOB] = JOB_BUILD;
+            creep.announceJob();
         } else if (creep.memory[MEMORY_JOB] == JOB_HARVEST) {
 	       jobHarvest.run(creep);
         } else if(creep.memory[MEMORY_JOB] == JOB_BUILD) {

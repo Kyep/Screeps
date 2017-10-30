@@ -51,11 +51,30 @@ module.exports =  {
                         filter: (structure) => {
                             return (
                                     (
-                                       (((structure.structureType == STRUCTURE_SPAWN && fill_spawner) || ( structure.structureType == STRUCTURE_EXTENSION && fill_extensions)) && structure.energy < structure.energyCapacity)
-                                       || (structure.structureType == STRUCTURE_TOWER && structure.energy < (structure.energyCapacity * tower_factor))
-                                       || (structure.structureType == STRUCTURE_TERMINAL && structure.store.energy < terminal_energy_max)
+                                       (structure.structureType == STRUCTURE_NUKER && structure.energy < structure.energyCapacity)
+                                    )
+                            );
+                        }
+                });
+            }
+            if(!targets.length) {
+                targets = creep.room.find(FIND_STRUCTURES, {
+                        filter: (structure) => {
+                            return (
+                                    (
+                                       (structure.structureType == STRUCTURE_TERMINAL && structure.store.energy < terminal_energy_max)
                                        || (structure.structureType == STRUCTURE_LAB && structure.energy < 2000)
-                                       || (((structure.structureType == STRUCTURE_CONTAINER && fill_containers) || ( structure.structureType == STRUCTURE_STORAGE && fill_storage)) && structure.store.energy < structure.storeCapacity)
+                                    )
+                            );
+                        }
+                });
+            }
+            if(!targets.length) {
+                targets = creep.room.find(FIND_STRUCTURES, {
+                        filter: (structure) => {
+                            return (
+                                    (
+                                       (((structure.structureType == STRUCTURE_CONTAINER && fill_containers) || ( structure.structureType == STRUCTURE_STORAGE && fill_storage)) && structure.store.energy < structure.storeCapacity)
                                     )
                             );
                         }

@@ -3,6 +3,8 @@
 global.empire_workers = { 
 	'upclose': { 'body': [WORK, WORK, CARRY, MOVE] },
 	'upfar': { 'body': [WORK, CARRY, MOVE] },
+	'up8': { 'body': [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 'noresizing': 1 },
+
 	'remoteconstructor': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], 'renew_allowed': 0 },
 	'minirc': { 'body': [WORK, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 
@@ -59,6 +61,7 @@ global.empire_workers = {
 	'reserver' : { 'body': [CLAIM, CLAIM, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 	'sreserver' : { 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 	'claimer': { 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
+	'bclaimer': { 'body': [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 'renew_allowed': 0 },
 	'signer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, 
 
     // Base maint/defense classes.

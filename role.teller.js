@@ -9,10 +9,10 @@ module.exports = {
     run: function(creep, towersonly) {
         if(creep.memory[MEMORY_JOB] != JOB_GFS && creep.memory[MEMORY_JOB] != JOB_RENEW && creep.carry.energy == 0) {
             creep.memory[MEMORY_JOB] = JOB_GFS;
-            creep.announceJob();
+            //creep.announceJob();
         } else if(creep.memory[MEMORY_JOB] == JOB_GFS && creep.carry.energy == creep.carryCapacity) {
             creep.memory[MEMORY_JOB] = JOB_RETURN;
-            creep.announceJob();
+            //creep.announceJob();
         }
         if(creep.memory[MEMORY_JOB] == JOB_GFS) {
             if (jobGetstoredenergy.run(creep) == -1){

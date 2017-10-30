@@ -305,3 +305,37 @@ global.MASS_RETARGET = function (role, newtarget, waypoints) {
         }
     }
 }
+
+
+global.GET_SPAWNER_FOR_ROOM = function(theroomname) {
+    if (empire[theroomname] == undefined) {
+        console.log('GET_SPAWNER_FOR_ROOM: undefined empire block for ' + theroomname);
+        return undefined;
+    }
+    var backup_spawn_room = undefined;
+    if (empire[theroomname]['backup_spawn_room'] != undefined) {
+           backup_spawn_room = Game.rooms[empire[theroomname]['backup_spawn_room']];
+    }
+    if (empire[theroomname]['spawn_room'] == undefined) {
+        console.log('GET_SPAWNER_FOR_ROOM: undefined spawn_room for ' + theroomname);
+        return undefined;
+    }
+    var spawn_room = Game.rooms[empire[theroomname]['spawn_room']];
+    if (spawn_room == undefined) {
+        if(backup_spawn_room == undefined) {
+            console.log('GET_SPAWNER_FOR_ROOM: undefined GAME.ROOMS for spawn_room and backup_spawn_room of ' + theroomname);
+            return undefined;
+        }
+    }
+    var spawners = spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
+    if (!spawners.length)
+        if (backup_spawn_room != undefined) {
+            var backup_spawners = backup_spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
+            if (backup_spawners.length) {
+                return backup_spawners[0];
+            }
+        }
+        return undefined;
+    //console.log('GSFR: for ' + theroomname + ' returned ' +spawners[0].name);
+    return spawners[0];
+}
