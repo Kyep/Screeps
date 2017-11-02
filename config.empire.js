@@ -9,8 +9,9 @@
         'room': 'W53S18',
         'sourceid': '59bbc3f82052a716c3ce7289',
         'priority_roles': ['teller', 'teller-towers'],
-        'military_roles': ['scout', 'slasher', 'rogue', 'ninja', 'ninjaheals', 'dragon', 'siegedragon', 'boss', 'wizard', 'healer', 'siege', 'siegefar', 'siegemini', 'drainer'],
+        'military_roles': ['scout', 'slasher', 'rogue', 'ninja', 'ninjaheals', 'dragon', 'siegedragon', 'boss', 'wizard', 'healer', 'siege', 'siegefar', 'siegemini', 'drainer', 'antikite16', 'antikite8', 'antikite4', 'antikite2'],
         'defense_roles': ['boss', 'dragon', 'ninja', 'rogue', 'slasher', 'scout'], // LIST MOST POWERFUL FIRST.
+        'defense_roles_ranged': ['antikite16', 'antikite8', 'antikite4', 'antikite2'], // LIST MOST POWERFUL FIRST.
         'alerts_duration' : 34560, // alerts last ~24h, or until we've verified that whatever caused them is dead.
         'alerts_recycle' : 0,
         'alerts_reassign': {}, // Don't reassign anything.
@@ -31,11 +32,6 @@
             'roomname' : '1',
             'spawn_room': 'W53S18',
             'sources': {
-                'base-maint': {
-                    'sourcename': '1-base', 'x':20, 'y':20, 
-                    'assigned': {}, 
-                    'expected_income': 90, 'dynamic': 1
-                },
                 'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40, 'dynamic': 1 },
                 '59bbc3f82052a716c3ce7289': {
                     'sourcename':'1-E', 'x':25, 'y':18,  'target_x': 24, 'target_y': 19, 'steps':15, 'spaces':4,
@@ -49,7 +45,8 @@
                 }
             },
             'safespot': {'x': 9, 'y':25 },
-            'mineralid' : '59bbc644ae9e1411a425ad40'
+            'mineralid' : '59bbc644ae9e1411a425ad40',
+            'mineraltype': RESOURCE_HYDROGEN
         },
 
         // 1st base remote mining
@@ -116,10 +113,6 @@
             'spawn_room': 'W51S18',
             'sources': {
                 'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40 },
-                'base-maint': {'sourcename': '2-base', 'x':16, 'y':24, 
-                    'assigned': {}, 
-                    'expected_income': 90 
-                }, 
                 '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20, 'target_x': 15, 'target_y': 21, 'steps':10, 'spaces':3,
                     'assigned': {'upclose':1},
                     'expected_income': 80
@@ -130,7 +123,8 @@
                 }
             },
             'safespot': {'x': 17, 'y':14 },
-            'mineralid': '59bbc645ae9e1411a425ae18'
+            'mineralid': '59bbc645ae9e1411a425ae18',
+            'mineraltype': RESOURCE_OXYGEN
         },
         
         // 2nd base remote mining
@@ -168,6 +162,7 @@
             'roomname' : '3',
             'spawn_room': 'W51S14',
             'mineralid': '59bbc645ae9e1411a425ae14',
+            'mineraltype': RESOURCE_ZYNTHIUM,
             'sources': {
                 '59bbc4172052a716c3ce757d': {'sourcename': '3-W', 'x':31, 'y':15, 'spaces':3,
                     'assigned': {'bharvester': 2},
@@ -219,7 +214,7 @@
             'farcontroller': 1,
             'sources': {
                 '59bbc3f72052a716c3ce7275': {'sourcename': '4-N', 'x':31, 'y':17, 'spaces':2,
-                    'assigned': {'upfar': 1, 'harvester': 1}, // only two slots...
+                    'assigned': {'upfar': 1, 'bharvester': 1}, // only two slots...
                     'expected_income': 90
                 },
                 '59bbc3f72052a716c3ce7276': {'sourcename': '4-S', 'x':32, 'y':28, 'spaces':1,
@@ -227,7 +222,8 @@
                     'expected_income': 80
                 }
             },
-            'mineralid': '59bbc644ae9e1411a425ad3a'
+            'mineralid': '59bbc644ae9e1411a425ad3a',
+            'mineraltype': RESOURCE_OXYGEN
         },
         // 4th base expansions
         'W53S11': {
@@ -252,8 +248,8 @@
             'roomname' : '4E',
             'spawn_room': 'W53S12',
             'sources': {
-                '59bbc4062052a716c3ce73f5': {'sourcename': '4E', 'x':24, 'y':11, 'target_x': 23, 'target_y': 11, 'spaces':4,
-                    'assigned': {'harvester': 2},
+                '59bbc4062052a716c3ce73f5': {'sourcename': '4E', 'x':24, 'y':11, 'target_x': 23, 'target_y': 11, 'spaces':4, 'steps':75,
+                    'assigned': {}, // 'harvester': 2
                     'expected_income': 45
                 }
             }
@@ -262,19 +258,41 @@
             'roomname' : '4W',
             'spawn_room': 'W53S12',
             'sources': {
-                '59bbc3e82052a716c3ce7092': {'sourcename': '4W', 'x':37, 'y':5, 'target_x': 37, 'target_y': 6, 'spaces':3,
+                '59bbc3e82052a716c3ce7092': {'sourcename': '4W', 'x':37, 'y':5, 'target_x': 37, 'target_y': 6, 'spaces':3, 'steps':75,
                     'assigned': {'c15harvester': 1, 'hauler': 1},
-                    'expected_income': 10
-                }
+                    'expected_income': 30
+                }/*,
+                'reserver': {'sourcename':'4W-R', 'x':20, 'y':15,
+                    'assigned': {'reserver': 1},
+                    'expected_income': 40, 'dynamic': 1
+                }*/
             }
         },
         'W52S11': {
             'roomname' : '4NE',
             'spawn_room': 'W53S12',
             'sources': {
-                '59bbc4052052a716c3ce73f2': {'sourcename': '4NE', 'x':24, 'y':43, 'target_x': 23, 'target_y': 44, 'spaces':3,
+                '59bbc4052052a716c3ce73f2': {'sourcename': '4NE', 'x':24, 'y':43, 'target_x': 23, 'target_y': 44, 'spaces':3, 'steps':75,
                     'assigned': {},
                     'expected_income': 5
+                }
+            }
+        },
+        'W55S12': {
+            'roomname' : '4WW',
+            'spawn_room': 'W53S12',
+            'sources': {
+                '59bbc3da2052a716c3ce6e57': {'sourcename': '4WW-W', 'x':30, 'y':30, 'target_x': 31, 'target_y': 29, 'spaces':3, 'steps':125,
+                    'assigned': {'c30harvester': 1, 'hauler': 1},
+                    'expected_income': 5
+                },
+                '59bbc3da2052a716c3ce6e56': {'sourcename': '4WW-E', 'x':46, 'y':29, 'target_x': 46, 'target_y': 28, 'spaces':4, 'steps':125,
+                    'assigned': {'c30harvester': 1, 'hauler': 1},
+                    'expected_income': 5
+                },
+                'reserver': {'sourcename':'4WW-R', 'x':25, 'y':25,
+                    'assigned': {'reserver': 1},
+                    'expected_income': 3, 'dynamic': 1
                 }
             }
         },
@@ -307,7 +325,6 @@
         // 5th base expansions
         'W52S16': {
             'roomname' : '5N',
-            'ignoreattacks': 1,
             'spawn_room': 'W52S17',
             'sources': {
                 '59bbc4062052a716c3ce7401': {'sourcename': '5N-E', 'x':44, 'y':27, 'target_x': 44, 'target_y': 27, 
@@ -319,7 +336,7 @@
                     'expected_income': 40
                 },
                 'reserver': {'sourcename':'5N-R', 'x':25, 'y':25,
-                    'assigned': {'sreserver': 1},
+                    'assigned': {'reserver': 1},
                     'expected_income': 30, 'dynamic': 1
                 }
             }
@@ -357,7 +374,8 @@
                 }
             },
             'safespot': {'x': 40, 'y':30 },
-            'mineralid' : '59bbc644ae9e1411a425ac50'
+            'mineralid' : '59bbc644ae9e1411a425ac50',
+            'mineraltype' : RESOURCE_OXYGEN
         },  
         // 6N
         'W56S17': {
@@ -441,24 +459,60 @@
         }, 
 
 
-        // Base 7
+        // 7 Base
         'W58S17': {
             'roomname' : '7',
             'spawn_room': 'W58S17',
             'backup_spawn_room': 'W56S18',
             'sources': {
                 '59bbc3ad2052a716c3ce68a6': {'sourcename': '7-W', 'x':8, 'y':27, 'spaces':4,
-                    'assigned': {},  // 'upclose': 2, 'harvester': 2
+                    'assigned': {'bharvester': 2}, 
                     'expected_income': 85
                 },
                 '59bbc3ad2052a716c3ce68a5': {'sourcename': '7-E', 'x':17, 'y':21, 'spaces':4,
-                    'assigned': {}, // 'harvester': 4
+                    'assigned': {'bharvester': 2, 'upfar': 1}, 
                     'expected_income': 80
                 }
             },
             'safespot': {'x': 9, 'y':32 },
         },  
-
-
+        // 7W
+        'W59S17': {
+            'roomname' : '7W',
+            'spawn_room': 'W58S17',
+            'sources': {
+                '59bbc39f2052a716c3ce6717': {'sourcename': '7W-N', 'x':46, 'y':13, 'target_x': 45, 'target_y': 13, 'spaces':4, 'steps':50,
+                    'assigned': {'c30harvester': 1, 'hauler': 2},
+                    'expected_income': 55
+                },
+                '59bbc39f2052a716c3ce6719': {'sourcename': '7W-S', 'x':33, 'y':46, 'target_x': 34, 'target_y': 45, 'spaces':4, 'steps':75,
+                    'assigned': {'c30harvester': 1, 'hauler': 2},
+                    'expected_income': 50
+                },
+                'reserver': {'sourcename':'7W-R', 'x':25, 'y':25,
+                    'assigned': {'reserver': 1},
+                    'expected_income': 48, 'dynamic': 1
+                }
+            }
+        },
+        // 7E
+        'W57S17': {
+            'roomname' : '7E',
+            'spawn_room': 'W58S17',
+            'sources': {
+                '59bbc3bc2052a716c3ce6a3a': {'sourcename': '7E-W', 'x':12, 'y':29, 'target_x': 12, 'target_y': 28, 'spaces':4, 'steps':40,
+                    'assigned': {'c30harvester': 1, 'hauler': 2},
+                    'expected_income': 45
+                },
+                '59bbc3bc2052a716c3ce6a38': {'sourcename': '7E-E', 'x':35, 'y':18, 'target_x': 35, 'target_y': 17, 'spaces':3, 'steps':50,
+                    'assigned': {'c30harvester': 1, 'hauler': 2},
+                    'expected_income': 40
+                },
+                'reserver': {'sourcename':'7E-R', 'x':25, 'y':25,
+                    'assigned': {'reserver': 1},
+                    'expected_income': 35, 'dynamic': 1
+                }
+            }
+        },
     }
     

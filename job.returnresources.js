@@ -51,7 +51,9 @@ module.exports =  {
                         filter: (structure) => {
                             return (
                                     (
-                                       (structure.structureType == STRUCTURE_NUKER && structure.energy < structure.energyCapacity)
+                                        (((structure.structureType == STRUCTURE_SPAWN && fill_spawner) || ( structure.structureType == STRUCTURE_EXTENSION && fill_extensions)) && structure.energy < structure.energyCapacity)
+                                        || (structure.structureType == STRUCTURE_TOWER && structure.energy < (structure.energyCapacity * tower_factor))
+                                        || (structure.structureType == STRUCTURE_NUKER && structure.energy < structure.energyCapacity)
                                     )
                             );
                         }

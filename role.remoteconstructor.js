@@ -7,27 +7,23 @@ var jobRepair = require('job.repair');
 var jobRenew = require('job.renew');
 var jobGetstoredenergy = require('job.gfs');
 var jobHarvest = require('job.harvest');
+var jobUpgrade = require('job.upgrade');
 
 module.exports = {
     run: function(creep) {
-        if (creep.memory[MEMORY_DEST] == undefined) {
-            creep.memory[MEMORY_DEST] = creep.room.name;
-        }
-        if (creep.memory[MEMORY_HOME] == undefined) {
-            creep.memory[MEMORY_HOME] = creep.room.name;
-        }
-        if(creep.carry.energy == creep.carryCapacity && creep.memory[MEMORY_JOB] != JOB_TRAVEL_OUT && creep.memory[MEMORY_JOB] != JOB_BUILD) {
-	        creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
-            creep.announceJob();
-        } else if(creep.memory[MEMORY_JOB] != JOB_GFS && creep.memory[MEMORY_JOB] != JOB_HARVEST && creep.carry.energy == 0) {
-            if (creep.room.name == creep.memory[MEMORY_DEST]) {
-                creep.memory[MEMORY_JOB] = JOB_HARVEST
-            } else {
-                creep.memory[MEMORY_JOB] = JOB_GFS;
+        // FLOW: undefined -> GFS -> TRAVEL_OUT -> BUILD -> UPGRADE -> DEATH
+        //                               ^          V         V
+        //                            HARVEST ------<---------<
+        if (creep.memory[MEMORY_JOB] == undefined) {
+            creep.memory[MEMORY_JOB] = JOB_GFS;
+        } else if (creep.memory[MEMORY_JOB] == JOB_GFS) {
+            if (creep.carry.energy == creep.carryCapacity) {
+                creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
+                return;
             }
-       } else  if(creep.memory[MEMORY_JOB] == JOB_GFS) {
-            if (jobGetstoredenergy.run(creep) == -1){
-                // do nothing until we get enough
+            var retval = jobGetstoredenergy.run(creep);
+            if (retval == -1) {
+                creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_OUT) {
             if(!creep.isAtDestinationRoom()){
@@ -35,24 +31,40 @@ module.exports = {
                 return;
             } else if (creep.updateDestination()) {
                 return;
+            } else if (creep.carry.energy == 0) {
+                creep.memory[MEMORY_JOB] = JOB_HARVEST;
+                return;
+            } else {
+                creep.memory[MEMORY_JOB] = JOB_BUILD;
             }
-            creep.memory[MEMORY_JOB] = JOB_BUILD;
-            creep.announceJob();
-        } else if (creep.memory[MEMORY_JOB] == JOB_HARVEST) {
-	       jobHarvest.run(creep);
         } else if(creep.memory[MEMORY_JOB] == JOB_BUILD) {
-            if (jobBuild.run(creep) == -1) {
+            if (creep.carry.energy == 0) {
+                creep.memory[MEMORY_JOB] = JOB_HARVEST;
+                return;
+            } else if (jobBuild.run(creep) == -1) {
                 if(creep.room.name == creep.memory[MEMORY_DEST]) {
                     creep.memory[MEMORY_JOB] = JOB_UPGRADE;
-                creep.announceJob();
+                    creep.announceJob();
                 }
             }
-	    } else if(creep.memory[MEMORY_JOB] == JOB_REPAIR) {
-            if (jobRepair.run(creep) == -1) {
-                // stay there until you die.
+        } else if(creep.memory[MEMORY_JOB] == JOB_UPGRADE) {
+            if (creep.carry.energy == 0) {
+                creep.memory[MEMORY_JOB] = JOB_HARVEST;
+                return;
+            } else if (creep.room.name == creep.memory[MEMORY_HOME]) {
+                jobUpgrade.run(creep);
+            } else { 
+                creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
+                creep.announceJob();
+                //console.log(creep.room.name + ' v ' + creep.memory[MEMORY_HOME]);
             }
-        } else {
-            creep.memory[MEMORY_JOB] = JOB_GFS;
+        } else if(creep.memory[MEMORY_JOB] == JOB_HARVEST) {
+            var retval = jobHarvest.run(creep);
+            if (retval == ERR_NOT_ENOUGH_ENERGY) {
+                creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
+            } else if (creep.carry.energy == creep.carryCapacity) {
+                creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
+            }
         }
     }
 };

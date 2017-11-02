@@ -20,6 +20,7 @@ global.MEMORY_EARNINGS = 'earnings';
 global.MEMORY_JOURNEYSTART = 'journeystart';
 global.MEMORY_ATTACKEDIN = 'attackedin'
 global.MEMORY_RALLYROOM = 'rallyroom';
+global.MEMORY_LAST_WAYPOINT = 'lastwaypoint';
 
 global.JOB_HARVEST = 'mine';
 global.JOB_BUILD = 'build';

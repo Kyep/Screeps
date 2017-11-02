@@ -52,6 +52,16 @@ Creep.prototype.getRenewEnabled = function() {
     return 1;
 }
 
+Creep.prototype.getNeeded = function() {
+    if (this.memory[MEMORY_NEEDED] == undefined) {
+        return 1;
+    }
+    if (this.memory[MEMORY_NEEDED] == 0) {
+        return 0;
+    }
+    return 1;
+}
+
 Creep.prototype.getShouldHide = function() {
     if (this.memory[MEMORY_HOME] == this.memory[MEMORY_DEST]) {
         return 0;
@@ -163,6 +173,20 @@ Creep.prototype.moveToDestination = function() {
         console.log(this.name + ' was ordered to moveToDestination with no MEMORY_DEST_Y');
         return 0;
     }
+    if(this.memory[MEMORY_LAST_WAYPOINT] == undefined || this.memory[MEMORY_LAST_WAYPOINT] != this.room.name) {
+        var redflags = this.room.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_RED && flag.secondaryColor == COLOR_RED) { return 1; } else { return 0; } } });
+        if(redflags.length) {
+            var tflag = redflags[0];
+            if (this.pos.getRangeTo(tflag) > 2) {
+                this.moveTo(tflag);
+                return 1;
+            } else {
+                this.memory[MEMORY_LAST_WAYPOINT] = this.room.name;
+            }
+        } else {
+            this.memory[MEMORY_LAST_WAYPOINT] = this.room.name;
+        }
+    }
     var dest_room = this.memory[MEMORY_DEST];
     var dest_x = this.memory[MEMORY_DEST_X];
     var dest_y = this.memory[MEMORY_DEST_Y];
@@ -197,16 +221,19 @@ Creep.prototype.classifyMilitaryType = function() {
     var attack_parts = this.getActiveBodyparts(ATTACK)
     var ranged_parts = this.getActiveBodyparts(RANGED_ATTACK);
     var heal_parts = this.getActiveBodyparts(HEAL);
+    var work_parts = this.getActiveBodyparts(WORK);
     var total_parts = this.body.length;
     var interesting_parts = attack_parts + ranged_parts + heal_parts;
-    if (attack_parts >= (ranged_parts + heal_parts)) {
+    if (attack_parts > 0 && attack_parts >= (ranged_parts + heal_parts)) {
         return ATTACK;
-    } else if (ranged_parts >= (attack_parts + heal_parts)) {
+    } else if (ranged_parts > 0 && ranged_parts >= (attack_parts + heal_parts)) {
         return RANGED_ATTACK;
-    } else if (heal_parts >= (attack_parts + ranged_parts)) {
+    } else if (heal_parts > 0 && heal_parts >= (attack_parts + ranged_parts)) {
         return HEAL;
-    } else {
+    } else if (work_parts > 0) {
         return WORK;
+    } else {
+        return MOVE;
     }
 }
 
@@ -248,4 +275,15 @@ Creep.prototype.getTargetPriority = function() {
     var hp = this.hits;
     var threat = dps + hps;
     return threat / hp;
+}
+
+Creep.prototype.isBoosted = function() {
+    var boosted_parts = 0;
+    for (var i = 0; i < this.body.length; i++) {
+        if (this.body[i][1] != undefined) {
+            boosted_parts++;
+            console.log(creep.name + ': is boosted with: ' + this.body[i][1]);
+        }
+    }
+    return boosted_parts;
 }

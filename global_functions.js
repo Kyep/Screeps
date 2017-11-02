@@ -24,6 +24,40 @@ global.CONSTRUCT_MILITARY_BODY = function (tough_parts, move_parts, attack_parts
 
 global.UNIT_COST = (body) => _.sum(body, p => BODYPART_COST[p]);
 global.CREEP_COST = (body) => _.sum(body, p => BODYPART_COST[p.type])
+
+global.TEMPLATE_COST = function (template_name) {
+    if ( empire_workers[template_name] == undefined) {
+        console.log('Invalid role');
+        return 0;
+    }
+    if ( empire_workers[template_name]['body'] == undefined) {
+        console.log('Invalid role');
+        return 0;
+    }
+    var thebody = empire_workers[template_name]['body'];
+    var parts = {};
+    parts[ATTACK] = 0;
+    parts[RANGED_ATTACK] = 0;
+    parts[HEAL] = 0;
+
+    for (var i = 0; i < thebody.length; i++) {
+        if (thebody[i] == ATTACK) {
+            parts[ATTACK]++;
+        }
+        if (thebody[i] == RANGED_ATTACK) {
+            parts[ATTACK]++;
+        }
+        if (thebody[i] == HEAL) {
+            parts[HEAL]++;
+        }
+    }
+    var retval = {}
+    retval['cost'] = global.UNIT_COST(thebody);
+    retval['parts'] = parts;
+    console.log(JSON.stringify(retval));
+}
+
+
 global.CARRY_PARTS = (capacity, steps) => Math.ceil(capacity / ENERGY_REGEN_TIME * 2 * steps / CARRY_CAPACITY);
 global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid, max_cost) {
     var sourcecapacity = 1500;
@@ -64,16 +98,13 @@ global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid, max_cost) {
 }
 
 
-global.CONSTRUCT_RESERVER_BODY = function (resticksremaining) {
-    if (resticksremaining > 2000) {
+global.CONSTRUCT_RESERVER_BODY = function (resticksremaining, maxroomenergy) {
+    if (resticksremaining > 2000 || maxroomenergy < 1300) {
         return [MOVE, CLAIM];
     } else {
         return [MOVE, MOVE, CLAIM, CLAIM];
     }
 }
-
-
-
 
 global.REPORT_EARNINGS = function() {
     for (var cr in Game.creeps) {
@@ -249,6 +280,9 @@ global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, t
         Memory['spawn_count'] = 0;
     }
     var crname = sname + '_' + roletext + '_' + Memory['spawn_count'];
+    if(empire_workers[roletext] != undefined && empire_workers[roletext]['abbr'] != undefined) {
+        crname = sname + '_' + empire_workers[roletext]['abbr'] + '_' + Memory['spawn_count'];
+    }
     if (Game.creeps[crname] != undefined) {
         console.log("SPAWN: failed to create: " + crname + " as that name is already taken.");
         Memory['spawn_count'] += 1;
@@ -270,7 +304,7 @@ global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, t
     //var result = spawner.createCreep(partlist, crname, 
     //    {'role': roletext, 'source': sourcetext, 'target': targettext, 'home': homesector, 'target_x': target_x, 'target_y': target_y, 'spawnername': spawner.name, 'renew_allowed': renew_allowed});
     var result = spawner.createCreep(partlist, crname, crmemory);
-    console.log(spawner.name + ': ' + result);
+    //console.log(spawner.name + ': ' + result);
     Memory['spawn_count'] += 1;
     return result;
 }
@@ -327,15 +361,135 @@ global.GET_SPAWNER_FOR_ROOM = function(theroomname) {
             return undefined;
         }
     }
-    var spawners = spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
-    if (!spawners.length)
+    var spawners = [];
+    if (spawn_room != undefined) {
+        spawners = spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable() == 1); } });
+    }
+    if (!spawners.length) {
         if (backup_spawn_room != undefined) {
-            var backup_spawners = backup_spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
-            if (backup_spawners.length) {
-                return backup_spawners[0];
+            var primary_spawners = spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN); } });
+            if(!primary_spawners.length) {
+                var backup_spawners = backup_spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
+                if (backup_spawners.length) {
+                    console.log('GET_SPAWNER_FOR_ROOM: returning backup spawner for:  ' + theroomname);
+                    return backup_spawners[0];
+                }
             }
         }
+        //console.log('GET_SPAWNER_FOR_ROOM: spawners is zero length ' + theroomname);
         return undefined;
+    }
     //console.log('GSFR: for ' + theroomname + ' returned ' +spawners[0].name);
     return spawners[0];
+}
+
+global.UPDATE_MARKET_ORDERS = function() {
+    for (var rname in Game.rooms) {
+        if (Game.rooms[rname].terminal == undefined) {
+            continue;
+        }
+        if (Game.rooms[rname].terminal.cooldown > 0) {
+            continue;
+        }
+        if (Game.rooms[rname].controller == undefined) {
+            continue;
+        }
+        if (Game.rooms[rname].controller.owner == undefined) {
+            continue;
+        }
+        if (Game.rooms[rname].controller.owner.username != overlord) {
+            continue;
+        }
+        if (empire[rname] == undefined) {
+            continue;
+        }
+        if (empire[rname]['mineraltype'] == undefined) {
+            continue;
+        }
+        var mtype = empire[rname]['mineraltype'];
+        if(Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] < 1000) {
+            //console.log('MARKET: ' + rname + ': has <1k of sale mineral: ' + mtype);
+            continue;
+        }
+        var amount_sellable = Game.rooms[rname].terminal.store[mtype];
+        var room_orders = Game.market.getAllOrders({'type': ORDER_SELL, 'roomName': rname, 'resourceType': mtype});
+        var order_id = undefined;
+        var old_price = 0;
+        for (var thisorder in room_orders) {
+            if (thisorder.remainingAmount == 0) {
+                continue;
+            }
+            order_id = room_orders[thisorder]['id'];
+            old_price = room_orders[thisorder]['price'];
+        }
+        if (order_id == undefined) {
+            //console.log(rname + ': has no order for ' + mtype);
+        } else {
+            //console.log(rname + ': existing order ' + order_id);
+        }
+        var sell_price = 0;
+        var global_sell_orders = Game.market.getAllOrders({'type': ORDER_SELL, 'resourceType': mtype});
+        for (var porder in global_sell_orders) {
+            if(global_sell_orders[porder]['remainingAmount'] == 0) {
+                continue;
+            }
+           if (sell_price == 0) {
+               sell_price = global_sell_orders[porder]['price'];
+            } else if (global_sell_orders[porder]['price'] < sell_price) {
+               sell_price = global_sell_orders[porder]['price'];
+           }
+            //console.log(global_sell_orders[porder]['price']);
+        }
+        var buy_price = 0;
+        var effective_buy_price = 0;
+        var buy_order_id = undefined;
+        var buy_order_amount = undefined;
+        var global_buy_orders = Game.market.getAllOrders({'type': ORDER_BUY, 'resourceType': mtype});
+        for (var porder in global_buy_orders) {
+            if(global_buy_orders[porder]['remainingAmount'] == 0) {
+                continue;
+            }
+            var price_of_energy = 0.08;
+            var e_cost = (Game.market.calcTransactionCost(100, rname, global_buy_orders[porder]['roomName']) / 100);
+            var this_efbp = global_buy_orders[porder]['price'] - (e_cost * price_of_energy); 
+            //console.log(rname + ', ' + mtype + ', ' + global_buy_orders[porder]['id'] + ', ' + global_buy_orders[porder]['price'] + ' -> ' + this_efbp + '(' + e_cost + ')');
+            if (buy_price == 0) {
+               buy_price = global_buy_orders[porder]['price'];
+               effective_buy_price = this_efbp;
+               buy_order_id = global_buy_orders[porder]['id'];
+               buy_order_amount = global_buy_orders[porder]['remainingAmount'];
+            } else if (this_efbp > effective_buy_price) {
+               buy_price = global_buy_orders[porder]['price'];
+               effective_buy_price = this_efbp;
+               buy_order_id = global_buy_orders[porder]['id'];
+               buy_order_amount = global_buy_orders[porder]['remainingAmount'];
+           }
+        }
+        var amount_to_sell = amount_sellable;
+        if (amount_to_sell > 10000) {
+            amount_to_sell = 10000;
+        }
+        if(effective_buy_price > sell_price && buy_order_id != undefined) {
+            if (buy_order_amount < amount_to_sell) {
+                amount_to_sell = buy_order_amount;
+            }
+            //var retval = 'TEST'; 
+            var retval = Game.market.deal(buy_order_id, amount_to_sell, rname);
+            console.log('MARKET: DEAL buy order: ' + buy_order_id + ' on: ' + mtype + ' from: ' + rname + ' at: ' + buy_price + ' (effectively: ' + effective_buy_price + ', still better than ' + sell_price + ') sending: ' + amount_to_sell + ' result: ' + retval);
+        } else if(order_id == undefined) {
+
+            var retval = Game.market.createOrder(ORDER_SELL, mtype, sell_price, amount_to_sell, rname);
+            console.log('MARKET: CREATE sell order ' + mtype + ' from ' + rname + ' at ' + sell_price + ' result ' + retval);
+        } else {
+            if (old_price == sell_price) {
+                //console.log('MARKET: PERFECT existing order ' + order_id + ' for ' + mtype + ' in ' + rname + ' selling at ' + old_price);
+            } else if (old_price < sell_price) {
+                // not possible? 
+            } else {
+                console.log('MARKET: REPRICE order ' + order_id + ' from ' + old_price + ' to ' + sell_price);
+                Game.market.changeOrderPrice(order_id, sell_price);
+            }
+        }
+    }
+    return 'OK';
 }

@@ -7,7 +7,10 @@ module.exports =  {
         var melee_parts = creep.getActiveBodyparts(ATTACK);
         var ranged_parts = creep.getActiveBodyparts(RANGED_ATTACK);
         var heal_parts = creep.getActiveBodyparts(HEAL);
-        var target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
+        var target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS); // creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS, {filter: (s) => s.getActiveBodyparts(HEAL) > 0});
+        if (!target) {
+            target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
+        }
         if (!target) {
             target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES,{filter: (s) => s.structureType != STRUCTURE_CONTROLLER});
         }
@@ -118,6 +121,8 @@ module.exports =  {
             } else {
                 creep.rangedAttack(target);
             }
+        } else if (creep.hits < creep.hitsMax && heal_parts > 0) {
+            creep.rangedHeal(creep);
         }
     }
 };

@@ -10,23 +10,6 @@ StructureTower.prototype.getPowerForRange = function(initialpower, dist) {
     return Math.floor(expected_effect);
 }
 
-StructureSpawn.prototype.isAvailable = function() {
-    if(this.spawning != undefined) {
-        return 0;
-    }
-    var crlist = this.pos.findInRange(FIND_CREEPS, 1);
-    var creeps_renewing = 0;
-    for (var i = 0; i < crlist.length; i++) {
-        if (crlist[i].memory[MEMORY_JOB] == JOB_RENEW) {
-            creeps_renewing++;
-        }
-    }
-    if (creeps_renewing > 0) {
-        return 0;
-    }
-    return 1;
-}
-
 StructureSpawn.prototype.recycleObsolete = function() {
     var nrcount = 0;
     for (var crname in Game.creeps) {
@@ -45,4 +28,33 @@ StructureSpawn.prototype.recycleObsolete = function() {
         }
     }
     console.log(this.name + ': set ' + nrcount + ' probably-obsolete creeps to not renew');
+}
+
+StructureSpawn.prototype.isAvailable = function() {
+    if(this.spawning != undefined) {
+        //console.log(this.name + ' not available due to spawning in progress');
+        return 0;
+    }
+    var crlist = this.pos.findInRange(FIND_CREEPS, 3);
+    var creeps_renewing = 0;
+    for (var i = 0; i < crlist.length; i++) {
+        if (crlist[i].memory[MEMORY_JOB] == undefined) {
+            continue;
+        }
+        if (crlist[i].memory[MEMORY_JOB] != JOB_RENEW) {
+            continue;
+        }
+        if (!crlist[i].getRenewEnabled()) {
+            continue;
+        }
+        if (!crlist[i].getNeeded()) {
+            continue;
+        }
+        creeps_renewing++;
+    }
+    if (creeps_renewing > 0) {
+        return 0;
+        //console.log(this.name + ' not available due to creeps renewing');
+    }
+    return 1;
 }

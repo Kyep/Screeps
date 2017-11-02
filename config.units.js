@@ -5,23 +5,25 @@ global.empire_workers = {
 	'upfar': { 'body': [WORK, CARRY, MOVE] },
 	'up8': { 'body': [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 'noresizing': 1 },
 
-	'remoteconstructor': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], 'renew_allowed': 0 },
-	'minirc': { 'body': [WORK, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
+	'remoteconstructor': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], 'renew_allowed': 0, 'abbr': 'RC'},
+	'minirc': { 'body': [WORK, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'miniRC'},
 
 	'harvester': { 'body': [WORK, CARRY, MOVE] },
-	'bharvester': { 'body': [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], 'noresizing': 1 }, // 800e. takes 6 WORK units to deplete a c30 vein. These have 4. So you need 2 per base, allowing some refill time.
-	'c15harvester': { 'body': [WORK, WORK, WORK, CARRY, MOVE, MOVE], 'noresizing': 1 },
-	'c30harvester': { 'body': [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
-	'hauler': { 'body': [WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1 },
+	'fharvester': { 'body': [WORK, CARRY, MOVE, MOVE] },
+	'bharvester': { 'body': [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], 'noresizing': 1, 'abbr': 'bHar'}, // 800e. takes 6 WORK units to deplete a c30 vein. These have 4. So you need 2 per base, allowing some refill time.
+	'c15harvester': { 'body': [WORK, WORK, WORK, CARRY, MOVE, MOVE], 'noresizing': 1, 'abbr': 'c15'},
+	'c30harvester': { 'body': [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'abbr': 'c30' },
+	'hauler': { 'body': [WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'abbr': 'haul'},
 
-	'extractor': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE] },
+	'extractor': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 'abbr': 'Ext' },
 	'scavenger': { 'body': [WORK, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 	'bigscavenger': { 'body': [CARRY, MOVE] },
 	'builder': { 'body': [WORK, CARRY, MOVE] },
-	'builderstorage': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 'renew_allowed': 0 }, // full speed on roads
-	'upstorclose': { 'body': [WORK, WORK, CARRY, MOVE], 'renew_allowed': 0 },  // halfspeed on roads, quarter speed offroad
-	'upstorfar': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 'renew_allowed': 0 },  // halfspeed on roads, quarter speed offroad
-	'labtech': { 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE] },
+	'builderstorage': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 'renew_allowed': 0, 'abbr': 'BS' }, // full speed on roads
+	'upstorclose': { 'body': [WORK, WORK, CARRY, MOVE], 'renew_allowed': 0, 'abbr': 'USc' },  // halfspeed on roads, quarter speed offroad
+	'upstorfar': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 'renew_allowed': 0, 'abbr': 'USf' },  // halfspeed on roads, quarter speed offroad
+	'labtech': { 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 'abbr': 'Tec' },
+	'nuketech': { 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'NUKE'  },
 
     // MILITARY CREEP DESIGN RULES:
     // 1. all NPC invaders have 1:1 move speed offroad, 2/3 (4/6 counting RCL>=4 invaders) have a ranged attack, and another 1/3rd have ranged heals. Thus creeps MUST have 1:1 movespeed. If they do not, they might get kited.
@@ -34,15 +36,15 @@ global.empire_workers = {
 	'rogue': { 'body':      global.CONSTRUCT_MILITARY_BODY(2, 6, 4, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 640e, 1,200 HP, 120 DPS. Capable of out-damaging a RCL<4 healer.
     'ninja': { 'body':      global.CONSTRUCT_MILITARY_BODY(2, 8, 6, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 900e, 1,600 HP, 180 DPS. 
     'ninjaheals': { 'body': global.CONSTRUCT_MILITARY_BODY(2, 9, 6, 0, 1), 'noresizing': 1, 'renew_allowed': 0}, // 1,050e, 1,800 HP, 180 DPS. 
-    'dragon': { 'body':     global.CONSTRUCT_MILITARY_BODY(6, 14, 6, 0, 2), 'noresizing': 1, 'renew_allowed': 0}, // 1,740e, 2,800 HP, 180 DPS, 24 HPS.
+    'dragon': { 'body':     global.CONSTRUCT_MILITARY_BODY(6, 16, 10, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1,660e, 3,200 HP, 300 DPS.
     'siegedragon': { 'body':global.CONSTRUCT_MILITARY_BODY(4, 14, 10, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1,540e, 2,800 HP, 300 DPS.
     'boss': { 'body':       global.CONSTRUCT_MILITARY_BODY(10, 20, 8, 0, 2), 'noresizing': 1, 'renew_allowed': 0}, // 2,240e, 4,000 HP, 240 DPS, 24 HPS.
     
     // ANTIKITE
-    'antikite1': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 1, 0, 1, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1}, 
-    'antikite2': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 2, 0, 2, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1}, 
-    'antikite4': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 4, 0, 4, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1}, 
-    'antikite8': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 8, 0, 8, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1}, 
+    'antikite2': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 2, 0, 2, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak2'}, 
+    'antikite4': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 4, 0, 4, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak4'}, 
+    'antikite8': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 8, 0, 8, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak8'}, 
+    'antikite16': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 16, 0, 16, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak16'}, 
 
     // Anti-player defense classes
 	'wizard': { 'body':   [MOVE, RANGED_ATTACK], 'renew_allowed': 0}, // horrificly expensive anti-crowd unit

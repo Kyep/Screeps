@@ -19,6 +19,9 @@ module.exports = {
                 // CASE 1: My GCL is too low.
                 if (Game.gcl.level < gcltarget) {
                     // don't do anything, reservers are pointless.
+                    for(var sid in empire[rname].sources) {
+                        empire[rname].sources[sid].assigned = {}
+                    }
                     continue;
                 // CASE 2a: I have no vision of the room, I assume I don't own it.
                 } else if (controllertarget == undefined) {
@@ -47,7 +50,7 @@ module.exports = {
                 if (spawner_name == '') {
                     // CASE 5: I own the room, the controller is level 1 (can have spawn) but there is no spawn
                     for(var sid in empire[rname].sources) {
-                        empire[rname].sources[sid].assigned = {'remoteconstructor': 1}
+                        empire[rname].sources[sid].assigned = {'remoteconstructor': 2}
                     }
                     var csites = expansiontarget.find(FIND_MY_CONSTRUCTION_SITES);
                     if(csites.length) {
@@ -129,9 +132,10 @@ module.exports = {
                     if (spawner_name != '') {
                         // Reassign incoming remoteconstructors as this room's harvesters to kickstart it.
                         for (var crname in Game.creeps) {
-                            if (Game.creeps[crname].memory[MEMORY_JOB] == 'remoteconstructor' && Game.creeps[crname].memory[MEMORY_HOME] != rname && Game.creeps[crname].memory[MEMORY_DEST] == rname) {
+                            if (Game.creeps[crname].memory[MEMORY_ROLE] == 'remoteconstructor'  && Game.creeps[crname].memory[MEMORY_DEST] == rname) {
                                 Game.creeps[crname].memory[MEMORY_HOME] = rname;
-                                Game.creeps[crname].memory[MEMORY_JOB] = 'harvester';
+                                Game.creeps[crname].memory[MEMORY_ROLE] = 'harvester';
+                                Game.creeps[crname].memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
                                 Game.creeps[crname].memory[MEMORY_SPAWNERNAME] = spawner_name;
                             }
                         }

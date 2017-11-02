@@ -33,6 +33,7 @@ var roleSiege = require('role.siege');
 var roleDrainer = require('role.drainer');
 var roleSigner = require('role.signer');
 var roleLabtech = require('role.labtech');
+var roleNuketech = require('role.nuketech');
 
 var structureLink = require('structure.link');
 var structureLab = require('structure.lab');
@@ -75,7 +76,10 @@ module.exports.loop = function () {
     cpu_setup_use = Game.cpu.getUsed() - cpu_setup_use;
     if (cpu_reporting) { console.log('CPU cpu_setup_use: ' + cpu_setup_use); }
 
-
+    if(Game.time % 1000 === 0) {
+        global.UPDATE_MARKET_ORDERS();
+    }
+    
     if(Game.time % divisor === 0) {
 
         // EXPANSION CONTROLLER
@@ -153,6 +157,9 @@ module.exports.loop = function () {
                 }
             } else if (rname in Memory['sectors_under_attack']) {
                 // do nothing
+            } else if (Game.rooms[rname].controller != undefined && Game.rooms[rname].controller.level != undefined && Game.rooms[rname].controller.level >= 1 && Game.rooms[rname].controller.level < 4) {
+                // Do not send RCs to RCL 1-4 rooms. They are expected to have harvesters that self-build. 
+                // Especially since they'd just end up with 1-unit miniRCs that build slow as molasses.
             } else {
                 var projectsList = Game.rooms[rname].find(FIND_MY_CONSTRUCTION_SITES);
                 var construction_hp = 0;
@@ -267,7 +274,11 @@ module.exports.loop = function () {
             //console.log(rname + ':' + enemiesList.length);
             if(enemiesList.length) {
                 for(var i = 0; i < enemiesList.length; i++) {
-                    enemiesCost += global.CREEP_COST(enemiesList[i].body);
+                    var this_enemy_cost = global.CREEP_COST(enemiesList[i].body);
+                    if(enemiesList[i].isBoosted()) {
+                        this_enemy_cost *= 2; // This treats boosted creeps as twice as dangerous. They can be up to 4x... but this is a simple method of treating these creeps more seriously.
+                    }
+                    enemiesCost += this_enemy_cost;
                     if (enemiesList[i].owner != undefined) {
                         if (enemiesList[i].owner.username != undefined) {
                             if (enemiesList[i].owner.username != attacker_username) {
@@ -377,13 +388,19 @@ module.exports.loop = function () {
         if (energy_network[ENERGY_FULL] != undefined) {
             if(energy_network[ENERGY_FULL].length > 0) {
                if(energy_network[ENERGY_SPARE] != undefined && energy_network[ENERGY_SPARE].length > 0) {
-                   var source_room = energy_network[ENERGY_FULL][0];
-                   var source_terminal = Game.rooms[source_room].terminal;
-                   var terminal_energy_min = empire_defaults['terminal_energy_min'];
-                   if (source_terminal.store.energy > terminal_energy_min) {
-                       var dest_room = energy_network[ENERGY_SPARE][0];
-                       var send_result = Game.rooms[source_room].terminal.send(RESOURCE_ENERGY, 25000, dest_room, 'full room pushes energy to ok');
-                       console.log('ENERGYNET: ' + source_room + ' (FULL) pushes energy to (OK) room: ' + dest_room + ', result:' + send_result);
+                    var source_room = _.sample(energy_network[ENERGY_FULL]);
+                    var source_terminal = Game.rooms[source_room].terminal;
+                    var terminal_energy_min = empire_defaults['terminal_energy_min'];
+                    if (source_terminal.store.energy > terminal_energy_min) {
+                        var dest_room = _.sample(energy_network[ENERGY_SPARE]);
+                        if (Game.rooms[dest_room]) {
+                            var dest_new_energy = Game.rooms[dest_room].terminal.store.energy;
+                            var space_in_dest = Game.rooms[dest_room].terminal.storeCapacity - _.sum(Game.rooms[dest_room].terminal.store);
+                            if (space_in_dest < 25000) {
+                                var send_result = Game.rooms[source_room].terminal.send(RESOURCE_ENERGY, 25000, dest_room, 'full room pushes energy to ok');
+                                console.log('ENERGYNET: ' + source_room + ' (FULL) pushes 25k energy to (OK) room: ' + dest_room + ', result:' + send_result + ', new total in dest: ' + dest_new_energy);
+                            }
+                       }
                    }
                }
             }
@@ -520,11 +537,13 @@ module.exports.loop = function () {
                 }
 
                 var theirthreat = sectors_under_attack[csector]['threat'];
-                if (towercount > 0) {
-                    theirthreat -= (400 * towercount);
-                    baseforce['teller-towers'] = 1;
-                    if (theirthreat > 8000) {
-                        baseforce['teller'] = 1;
+                if (towercount > 0 && attacker_username == 'Invader') {
+                    theirthreat -= (1000 * towercount);
+                    if (Game.rooms[csector] != undefined && Game.rooms[csector].storage != undefined) {
+                        baseforce['teller-towers'] = 1;
+                        if (theirthreat > 8000) {
+                            baseforce['teller'] = 1;
+                        }
                     }
                 }
             
@@ -532,22 +551,25 @@ module.exports.loop = function () {
                     console.log('ATTACK CONFIG WARNING, SECTOR ' + csector + ' HAS NO spawn_room SET ON ITS ROOM!');
                     patrolforce['rogue'] = 1; // the sad default.
                 } else if (theirthreat > 0) {
-                    //console.log('XAT: Deciding what to spawn for the ' + theirthreat + ' attack on ' + csector);
+                    
                     var spawner = GET_SPAWNER_FOR_ROOM(csector);
                     if (spawner == undefined) {
-                        console.log('XAT: ' + csector + " has no free spawner");
+                        //console.log('XAT: ' + csector + " has no free spawner");
                         continue;
+                    } else {
+                        //console.log('XAT: Deciding what to spawn for the ' + theirthreat + ' attack on ' + csector + ' defended by ' + spawner.name);
                     }
-                    //console.log('ATK: ' + spawner.name);
+                    
                     var enow = spawner.room.energyAvailable;
                     var emax = spawner.room.energyCapacityAvailable;
-                    var prepare_for_kiting = 0;
+                    var defense_roles = empire_defaults['defense_roles'];
                     if (sectors_under_attack[csector]['enemycount'] == 1 && sectors_under_attack[csector]['enemiesRanged'] == 1) {
                         // there is one guy, he's ranged, and he cannot heal. This is probably a kiting attack.
-                        prepare_for_kiting = 1;
+                        defense_roles = empire_defaults['defense_roles_ranged'];
+                        //console.log('KITING DETECTED: ' + csector);
                     }
-                    for (var i = 0; i < empire_defaults['defense_roles'].length; i++) {
-                        var oname = empire_defaults['defense_roles'][i];
+                    for (var i = 0; i < defense_roles.length; i++) {
+                        var oname = defense_roles[i];
                         //console.log('checking cost for' + oname);
                         var obody = empire_workers[oname]['body'];
                         var outfit_cost = global.UNIT_COST(obody);
@@ -556,19 +578,14 @@ module.exports.loop = function () {
                             // no point using this... we can't possibly afford it.
                             continue;
                         }
-                        if(prepare_for_kiting) {
-                            if (empire_workers[oname]['antikite'] != undefined) {
-                                continue;
-                            }
-                        }
-                        if ((i + 1) != empire_defaults['defense_roles'].length) {
+                        if ((i + 1) != defense_roles.length) {
                             if (outfit_cost > (theirthreat * 1.2)) { 
-                                //console.log('XAT: No point using ' + oname + ' as it is > 1.2*their_threat ' + theirthreat + ' (i: ' + i +  ', DRL:' + empire_defaults['defense_roles'].length + ')');
+                                //console.log('XAT: No point using ' + oname + ' as it is > 1.2*their_threat ' + theirthreat + ' (i: ' + i +  ', DRL:' + defense_roles.length + ')');
                                 continue; // overkill...
                             }
                         }
                         if (patrolforce[oname] == undefined) {
-                            if (i == empire_defaults['defense_roles'].length && theirthreat > (outfit_cost * 2)) {
+                            if (i == defense_roles.length && theirthreat > (outfit_cost * 2)) {
                                 patrolforce[oname] = 2;
                             } else {
                                 patrolforce[oname] = 1;
@@ -583,7 +600,7 @@ module.exports.loop = function () {
                         }
                     }
                 } else {
-                    console.log('DEFENSE: Decided that  ' + csector + ' can handle the incoming threat of ' + theirthreat + ' without any units being spawned');
+                    //console.log('DEFENSE: Decided that  ' + csector + ' can handle the incoming threat of ' + theirthreat + ' without any units being spawned');
                 }
                 /*
                 if (csector == 'W51S14') {
@@ -826,7 +843,7 @@ module.exports.loop = function () {
 
                             
                             if (spawner.room.energyAvailable < 300) {
-                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as cost exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
+                                //console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as cost exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
                             }
                             
                             var part_template = empire_workers[role]['body'];
@@ -845,6 +862,7 @@ module.exports.loop = function () {
                             //console.log(work_units + ' based on ' + global.UNIT_COST(part_template) + ' in ' + spawner.room.energyCapacityAvailable);
                             var renew_allowed = 1;
                             
+                            /*
                             if (spawner_mobs[spawner.name] == undefined ) {
                                 work_units = 1;
                                 renew_allowed = 0;
@@ -856,6 +874,7 @@ module.exports.loop = function () {
                                     console.log(spawner.name + ': ALLOWING ONLY ONE WORK UNIT, AS MY MOB LIST (' + spawner_mobs[spawner.name].length + ') HAS LESS THAN 4 MOBS. ');
                                 }
                             }
+                            */
                             if (empire_workers[role]['renew_allowed'] != undefined) {
                                 if (empire_workers[role]['renew_allowed'] == 0) {
                                     renew_allowed = 0;   
@@ -873,7 +892,7 @@ module.exports.loop = function () {
                                         }
                                     }   
                                 }
-                                partlist = CONSTRUCT_RESERVER_BODY(ticksrem);
+                                partlist = CONSTRUCT_RESERVER_BODY(ticksrem, spawner.room.energyCapacityAvailable);
                             } else if(role == 'hauler') {
                                 partlist = CONSTRUCT_HAULER_BODY(rname, skey, spawner.room.energyCapacityAvailable);
                             } else if (empire_workers[role]['noresizing'] == undefined) {
@@ -889,8 +908,7 @@ module.exports.loop = function () {
                             var spawnrole = role;
                             var thecost = global.UNIT_COST(partlist);
                             if (spawner.room.energyCapacityAvailable < thecost) {
-                                console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as THIS UNIT cost ' + thecost + ' exceeds MAX STORAGE: ' + 
-                                    spawner.room.energyAvailable + ' ');
+                                //console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as THIS UNIT cost ' + thecost + ' exceeds MAX STORAGE: ' + spawner.room.energyAvailable + ' ');
                                 continue;
                             }
                             
@@ -1092,7 +1110,7 @@ module.exports.loop = function () {
 
         if (creep.spawning) {
             // don't even process this creep, it cannot do anything while it is being spawned, and even attempting to do so just wastes CPU.
-        } else if(creep.memory[MEMORY_ROLE] == 'harvester' || creep.memory[MEMORY_ROLE] == 'bharvester') {
+        } else if(creep.memory[MEMORY_ROLE] == 'harvester' || creep.memory[MEMORY_ROLE] == 'bharvester' || creep.memory[MEMORY_ROLE] == 'fharvester') {
             roleHarvester.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'c15harvester' || creep.memory[MEMORY_ROLE] == 'c30harvester') {
             roleCHarvester.run(creep);
@@ -1133,6 +1151,8 @@ module.exports.loop = function () {
             roleRemoteconstructor.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'labtech') {
             roleLabtech.run(creep);
+        } else if(creep.memory[MEMORY_ROLE] == 'nuketech') {
+            roleNuketech.run(creep);
         } else {
             console.log('ALERT: ' + creep.name + ' in room' + creep.room.name + ' has role ' + creep.memory[MEMORY_ROLE] + ' which I do not know how to handle!')
             //creep.suicide();

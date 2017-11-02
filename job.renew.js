@@ -14,6 +14,9 @@ module.exports = {
                 return -1;
             }
         }
+        if(creep.getShouldHide()) {
+            return -1;
+        }
 
         creep.say(creep.ticksToLive);
 

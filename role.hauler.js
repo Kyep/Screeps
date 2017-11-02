@@ -26,7 +26,7 @@ module.exports = {
             }
         }
         if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_OUT) {
-            if (creep.carry.energy == creep.carryCapacity) {
+            if (creep.carry.energy > (creep.carryCapacity / 2)) {
 	            creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
 	            return 0;
             } else if (!creep.isAtDestinationRoom()) {

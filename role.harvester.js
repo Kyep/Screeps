@@ -117,15 +117,19 @@ module.exports = {
 
                 }
             } else {
-                creep.moveToDestination();
+                if (containermine && !creep.isAtDestination()) {
+                    creep.moveToDestination();
+                }
 	            var retval = jobHarvest.run(creep);
-                if (retval == ERR_NOT_ENOUGH_RESOURCES && !containermine && creep.carry.energy > 0) {
-                    if(creep.room.name == creep.memory[MEMORY_HOME]) {
-                        creep.memory[MEMORY_JOB] = JOB_RETURN;
-                    } else {
-                        creep.memory[MEMORY_CONTAINER] = undefined;
-                        creep.memory[MEMORY_JOB] = JOB_BUILD;
-                        creep.announceJob();
+                if (retval == ERR_NOT_ENOUGH_RESOURCES && !containermine) {
+                    if (creep.carry.energy > 0) {
+                        if(creep.room.name == creep.memory[MEMORY_HOME]) {
+                            creep.memory[MEMORY_JOB] = JOB_RETURN;
+                        } else {
+                            creep.memory[MEMORY_CONTAINER] = undefined;
+                            creep.memory[MEMORY_JOB] = JOB_BUILD;
+                            creep.announceJob();
+                        }
                     }
                 }
                 // TEMPORARY PICK UP DROPPED ENERGY CODE
