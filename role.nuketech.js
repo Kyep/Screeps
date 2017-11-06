@@ -22,21 +22,7 @@ module.exports = {
         var mystorage = creep.room.storage;
         var energy_required = mysilo.energyCapacity - mysilo.energy;
         var ghodium_required = mysilo.ghodiumCapacity - mysilo.ghodium;
-        if (energy_required > 0) {
-            var withdraw_amount = energy_required;
-            if (withdraw_amount > creep.carryCapacity) {
-                withdraw_amount = creep.carryCapacity;
-            }
-            if(mystorage.store[RESOURCE_ENERGY] < withdraw_amount) {
-                creep.say('E short!');
-                return;
-            }
-            var wr = creep.withdraw(mystorage, RESOURCE_ENERGY);
-            if (wr == ERR_NOT_IN_RANGE) {
-                creep.moveTo(mystorage);
-            }
-            return;
-        } else if (ghodium_required > 0) {
+        if (ghodium_required > 0) {
             var withdraw_amount = ghodium_required;
             if (withdraw_amount > creep.carryCapacity) {
                 withdraw_amount = creep.carryCapacity;
@@ -48,6 +34,20 @@ module.exports = {
             var wr = creep.withdraw(myterminal, RESOURCE_GHODIUM);
             if (wr == ERR_NOT_IN_RANGE) {
                 creep.moveTo(myterminal);
+            }
+            return;
+        } else if (energy_required > 0) {
+            var withdraw_amount = energy_required;
+            if (withdraw_amount > creep.carryCapacity) {
+                withdraw_amount = creep.carryCapacity;
+            }
+            if(mystorage.store[RESOURCE_ENERGY] < withdraw_amount) {
+                creep.say('E short!');
+                return;
+            }
+            var wr = creep.withdraw(mystorage, RESOURCE_ENERGY);
+            if (wr == ERR_NOT_IN_RANGE) {
+                creep.moveTo(mystorage);
             }
             return;
         }

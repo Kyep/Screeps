@@ -76,8 +76,9 @@ module.exports.loop = function () {
     cpu_setup_use = Game.cpu.getUsed() - cpu_setup_use;
     if (cpu_reporting) { console.log('CPU cpu_setup_use: ' + cpu_setup_use); }
 
-    if(Game.time % 1000 === 0) {
+    if(Game.time % 2000 === 0) {
         global.UPDATE_MARKET_ORDERS();
+        //global.PRESET_ATTACK_WAVE();
     }
     
     if(Game.time % divisor === 0) {
@@ -157,9 +158,8 @@ module.exports.loop = function () {
                 }
             } else if (rname in Memory['sectors_under_attack']) {
                 // do nothing
-            } else if (Game.rooms[rname].controller != undefined && Game.rooms[rname].controller.level != undefined && Game.rooms[rname].controller.level >= 1 && Game.rooms[rname].controller.level < 4) {
-                // Do not send RCs to RCL 1-4 rooms. They are expected to have harvesters that self-build. 
-                // Especially since they'd just end up with 1-unit miniRCs that build slow as molasses.
+            } else if (Game.rooms[rname].controller != undefined && Game.rooms[rname].controller.level != undefined && Game.rooms[rname].controller.level >= 1) {
+                // Do not send RCs to base rooms. They use builderstorages instead.
             } else {
                 var projectsList = Game.rooms[rname].find(FIND_MY_CONSTRUCTION_SITES);
                 var construction_hp = 0;
@@ -387,7 +387,7 @@ module.exports.loop = function () {
         }
         if (energy_network[ENERGY_FULL] != undefined) {
             if(energy_network[ENERGY_FULL].length > 0) {
-               if(energy_network[ENERGY_SPARE] != undefined && energy_network[ENERGY_SPARE].length > 0) {
+                if(energy_network[ENERGY_SPARE] != undefined && energy_network[ENERGY_SPARE].length > 0) {
                     var source_room = _.sample(energy_network[ENERGY_FULL]);
                     var source_terminal = Game.rooms[source_room].terminal;
                     var terminal_energy_min = empire_defaults['terminal_energy_min'];
@@ -396,11 +396,15 @@ module.exports.loop = function () {
                         if (Game.rooms[dest_room]) {
                             var dest_new_energy = Game.rooms[dest_room].terminal.store.energy;
                             var space_in_dest = Game.rooms[dest_room].terminal.storeCapacity - _.sum(Game.rooms[dest_room].terminal.store);
-                            if (space_in_dest < 25000) {
+                            if (space_in_dest > 25000) {
                                 var send_result = Game.rooms[source_room].terminal.send(RESOURCE_ENERGY, 25000, dest_room, 'full room pushes energy to ok');
-                                console.log('ENERGYNET: ' + source_room + ' (FULL) pushes 25k energy to (OK) room: ' + dest_room + ', result:' + send_result + ', new total in dest: ' + dest_new_energy);
+                                var text_message = 'ENERGYNET: ' + source_room + ' (FULL) pushes 25k energy to (OK) room: ' + dest_room + ', result:' + send_result + ', new total in dest: ' + dest_new_energy;
+                                console.log(text_message);
+                                Game.notify(text_message);
                             }
                        }
+                   } else {
+                       //console.log('ENERGYNET: ' + source_room + ' (FULL) lacks enough energy in terminal to push.');
                    }
                }
             }

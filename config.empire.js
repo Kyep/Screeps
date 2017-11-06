@@ -19,6 +19,7 @@
         'repairmax_towers' : 150000,
         'terminal_energy_min' : 50000,
         'terminal_energy_max' : 60000,
+        'storage_energy_max' : 1000000,
         'room_energy_min' : 100000, // 50k in terminal, 50k in storage
         'room_energy_max' : 300000, // 50k in termal, 250k in storage
         'room_history_ticks': 50,
@@ -114,7 +115,7 @@
             'sources': {
                 'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40 },
                 '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20, 'target_x': 15, 'target_y': 21, 'steps':10, 'spaces':3,
-                    'assigned': {'upclose':1},
+                    'assigned': {'bharvester':2},
                     'expected_income': 80
                 },
                 '59bbc4182052a716c3ce758d': {'sourcename':'2-W', 'x':3, 'y':27, 'target_x': 4, 'target_y': 27, 'steps':10, 'spaces':2,

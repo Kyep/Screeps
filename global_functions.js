@@ -328,6 +328,35 @@ global.ATTACK_WAVE = function (spawn_list, unit_type, target_room, roompath) {
     }
 }
 
+global.PRESET_ATTACK_WAVE = function () {
+    /* TARGETS: 
+    W57S12 - their biggest mining base.
+    W57S15 - their south mining base
+    W59S12 - their west mining base
+    W56S11 - their between the rooms base
+    */
+
+    //SPAWN_UNIT('Spawn6','slasher','W56S12',['W56S13','W57S13', 'W57S12']); // north base.
+    //SPAWN_UNIT('Spawn6','siegemini','W55S10',['W59S10','W59S11']); // north base.
+    SPAWN_UNIT('Spawn6','siegemini','W55S10',['W57S10','W57S11']); // north base.
+
+    SPAWN_UNIT('Spawn3','scout','W55S10',['W56S10','W56S11']); // NE base
+    SPAWN_UNIT('Spawn9','siegemini','W55S10',['W56S10','W56S11']);
+    
+    //SPAWN_UNIT('Spawn11','scout','W60S17',['W60S16','W60S12', 'W59S12']); // W base, harass his NW mining operation
+    SPAWN_UNIT('Spawn11','siegemini','W60S17',['W60S16','W60S12', 'W57S12', 'W57S11']); // W base, his primary
+
+    SPAWN_UNIT('Spawn8','slasher','W54S17',['W54S16', 'W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14', 'W57S11']); // gaurdian base, harass his s base mining
+    SPAWN_UNIT('Spawn12','siegemini','W54S17',['W54S16', 'W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14', 'W57S11']); // siege him too
+
+    SPAWN_UNIT('Spawn1','siegemini','W54S16',['W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14', 'W57S11']); // keep it small, swamps!
+    SPAWN_UNIT('Spawn4','siegemini','W54S16',['W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14', 'W57S11']); // keep it small, swamps!
+
+    SPAWN_UNIT('Spawn2','siegemini','W53S18',['W54S16', 'W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14','W57S11']); // keep it small, swamps!
+    SPAWN_UNIT('Spawn5','siegemini','W53S18',['W54S16', 'W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14','W57S11']); // keep it small, swamps!
+    
+}
+
 global.MASS_RETARGET = function (role, newtarget, waypoints) {
     for (var crname in Game.creeps) {
         if (Game.creeps[crname].memory[MEMORY_ROLE] == role) {
