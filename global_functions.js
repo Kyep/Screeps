@@ -419,17 +419,16 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname) {
     // This is used during expansion so that bases can be set to spawn their own units, but the base they expand from will still do most of the work until they are ready.
     } else if (!spawners.length || (primary_spawner_room_level > 0 && primary_spawner_room_level < 3)) {
         if (backup_spawn_room != undefined) {
-            var has_primary = 0;
+            var primary_count = -1;
             if (spawn_room != undefined) {
                 var primary_spawners = spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN); } });                
-                if(!primary_spawners.length) {
-                    has_primary = 1;
-                }
+                primary_count = primary_spawners.length;
+                //console.log('Checked ' + spawn_room.name + ' for spawners, found: ' + primary_spawners.length);
             }
-            if (!has_primary) {
+            if (primary_count < 1) {
                 var backup_spawners = backup_spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
                 if (backup_spawners.length) {
-                    console.log('GET_SPAWNER_FOR_ROOM: returning backup spawner for:  ' + theroomname);
+                    console.log('GET_SPAWNER_FOR_ROOM: returning backup spawner for:  ' + theroomname + ' with a primary_count: ' + primary_count);
                     return [backup_spawners[0], 0];
                 }
             }

@@ -48,7 +48,7 @@ module.exports =  {
                 }
             }
         } else {
-            console.log("WARNING: " + creep.name + " has no job: " + creep.memory[MEMORY_JOB]);
+            //console.log("WARNING: " + creep.name + " has no job: " + creep.memory[MEMORY_JOB]);
             creep.memory[MEMORY_JOB] = JOB_GFS;
         }
 	}

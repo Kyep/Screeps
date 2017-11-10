@@ -558,11 +558,12 @@ module.exports.loop = function () {
                     
                     var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(csector);
                     var spawner = gsapfr[0];
+                    var using_primary = gsapfr[1];
                     if (spawner == undefined) {
                         continue;
                     }
                     var home_room = spawner.room.name;
-                    if (gsapfr[1] == 0 && empire[rname]['spawn_room'] != undefined) {
+                    if (!using_primary && empire[rname]['spawn_room'] != undefined) {
                         home_room = empire[rname]['spawn_room'];
                     }
 
@@ -820,12 +821,13 @@ module.exports.loop = function () {
 
                             var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(rname);
                             var spawner = gsapfr[0];
+                            var using_primary = gsapfr[1];
                             if (spawner == undefined) {
                                 continue;
                             }
                             var home_room = spawner.room.name;
                             var renew_allowed = 1;
-                            if (gsapfr[1] == 0 && empire[rname]['spawn_room'] != undefined) {
+                            if (!using_primary && empire[rname]['spawn_room'] != undefined) {
                                 home_room = empire[rname]['spawn_room'];
                                 renew_allowed = 0;
                             }
@@ -901,8 +903,11 @@ module.exports.loop = function () {
                             if(empire[rname].sources[skey]['y'] != undefined) { target_y = empire[rname].sources[skey]['y']; }
                             if(empire[rname].sources[skey]['target_x'] != undefined) { target_x = empire[rname].sources[skey]['target_x']; }
                             if(empire[rname].sources[skey]['target_y'] != undefined) { target_y = empire[rname].sources[skey]['target_y']; }
-                            //console.log('SPAWNING: ' + spawner.name + ' created ' + spawnrole + ' for |' + empire[rname].sources[skey]['sourcename'] + 
-                            //'| cost: ' + thecost + '/' + spawner.room.energyAvailable + ' capacity:' + energy_cap + ' based out of ' + spawner.room.name + ' with renew: ' + renew_allowed);
+
+                            if(!using_primary) {
+                                console.log('SECONDARY SPAWNING: ' + spawner.name + ' in ' + spawner.room.name + ' created ' + spawnrole + ' for |' + empire[rname].sources[skey]['sourcename'] + 
+                                '| cost: ' + thecost + '/' + spawner.room.energyAvailable + ' capacity:' + spawner.room.energyCapacityAvailable + ' based out of ' + home_room+ ' with renew: ' + renew_allowed);
+                            }
 
                             spawn_queue[spawner.name] = {
                                 'spawner': spawner.name, 'sname': empire[rname].sources[skey]['sourcename'], 'partlist': partlist, 'spawnrole': spawnrole, 'skey': skey, 'rname': rname, 
