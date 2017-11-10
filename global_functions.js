@@ -247,6 +247,12 @@ global.REPORT_CREEPS = function(prune) {
     console.log(JSON.stringify(roleslist));
 }
 
+global.REFRESH_CREEPS = function() {
+    for (var cr in Game.creeps) {
+       Game.creeps[cr].disableRenew(); 
+    }
+}
+
 global.SPAWN_UNIT = function (spawnername, role, targetroomname, roompath) {
     if (Game.spawns[spawnername] == undefined) {
         console.log('No such spawner.');
@@ -265,7 +271,11 @@ global.SPAWN_UNIT = function (spawnername, role, targetroomname, roompath) {
     if (roompath == undefined) {
         roompath = [];
     }
-    SPAWNCUSTOM(Game.spawns[spawnername], '', empire_workers[role]['body'], role, 
+    var the_spawner = Game.spawns[spawnername];
+    var rbap = the_spawner.getRoleBodyAndProperties(role);
+    var partlist = rbap['body'];
+    var renew_allowed = rbap['renew_allowed'];
+    SPAWNCUSTOM(Game.spawns[spawnername], '', partlist, role, 
                         '', targetroomname, global.UNIT_COST(empire_workers[role]['body']), 
                         Game.spawns[spawnername].room.name, 25, 
                         25, 0, roompath);
@@ -298,6 +308,7 @@ global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, t
     crmemory[MEMORY_DEST_X] = target_x;
     crmemory[MEMORY_DEST_Y] = target_y;
     crmemory[MEMORY_SPAWNERNAME] = spawner.name;
+    crmemory[MEMORY_SPAWNERROOM] = spawner.room.name;
     crmemory[MEMORY_RENEW] = renew_allowed;
     crmemory[MEMORY_NEXTDEST] = nextdest;
     //console.log("SPAWNING: " + roletext + " for (" + sourcetext + ') target: ' + targettext + ' (' + target_x + ',' + target_y + ') with cost: ' + thecost + ' based out of ' + homesector);
@@ -370,10 +381,10 @@ global.MASS_RETARGET = function (role, newtarget, waypoints) {
 }
 
 
-global.GET_SPAWNER_FOR_ROOM = function(theroomname) {
+global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname) {
     if (empire[theroomname] == undefined) {
         console.log('GET_SPAWNER_FOR_ROOM: undefined empire block for ' + theroomname);
-        return undefined;
+        return [undefined, 1];
     }
     var backup_spawn_room = undefined;
     if (empire[theroomname]['backup_spawn_room'] != undefined) {
@@ -381,35 +392,53 @@ global.GET_SPAWNER_FOR_ROOM = function(theroomname) {
     }
     if (empire[theroomname]['spawn_room'] == undefined) {
         console.log('GET_SPAWNER_FOR_ROOM: undefined spawn_room for ' + theroomname);
-        return undefined;
+        return [undefined, 1];
     }
     var spawn_room = Game.rooms[empire[theroomname]['spawn_room']];
     if (spawn_room == undefined) {
         if(backup_spawn_room == undefined) {
             console.log('GET_SPAWNER_FOR_ROOM: undefined GAME.ROOMS for spawn_room and backup_spawn_room of ' + theroomname);
-            return undefined;
+            return [undefined, 1];
         }
     }
     var spawners = [];
     if (spawn_room != undefined) {
         spawners = spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable() == 1); } });
     }
-    if (!spawners.length) {
+    var primary_spawner_room_level = 0;
+    if (spawners.length > 0 && spawners[0].room != undefined) {
+        if (spawners[0].room.controller != undefined) {
+            if (spawners[0].room.controller.level != undefined) {
+                primary_spawner_room_level = spawners[0].room.controller.level;
+            }
+        }
+    }
+    if (theroomname in Memory['sectors_under_attack']) {
+        // use room spawner.
+    // If there is no spawner in the room, or there is but the room is level 1 or 2, use backup spawners.
+    // This is used during expansion so that bases can be set to spawn their own units, but the base they expand from will still do most of the work until they are ready.
+    } else if (!spawners.length || (primary_spawner_room_level > 0 && primary_spawner_room_level < 3)) {
         if (backup_spawn_room != undefined) {
-            var primary_spawners = spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN); } });
-            if(!primary_spawners.length) {
+            var has_primary = 0;
+            if (spawn_room != undefined) {
+                var primary_spawners = spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN); } });                
+                if(!primary_spawners.length) {
+                    has_primary = 1;
+                }
+            }
+            if (!has_primary) {
                 var backup_spawners = backup_spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
                 if (backup_spawners.length) {
                     console.log('GET_SPAWNER_FOR_ROOM: returning backup spawner for:  ' + theroomname);
-                    return backup_spawners[0];
+                    return [backup_spawners[0], 0];
                 }
             }
         }
         //console.log('GET_SPAWNER_FOR_ROOM: spawners is zero length ' + theroomname);
-        return undefined;
+        return [undefined, 1];
     }
     //console.log('GSFR: for ' + theroomname + ' returned ' +spawners[0].name);
-    return spawners[0];
+    return [spawners[0], 1];
 }
 
 global.UPDATE_MARKET_ORDERS = function() {

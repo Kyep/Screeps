@@ -9,6 +9,7 @@ global.MEMORY_DEST_X = 'target_x';
 global.MEMORY_DEST_Y = 'target_y';
 global.MEMORY_NEXTDEST = 'nextdest'
 global.MEMORY_SPAWNERNAME = 'spawnername';
+global.MEMORY_SPAWNERROOM = 'spawnerroom';
 global.MEMORY_RENEW = 'renew_allowed';
 global.MEMORY_RENEWALS = 'renewals';
 global.MEMORY_CREATED_AT = 'created_at';

@@ -400,7 +400,7 @@ module.exports.loop = function () {
                                 var send_result = Game.rooms[source_room].terminal.send(RESOURCE_ENERGY, 25000, dest_room, 'full room pushes energy to ok');
                                 var text_message = 'ENERGYNET: ' + source_room + ' (FULL) pushes 25k energy to (OK) room: ' + dest_room + ', result:' + send_result + ', new total in dest: ' + dest_new_energy;
                                 console.log(text_message);
-                                Game.notify(text_message);
+                                //Game.notify(text_message);
                             }
                        }
                    } else {
@@ -556,7 +556,16 @@ module.exports.loop = function () {
                     patrolforce['rogue'] = 1; // the sad default.
                 } else if (theirthreat > 0) {
                     
-                    var spawner = GET_SPAWNER_FOR_ROOM(csector);
+                    var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(csector);
+                    var spawner = gsapfr[0];
+                    if (spawner == undefined) {
+                        continue;
+                    }
+                    var home_room = spawner.room.name;
+                    if (gsapfr[1] == 0 && empire[rname]['spawn_room'] != undefined) {
+                        home_room = empire[rname]['spawn_room'];
+                    }
+
                     if (spawner == undefined) {
                         //console.log('XAT: ' + csector + " has no free spawner");
                         continue;
@@ -679,6 +688,7 @@ module.exports.loop = function () {
             empire[rname].living = {};
         }
         var spawner_parts = {};
+        var room_parts = {}
         for(var name in Memory.creeps) {
             Game.creeps[name].memory[MEMORY_NEEDED] = 0;
             if(Game.creeps[name].memory.spawner == undefined) {
@@ -691,6 +701,13 @@ module.exports.loop = function () {
                     spawner_parts[Game.creeps[name].memory[MEMORY_SPAWNERNAME]] = pcount;
                 }  else {
                     spawner_parts[Game.creeps[name].memory[MEMORY_SPAWNERNAME]] += pcount;
+                }
+                if (Game.creeps[name].memory[MEMORY_SPAWNERROOM] != undefined) {
+                    if (room_parts[Game.creeps[name].memory[MEMORY_SPAWNERROOM]] == undefined) {
+                        room_parts[Game.creeps[name].memory[MEMORY_SPAWNERROOM]] = pcount;
+                    }  else {
+                        room_parts[Game.creeps[name].memory[MEMORY_SPAWNERROOM]] += pcount;
+                    }
                 }
             }
             if(Game.creeps[name].memory.source == undefined) {
@@ -739,15 +756,15 @@ module.exports.loop = function () {
             }
         }
 
-        for(var spawner in spawner_parts) {
-            if(spawner_parts[spawner] > 400 && Game.time % 50 == 0) {
-                console.log('ALERT: spawner ' + spawner + ' in ' + Game.spawns[spawner].room.name + ' is maintaining ' + spawner_parts[spawner] + ' > 400 creep parts. Not sustainable.');
-            } else {
-                //console.log('ALERT: spawner ' + spawner + ' is maintaining ' + spawner_parts[spawner] + ' parts.');
+        if (Game.time % 1 == 0) {
+            for(var rmname in room_parts) {
+                var rmspawns = Game.rooms[rmname].find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_SPAWN } } );
+                var num_spawns = rmspawns.length;
+                if(room_parts[rmname] > (400 * num_spawns)) {
+                    console.log('ALERT: room ' + rmname + ' is maintaining ' + room_parts[rmname] + ' with ' + num_spawns + ' spawner(s).');
+                }
             }
-
         }
-
 
         EmpireSpawning: {
             var spawner_mobs = {};
@@ -801,8 +818,17 @@ module.exports.loop = function () {
                             //    console.log('TEMPORARY BLOCK! holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '|');
                             //}
 
-                            //console.log('checking sobj');
-                            var spawner = GET_SPAWNER_FOR_ROOM(rname);
+                            var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(rname);
+                            var spawner = gsapfr[0];
+                            if (spawner == undefined) {
+                                continue;
+                            }
+                            var home_room = spawner.room.name;
+                            var renew_allowed = 1;
+                            if (gsapfr[1] == 0 && empire[rname]['spawn_room'] != undefined) {
+                                home_room = empire[rname]['spawn_room'];
+                                renew_allowed = 0;
+                            }
                             //console.log('SOBJ: ' + JSON.stringify(spawner));
 
                             if(spawner == undefined) {
@@ -850,64 +876,12 @@ module.exports.loop = function () {
                                 //console.log(spawner.name + ': holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| as cost exceeds MIN ENERGY: ' + spawner.room.energyAvailable);
                             }
                             
-                            var part_template = empire_workers[role]['body'];
-                            var partlist = [];
-                            var energy_cap = spawner.room.energyCapacityAvailable;
-                            if (energy_cap > 4500) {
-                                energy_cap = 4500;
-                            }
-                            var work_units = Math.max(1, Math.floor(energy_cap / global.UNIT_COST(part_template)));
-                            var max_units = Math.floor(50 / part_template.length);
-                            if (work_units > max_units) {
-                                //console.log('Warning: when building body for ' + role + ' work_units got to be ' + work_units + ' but we can only support ' + max_units + ' of this template.');
-                                work_units = max_units;
-                            }
-                            
-                            //console.log(work_units + ' based on ' + global.UNIT_COST(part_template) + ' in ' + spawner.room.energyCapacityAvailable);
-                            var renew_allowed = 1;
-                            
-                            /*
-                            if (spawner_mobs[spawner.name] == undefined ) {
-                                work_units = 1;
+                            var rbap = spawner.getRoleBodyAndProperties(role, rname, skey);
+                            var partlist = rbap['body'];
+                            if(rbap['renew_allowed'] == 0) {
                                 renew_allowed = 0;
-                                console.log(spawner.name + ': ALLOWING ONLY ONE WORK UNIT, AS MY MOB LIST IS UNDEFINED. ');
-                            } else  {
-                                if (spawner_mobs[spawner.name].length < 4) {
-                                    work_units = 1;
-                                    renew_allowed = 0;
-                                    console.log(spawner.name + ': ALLOWING ONLY ONE WORK UNIT, AS MY MOB LIST (' + spawner_mobs[spawner.name].length + ') HAS LESS THAN 4 MOBS. ');
-                                }
-                            }
-                            */
-                            if (empire_workers[role]['renew_allowed'] != undefined) {
-                                if (empire_workers[role]['renew_allowed'] == 0) {
-                                    renew_allowed = 0;   
-                                }
                             }
 
-                            if(role == 'reserver') {
-                                var ticksrem = 0;
-                                if (Game.rooms[rname] != undefined) {
-                                    if (Game.rooms[rname].controller != undefined) {
-                                        if (Game.rooms[rname].controller.reservation != undefined) {
-                                            if (Game.rooms[rname].controller.reservation.ticksToEnd != undefined) {
-                                                ticksrem = Game.rooms[rname].controller.reservation.ticksToEnd;
-                                            }
-                                        }
-                                    }   
-                                }
-                                partlist = CONSTRUCT_RESERVER_BODY(ticksrem, spawner.room.energyCapacityAvailable);
-                            } else if(role == 'hauler') {
-                                partlist = CONSTRUCT_HAULER_BODY(rname, skey, spawner.room.energyCapacityAvailable);
-                            } else if (empire_workers[role]['noresizing'] == undefined) {
-                                for (var k = 0; k < part_template.length; k++) {
-                                    for (var j = 0; j < work_units; j++) {
-                                        partlist.push(part_template[k]);
-                                    }
-                                }
-                            } else {
-                                partlist = part_template;
-                            }
 
                             var spawnrole = role;
                             var thecost = global.UNIT_COST(partlist);
@@ -932,7 +906,7 @@ module.exports.loop = function () {
 
                             spawn_queue[spawner.name] = {
                                 'spawner': spawner.name, 'sname': empire[rname].sources[skey]['sourcename'], 'partlist': partlist, 'spawnrole': spawnrole, 'skey': skey, 'rname': rname, 
-                                'thecost': thecost, 'myroomname': spawner.room.name, 'target_x': target_x, 'target_y': target_y,  
+                                'thecost': thecost, 'myroomname': home_room, 'target_x': target_x, 'target_y': target_y,  
                                 'expected_income': expected_income, 'renew_allowed': renew_allowed, 'nextdest': []
                             }
                             //console.log(JSON.stringify(spawn_queue));

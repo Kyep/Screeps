@@ -476,6 +476,9 @@
                 }
             },
             'safespot': {'x': 9, 'y':32 },
+            'mineralid': '59bbc643ae9e1411a425ab8f',
+            'mineraltype': RESOURCE_ZYNTHIUM
+            
         },  
         // 7W
         'W59S17': {
@@ -512,6 +515,55 @@
                 'reserver': {'sourcename':'7E-R', 'x':25, 'y':25,
                     'assigned': {'reserver': 1},
                     'expected_income': 35, 'dynamic': 1
+                }
+            }
+        },
+
+        // 8 Base
+        'W57S11': {
+            'roomname' : '8',
+            'spawn_room': 'W57S11',
+            'backup_spawn_room': 'W53S12',
+            'sources': {
+                '59bbc3bb2052a716c3ce6a22': {'sourcename': '8-W', 'x':7, 'y':21, 'spaces':4,
+                    'assigned': {'harvester': 4}, 
+                    'expected_income': 85
+                },
+                '59bbc3bb2052a716c3ce6a24': {'sourcename': '8-E', 'x':30, 'y':43, 'spaces':4,
+                    'assigned': {'harvester': 2, 'upclose': 1}, 
+                    'expected_income': 80
+                }
+            },
+            'safespot': {'x': 38, 'y':34 },
+        },
+        // 8 Expansions
+        'W56S11': {
+            'roomname' : '8E',
+            'spawn_room': 'W57S11',
+            'backup_spawn_room': 'W53S12',
+            'sources': {
+                '59bbc3c92052a716c3ce6c1d': {'sourcename': '8E-W', 'x':9, 'y':24, 'spaces':3,
+                    'assigned': {'harvester': 2}, 
+                    'expected_income': 75
+                },
+                '59bbc3c92052a716c3ce6c1e': {'sourcename': '8E-E', 'x':42, 'y':28, 'spaces':3,
+                    'assigned': {'harvester': 2}, 
+                    'expected_income': 70
+                }
+            }
+        },
+        'W57S12': {
+            'roomname' : '8S',
+            'spawn_room': 'W57S11',
+            'backup_spawn_room': 'W53S12',
+            'sources': {
+                '59bbc3bb2052a716c3ce6a27': {'sourcename': '8S-W', 'x':14, 'y':15, 'spaces':4,
+                    'assigned': {'harvester': 2}, 
+                    'expected_income': 65
+                },
+                '59bbc3bb2052a716c3ce6a26': {'sourcename': '8S-E', 'x':24, 'y':13, 'spaces':1,
+                    'assigned': {'harvester': 2}, 
+                    'expected_income': 60
                 }
             }
         },

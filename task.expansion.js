@@ -10,7 +10,7 @@ module.exports = {
         for(var rname in empire) {
             if(rooms_to_claim[rname] != undefined) {
                 // To claim a room, define it like this:
-                // Memory['rooms_to_claim'] = {'W58S17': {'controllerid': '59bbc3ad2052a716c3ce68a7', 'gcltarget': 6 }}
+                // Memory['rooms_to_claim'] = {'W57S11': {'controllerid': '59bbc3bb2052a716c3ce6a23', 'gcltarget': 7 }}
                 var expansiontarget = Game.rooms[rname];
                 var controllertarget = Game.getObjectById(rooms_to_claim[rname]['controllerid']);
                 var gcltarget = rooms_to_claim[rname]['gcltarget'];
@@ -191,13 +191,33 @@ module.exports = {
                         Game.notify(rname +': deployed level ' + (rmem+1) + ' ramparts.');
                         continue;
                     }
+
                     var roadflags = Game.rooms[rname].find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_ORANGE && flag.secondaryColor == COLOR_WHITE) { return 1; } else { return 0; } } });
                     if(roadflags.length) {
-                        for(var i = 0; i < roadflags.length; i++) {
+                        var max_per_pass = roadflags.length;
+                        if (max_per_pass > 10) {
+                            max_per_pass = 10;
+                        }
+                        for(var i = 0; i < max_per_pass; i++) {
+                            roadflags[i].remove(); // do this first, in case we place a flag on a road... 
                             Game.rooms[rname].createConstructionSite(roadflags[i].pos.x, roadflags[i].pos.y, STRUCTURE_ROAD);
-                            roadflags[i].remove();
                         }
                         Game.notify(rname +': deployed level ' + (rmem+1) + ' roads.');
+                        continue;
+                    }
+                    var wallflags = Game.rooms[rname].find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_ORANGE && flag.secondaryColor == COLOR_GREY) { return 1; } else { return 0; } } });
+                    if(wallflags.length) {
+                        var wallflags_size = wallflags.length;
+                        if (wallflags_size > 10) {
+                            wallflags_size = 10;
+                        }
+                        var count = 0;
+                        for(var i = 0; i < wallflags_size; i++) {
+                            wallflags[i].remove();
+                            Game.rooms[rname].createConstructionSite(wallflags[i].pos.x, wallflags[i].pos.y, STRUCTURE_WALL);
+                            count++;
+                        }
+                        console.log(rname +': deployed ' + count + ' level ' + (rmem+1) + ' walls.');
                         continue;
                     }
                     Game.rooms[rname].memory['known_level'] = 3;
