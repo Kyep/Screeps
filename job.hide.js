@@ -40,7 +40,7 @@ module.exports = {
         var shortestpath = undefined;
         var shortestpathlength = 999;
         for (var dir in exits) {
-            if (exits[dir] in Memory['sectors_under_attack']) {
+            if (global.ROOM_UNDER_ATTACK(exits[dir])) {
                 continue;
             }
             var thispath = creep.pos.findPathTo(new RoomPosition(25, 25, exits[dir]));

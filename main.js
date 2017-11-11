@@ -68,17 +68,21 @@ module.exports.loop = function () {
     for(var cr in Game.creeps) {
         Game.creeps[cr].setupMemory();
     }
-    var sectors_under_attack = {};
-    if(Memory['sectors_under_attack'] != undefined) {
-        sectors_under_attack = Memory['sectors_under_attack'];
-    };
 
     cpu_setup_use = Game.cpu.getUsed() - cpu_setup_use;
     if (cpu_reporting) { console.log('CPU cpu_setup_use: ' + cpu_setup_use); }
 
-    if(Game.time % 2000 === 0) {
+    var rooms_to_observe = [];
+    if (Memory['energy_share_dests'] != undefined) {
+        rooms_to_observe = Memory['energy_share_dests'];
+    }
+    global.SET_OBSERVERS(rooms_to_observe);
+
+
+    if(Game.time % 1000 === 0) {
         global.UPDATE_MARKET_ORDERS();
-        //global.PRESET_ATTACK_WAVE();
+        global.PRESET_ATTACK_WAVE();
+        global.SHARE_SPARE_ENERGY(); 
     }
     
     if(Game.time % divisor === 0) {
@@ -156,7 +160,7 @@ module.exports.loop = function () {
                         empire[rname].sources['upgrader'].assigned[ugtype] = r_multiplier;
                     }
                 }
-            } else if (rname in Memory['sectors_under_attack']) {
+            } else if (Game.rooms[rname].hasAlert()) {
                 // do nothing
             } else if (Game.rooms[rname].controller != undefined && Game.rooms[rname].controller.level != undefined && Game.rooms[rname].controller.level >= 1) {
                 // Do not send RCs to base rooms. They use builderstorages instead.
@@ -267,101 +271,26 @@ module.exports.loop = function () {
             }
 
             // DEFCON MANAGEMENT
-            var enemiesList = Game.rooms[rname].find(FIND_HOSTILE_CREEPS);
-            var enemiesCost = 0;
-            var enemiesRanged = 0;
-            var attacker_username = 'Invader';
-            //console.log(rname + ':' + enemiesList.length);
-            if(enemiesList.length) {
-                for(var i = 0; i < enemiesList.length; i++) {
-                    var this_enemy_cost = global.CREEP_COST(enemiesList[i].body);
-                    if(enemiesList[i].isBoosted()) {
-                        this_enemy_cost *= 2; // This treats boosted creeps as twice as dangerous. They can be up to 4x... but this is a simple method of treating these creeps more seriously.
-                    }
-                    enemiesCost += this_enemy_cost;
-                    if (enemiesList[i].owner != undefined) {
-                        if (enemiesList[i].owner.username != undefined) {
-                            if (enemiesList[i].owner.username != attacker_username) {
-                                attacker_username = enemiesList[i].owner.username;
-                            }
-                        }
-                    }
-                    if (attacker_username == 'Invader' && enemiesList[i].classifyMilitaryType() == RANGED_ATTACK && enemiesList[i].getActiveBodyparts(HEAL) == 0 ) {
-                        enemiesRanged++;
-                    }
+            
+            var enemy_details = Game.rooms[rname].detailEnemies();
+            var nuke_details = Game.rooms[rname].detailNukes();
+            var has_alert = Game.rooms[rname].hasAlert();
+            var should_have_alert = Game.rooms[rname].shouldHaveAlert(enemy_details, nuke_details);
+            if (enemy_details['hostileCount'] > 0) {
+                //console.log(rname + ': ' + has_alert + ', ' + should_have_alert + JSON.stringify(enemy_details) + ', ' + JSON.stringify(nuke_details));
+            }        
+            if (has_alert) {
+                if (should_have_alert) {
+                    Game.rooms[rname].updateAlert(enemy_details, nuke_details);
+                    global.HANDLE_ROOM_ALERT(rname);
+                } else {
+                    Game.rooms[rname].deleteAlert();
                 }
-                if(allies.includes(attacker_username)) {
-                    continue;
-                }
-                if(empire[rname] == undefined) {
-                    //console.log('ATTACK: cannot do anything about enemies in a non-empire sector: ' + rname);
-                    continue;
-                } else if (empire[rname]['ignoreattacks'] != undefined) {
-                    continue;
-                }
-                if(Game.rooms[rname] != undefined && Game.rooms[rname].controller != undefined && Game.rooms[rname].controller.owner != undefined && Game.rooms[rname].controller.owner.username != overlord) {
-                    // This is someone else's base.
-                    continue;
-                }
-                //console.log('ALERT: ' + rname + ' has ' + enemiesList.length + ' enemies, worth body cost: ' + enemiesCost + '!'); 
-                if(sectors_under_attack[rname] == undefined) {
-                    sectors_under_attack[rname] = {}
-                    sectors_under_attack[rname]['attackstart'] = timenow;
-                    sectors_under_attack[rname]['mystructures'] = Game.rooms[rname].getMyStructuresCount();
-                    sectors_under_attack[rname]['attacker_username'] = attacker_username;
-                    
-
-
-                    var texits = Game.map.describeExits(rname);
-                    var exit_arr = []
-                    for (var ex in texits) {
-                        exit_arr.push(texits[ex]);
-                    }
-                    for (var tc in Game.creeps) {
-                        if(!exit_arr.includes(Game.creeps[tc].room.name)) { // if they aren't next door, skip them.
-                            continue;
-                        }
-                        if(Game.creeps[tc].memory[MEMORY_ROLE] == undefined) {
-                            continue;
-                        }
-                        if (!empire_defaults['military_roles'].includes(Game.creeps[tc].memory[MEMORY_ROLE])) {
-                            continue;
-                        }
-                        var theirEnemies = Game.creeps[tc].room.find(FIND_HOSTILE_CREEPS);
-                        if (theirEnemies.length) {
-                            continue;
-                        }
-                        Game.creeps[tc].memory[MEMORY_DEST] = rname;
-                        console.log('REASSIGN: sent ' + Game.creeps[tc].name + ' to defend ' + rname);
-                        Game.notify('REASSIGN: sent ' + Game.creeps[tc].name + ' to defend ' + rname);
-                    }
-                    sectors_under_attack[rname]['time'] = timenow;
-                    sectors_under_attack[rname]['threat'] = enemiesCost;
-                    sectors_under_attack[rname]['enemycount'] = enemiesList.length;
-                    sectors_under_attack[rname]['enemiesRanged'] = enemiesRanged;
-                    if(sectors_under_attack[rname]['attacker_username'] != 'Invader') {
-                        Game.notify('NON-NPC ATTACK! ' + rname + ': ' + JSON.stringify(sectors_under_attack[rname]));
-                        console.log('ATTACK: NEW *PLAYER* ATTACK DETECTED: ' + rname + ': ' + JSON.stringify(sectors_under_attack[rname]));
-                    } else {
-                        console.log('ATTACK: NEW NPC ATTACK DETECTED: ' + rname + ': ' + JSON.stringify(sectors_under_attack[rname]));
-                    }
-                    sectors_under_attack[rname]['structure_list'] = {};
-                    var my_structures = Game.rooms[rname].find(FIND_STRUCTURES);
-                    for (var i = 0; i < my_structures.length; i++) {
-                        if(sectors_under_attack[rname]['structure_list'][my_structures[i].structureType] == undefined) {
-                            sectors_under_attack[rname]['structure_list'][my_structures[i].structureType] = [];
-                        }
-                        sectors_under_attack[rname]['structure_list'][my_structures[i].structureType].unshift(my_structures[i].pos);
-                    }
-                }
-                sectors_under_attack[rname]['time'] = timenow;
-                sectors_under_attack[rname]['threat'] = enemiesCost;
-                sectors_under_attack[rname]['enemycount'] = enemiesList.length;
-                sectors_under_attack[rname]['enemiesRanged'] = enemiesRanged;
-            } else if(sectors_under_attack[rname] != undefined) {
-                sectors_under_attack[rname]['threat'] = 0;
-                sectors_under_attack[rname]['enemycount'] = 0;
+            } else if (should_have_alert) {
+                Game.rooms[rname].createAlert();
+                Game.rooms[rname].updateAlert(enemy_details, nuke_details);
             }
+
         }
         //console.log(JSON.stringify(energy_network));
 
@@ -414,275 +343,6 @@ module.exports.loop = function () {
         cpu_rm_use = Game.cpu.getUsed() - cpu_rm_use;
         if (cpu_reporting) { console.log('CPU cpu_rm_use: ' +cpu_rm_use); }
         
-        
-        for(var csector in sectors_under_attack) {
-            var end_attack_now = 0;
-            if( empire[csector] == undefined ) {
-                console.log('ATTACK: sectors_under_attack: empire/' + csector + ' is undefined. DELETING ATTACK ALERT IN THAT SECTOR!');
-                delete sectors_under_attack[csector];
-                continue;
-            }
-            var tgap = timenow - sectors_under_attack[csector]['time'];
-            if(sectors_under_attack[csector]['enemycount'] == 0) {
-                console.log('ATTACK: ENDS (ENEMY WIPED OUT): ' + csector + ' in ' + (timenow - sectors_under_attack[csector]['attackstart']) + ' ticks.');
-                end_attack_now = 1;
-            } else if(tgap >= empire_defaults['alerts_duration']) {
-                console.log('ATTACK: OLD ENDS: ' + csector + ' at ' + tgap + ' seconds since last detection.');
-                end_attack_now = 1;
-            }
-            if (end_attack_now) {
-                var old_structurelist = sectors_under_attack[Game.rooms[csector].name]['structure_list'];
-                for (var stype in old_structurelist) {
-                    for (var i = 0; i < old_structurelist[stype].length; i++) {
-                        var structure_pos = old_structurelist[stype][i];
-                    	var structures_at = Game.rooms[csector].lookForAt(LOOK_STRUCTURES, structure_pos.x, structure_pos.y, structure_pos);
-                    	var is_intact = 0;
-                    	for (var j = 0; j < structures_at.length; j++) {
-                    		if (structures_at[j].structureType == stype) {
-                    			is_intact = 1;
-                    		}
-                    	}
-                    	if (is_intact) {
-                    	    //console.log(csector +': ' + stype + ' AT: ' +structure_pos.x + ',' + structure_pos.y + ' appears to be intact.');
-                    	} else {
-                    	    var alert_string = csector +': MISSING ' + stype + ' AT: ' +structure_pos.x + ',' + structure_pos.y + ' after attack from ' + sectors_under_attack[csector]['attacker_username'] + ' - REBUILDING!';
-                    	    console.log(alert_string);
-                    	    Game.notify(alert_string);
-                    		Game.rooms[csector].createConstructionSite(structure_pos.x, structure_pos.y, stype);
-                    	}
-                    }
-                }
-                delete sectors_under_attack[csector];
-                if(empire_defaults['alerts_recycle'] == 1) {
-                    for(var name in Game.creeps) {
-                        if(Game.creeps[name].memory[MEMORY_DEST] == csector && (empire_defaults['military_roles'].includes(Game.creeps[name].memory[MEMORY_ROLE]))) {
-                            Game.creeps[name].memory[MEMORY_ROLE] = 'recycler';
-                            Game.creeps[name].say('🔄 recycle');
-                            console.log('RECYCLE: ' + name + ' due to it being part of sector defense forces for a sector that is no longer under attack.');
-                        }
-                    }
-                } else if (empire_defaults['alerts_reassign'] != undefined) {
-                    for(var crname in Game.creeps) {
-                        if(Game.creeps[crname].memory.target == csector && (empire_defaults['military_roles'].includes(Game.creeps[crname].memory[MEMORY_ROLE]))) {
-                            if (Game.creeps[crname].memory[MEMORY_SPAWNERNAME] == undefined) {
-                                continue;
-                            }
-                            var spname = Game.creeps[crname].memory[MEMORY_SPAWNERNAME];
-                            if (empire_defaults['alerts_reassign'][spname] != undefined) {
-                                Game.creeps[crname].memory[MEMORY_DEST] = empire_defaults['alerts_reassign'][spname];
-                                Game.creeps[crname].notifyWhenAttacked(false);
-                                console.log('HARASS: sent ' + crname + ' to harass' + empire_defaults['alerts_reassign'][spname]);
-                                Game.notify('HARASS: sent ' + crname + ' to harass' + empire_defaults['alerts_reassign'][spname]);
-                            }
-                        }
-                    }
-                }
-            } else {
-
-                if (empire[csector] == undefined) {
-                    console.log('ERROR: attack csector: ' + csector + ' is undefined.');
-                    continue;
-                }
-
-                if (Game.rooms[csector] != undefined) {
-                    var enemiesList = Game.rooms[csector].find(FIND_HOSTILE_CREEPS);
-                    var enemiesCost = 0;
-                    var attacker_username = 'Invader';
-                    if(enemiesList.length) {
-                        for(var i = 0; i < enemiesList.length; i++) {
-                            var ebody = enemiesList[i].body;
-                            
-                            enemiesCost += global.CREEP_COST(enemiesList[i].body);
-                            if (enemiesList[i].owner != undefined) {
-                                if (enemiesList[i].owner.username != undefined) {
-                                    if (enemiesList[i].owner.username != attacker_username) {
-                                        attacker_username = enemiesList[i].owner.username;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                var baseforce = {};
-                var patrolforce = {};
-                var room_has_spawn = 0;
-                for (var thisspawn in Game.spawns) {
-                    if (Game.spawns[thisspawn].room.name == csector) {
-                        room_has_spawn = 1;
-                    }
-                }
-                var towercount = 0;
-                if (Game.rooms[csector] != undefined) {
-                    var towerlist = Game.rooms[csector].find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } } );
-                    towercount = towerlist.length;
-                }
-
-                if(room_has_spawn) {
-                    var newcount = Game.rooms[csector].getMyStructuresCount();
-                    var oldcount = sectors_under_attack[Game.rooms[csector].name]['mystructures'];
-                    if (newcount < oldcount) {
-                        var cc = Game.rooms[csector].controller;
-                        var is_in_safemode = 0;
-                        if (cc.safeMode != undefined && cc.safeMode > 0) {
-                            is_in_safemode = cc.safeMode;
-                        }
-                        if (is_in_safemode > 0) {
-                            
-                        } else if (cc.safeModeAvailable) {
-                            cc.activateSafeMode();
-                            Game.notify('SAFEMODE ACTIVATION DUE TO STRUCTURE LOSS: ' + csector + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
-                            console.log('SAFE MODE ACTIVATED: ATTACK: ' + csector + ' only has ' + newcount + ' structures versus original count of ' + oldcount + '!');
-                        } else {
-                            Game.notify('CANNOT ACTIVATE SAFEMODE DESPITE STRUCTURE LOSS: ' + csector + ': ' + JSON.stringify(sectors_under_attack[Game.rooms[csector].name]));
-                            console.log('SAFE MODE UNAVAILABLE: ATTACK: ' + csector + ' only has ' + newcount + ' structures versus original count of ' + oldcount + '!');
-                        }
-                    }
-                }
-
-                var theirthreat = sectors_under_attack[csector]['threat'];
-                if (towercount > 0 && attacker_username == 'Invader') {
-                    theirthreat -= (1000 * towercount);
-                    if (Game.rooms[csector] != undefined && Game.rooms[csector].storage != undefined) {
-                        baseforce['teller-towers'] = 1;
-                        if (theirthreat > 8000) {
-                            baseforce['teller'] = 1;
-                        }
-                    }
-                }
-            
-                if (empire[csector]['spawn_room'] == undefined) {
-                    console.log('ATTACK CONFIG WARNING, SECTOR ' + csector + ' HAS NO spawn_room SET ON ITS ROOM!');
-                    patrolforce['rogue'] = 1; // the sad default.
-                } else if (theirthreat > 0) {
-                    
-                    var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(csector);
-                    var spawner = gsapfr[0];
-                    var using_primary = gsapfr[1];
-                    if (spawner == undefined) {
-                        continue;
-                    }
-                    var home_room = spawner.room.name;
-                    if (!using_primary && empire[rname]['spawn_room'] != undefined) {
-                        home_room = empire[rname]['spawn_room'];
-                    }
-
-                    if (spawner == undefined) {
-                        //console.log('XAT: ' + csector + " has no free spawner");
-                        continue;
-                    } else {
-                        //console.log('XAT: Deciding what to spawn for the ' + theirthreat + ' attack on ' + csector + ' defended by ' + spawner.name);
-                    }
-                    
-                    var enow = spawner.room.energyAvailable;
-                    var emax = spawner.room.energyCapacityAvailable;
-                    var defense_roles = empire_defaults['defense_roles'];
-                    if (sectors_under_attack[csector]['enemycount'] == 1 && sectors_under_attack[csector]['enemiesRanged'] == 1) {
-                        // there is one guy, he's ranged, and he cannot heal. This is probably a kiting attack.
-                        defense_roles = empire_defaults['defense_roles_ranged'];
-                        //console.log('KITING DETECTED: ' + csector);
-                    }
-                    for (var i = 0; i < defense_roles.length; i++) {
-                        var oname = defense_roles[i];
-                        //console.log('checking cost for' + oname);
-                        var obody = empire_workers[oname]['body'];
-                        var outfit_cost = global.UNIT_COST(obody);
-                        if (outfit_cost > emax) {
-                            //console.log('XAT: No point using ' + oname + ' as it exceeds our spawn power ' + emax);
-                            // no point using this... we can't possibly afford it.
-                            continue;
-                        }
-                        if ((i + 1) != defense_roles.length) {
-                            if (outfit_cost > (theirthreat * 1.2)) { 
-                                //console.log('XAT: No point using ' + oname + ' as it is > 1.2*their_threat ' + theirthreat + ' (i: ' + i +  ', DRL:' + defense_roles.length + ')');
-                                continue; // overkill...
-                            }
-                        }
-                        if (patrolforce[oname] == undefined) {
-                            if (i == defense_roles.length && theirthreat > (outfit_cost * 2)) {
-                                patrolforce[oname] = 2;
-                            } else {
-                                patrolforce[oname] = 1;
-                            }
-                        } else {
-                            patrolforce[oname] += 1;
-                        }
-                        theirthreat -= outfit_cost;
-                        //console.log('DEFENSE: Defending ' + csector + ' with ' + patrolforce[oname] + ' ' + oname + ' (cost: ' + outfit_cost + ' ea) against threat of: ' + sectors_under_attack[csector]['threat'] + '. ' + theirthreat + ' threat remaining');
-                        if (theirthreat < 0) {
-                            break;
-                        }
-                    }
-                } else {
-                    //console.log('DEFENSE: Decided that  ' + csector + ' can handle the incoming threat of ' + theirthreat + ' without any units being spawned');
-                }
-                /*
-                if (csector == 'W51S14') {
-                    patrolforce['scout'] = 1;
-                // defcon 1: single invader, invasion lasting less than 3m, not very strong
-                } else if (sectors_under_attack[csector]['threat'] < 3000 && (timenow - sectors_under_attack[csector]['attackstart']) < 180 && sectors_under_attack[csector]['enemycount'] == 1) {
-                    if (room_has_spawn) {
-                        baseforce['teller-towers'] = 1;
-                    } else {
-                        patrolforce['scout'] = 2;
-                    }
-                    empire[csector]['defcon'] = 1;
-                // defcon 2: big invader, or tougher group, invasion lasting less than 6 minutes, or up to 3 enemies               
-                } else if (sectors_under_attack[csector]['threat'] < 6000 && (timenow - sectors_under_attack[csector]['attackstart']) < 360 && sectors_under_attack[csector]['enemycount'] > 1 && sectors_under_attack[csector]['enemycount'] < 4) {
-                    if (room_has_spawn) {
-                        baseforce['teller-towers'] = 1;
-                        //baseforce['teller'] = 1;
-                        patrolforce['scout'] = 1;
-                    } else {
-                        patrolforce['adventurer'] = 2;
-                    }
-                    empire[csector]['defcon'] = 2;
-
-                // defcon 3: huge invader, or tougher group, over 9 minutes
-                } else if (sectors_under_attack[csector]['threat'] < 10000 && (timenow - sectors_under_attack[csector]['attackstart']) < 540) {
-                    if (room_has_spawn) {
-                        baseforce['teller-towers'] = 1;
-                        baseforce['teller'] = 1;
-                        patrolforce['guardian'] = 1;
-                        patrolforce['rogue'] = 1;
-                    } else {
-                        patrolforce['rogue'] = 2;
-                        patrolforce['guardian'] = 1;
-                    }
-                    empire[csector]['defcon'] = 3;
-
-                // defcon 4: big invader, or tougher group, invasion lasting > 9 minutes 
-                } else {
-                    if (room_has_spawn) {
-                        baseforce['teller-towers'] = 2;
-                        baseforce['teller'] = 2;
-                        //patrolforce['wizard'] = 1;
-                        patrolforce['guardian'] = 1;
-                        patrolforce['rogue'] = 1;
-                    } else {
-                        patrolforce['guardian'] = 1;
-                        patrolforce['rogue'] = 1;
-                    }
-                    empire[csector]['defcon'] = 4;
-                }
-                */
-                
-                empire[csector].sources['BASEFORCE'] = {'sourcename': empire[csector]['roomname'] + '-bforce', 'x':25, 'y':25,
-                    'assigned': baseforce, 'expected_income': 95, 'dynamic': 1}
-                empire[csector].sources['PATROLFORCE'] = {'sourcename': empire[csector]['roomname'] + '-pforce', 'x':25, 'y':25,
-                    'assigned': patrolforce, 'expected_income': 94, 'dynamic': 1}
-                if (tgap > 0) {
-                    //console.log('ATTACK: TIMING OUT IN: ' + csector + ', age: ' + tgap + ' DEFCON: ' + empire[csector]['defcon']);
-                    //console.log('ATTACK: TIMING OUT IN: ' + csector + ', age: ' + tgap);
-                } else {
-                    //console.log('ATTACK: HOSTILES STILL IN ' + csector + '! 'DEFCON: ' + empire[csector]['defcon']');
-                    //console.log('ATTACK: HOSTILES STILL IN ' + csector + '! ');
-                }
-            }
-        }
-        Memory['sectors_under_attack'] = sectors_under_attack;
-
-
         // SPAWNING MANAGER
         var cpu_spawning_use = Game.cpu.getUsed();
         for (var rname in empire) {
@@ -757,7 +417,7 @@ module.exports.loop = function () {
             }
         }
 
-        if (Game.time % 1 == 0) {
+        if (Game.time % 100 == 0) {
             for(var rmname in room_parts) {
                 var rmspawns = Game.rooms[rmname].find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_SPAWN } } );
                 var num_spawns = rmspawns.length;
@@ -787,9 +447,6 @@ module.exports.loop = function () {
             }
             for (var rname in empire) {
                 var r_status = rname 
-                if (rname in Memory['sectors_under_attack']) {
-                    r_status += '(UNDER ATTACK) ';
-                }
                 r_status += ': ';
                 for (var skey in empire[rname].sources) {
                     var s_status = 'Source: |' + empire[rname].sources[skey]['sourcename'] + '|: ';
@@ -811,7 +468,7 @@ module.exports.loop = function () {
                         s_status += role + ': ' + living_text + '/' + empire[rname].sources[skey].assigned[role] + ' ';
                         r_status += role + ': ' + living_text + '/' + empire[rname].sources[skey].assigned[role] + ' ';
                         if (empire[rname].living[skey][role] < empire[rname].sources[skey].assigned[role]) {
-                            if(sectors_under_attack[csector] != undefined && !empire_defaults['military_roles'].includes(role) && !empire_defaults['priority_roles'].includes(role)) {
+                            if(global.ROOM_UNDER_ATTACK(rname) && !empire_defaults['military_roles'].includes(role) && !empire_defaults['priority_roles'].includes(role)) {
                                 //console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| until attack on ' + csector + ' is over.');
                                 continue;
                             }
@@ -989,6 +646,7 @@ module.exports.loop = function () {
 
     // TOWER MANAGEMENT
     for(var rname in rtowers) {
+        
         var theroom = Game.rooms[rname];
         
         // If hostiles in room, focus fire.        

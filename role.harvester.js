@@ -39,7 +39,7 @@ module.exports = {
             if (creep.isAtDestinationRoom()) {
 	            creep.memory[MEMORY_JOB] = JOB_HARVEST;
                 //creep.announceJob();
-            } else if (creep.memory[MEMORY_DEST] in Memory.sectors_under_attack || (creep.memory[MEMORY_DEST] != creep.memory[MEMORY_HOME] && creep.memory[MEMORY_HOME] in Memory.sectors_under_attack)) {
+            } else if (global.ROOM_UNDER_ATTACK(creep.memory[MEMORY_DEST]) || (creep.memory[MEMORY_DEST] != creep.memory[MEMORY_HOME] && global.ROOM_UNDER_ATTACK(creep.memory[MEMORY_HOME]))) {
                 // hide in base.
                 // I would rather they not block spawning of combat mobs by renewing.
                 // Also, for long attacks, I would rather not pay their energy cost to maintain them.

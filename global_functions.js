@@ -341,12 +341,13 @@ global.ATTACK_WAVE = function (spawn_list, unit_type, target_room, roompath) {
 
 global.PRESET_ATTACK_WAVE = function () {
     /* TARGETS: 
-    W57S12 - their biggest mining base.
-    W57S15 - their south mining base
-    W59S12 - their west mining base
-    W56S11 - their between the rooms base
+        W60S10: junction that eduter insists on sending scouts through.
     */
 
+    SPAWN_UNIT('Spawn6','scout','W55S10',['W57S10','W60S10']); // north base.
+	SPAWN_UNIT('Spawn14','scout','W55S10',['W57S10','W60S10','W60S9']); // north base.
+
+    /*
     //SPAWN_UNIT('Spawn6','slasher','W56S12',['W56S13','W57S13', 'W57S12']); // north base.
     //SPAWN_UNIT('Spawn6','siegemini','W55S10',['W59S10','W59S11']); // north base.
     SPAWN_UNIT('Spawn6','siegemini','W55S10',['W57S10','W57S11']); // north base.
@@ -365,7 +366,7 @@ global.PRESET_ATTACK_WAVE = function () {
 
     SPAWN_UNIT('Spawn2','siegemini','W53S18',['W54S16', 'W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14','W57S11']); // keep it small, swamps!
     SPAWN_UNIT('Spawn5','siegemini','W53S18',['W54S16', 'W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14','W57S11']); // keep it small, swamps!
-    
+    */    
 }
 
 global.MASS_RETARGET = function (role, newtarget, waypoints) {
@@ -413,7 +414,7 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname) {
             }
         }
     }
-    if (theroomname in Memory['sectors_under_attack']) {
+    if (global.ROOM_UNDER_ATTACK(theroomname)) {
         // use room spawner.
     // If there is no spawner in the room, or there is but the room is level 1 or 2, use backup spawners.
     // This is used during expansion so that bases can be set to spawn their own units, but the base they expand from will still do most of the work until they are ready.
@@ -549,4 +550,300 @@ global.UPDATE_MARKET_ORDERS = function() {
         }
     }
     return 'OK';
+}
+
+global.LAUNCH_NUKE = function(roomx, roomy, roomname) {
+    var available_nukers = [];
+    for(var id in Game.structures){
+        if(Game.structures[id].structureType == STRUCTURE_NUKER){
+            if (Game.structures[id].cooldown > 0) {
+                console.log('LAUNCHER: cooldown ' + Game.structures[id].room.name);
+                continue;
+            }
+            if (Game.structures[id].energy != Game.structures[id].energyCapacity) {
+                console.log('LAUNCHER: lacks energy ' + Game.structures[id].room.name);
+                continue;
+            }
+            if (Game.structures[id].ghodium != Game.structures[id].ghodiumCapacity) {
+                console.log('LAUNCHER: lacks ghodium ' + Game.structures[id].room.name);
+                continue;
+            }
+            console.log('LAUNCHER: OK in ' + Game.structures[id].room.name);
+            available_nukers.push(id);
+        }
+    }
+    console.log('NUKE: ' + available_nukers.length + ' launcher(s) available.'); 
+    if (available_nukers.length > 0) {
+        var thenuker = Game.structures[available_nukers[0]];
+        console.log('NUKE: launcher in room ' + thenuker.room.name + ' is available.');
+        var result = thenuker.launchNuke(new RoomPosition(roomx, roomy, roomname));
+        if (result == OK) {
+            console.log('NUCLEAR LAUNCH DETECTED! ' + result);
+        } else {
+            console.log('RESULT: ' + result);
+        }
+        
+    }
+}
+
+global.SHARE_SPARE_ENERGY = function() {
+    
+    if (Memory['energy_share_dests'] == undefined) {
+        console.log('SHARE_SPARE_ENERGY: energy_share_dests is undefined');
+        return;
+    }
+    var send_targets = Memory['energy_share_dests'];
+    if (send_targets.length == 0) {
+        console.log('SHARE_SPARE_ENERGY: energy_share_dests is 0-length');
+        return;
+    }
+    var send_to = _.sample(send_targets);
+
+    if (Game.rooms[send_to] != undefined) {
+        console.log('SHARE_SPARE_ENERGY: we have vision of: ' + send_to);
+        if (Game.rooms[send_to].terminal == undefined) {
+            console.log('SHARE_SPARE_ENERGY: ' + send_to + ' has no terminal.');
+            return;
+        }
+        var storage_used = _.sum(Game.rooms[send_to].terminal.store);
+        var storage_capacity = Game.rooms[send_to].terminal.storeCapacity;
+        var storage_free = storage_capacity - storage_used;
+        if (storage_free < 80000) {
+            console.log('SHARE_SPARE_ENERGY: ' + send_to + ' is too full (only ' + storage_free + ' free) to accept more energy.');
+            return;
+        }
+    }
+    
+    for (var rname in Game.rooms) {
+        var lvl = Game.rooms[rname].getLevel();
+        if (lvl < 8) {
+            continue;
+        }
+        if (!Game.rooms[rname].hasTerminalNetwork()) {
+            continue;
+        }
+        var e_stored = Game.rooms[rname].getStoredEnergy();
+        var e_class = Game.rooms[rname].classifyStoredEnergy(e_stored);
+        if (e_class != ENERGY_FULL) {
+            continue;
+        }
+        var amount_to_send = 10000;
+        var term = Game.rooms[rname].terminal;
+        if (term.cooldown > 0) {
+            console.log('SHARE_SPARE_ENERGY: ' + rname + ' is on terminal cooldown.');
+            continue;
+        }
+        if (term.store[RESOURCE_ENERGY] < amount_to_send) {
+            console.log('SHARE_SPARE_ENERGY: ' + rname + ' does not have enough energy to send.');
+            continue;
+        }
+        var result = term.send(RESOURCE_ENERGY, amount_to_send, send_to);
+        if (result == OK) {
+            if (Memory['energy_shared'] == undefined) {
+                Memory['energy_shared'] = amount_to_send;
+            } else {
+                Memory['energy_shared'] += amount_to_send;
+            }
+            var total_k_shared = Memory['energy_shared'] / 1000;
+            console.log('SHARE_SPARE_ENERGY: ' + rname + ': OK' + ' (total sent: ' + total_k_shared + 'k )');
+        } else {
+            console.log('SHARE_SPARE_ENERGY: ' + rname + ': ' + result);
+        }
+    }   
+}
+
+global.SET_OBSERVERS = function(rooms_to_observe) {
+    
+    var available_observers = [];
+    for(var id in Game.structures){
+        if(Game.structures[id].structureType == STRUCTURE_OBSERVER){
+            if (!Game.structures[id].isActive()) {
+                continue;
+            }
+            //console.log('OBSERVER: OK in ' + Game.structures[id].room.name);
+            available_observers.push(id);
+        }
+    }
+    //console.log('OBS: ' + available_observers.length + ' observer(s) available, ' + rooms_to_observe.length + ' observation targets.'); 
+    if (available_observers.length == 0) {
+        return;
+    }
+    if (rooms_to_observe.length > available_observers.length) {
+        console.log('OBS: WARNING: we only have ' + available_observers.length + ' observers, but you are trying to monitor ' + rooms_to_observe.length + ' rooms!');
+        
+    }
+    for (var i = 0; i < available_observers.length && i < rooms_to_observe.length; i++) {
+        var theobs = Game.structures[available_observers[i]];
+        var result = theobs.observeRoom(rooms_to_observe[i]);
+        //console.log('OBS: observer in ' + theobs.room.name + ' now observing ' + rooms_to_observe[i] + ' with result: ' + result);
+    }
+}
+
+/*
+global.DETECT_NUKES = function() {
+    for(var rname in Game.rooms) {
+        var lvl = Game.rooms[rname].getLevel();
+        if (lvl < 1) {
+            continue;
+        }
+        if (Game.rooms[rname].controller.owner.username != overlord) {
+            continue;
+        }
+
+        var incoming_nukes = Game.rooms[rname].find(FIND_NUKES);
+        if (incoming_nukes.length == 0) {
+            console.log('SCANNING: ' + rname + ' for nukes. None found.');
+            continue;
+        }
+        var nmsg = '!!!!! NUKE: ' + incoming_nukes.length + ' nuke(s) incoming on ' + rname;
+        console.log(nmsg);
+        Game.notify(nmsg);
+        for (var i = 0; i < incoming_nukes.length; i++) {
+            var thenuke = incoming_nukes[i];
+            if (thenuke.timeToLand < 200) {
+                
+            }
+        }
+    }
+}
+*/
+
+global.ROOM_UNDER_ATTACK = function(roomname) {
+    var myalert = Memory['sectors_under_attack'][roomname];
+    if (myalert == undefined) {
+        return 0;
+    }
+    return 1;
+}
+
+
+global.HANDLE_ROOM_ALERT = function(roomname) {
+    var myalert = Memory['sectors_under_attack'][roomname];
+
+    if (myalert == undefined) {
+        console.log('ERROR: TRYING TO HANDLE NON-EXISTENT ALERT FOR ' + roomname);
+        return;
+    }
+    if (thisalert['updateCount'] < 1) {
+        console.log('HANDLE_ROOM_ALERT: skipping alert as its not been updated with threat data yet: ' + roomname);
+        return;
+    }
+    var baseforce = {};
+    var patrolforce = {};
+    var room_has_spawn = 0;
+    for (var thisspawn in Game.spawns) {
+        if (Game.spawns[thisspawn].room.name == roomname) {
+            room_has_spawn = 1;
+        }
+    }
+    var towercount = 0;
+    if (Game.rooms[roomname] != undefined) {
+        var towerlist = Game.rooms[roomname].find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } } );
+        towercount = towerlist.length;
+    }
+    var try_safemode = 0;
+    if(room_has_spawn) {
+        var newcount = Game.rooms[roomname].getMyStructuresCount();
+        var oldcount = myalert['myStructureCount'];
+        if (newcount < oldcount) {
+            try_safemode = 1;
+        }
+    }
+    if (myalert['nukeCount'] > 0 && myalert['nukeTimeToLand'] < 100){
+        try_safemode = 1;
+    }
+    if (try_safemode) {
+        var cc = Game.rooms[roomname].controller;
+        var is_in_safemode = 0;
+        if (cc.safeMode != undefined && cc.safeMode > 0) {
+            is_in_safemode = cc.safeMode;
+        }
+        if (is_in_safemode > 0) {
+            // nothing.
+        } else if (cc.safeModeAvailable) {
+            cc.activateSafeMode();
+            Game.notify('!!!!! SAFEMODE ACTIVATION: ' + roomname);
+            console.log('SAFE MODE ACTIVATED: ATTACK: ' + roomname);
+        } else {
+            Game.notify('!!!!! CANNOT ACTIVATE SAFEMODE: ' + roomname);
+            console.log('SAFE MODE UNAVAILABLE: ATTACK: ' + roomname);
+        }
+    }
+    var theirthreat = myalert['hostileCost'];
+    var alert_age = Game.time - myalert['attackStart'];
+    if (towercount > 0 && myalert['hostileUsername'] == 'Invader' && alert_age < 60) {
+        theirthreat -= (1000 * towercount);
+        if (Game.rooms[roomname] != undefined && Game.rooms[roomname].storage != undefined) {
+            baseforce['teller-towers'] = 1;
+            if (theirthreat > 8000) {
+                baseforce['teller'] = 1;
+            }
+        }
+    }
+    if (empire[roomname]['spawn_room'] == undefined) {
+        console.log('ATTACK CONFIG WARNING, SECTOR ' + roomname + ' HAS NO spawn_room SET ON ITS ROOM!');
+        patrolforce['rogue'] = 1; // the sad default.
+    } else if (theirthreat > 0) {
+        var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(roomname);
+        var spawner = gsapfr[0];
+        var using_primary = gsapfr[1];
+        if (spawner == undefined) {
+            return;
+        }
+        var home_room = spawner.room.name;
+        if (!using_primary && empire[rname]['spawn_room'] != undefined) {
+            home_room = empire[rname]['spawn_room'];
+        }
+        if (spawner == undefined) {
+            console.log('XAT: ' + roomname + " has no free spawner");
+            return;
+        } else {
+            //console.log('XAT: Deciding what to spawn for the ' + theirthreat + ' attack on ' + roomname + ' defended by ' + spawner.name);
+        }
+        var enow = spawner.room.energyAvailable;
+        var emax = spawner.room.energyCapacityAvailable;
+        var defense_roles = empire_defaults['defense_roles'];
+        if (myalert['hostileCount'] == 1 && myalert['hostileRanged'] == 1) {
+            // there is one guy, he's ranged, and he cannot heal. This is probably a kiting attack.
+            defense_roles = empire_defaults['defense_roles_ranged'];
+            console.log('KITING DETECTED: ' + roomname);
+        }
+        for (var i = 0; i < defense_roles.length; i++) {
+            var oname = defense_roles[i];
+            //console.log('checking cost for' + oname);
+            var obody = empire_workers[oname]['body'];
+            var outfit_cost = global.UNIT_COST(obody);
+            if (outfit_cost > emax) {
+                //console.log('XAT: No point using ' + oname + ' as it exceeds our spawn power ' + emax);
+                // no point using this... we can't possibly afford it.
+                continue;
+            }
+            if ((i + 1) != defense_roles.length) {
+                if (outfit_cost > (theirthreat * 1.2)) { 
+                    //console.log('XAT: No point using ' + oname + ' as it is > 1.2*their_threat ' + theirthreat + ' (i: ' + i +  ', DRL:' + defense_roles.length + ')');
+                    continue; // overkill...
+                }
+            }
+            if (patrolforce[oname] == undefined) {
+                if (i == defense_roles.length && theirthreat > (outfit_cost * 2)) {
+                    patrolforce[oname] = 2;
+                } else {
+                    patrolforce[oname] = 1;
+                }
+            } else {
+                patrolforce[oname] += 1;
+            }
+            theirthreat -= outfit_cost;
+            console.log('DEFENSE: Defending ' + roomname + ' with ' + patrolforce[oname] + ' ' + oname + ' (cost: ' + outfit_cost + ' ea) against threat of: ' + myalert['hostileCost'] + '. ' + theirthreat + ' threat remaining');
+            if (theirthreat < 0) {
+                break;
+            }
+        }
+    } else {
+        console.log('DEFENSE: Decided that  ' + roomname + ' can handle the incoming threat of ' + theirthreat + ' without any units being spawned');
+    }
+    empire[roomname].sources['BASEFORCE'] = {'sourcename': empire[roomname]['roomname'] + '-bforce', 'x':25, 'y':25,
+        'assigned': baseforce, 'expected_income': 95, 'dynamic': 1}
+    empire[roomname].sources['PATROLFORCE'] = {'sourcename': empire[roomname]['roomname'] + '-pforce', 'x':25, 'y':25,
+        'assigned': patrolforce, 'expected_income': 94, 'dynamic': 1}
 }

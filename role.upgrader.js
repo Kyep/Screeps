@@ -19,13 +19,6 @@ module.exports =  {
                 creep.announceJob();
             }
         } else if(creep.memory[MEMORY_JOB] == JOB_HARVEST && creep.carry.energy == creep.carryCapacity) {
-            var asectors = Memory['sectors_under_attack'];
-            if (asectors.length > 0) {
-                creep.memory[MEMORY_CONTAINER] = undefined;
-                creep.memory[MEMORY_JOB] = JOB_RETURN;
-                creep.announceJob();
-                return;
-            }
             var targets = creep.room.find(FIND_STRUCTURES, {
                 filter: function(structure){
                     return (structure.hits < structure.hitsMax) && (structure.structureType != STRUCTURE_WALL) && (structure.structureType != STRUCTURE_RAMPART)

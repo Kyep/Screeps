@@ -67,11 +67,11 @@ Creep.prototype.getShouldHide = function() {
         return 0;
     }
     if (this.memory.attackedin != undefined) {
-        if (this.memory[MEMORY_ATTACKEDIN] in Memory['sectors_under_attack']) {
+        if (global.ROOM_UNDER_ATTACK(this.memory[MEMORY_ATTACKEDIN])) {
             return 1;
         }
     }
-    if (this.room.name in Memory['sectors_under_attack']) {
+    if (this.room.hasAlert()) {
         this.memory[MEMORY_ATTACKEDIN] = this.room.name;
         return 1;        
     }
@@ -212,7 +212,7 @@ Creep.prototype.updateDestination = function() {
     }
     this.memory[MEMORY_DEST] = this.memory[MEMORY_NEXTDEST][0];
     this.memory[MEMORY_NEXTDEST].shift();
-    console.log('SIEGE: ' + this.name + ' has reached ' + this.room.name + ', continuing on to ' + this.memory[MEMORY_DEST]);
+    //console.log('WAYPOINT: ' + this.name + ' has reached ' + this.room.name + ', continuing on to ' + this.memory[MEMORY_DEST]);
     return 1;
 }
 

@@ -112,7 +112,7 @@ module.exports =  {
             }
         }
 
-        // 3rd, should we rangedHeal, rangedAttack, or rangedMassattack?
+        // 3rd, should we rangedAttack, or rangedMassattack? Contrary to docks, rangedheal on yourself blocks ATTACK, so we can't do that here.
 
         if (rangedAttackPower > healPower || hurtfriendly == undefined || rangetohurtfriendly > 3) {
             var nearby_enemies = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
@@ -121,8 +121,6 @@ module.exports =  {
             } else {
                 creep.rangedAttack(target);
             }
-        } else if (creep.hits < creep.hitsMax && heal_parts > 0) {
-            creep.rangedHeal(creep);
         }
     }
 };
