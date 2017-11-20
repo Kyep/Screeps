@@ -22,7 +22,7 @@ module.exports = {
 
         var targets = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_SPAWN && structure.spawning == undefined);
+                    return (structure.structureType == STRUCTURE_SPAWN && structure.spawning == undefined && structure.isActive());
                 }
         });
         if(targets.length > 0) {

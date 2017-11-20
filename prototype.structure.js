@@ -101,6 +101,9 @@ StructureSpawn.prototype.getRoleBodyAndProperties = function(roletext, tgtroom, 
 }
 
 StructureSpawn.prototype.isAvailable = function() {
+    if(!this.isActive()) {
+        return 0;
+    }
     if(this.spawning != undefined) {
         //console.log(this.name + ' not available due to spawning in progress');
         return 0;

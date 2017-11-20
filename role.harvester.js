@@ -182,7 +182,12 @@ module.exports = {
         }
         if(creep.memory[MEMORY_JOB] == JOB_UPGRADE) {
             if (creep.room.name == creep.memory[MEMORY_HOME]) {
-                jobUpgrade.run(creep);
+                if (creep.room.getShouldUpgrade()) {
+                    jobUpgrade.run(creep);
+                } else {
+                    creep.say('GCL FARM');
+                    creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
+                }
             } else { 
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
                 creep.announceJob();

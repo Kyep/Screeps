@@ -12,6 +12,7 @@ module.exports =  {
                      return (structure.structureType == STRUCTURE_LINK) && structure.energy > 0;
                 }
         });
+        /*
         if (targets.length == 0) {
             targets = creep.room.find(FIND_STRUCTURES, {
                     filter: (structure) => {
@@ -19,6 +20,7 @@ module.exports =  {
                     }
             });
         }
+        */
         var terminal_energy_min = empire_defaults['terminal_energy_min'];
         if (targets.length == 0) {
             targets = creep.room.find(FIND_STRUCTURES, {

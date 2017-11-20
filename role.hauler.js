@@ -3,6 +3,7 @@
 var jobReturnresources = require('job.returnresources');
 var jobRenew = require('job.renew');
 var jobHide = require('job.hide');
+var jobUpgrade = require('job.upgrade');
 
 module.exports = {
     run: function(creep) {
@@ -113,7 +114,7 @@ module.exports = {
             }
             var targets = creep.pos.findInRange(FIND_STRUCTURES, 10, {
                 filter: function(structure){
-                    return (structure.structureType == STRUCTURE_LINK) && (structure.energy < structure.energyCapacity && structure.cooldown == 0)
+                    return (structure.structureType == STRUCTURE_LINK) && (structure.energy < structure.energyCapacity && structure.cooldown == 0) && structure.isActive()
                 }
             });
             if (!targets.length) {
@@ -140,19 +141,19 @@ module.exports = {
                return 0;
             }
             //creep.say('pos OK');
-            if (creep.room.storage == undefined) {
+            if (creep.room.storage == undefined || !creep.room.storage.isActive()) {
                 /*if (creep.room.name != creep.memory[MEMORY_HOME]) {
                     creep.memory.job = JOB_TRAVEL_BACK;
                     console.log(creep.name + ': WARNING: got stuck in JOB_RETURN outside its HOME: ' + creep.room.name + 
                     'at ' + creep.pos.x + ',' + creep.pos.y + ' v ' + creep.memory[MEMORY_HOME] + ' carrying: ' + creep.carry.energy + ' of ' + creep.carryCapacity);
                 } else*/ 
                 if (jobReturnresources.run(creep, 1, 1, 1, 1, 1, 0) == -1) { // if room has no storage unit, return to extensions.
-                    //console.log(creep.name + ' stuck');
-                    // wait.
+                    creep.memory[MEMORY_JOB] = JOB_UPGRADE;
+                    creep.say('UPGRADE');
+                    return;
                 }
             } else if (jobReturnresources.run(creep, 1, 1, 0.5, 1, 1, 0) == -1) {
-                // wait for space to be free.
-                creep.say("wait4space");
+                // wait.
             }
             if(creep.carry.energy == 0) {
                 //creep.say("Empty");
@@ -164,6 +165,13 @@ module.exports = {
             } else {
                 jobRenew.run(creep);
             }
+        } else if (creep.memory[MEMORY_JOB] == JOB_UPGRADE) {
+            if(creep.carry.energy == 0) {
+                creep.memory[MEMORY_JOB] = JOB_RENEW;
+                return;
+            }
+            var result = jobUpgrade.run(creep);
+            creep.say(result);
         } else {
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
         }

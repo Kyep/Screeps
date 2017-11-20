@@ -10,7 +10,7 @@ module.exports = {
         for(var rname in empire) {
             if(rooms_to_claim[rname] != undefined) {
                 // To claim a room, define it like this:
-                // Memory['rooms_to_claim'] = {'W57S11': {'controllerid': '59bbc3bb2052a716c3ce6a23', 'gcltarget': 7 }}
+                // Memory['rooms_to_claim'] = {'W59S18': {'controllerid': '59bbc39f2052a716c3ce671d', 'gcltarget': 8 }}
                 var expansiontarget = Game.rooms[rname];
                 var controllertarget = Game.getObjectById(rooms_to_claim[rname]['controllerid']);
                 var gcltarget = rooms_to_claim[rname]['gcltarget'];

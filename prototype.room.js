@@ -1,4 +1,16 @@
 
+Room.prototype.getShouldUpgrade = function() {
+    var gcl_farm_rooms = Memory['gcl_farm'];
+    if (!(this.name in gcl_farm_rooms)) {
+        return 1;
+    }
+    var room_level = this.getLevel();
+    if (room_level == 8) {
+        return 1;
+    }
+    return 0;
+}
+
 Room.prototype.getMyStructuresCount = function() {
     var mystructures = this.find(FIND_MY_STRUCTURES);
     var mywalls = this.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_WALL } } );
@@ -14,6 +26,8 @@ Room.prototype.getTowerRepairMax = function() {
         return 10000;
     } else if (lvl == 4) {
         return 25000;
+    } else if (lvl == 8) {
+        return 1000000; // one million max.
     } else {
         return 40000 * lvl;
     }
@@ -21,10 +35,10 @@ Room.prototype.getTowerRepairMax = function() {
 
 Room.prototype.getStoredEnergy = function() {
     var total_energy = 0;
-    if (this.storage != undefined) {
+    if (this.storage != undefined && this.storage.isActive()) {
         total_energy += this.storage.store.energy;
     }
-    if (this.terminal != undefined) {
+    if (this.terminal != undefined && this.terminal.isActive()) {
         var terminal_energy = this.terminal.store.energy;
         if (terminal_energy > empire_defaults['terminal_energy_min']) {
             terminal_energy -= empire_defaults['terminal_energy_min'];
@@ -77,6 +91,9 @@ Room.prototype.hasTerminalNetwork = function() {
         return 0;
     }
     if (this.terminal == undefined) {
+        return 0;
+    }
+    if (!this.terminal.isActive()) {
         return 0;
     }
     return 1;
@@ -186,11 +203,13 @@ Room.prototype.detailNukes = function() {
     var details = {};
     details['nukeCount'] = 0;
     details['nukeTimeToLand'] = Infinity;
+    details['nukeLaunchRoomName'] = '';
     var nuke_list = this.find(FIND_NUKES);
     for (var i = 0; i < nuke_list.length; i++) {
         details['nukeCount']++;
         if (nuke_list[i].timeToLand < details['nukeTimeToLand']) {
             details['nukeTimeToLand'] = nuke_list[i].timeToLand;
+            details['nukeLaunchRoomName'] = nuke_list[i].launchRoomName;
         }
     }
     return details;
@@ -301,9 +320,14 @@ Room.prototype.deleteAlert = function() {
         }
     }
 
-    var end_msg = 'ATTACK: ' + this.name + ': ENDED AFTER ' + alert_age + ' TICKS';
+
+    var end_msg = 'ATTACK on ' + this.name + ' by ' + myalert['hostileUsername'] + ' worth ' + myalert['hostileCostMax'] + ' ENDED after ' + alert_age + ' ticks.';
     console.log(end_msg);
-    Game.notify(end_msg);
+    if (myalert['hostileUsername'] != 'Invader') {
+        if (myalert['hostileCostMax'] > 50 || myalert['hostileUsername'] != 'eduter') {
+            Game.notify(end_msg);
+        }
+    }
 
     // Actually delete the alert.
     var all_alerts = Memory['sectors_under_attack'];
@@ -330,20 +354,29 @@ Room.prototype.updateAlert = function(enemy_details, nuke_details) {
     if (thisalert['updateCount'] == undefined) {
         thisalert['updateCount'] = 0;
     }
+    if (thisalert['hostileCostMax'] == undefined) {
+        thisalert['hostileCostMax'] = 0;
+    }
+    if (enemy_details['hostileCost'] > thisalert['hostileCostMax']) {
+        thisalert['hostileCostMax'] = enemy_details['hostileCost'];
+    }
     
     thisalert['updateCount']++;
     
     if (thisalert['updateCount'] == 2) {
         // why 2? because we need to run update at least once.
-        if (thisalert['nukeCount'] > 0) {
-            var tmsg = 'ATTACK: !!!!!NUCLEAR!!!!! ATTACK LANDING in: ' + this.name;
+        var attack_details = this.name + ': ' + thisalert['hostileCount'] + ' hostiles, ' + thisalert['hostileCost'] + ' cost, ' + thisalert['hostileRanged'] + ' ranged, ' + thisalert['nukeCount'] + ' nukes, sent by: ' + thisalert['hostileUsername'];
+        if (thisalert['nukeCount'] > 0 && thisalert['nukeTimeToLand'] < 200) {
+            var tmsg = 'ATTACK: !!!!!NUCLEAR!!!!! ATTACK LANDING in: ' + this.name + ', launched from: ' + thisalert['nukeLaunchRoomName'];
             console.log(tmsg);
             Game.notify(tmsg);
         } else if (thisalert['hostileUsername'] == 'Invader') {
-            console.log('ATTACK: NEW NPC ATTACK DETECTED: ' + this.name + ': cost: ' + thisalert['hostileCost']);
+            console.log('ATTACK: NEW NPC ATTACK DETECTED: ' + attack_details );
         } else {
-            Game.notify('NON-NPC ATTACK! ' + this.name + ': ' + JSON.stringify(thisalert));
-            console.log('ATTACK: NEW *PLAYER* ATTACK DETECTED: ' + this.name + ': cost: ' + thisalert['hostileCost']);
+            if (thisalert['hostileCostMax'] > 50 || thisalert['hostileUsername'] != 'eduter') {
+                Game.notify('NON-NPC ATTACK! ' + attack_details);
+            }
+            console.log('ATTACK: NEW *PLAYER* ATTACK DETECTED: ' + attack_details );
         }
     }
 

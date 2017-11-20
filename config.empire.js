@@ -32,28 +32,30 @@
         'W53S18': {
             'roomname' : '1',
             'spawn_room': 'W53S18',
+            'backup_spawn_room': 'W51S18',
             'sources': {
                 'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40, 'dynamic': 1 },
                 '59bbc3f82052a716c3ce7289': {
                     'sourcename':'1-E', 'x':25, 'y':18,  'target_x': 24, 'target_y': 19, 'steps':15, 'spaces':4,
-                    'assigned': {'bharvester': 2},
+                    'assigned': {'harvester': 1, 'upclose': 1},
                     'expected_income': 85
                 },
                 '59bbc3f82052a716c3ce728b': {
                     'sourcename':'1-W', 'x':16, 'y':26, 'target_x': 16, 'target_y': 25, 'steps':15, 'spaces':3,
-                    'assigned': {'up8': 1},
+                    'assigned': {'up8': 0, 'harvester': 1, 'upclose': 1},
                     'expected_income': 75
                 }
             },
             'safespot': {'x': 9, 'y':25 },
-            'mineralid' : '59bbc644ae9e1411a425ad40',
-            'mineraltype': RESOURCE_HYDROGEN
+            //'mineralid' : '59bbc644ae9e1411a425ad40',
+            //'mineraltype': RESOURCE_HYDROGEN
         },
 
         // 1st base remote mining
         'W52S18': {
             'roomname' : '1E',
             'spawn_room': 'W53S18',
+            'backup_spawn_room': 'W56S18',
             'sources': {
                 '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14, 'target_x': 10, 'target_y': 13, 'steps':33, 'spaces':3, 
                     'assigned': {'c15harvester': 1, 'hauler': 1},
@@ -68,6 +70,7 @@
         'W53S17': {
             'roomname' : '1N',
             'spawn_room': 'W53S18',
+            'backup_spawn_room': 'W56S18',
             'sources': {
                 '59bbc3f72052a716c3ce7287': {'sourcename':'1N', 'x':4, 'y':44, 'target_x': 5, 'target_y': 43, 'steps':32, 'spaces':1,
                     'assigned': {'c15harvester': 1, 'hauler': 1}, // , 'reserver': 1
@@ -82,6 +85,7 @@
         'W54S18': {
             'roomname' : '1W',
             'spawn_room': 'W53S18',
+            'backup_spawn_room': 'W56S18',
             'sources': {
                 '59bbc3e92052a716c3ce70b6': {'sourcename':'1W-E', 'x':42, 'y':6, 'target_x': 41, 'target_y': 7, 'steps':29, 'capacity': 3000, 'spaces':3,
                     'assigned': {'c30harvester': 1, 'hauler': 1},
@@ -115,7 +119,7 @@
             'sources': {
                 'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40 },
                 '59bbc4182052a716c3ce758c': {'sourcename':'2-E', 'x':14, 'y':20, 'target_x': 15, 'target_y': 21, 'steps':10, 'spaces':3,
-                    'assigned': {'bharvester':2},
+                    'assigned': {'bharvester':2, 'up8': 0},
                     'expected_income': 80
                 },
                 '59bbc4182052a716c3ce758d': {'sourcename':'2-W', 'x':3, 'y':27, 'target_x': 4, 'target_y': 27, 'steps':10, 'spaces':2,
@@ -166,7 +170,7 @@
             'mineraltype': RESOURCE_ZYNTHIUM,
             'sources': {
                 '59bbc4172052a716c3ce757d': {'sourcename': '3-W', 'x':31, 'y':15, 'spaces':3,
-                    'assigned': {'bharvester': 2},
+                    'assigned': {'bharvester': 2, 'up8': 1},
                     'expected_income': 85
                 },
                 '59bbc4172052a716c3ce757c': {'sourcename': '3-E', 'x':42, 'y':13, 'spaces':3,
@@ -535,6 +539,9 @@
                 }
             },
             'safespot': {'x': 38, 'y':34 },
+            'mineralid': '59bbc643ae9e1411a425abf5',
+            'mineraltype': RESOURCE_OXYGEN
+            
         },
         // 8 Expansions
         'W56S11': {
@@ -575,5 +582,67 @@
                 }
             }
         },
+
+        // 9 Base
+        'W59S18': {
+            'roomname': '9',
+            'spawn_room': 'W59S18',
+            'backup_spawn_room': 'W58S17',
+            'sources': {
+                '59bbc39f2052a716c3ce671b': {'sourcename': '9-N', 'x':40, 'y':8, 'spaces':3, 'target_x': 39, 'target_y': 8, 'steps':40,
+                    'assigned': {'harvester': 2}, 
+                    'expected_income': 85
+                },
+                '59bbc39f2052a716c3ce671c': {'sourcename': '9-S', 'x':46, 'y':25, 'spaces':1,
+                    'assigned': {'harvester': 2}, 
+                    'expected_income': 80
+                }
+            },
+            'safespot': {'x': 46, 'y':25 },
+            //'mineralid': '59bbc643ae9e1411a425ab24',
+            //'mineraltype': RESOURCE_CATALYST
+            
+        },
+        // 9 Expansions
+        'W59S19': {
+            'roomname' : '9S',
+            'spawn_room': 'W59S18',
+            'backup_spawn_room': 'W58S17',
+            'sources': {
+                '59bbc39f2052a716c3ce6720': {'sourcename': '9S-W', 'x':4, 'y':37, 'spaces':1, 'target_x': 5, 'target_y': 38, 'steps':80,
+                    'assigned': {'c30harvester': 0, 'hauler': 0}, 
+                    'expected_income': 75
+                },
+                '59bbc39f2052a716c3ce6721': {'sourcename': '9S-E', 'x':34, 'y':38, 'spaces':2, 'target_x': 34, 'target_y': 37, 'steps':80,
+                    'assigned': {'c30harvester': 0, 'hauler': 0}, 
+                    'expected_income': 70
+                },
+                'reserver': {'sourcename':'9S-R', 'x':25, 'y':25,
+                    'assigned': {'reserver': 0},
+                    'expected_income': 69, 'dynamic': 1
+                }
+            }
+        },
+        'W58S19': {
+            'roomname' : '9SE',
+            'spawn_room': 'W59S18',
+            'backup_spawn_room': 'W58S17',
+            'sources': {
+                '59bbc3ad2052a716c3ce68ad': {'sourcename': '9SE-N', 'x':26, 'y':39, 'spaces':2, 'target_x': 25, 'target_y': 39,  'steps':12,
+                    'assigned': {'c30harvester': 0, 'hauler': 0}, 
+                    'expected_income': 65
+                },
+                '59bbc3ad2052a716c3ce68ae': {'sourcename': '9SE-S', 'x':24, 'y':43, 'spaces':1, 'target_x': 23, 'target_y': 42,  'steps':120,
+                    'assigned': {'c30harvester': 0, 'hauler': 0}, 
+                    'expected_income': 60
+                },
+                'reserver': {'sourcename':'9SE-R', 'x':25, 'y':25,
+                    'assigned': {'reserver': 0},
+                    'expected_income': 59, 'dynamic': 1
+                }
+            }
+        },
+
+
     }
     

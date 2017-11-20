@@ -72,19 +72,23 @@ module.exports.loop = function () {
     cpu_setup_use = Game.cpu.getUsed() - cpu_setup_use;
     if (cpu_reporting) { console.log('CPU cpu_setup_use: ' + cpu_setup_use); }
 
-    var rooms_to_observe = [];
-    if (Memory['energy_share_dests'] != undefined) {
-        rooms_to_observe = Memory['energy_share_dests'];
+    var lastFour = Game.time % 10000;
+    var observe_energy = 0;
+    if (lastFour == 9999) {
+        observe_energy = 1;
     }
-    global.SET_OBSERVERS(rooms_to_observe);
 
+    global.UPDATE_OBSERVERS(observe_energy);
+    global.ESPIONAGE();
 
     if(Game.time % 1000 === 0) {
-        global.UPDATE_MARKET_ORDERS();
-        global.PRESET_ATTACK_WAVE();
         global.SHARE_SPARE_ENERGY(); 
     }
-    
+    if(Game.time % 2000 === 0) {
+        global.UPDATE_MARKET_ORDERS();
+        //global.PRESET_ATTACK_WAVE();
+    }
+
     if(Game.time % divisor === 0) {
 
         // EXPANSION CONTROLLER
@@ -282,7 +286,6 @@ module.exports.loop = function () {
             if (has_alert) {
                 if (should_have_alert) {
                     Game.rooms[rname].updateAlert(enemy_details, nuke_details);
-                    global.HANDLE_ROOM_ALERT(rname);
                 } else {
                     Game.rooms[rname].deleteAlert();
                 }
@@ -290,10 +293,10 @@ module.exports.loop = function () {
                 Game.rooms[rname].createAlert();
                 Game.rooms[rname].updateAlert(enemy_details, nuke_details);
             }
-
         }
+        global.HANDLE_ALL_ROOM_ALERTS();
+        
         //console.log(JSON.stringify(energy_network));
-
         if (energy_network[ENERGY_EMPTY] != undefined) {
             if(energy_network[ENERGY_EMPTY].length > 0) {
                 var dest_room = energy_network[ENERGY_EMPTY][0];
@@ -306,7 +309,11 @@ module.exports.loop = function () {
                 }
                 for (var i = 0; i < potential_senders.length; i++) {
                     var source_room = potential_senders[i];
-                    var send_result = Game.rooms[source_room].terminal.send(RESOURCE_ENERGY, 25000, dest_room, 'empty room pulls energy from full');
+                    var source_terminal = Game.rooms[source_room].terminal;
+                    if (source_terminal.store.energy < 25000) {
+                        continue;
+                    }
+                    var send_result = source_terminal.send(RESOURCE_ENERGY, 25000, dest_room, 'empty room pulls energy from full');
                     console.log('ENERGYNET: ' + source_room + ' sends energy to (starving) room: ' + dest_room + ', result:' + send_result);
                     if (send_result == OK) {
                         break;
@@ -469,7 +476,7 @@ module.exports.loop = function () {
                         r_status += role + ': ' + living_text + '/' + empire[rname].sources[skey].assigned[role] + ' ';
                         if (empire[rname].living[skey][role] < empire[rname].sources[skey].assigned[role]) {
                             if(global.ROOM_UNDER_ATTACK(rname) && !empire_defaults['military_roles'].includes(role) && !empire_defaults['priority_roles'].includes(role)) {
-                                //console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| until attack on ' + csector + ' is over.');
+                                //console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + '| until attack on ' + rname + ' is over.');
                                 continue;
                             }
                             //if (!empire_defaults['military_roles'].includes(role) && !empire_defaults['priority_roles'].includes(role)) {
@@ -480,6 +487,7 @@ module.exports.loop = function () {
                             var spawner = gsapfr[0];
                             var using_primary = gsapfr[1];
                             if (spawner == undefined) {
+                                //console.log('SPAWN: holding spawn -' + role + '- for |' + empire[rname].sources[skey]['sourcename'] + ' because spawner is undefined.');
                                 continue;
                             }
                             var home_room = spawner.room.name;

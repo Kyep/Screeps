@@ -18,6 +18,10 @@ module.exports =  {
             target = Game.getObjectById(creep.memory[MEMORY_CONTAINER]);
             if(!target) {
                 creep.memory[MEMORY_CONTAINER] = undefined;
+            } else if (!target.isActive()) {
+                target = undefined;
+                creep.memory[MEMORY_CONTAINER] = undefined;
+                return;
             } else { 
                 if(target.energy != undefined && target.energyCapacity != undefined) {
                     if (target.energy == target.energyCapacity) {
@@ -39,7 +43,7 @@ module.exports =  {
                         return (
                                 (
                                   (((structure.structureType == STRUCTURE_SPAWN && fill_spawner) || ( structure.structureType == STRUCTURE_EXTENSION && fill_extensions)) && structure.energy < structure.energyCapacity)
-                                  || (structure.structureType == STRUCTURE_TOWER && structure.energy < (structure.energyCapacity * tower_factor))
+                                  || (structure.structureType == STRUCTURE_TOWER && structure.energy < (structure.energyCapacity * tower_factor)) && structure.isActive()
                                 )
                         );
                     }
@@ -55,7 +59,7 @@ module.exports =  {
                                         (((structure.structureType == STRUCTURE_SPAWN && fill_spawner) || ( structure.structureType == STRUCTURE_EXTENSION && fill_extensions)) && structure.energy < structure.energyCapacity)
                                         || (structure.structureType == STRUCTURE_TOWER && structure.energy < (structure.energyCapacity * tower_factor))
                                         || (structure.structureType == STRUCTURE_NUKER && structure.energy < structure.energyCapacity)
-                                    )
+                                    ) && structure.isActive()
                             );
                         }
                 });
@@ -67,7 +71,7 @@ module.exports =  {
                                     (
                                        (structure.structureType == STRUCTURE_TERMINAL && structure.store.energy < terminal_energy_max)
                                        || (structure.structureType == STRUCTURE_LAB && structure.energy < 2000)
-                                    )
+                                    ) && structure.isActive()
                             );
                         }
                 });
@@ -80,7 +84,7 @@ module.exports =  {
                                        (((structure.structureType == STRUCTURE_CONTAINER && fill_containers) || ( structure.structureType == STRUCTURE_STORAGE && fill_storage))
                                        && structure.store.energy < structure.storeCapacity 
                                        && structure.store.energy < storage_energy_max)
-                                    )
+                                    ) && structure.isActive()
                             );
                         }
                 });
@@ -96,9 +100,12 @@ module.exports =  {
             var structure_max_storage = 0;
             if (target.energyCapacity != undefined) {
                 structure_max_storage = target.energyCapacity;   
-            }
-            if (target.storeCapacity != undefined) {
+            } else if (target.storeCapacity != undefined) {
                 structure_max_storage = target.storeCapacity;
+            }
+            if (structure_max_storage == 0) {
+                creep.memory[MEMORY_CONTAINER] = undefined;
+                return;
             }
             var structure_contents = 0;
             if (target.energy != undefined) {
@@ -114,7 +121,7 @@ module.exports =  {
                 amount_to_deposit = Math.min(creep.carry.energy, (structure_max_storage - structure_contents));
             }
             var result = creep.transfer(target, RESOURCE_ENERGY, amount_to_deposit);
-            
+            //creep.say(result + '/' + amount_to_deposit);            
             if(result == ERR_NOT_IN_RANGE) {
                 creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_DROPOFF}});
             } else if (result == OK) {
@@ -128,6 +135,7 @@ module.exports =  {
             return result;
 
         } else {
+            creep.say('RR: nodest');
             return -1;
         }
 	}

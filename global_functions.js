@@ -253,10 +253,13 @@ global.REFRESH_CREEPS = function() {
     }
 }
 
-global.SPAWN_UNIT = function (spawnername, role, targetroomname, roompath) {
+global.SPAWN_UNIT = function (spawnername, role, targetroomname, roompath, homeroom) {
     if (Game.spawns[spawnername] == undefined) {
         console.log('No such spawner.');
         return 0;
+    }
+    if (homeroom == undefined) {
+        homeroom = Game.spawns[spawnername].room.name;
     }
     if ( empire_workers[role] == undefined) {
         console.log('Invalid role');
@@ -277,7 +280,7 @@ global.SPAWN_UNIT = function (spawnername, role, targetroomname, roompath) {
     var renew_allowed = rbap['renew_allowed'];
     SPAWNCUSTOM(Game.spawns[spawnername], '', partlist, role, 
                         '', targetroomname, global.UNIT_COST(empire_workers[role]['body']), 
-                        Game.spawns[spawnername].room.name, 25, 
+                        homeroom, 25, 
                         25, 0, roompath);
     return 'DONE';
 }
@@ -345,7 +348,7 @@ global.PRESET_ATTACK_WAVE = function () {
     */
 
     SPAWN_UNIT('Spawn6','scout','W55S10',['W57S10','W60S10']); // north base.
-	SPAWN_UNIT('Spawn14','scout','W55S10',['W57S10','W60S10','W60S9']); // north base.
+	//SPAWN_UNIT('Spawn14','scout','W55S10',['W57S10','W60S10','W60S9']); // north base.
 
     /*
     //SPAWN_UNIT('Spawn6','slasher','W56S12',['W56S13','W57S13', 'W57S12']); // north base.
@@ -387,58 +390,72 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname) {
         console.log('GET_SPAWNER_FOR_ROOM: undefined empire block for ' + theroomname);
         return [undefined, 1];
     }
-    var backup_spawn_room = undefined;
-    if (empire[theroomname]['backup_spawn_room'] != undefined) {
-           backup_spawn_room = Game.rooms[empire[theroomname]['backup_spawn_room']];
-    }
+
+    // Room definitions
+    var room_primary = undefined;
     if (empire[theroomname]['spawn_room'] == undefined) {
-        console.log('GET_SPAWNER_FOR_ROOM: undefined spawn_room for ' + theroomname);
+        console.log('GET_SPAWNER_FOR_ROOM: undefined or no-presence empire spawn_room for ' + theroomname);
         return [undefined, 1];
     }
-    var spawn_room = Game.rooms[empire[theroomname]['spawn_room']];
-    if (spawn_room == undefined) {
-        if(backup_spawn_room == undefined) {
-            console.log('GET_SPAWNER_FOR_ROOM: undefined GAME.ROOMS for spawn_room and backup_spawn_room of ' + theroomname);
-            return [undefined, 1];
-        }
+    if (Game.rooms[empire[theroomname]['spawn_room']] != undefined) {
+        room_primary = Game.rooms[empire[theroomname]['spawn_room']];
     }
-    var spawners = [];
-    if (spawn_room != undefined) {
-        spawners = spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable() == 1); } });
+
+    var room_secondary = undefined;
+    if (empire[theroomname]['backup_spawn_room'] != undefined && Game.rooms[empire[theroomname]['backup_spawn_room']] != undefined) {
+        room_secondary = Game.rooms[empire[theroomname]['backup_spawn_room']];
     }
-    var primary_spawner_room_level = 0;
-    if (spawners.length > 0 && spawners[0].room != undefined) {
-        if (spawners[0].room.controller != undefined) {
-            if (spawners[0].room.controller.level != undefined) {
-                primary_spawner_room_level = spawners[0].room.controller.level;
+
+    // Spawner definitions
+    var spawners_primary = []
+    var spawners_primary_unavailable = []
+    if (room_primary != undefined) {
+        spawners_primary = room_primary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
+        spawners_primary_unavailable = room_primary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && !structure.isAvailable()); } });
+    }
+
+    var spawners_secondary = []
+    if (room_secondary != undefined) {
+        spawners_secondary = room_secondary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
+    }
+    
+    var room_primary_level = 0;
+    if (spawners_primary.length > 0 && spawners_primary[0].room != undefined) {
+        if (spawners_primary[0].room.controller != undefined) {
+            if (spawners_primary[0].room.controller.level != undefined) {
+                room_primary_level = spawners_primary[0].room.controller.level;
             }
         }
     }
-    if (global.ROOM_UNDER_ATTACK(theroomname)) {
-        // use room spawner.
-    // If there is no spawner in the room, or there is but the room is level 1 or 2, use backup spawners.
-    // This is used during expansion so that bases can be set to spawn their own units, but the base they expand from will still do most of the work until they are ready.
-    } else if (!spawners.length || (primary_spawner_room_level > 0 && primary_spawner_room_level < 3)) {
-        if (backup_spawn_room != undefined) {
-            var primary_count = -1;
-            if (spawn_room != undefined) {
-                var primary_spawners = spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN); } });                
-                primary_count = primary_spawners.length;
-                //console.log('Checked ' + spawn_room.name + ' for spawners, found: ' + primary_spawners.length);
-            }
-            if (primary_count < 1) {
-                var backup_spawners = backup_spawn_room.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
-                if (backup_spawners.length) {
-                    console.log('GET_SPAWNER_FOR_ROOM: returning backup spawner for:  ' + theroomname + ' with a primary_count: ' + primary_count);
-                    return [backup_spawners[0], 0];
-                }
-            }
-        }
-        //console.log('GET_SPAWNER_FOR_ROOM: spawners is zero length ' + theroomname);
-        return [undefined, 1];
+    var spawners_secondary_preferred = 0;
+    var spawners_secondary_allowed = 1;
+    if (room_primary_level > 0 && room_primary_level < 4) {
+        spawners_secondary_preferred = 1;
+    } else if (room_primary_level > 5) {
+        spawners_secondary_allowed = 0;
     }
-    //console.log('GSFR: for ' + theroomname + ' returned ' +spawners[0].name);
-    return [spawners[0], 1];
+    //console.log('GET_SPAWNER_FOR_ROOM: ' + theroomname + ': ' + spawners_primary.length + '/' + (spawners_primary.length + spawners_primary_unavailable.length) + ' primary, ' + spawners_secondary.length + ' secondary. Secondary pref: ' + spawners_secondary_preferred);
+    if (spawners_primary.length && (!spawners_secondary_preferred || global.ROOM_UNDER_ATTACK(theroomname))) {
+        // If we have a primary available, and we have no specific reason to use a secondary, use the primary.
+        //console.log('GET_SPAWNER_FOR_ROOM: (A) primary available, no backup preference: ' + theroomname);
+        return [spawners_primary[0], 1];
+    }
+    
+    if (spawners_secondary.length && spawners_secondary_allowed) {
+        // If we have a primary available, and we have no specific reason to use a secondary, use the primary.
+        //console.log('GET_SPAWNER_FOR_ROOM: (B) primary unavailable, or preference for backup: ' + theroomname);
+        return [spawners_secondary[0], 0];
+    }
+    
+    if (spawners_primary.length) {
+        // If we have a primary available, and we have no specific reason to use a secondary, use the primary.
+        //console.log('GET_SPAWNER_FOR_ROOM: (C) primary available, preference for backup ignored as none available: ' + theroomname);
+        return [spawners_primary[0], 1];
+    }
+    
+    //console.log('GET_SPAWNER_FOR_ROOM: (D) no primary or backups available: ' + theroomname);
+    return [undefined, 1];
+
 }
 
 global.UPDATE_MARKET_ORDERS = function() {
@@ -447,6 +464,9 @@ global.UPDATE_MARKET_ORDERS = function() {
             continue;
         }
         if (Game.rooms[rname].terminal.cooldown > 0) {
+            continue;
+        }
+        if (!Game.rooms[rname].terminal.isActive()) {
             continue;
         }
         if (Game.rooms[rname].controller == undefined) {
@@ -552,12 +572,14 @@ global.UPDATE_MARKET_ORDERS = function() {
     return 'OK';
 }
 
-global.LAUNCH_NUKE = function(roomx, roomy, roomname) {
+global.READY_LAUNCHERS = function() {
+    var ticks_per_second = 2.7;
     var available_nukers = [];
     for(var id in Game.structures){
         if(Game.structures[id].structureType == STRUCTURE_NUKER){
             if (Game.structures[id].cooldown > 0) {
-                console.log('LAUNCHER: cooldown ' + Game.structures[id].room.name);
+                var hrs = ((Game.structures[id].cooldown * ticks_per_second) / (60 * 60));
+                console.log('LAUNCHER: on cooldown ' + Game.structures[id].room.name + ', for ' + hrs + ' hours');
                 continue;
             }
             if (Game.structures[id].energy != Game.structures[id].energyCapacity) {
@@ -572,18 +594,69 @@ global.LAUNCH_NUKE = function(roomx, roomy, roomname) {
             available_nukers.push(id);
         }
     }
+    return available_nukers;
+}
+
+global.IS_NUKABLE = function(roomname) {
+    var all_nukers = []
+    for(var id in Game.structures){
+        if(Game.structures[id].structureType == STRUCTURE_NUKER){
+            all_nukers.push(id);
+        }
+    }
+    var launchrooms_in_range = []
+    for (var i = 0; i < all_nukers.length; i++) {
+        var thenuker = Game.structures[all_nukers[i]];
+        var therange = Game.map.getRoomLinearDistance(thenuker.room.name, roomname);
+        if (therange > NUKE_RANGE) {
+            console.log('NUKE: launcher in room ' + thenuker.room.name + ' is out of range. (' + therange + ' > ' + NUKE_RANGE + ')');
+            continue;
+        } 
+        launchrooms_in_range.push(thenuker.room.name);
+    }
+    if (launchrooms_in_range.length == 0) {
+        console.log('No nuke launchers were in range of: ' + roomname);
+        return 0;
+    }
+    console.log('You have ' + launchrooms_in_range.length + ' launchers able to hit ' + roomname + ': ' + launchrooms_in_range);
+    return launchrooms_in_range.length;
+}
+
+global.LAUNCH_NUKE = function(roomx, roomy, roomname) {
+    var available_nukers = global.READY_LAUNCHERS();
+
     console.log('NUKE: ' + available_nukers.length + ' launcher(s) available.'); 
-    if (available_nukers.length > 0) {
-        var thenuker = Game.structures[available_nukers[0]];
+    for (var i = 0; i < available_nukers.length; i++) {
+        var thenuker = Game.structures[available_nukers[i]];
+        if (Game.map.getRoomLinearDistance(thenuker.room.name, roomname) > NUKE_RANGE) {
+            console.log('NUKE: launcher in room ' + thenuker.room.name + ' is available, but out of range.');
+            continue;
+        }
         console.log('NUKE: launcher in room ' + thenuker.room.name + ' is available.');
         var result = thenuker.launchNuke(new RoomPosition(roomx, roomy, roomname));
         if (result == OK) {
             console.log('NUCLEAR LAUNCH DETECTED! ' + result);
+            
+            // Spawn a refiller.
+            
+            var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(thenuker.room.name);
+            var spawner = gsapfr[0];
+            var using_primary = gsapfr[1];
+            
+            if (spawner != undefined) {
+                console.log('Spawning nuke refiller...');
+                SPAWN_UNIT(spawner.name, 'nuketech', thenuker.room.name, []);
+            } else {
+                console.log('Unable to spawn nuke refiller... all spawns may be busy.');
+            }
+            return 1;
+            
         } else {
             console.log('RESULT: ' + result);
         }
-        
     }
+    console.log('NUKE: no available launcher can target: ' + roomname);
+    return 0;
 }
 
 global.SHARE_SPARE_ENERGY = function() {
@@ -592,12 +665,27 @@ global.SHARE_SPARE_ENERGY = function() {
         console.log('SHARE_SPARE_ENERGY: energy_share_dests is undefined');
         return;
     }
+    if (Memory['energy_share_dest_index'] == undefined) {
+        Memory['energy_share_dest_index'] = 0;
+        console.log('SHARE_SPARE_ENERGY: energy_share_dest_index is undefined');
+        return;
+    }
     var send_targets = Memory['energy_share_dests'];
     if (send_targets.length == 0) {
         console.log('SHARE_SPARE_ENERGY: energy_share_dests is 0-length');
         return;
     }
-    var send_to = _.sample(send_targets);
+    var dindex = Memory['energy_share_dest_index'];
+    if (dindex >= (send_targets.length - 1)) {
+        dindex = 0;
+    } else {
+        dindex++;
+    }
+    Memory['energy_share_dest_index'] = dindex;
+    
+    //var send_to = _.sample(send_targets);
+    var send_to = send_targets[dindex];
+    console.log('Share: sending energy to ' + send_to);
 
     if (Game.rooms[send_to] != undefined) {
         console.log('SHARE_SPARE_ENERGY: we have vision of: ' + send_to);
@@ -630,7 +718,7 @@ global.SHARE_SPARE_ENERGY = function() {
         var amount_to_send = 10000;
         var term = Game.rooms[rname].terminal;
         if (term.cooldown > 0) {
-            console.log('SHARE_SPARE_ENERGY: ' + rname + ' is on terminal cooldown.');
+            console.log('SHARE_SPARE_ENERGY: ' + rname + ' is on terminal cooldown for: ' + term.cooldown);
             continue;
         }
         if (term.store[RESOURCE_ENERGY] < amount_to_send) {
@@ -652,8 +740,7 @@ global.SHARE_SPARE_ENERGY = function() {
     }   
 }
 
-global.SET_OBSERVERS = function(rooms_to_observe) {
-    
+global.LIST_OBSERVERS = function() {
     var available_observers = [];
     for(var id in Game.structures){
         if(Game.structures[id].structureType == STRUCTURE_OBSERVER){
@@ -661,19 +748,57 @@ global.SET_OBSERVERS = function(rooms_to_observe) {
                 continue;
             }
             //console.log('OBSERVER: OK in ' + Game.structures[id].room.name);
-            available_observers.push(id);
+            available_observers.push(Game.structures[id]);
         }
     }
-    //console.log('OBS: ' + available_observers.length + ' observer(s) available, ' + rooms_to_observe.length + ' observation targets.'); 
+    return available_observers;
+}
+
+global.ANY_OBSERVER_IN_RANGE = function(tgt_room) {
+    var available_observers = global.LIST_OBSERVERS();
+    for (var i = 0; i < available_observers.length; i++) {
+        var obsrange = Game.map.getRoomLinearDistance(available_observers[i].room.name, tgt_room);
+        //console.log(available_observers[i].room.name + ' v ' + tgt_room + ' = ' + obsrange);
+        if (obsrange <= OBSERVER_RANGE) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+global.UPDATE_OBSERVERS = function(observe_energy) {
+    
+    var rooms_to_observe = [];
+    if (Memory['energy_share_dests'] != undefined && observe_energy) {
+        rooms_to_observe = Memory['energy_share_dests'];
+    }
+
+    var available_observers = _.shuffle(global.LIST_OBSERVERS());
+
+    //console.log('OBS: ' + available_observers.length + ' observer(s) available, ' + rooms_to_observe.length + ' observation targets: ' + JSON.stringify(rooms_to_observe)); 
     if (available_observers.length == 0) {
         return;
     }
     if (rooms_to_observe.length > available_observers.length) {
         console.log('OBS: WARNING: we only have ' + available_observers.length + ' observers, but you are trying to monitor ' + rooms_to_observe.length + ' rooms!');
-        
+    } else if (available_observers.length > rooms_to_observe.length) {
+        var espionage_targets = global.ESPIONAGE_LIST_TARGETS();
+        var spare_capacity = available_observers.length - rooms_to_observe.length;
+        for (var i = 0; i < spare_capacity && i < espionage_targets.length; i++) {
+            var new_element = espionage_targets[i];
+            rooms_to_observe.push(new_element);
+            //console.log('OBS: ' + spare_capacity + ' spare capacity, adding ' + new_element + ' for espionage');
+        }
+    } else {
+        //console.log('OBS: no spare_capacity for espionage');
     }
     for (var i = 0; i < available_observers.length && i < rooms_to_observe.length; i++) {
-        var theobs = Game.structures[available_observers[i]];
+        var theobs = available_observers[i];
+        var obsrange = Game.map.getRoomLinearDistance(theobs.room.name, rooms_to_observe[i]);
+        if (obsrange > OBSERVER_RANGE) {
+            //console.log('OBS: observer in ' + theobs.room.name + ' cannot monitor ' + rooms_to_observe[i] + ' as it is ' + obsrange + ' >10 rooms away.');
+            continue;
+        }
         var result = theobs.observeRoom(rooms_to_observe[i]);
         //console.log('OBS: observer in ' + theobs.room.name + ' now observing ' + rooms_to_observe[i] + ' with result: ' + result);
     }
@@ -716,6 +841,11 @@ global.ROOM_UNDER_ATTACK = function(roomname) {
     return 1;
 }
 
+global.HANDLE_ALL_ROOM_ALERTS = function() {
+    for (var thisname in Memory['sectors_under_attack']) {
+        global.HANDLE_ROOM_ALERT(thisname);
+    }
+}
 
 global.HANDLE_ROOM_ALERT = function(roomname) {
     var myalert = Memory['sectors_under_attack'][roomname];
@@ -724,7 +854,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         console.log('ERROR: TRYING TO HANDLE NON-EXISTENT ALERT FOR ' + roomname);
         return;
     }
-    if (thisalert['updateCount'] < 1) {
+    if (myalert['updateCount'] == undefined || myalert['updateCount'] < 1) {
         console.log('HANDLE_ROOM_ALERT: skipping alert as its not been updated with threat data yet: ' + roomname);
         return;
     }
@@ -749,9 +879,11 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
             try_safemode = 1;
         }
     }
+    /* // no point, nuke does damage through safemode
     if (myalert['nukeCount'] > 0 && myalert['nukeTimeToLand'] < 100){
         try_safemode = 1;
     }
+    */
     if (try_safemode) {
         var cc = Game.rooms[roomname].controller;
         var is_in_safemode = 0;
@@ -761,8 +893,8 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         if (is_in_safemode > 0) {
             // nothing.
         } else if (cc.safeModeAvailable) {
-            cc.activateSafeMode();
-            Game.notify('!!!!! SAFEMODE ACTIVATION: ' + roomname);
+            //cc.activateSafeMode();
+            Game.notify('!!!!! WOULD SAFEMODE ACTIVATION: ' + roomname);
             console.log('SAFE MODE ACTIVATED: ATTACK: ' + roomname);
         } else {
             Game.notify('!!!!! CANNOT ACTIVATE SAFEMODE: ' + roomname);
@@ -788,14 +920,15 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         var spawner = gsapfr[0];
         var using_primary = gsapfr[1];
         if (spawner == undefined) {
+            //console.log('XAT: ' + roomname + " has no free 1x spawner");
             return;
         }
         var home_room = spawner.room.name;
-        if (!using_primary && empire[rname]['spawn_room'] != undefined) {
-            home_room = empire[rname]['spawn_room'];
+        if (!using_primary && empire[roomname]['spawn_room'] != undefined) {
+            home_room = empire[roomname]['spawn_room'];
         }
         if (spawner == undefined) {
-            console.log('XAT: ' + roomname + " has no free spawner");
+            //console.log('XAT: ' + roomname + " has no free 1x-b spawner");
             return;
         } else {
             //console.log('XAT: Deciding what to spawn for the ' + theirthreat + ' attack on ' + roomname + ' defended by ' + spawner.name);
@@ -834,7 +967,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
                 patrolforce[oname] += 1;
             }
             theirthreat -= outfit_cost;
-            console.log('DEFENSE: Defending ' + roomname + ' with ' + patrolforce[oname] + ' ' + oname + ' (cost: ' + outfit_cost + ' ea) against threat of: ' + myalert['hostileCost'] + '. ' + theirthreat + ' threat remaining');
+            //console.log('XAT: Defending ' + roomname + ' with ' + patrolforce[oname] + ' ' + oname + ' (cost: ' + outfit_cost + ' ea) against threat of: ' + myalert['hostileCost'] + '. ' + theirthreat + ' threat remaining');
             if (theirthreat < 0) {
                 break;
             }
@@ -846,4 +979,102 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         'assigned': baseforce, 'expected_income': 95, 'dynamic': 1}
     empire[roomname].sources['PATROLFORCE'] = {'sourcename': empire[roomname]['roomname'] + '-pforce', 'x':25, 'y':25,
         'assigned': patrolforce, 'expected_income': 94, 'dynamic': 1}
+}
+
+global.ESPIONAGE_CREATE_TARGETS = function() {
+	var start_x = 49;
+	var end_x = 59;
+	//var end_x = 50;
+	var start_y = 1;
+	var end_y = 29;
+	var espionage_targets = [];
+	for (var i = start_x; i < end_x; i++) {
+		for (var j = start_y; j < end_y; j++) {
+			var this_target = 'W' + i + 'S' + j;
+			if (ANY_OBSERVER_IN_RANGE(this_target)) {
+                espionage_targets.push(this_target);
+			    //console.log('added: ' + this_target);
+			} else {
+			    //console.log('cannot add (no range): ' + this_target);
+			}
+		}
+	}
+	return espionage_targets;
+}
+
+global.ESPIONAGE_LIST_TARGETS = function() {
+    if (Memory['espionage'] == undefined) {
+        Memory['espionage'] = {}
+    }
+    if (Memory['espionage']['targets'] == undefined) {
+        Memory['espionage']['targets'] = []
+    }
+	return Memory['espionage']['targets'];
+}
+
+global.ESPIONAGE_SET_TARGETS = function(thelist) {
+	Memory['espionage']['targets'] = thelist;
+}
+
+global.ESPIONAGE_REMOVE_TARGET = function(thetarget) {
+    var all_targets = global.ESPIONAGE_LIST_TARGETS();
+    var index = all_targets.indexOf(thetarget);
+    if (index != -1) {
+        all_targets.splice(index, 1);
+        global.ESPIONAGE_SET_TARGETS(all_targets);
+    }
+	return Memory['espionage']['targets'];
+}
+
+global.ESPIONAGE_GET_TARGET = function() {
+    var all_targets = Memory['espionage']['targets'];
+    if (all_targets.length == 0) {
+        return undefined;
+    }
+    return _.sample(all_targets);
+}
+
+global.ESPIONAGE_REGEN_TARGETS = function() {
+    Memory['espionage']['players'] = {}
+    var new_target_list = _.shuffle(global.ESPIONAGE_CREATE_TARGETS());
+    global.ESPIONAGE_SET_TARGETS(new_target_list);
+    console.log('ESPIONAGE: REGEN: ' + new_target_list.length + ' targets identified');
+}
+
+global.ESPIONAGE = function() {
+    if (Memory['espionage'] == undefined) {
+        Memory['espionage'] = {}
+        global.ESPIONAGE_REGEN_TARGETS();
+    }
+    var target_list = global.ESPIONAGE_LIST_TARGETS();
+
+    if (target_list.length == 0) {
+        //console.log('Espionage report: ' + JSON.stringify(Memory['espionage']['players']));
+        return;
+    }
+    var num_processed = 0;
+    var levels_added = 0;
+    for (var rname in Game.rooms) {
+        if (target_list.indexOf(rname) != -1) {
+            //console.log('ESPIONAGE: scoring ' + rname);
+            var theroom = Game.rooms[rname];
+            if (theroom.controller != undefined) {
+                if (theroom.controller.owner != undefined) {
+                    if (theroom.controller.owner.username != undefined) {
+                        if (theroom.controller.owner.username != overlord) {
+                            var room_owner = theroom.controller.owner.username;
+                            if (Memory['espionage']['players'][room_owner] == undefined) {
+                                Memory['espionage']['players'][room_owner] = theroom.controller.level;
+                            }
+                            Memory['espionage']['players'][room_owner] += theroom.controller.level;
+                            levels_added += theroom.controller.level;
+                        }
+                    }
+                }
+            }
+            ESPIONAGE_REMOVE_TARGET(rname);
+            num_processed++;
+        }
+    }
+    console.log('ESPIONAGE: processed ' + num_processed + '/' + target_list.length + ', adding: ' + levels_added + ' running: ' + JSON.stringify(Memory['espionage']['players']));    
 }
