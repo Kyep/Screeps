@@ -15,14 +15,14 @@ module.exports = {
                             creep.say('Claim!');
                             var result = creep.attackController(creep.room.controller);
                             if (result == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#0000ff'}});
+                                creep.moveToRUP(creep.room.controller);
                             }
                         }
                     }            
                 } else {
                     var result = creep.claimController(creep.room.controller)
                     if (result == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#0000ff'}});
+                        creep.moveToRUP(creep.room.controller);
                     } else if (result == OK) {
                         creep.suicide();
                     }

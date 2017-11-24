@@ -4,7 +4,7 @@ module.exports =  {
 
     run: function(creep) {
         if (creep.room.name != creep.memory[MEMORY_HOME]) {
-            creep.moveTo(creep.getHomePos());
+            creep.moveToRUP(creep.getHomePos());
             return 0;
         }
         var targets = creep.pos.findInRange(FIND_STRUCTURES, 10, {
@@ -41,7 +41,7 @@ module.exports =  {
             var result = creep.withdraw(target, RESOURCE_ENERGY, amount_to_withdraw);
             
             if(result == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_GFS}});
+                creep.moveToRUP(target);
             } else if (result == OK) {
                 creep.adjustEarnings(amount_to_withdraw * -1);
             } else if (result == ERR_BUSY) {

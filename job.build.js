@@ -6,7 +6,7 @@ module.exports =  {
         if(targets.length) {
             var target = creep.pos.findClosestByRange(targets)
             if(creep.build(target) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_BUILD}});
+                creep.moveToRUP(target);
             }
         } else {
             return -1;

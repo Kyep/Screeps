@@ -31,7 +31,7 @@ module.exports = {
 	            creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
 	            return 0;
             } else if (!creep.isAtDestinationRoom()) {
-                creep.moveToDestination();
+                creep.moveToDestination(10);
                 return 0
             }
             if (creep.memory[MEMORY_H_CONTAINER] != undefined) {
@@ -40,13 +40,13 @@ module.exports = {
                     var crange = creep.pos.getRangeTo(thecontainer);
                     if (thecontainer.store.energy > 0) {
                         if (creep.withdraw(thecontainer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(thecontainer);
+                            creep.moveToRUP(thecontainer);
                         } else {
 
                         }
                     } else {
                         if (creep.pos.getRangeTo(thecontainer) > 2) {
-                            creep.moveTo(thecontainer);
+                            creep.moveToRUP(thecontainer);
                         }
                     }
 
@@ -88,7 +88,7 @@ module.exports = {
                 }
 
                 
-                creep.moveTo(creep.getHomePos(), {reusePath: 10});
+                creep.moveToRUP(creep.getHomePos());
                 return 0;
             }
             if(creep.carry.energy > 0) {
@@ -102,7 +102,7 @@ module.exports = {
                     creep.repair(target);
                 }
             }
-            creep.moveTo(creep.getHomePos());
+            creep.moveToRUP(creep.getHomePos());
         } else if (creep.memory[MEMORY_JOB] == JOB_USELINK) {
             if(empire[creep.memory[MEMORY_DEST]] == undefined) {
                 return 0;
@@ -125,7 +125,7 @@ module.exports = {
             var target = targets[0];
             var result = creep.transfer(target, RESOURCE_ENERGY);
             if (result == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target);
+                creep.moveToRUP(target);
                 return 0;
             }
             //console.log(creep.name + " at " + creep.room.name + ':' + creep.pos.x + ',' + creep.pos.y + ' deposited energy into link' + target.id);
@@ -135,7 +135,7 @@ module.exports = {
             if (creep.room.name != creep.memory[MEMORY_HOME]) {
                 creep.say('ret->H');
                 var newpos = creep.getHomePos();
-               creep.moveTo(newpos)
+                creep.moveToRUP(newpos);
                 //console.log(creep.name + ': WARNING: got stuck in JOB_RETURN outside its HOME: ' + creep.room.name + 
                 //'at ' + creep.pos.x + ',' + creep.pos.y + ' v ' + creep.memory[MEMORY_HOME] + ' carrying: ' + creep.carry.energy + ' of ' + creep.carryCapacity + ' moving to: ' + JSON.stringify(newpos));
                return 0;

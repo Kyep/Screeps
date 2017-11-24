@@ -22,6 +22,7 @@ global.MEMORY_JOURNEYSTART = 'journeystart';
 global.MEMORY_ATTACKEDIN = 'attackedin'
 global.MEMORY_RALLYROOM = 'rallyroom';
 global.MEMORY_LAST_WAYPOINT = 'lastwaypoint';
+global.MEMORY_REUSEPATH = 'reusepath';
 
 global.JOB_HARVEST = 'mine';
 global.JOB_BUILD = 'build';

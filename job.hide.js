@@ -18,14 +18,14 @@ module.exports = {
                 }
             }
             creep.say('🚧 safespot!');
-            creep.moveTo(new RoomPosition(hidex, hidey, creep.memory[MEMORY_HOME]), {visualizePathStyle: {stroke: COLOR_HARVEST}});
+            creep.moveToRUP(new RoomPosition(hidex, hidey, creep.memory[MEMORY_HOME]));
             return 0;
         }
         var enemiesList = creep.room.find(FIND_HOSTILE_CREEPS);
         if (!enemiesList.length) {
             // do nothing, we are safe here until we are told to stop hiding.
             if (creep.pos.x < 2 || creep.pos.x > 47 || creep.pos.y < 2 || creep.pos.y > 47) {
-                creep.moveTo(25, 25);
+                creep.moveToRUP(new RoomPosition(25, 25, creep.room.name));
             }
             creep.say('SAFE?');
             return 0;

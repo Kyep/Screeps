@@ -30,7 +30,7 @@ module.exports = {
                 
                 var result = creep.harvest(mineral);
                 if (result == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(mineral);
+                    creep.moveToRUP(mineral);
                 } else if (result = ERR_TIRED) {
                     // just wait.
                 }
@@ -44,7 +44,7 @@ module.exports = {
             var terminal = creep.room.terminal;
             var result = creep.transfer(terminal, _.last(Object.keys(creep.carry)));
             if (result == ERR_NOT_IN_RANGE) {
-                creep.moveTo(terminal);
+                creep.moveToRUP(terminal);
             }
         }
         if (creep.memory[MEMORY_JOB] == JOB_RENEW) {

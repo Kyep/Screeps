@@ -14,7 +14,7 @@ module.exports = {
         if(targets.length) {
             var theSpawn = targets[0];
             theSpawn.recycleCreep(creep)
-            creep.moveTo(theSpawn, {visualizePathStyle: {stroke: '#ff0000'}});
+            creep.moveToRUP(theSpawn);
         }
 	}
 };

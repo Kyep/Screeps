@@ -19,7 +19,7 @@ module.exports = {
                 var keyslist = Object.keys(creep.carry);
                 //console.log("T: " + keyslist[1]);
                 if (creep.transfer(myterminal, keyslist[1]) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(myterminal);
+                    creep.moveToRUP(myterminal);
                 }
                 return 0;
             }
@@ -31,7 +31,7 @@ module.exports = {
                 return;
             }
             if (creep.withdraw(thelab, thelab.mineralType) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(thelab);
+                creep.moveToRUP(thelab);
             }
             return 0;
         }
@@ -39,13 +39,13 @@ module.exports = {
             var lab = Game.getObjectById(output_lab);
             if (creep.carry[output_type] > 0) {
                 if (creep.transfer(myterminal, output_type) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(myterminal);
+                    creep.moveToRUP(myterminal);
                 }
                 return 0;
             }
             if (lab.mineralAmount > 0) {
                 if (creep.withdraw(lab, output_type) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(lab);
+                    creep.moveToRUP(lab);
                 }
                 return 0;
             }
@@ -63,7 +63,7 @@ module.exports = {
             if (amount_needed == 0) {
                 if (creep.carry[rock] > 0) {
                     if (creep.transfer(myterminal, rock) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(myterminal);
+                        creep.moveToRUP(myterminal);
                     }
                     return;
                 }
@@ -75,7 +75,7 @@ module.exports = {
                 //console.log("CL " + rock + " | " + JSON.stringify(creep.carry));
                 if (creep.carry[rock] > 0) {
                     if (creep.transfer(lab, rock) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(lab);
+                        creep.moveToRUP(lab);
                     }
                 }
                 return 0;
@@ -85,7 +85,7 @@ module.exports = {
                     amount_needed = creep.carryCapacity;
                 }
                 if (creep.withdraw(myterminal, rock, amount_needed) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(myterminal);
+                    creep.moveToRUP(myterminal);
                 }
                 return 0;
             }

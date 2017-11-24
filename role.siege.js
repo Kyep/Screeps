@@ -21,7 +21,7 @@ module.exports = {
             }
             target = them;
             if(creep.pos.getRangeTo(target) > 1){
-                creep.moveTo(target);
+                creep.moveToRUP(target);
             } else {
                 creep.attack(target);
             }
@@ -41,7 +41,7 @@ module.exports = {
         	} else {
         	    var target_structure = structures_at[0];
                 if(creep.attack(target_structure) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(target_structure, {visualizePathStyle: {stroke: '#ff0000'}});
+                    creep.moveToRUP(target_structure);
                 }
                 return 0;
         	}
@@ -80,7 +80,7 @@ module.exports = {
         if (target) {
             new RoomVisual(creep.room.name).line(creep.pos, target.pos, {color: 'red'});
             if(creep.attack(target) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}});
+                creep.moveToRUP(target);
             }
         } else {
             var destroy_csites = 1;
@@ -95,7 +95,7 @@ module.exports = {
                 var csites = creep.room.find(FIND_HOSTILE_CONSTRUCTION_SITES);
                 if (csites.length) {
                     var csite = creep.pos.findClosestByPath(csites);
-                    creep.moveTo(csite, {visualizePathStyle: {stroke: COLOR_PATROL}});
+                    creep.moveToRUP(csite);
                     creep.attack(csite);
                     return 0;
                 }
@@ -136,7 +136,7 @@ module.exports = {
         }
         if(target) {
             if(creep.attack(target) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}});
+                creep.moveToRUP(target);
             }
         } else {
             creep.redRally();

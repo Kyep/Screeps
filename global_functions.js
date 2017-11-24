@@ -278,11 +278,11 @@ global.SPAWN_UNIT = function (spawnername, role, targetroomname, roompath, homer
     var rbap = the_spawner.getRoleBodyAndProperties(role);
     var partlist = rbap['body'];
     var renew_allowed = rbap['renew_allowed'];
-    SPAWNCUSTOM(Game.spawns[spawnername], '', partlist, role, 
+    var result = SPAWNCUSTOM(Game.spawns[spawnername], '', partlist, role, 
                         '', targetroomname, global.UNIT_COST(empire_workers[role]['body']), 
                         homeroom, 25, 
                         25, 0, roompath);
-    return 'DONE';
+    return result;
 }
 
 global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, targettext, thecost, homesector, target_x, target_y, renew_allowed, nextdest){
@@ -338,7 +338,26 @@ global.ATTACK_WAVE = function (spawn_list, unit_type, target_room, roompath) {
     }
 
     for (var i = 0; i < spawn_list.length; i++) {
-        SPAWN_UNIT(spawn_list[i], unit_type, target_room, roompath);
+        var suresult = SPAWN_UNIT(spawn_list[i], unit_type, target_room, roompath);
+        console.log(spawn_list[i].name + ': ' + suresult);
+    }
+}
+
+global.ROOMLIST_ATTACK_WAVE = function (roomlist, unit_type, target_room, roompath) {
+    if (unit_type == undefined) {
+        console.log('arg 2 must be unit_type');
+        return;
+    }
+    if (target_room == undefined) {
+        console.log('arg 3 must be target_room');
+        return;
+    }
+    for (var sname in Game.spawns) {
+        if (roomlist.indexOf(Game.spawns[sname].room.name) == -1) {
+            continue;   
+        }
+        var suresult = SPAWN_UNIT(sname, unit_type, target_room, roompath);
+        console.log(sname + ': ' + suresult);
     }
 }
 
@@ -458,7 +477,27 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname) {
 
 }
 
+global.DELETE_OLD_ORDERS = function() {
+    var my_orders = Game.market.orders;
+    for (var thisorder in my_orders) {
+        if (my_orders[thisorder]['remainingAmount'] != 0) {
+            continue;
+        }
+        if (my_orders[thisorder]['active'] != false) {
+            continue;
+        }
+        if (my_orders[thisorder]['amount'] != 0) {
+            continue;
+        }
+        console.log('DELETE OLD ORDER: Room ' + my_orders[thisorder]['roomName'] + ', id ' + my_orders[thisorder]['id'] + ', rA ' + my_orders[thisorder]['remainingAmount']);
+        Game.market.cancelOrder(my_orders[thisorder]['id']);
+    }
+}
+
 global.UPDATE_MARKET_ORDERS = function() {
+    
+    global.DELETE_OLD_ORDERS();
+    
     for (var rname in Game.rooms) {
         if (Game.rooms[rname].terminal == undefined) {
             continue;
@@ -577,6 +616,10 @@ global.READY_LAUNCHERS = function() {
     var available_nukers = [];
     for(var id in Game.structures){
         if(Game.structures[id].structureType == STRUCTURE_NUKER){
+            if (!Game.structures[id].isActive()) {
+                console.log('LAUNCHER: inactive ' + Game.structures[id].room.name);
+                continue;
+            }
             if (Game.structures[id].cooldown > 0) {
                 var hrs = ((Game.structures[id].cooldown * ticks_per_second) / (60 * 60));
                 console.log('LAUNCHER: on cooldown ' + Game.structures[id].room.name + ', for ' + hrs + ' hours');
@@ -644,8 +687,8 @@ global.LAUNCH_NUKE = function(roomx, roomy, roomname) {
             var using_primary = gsapfr[1];
             
             if (spawner != undefined) {
-                console.log('Spawning nuke refiller...');
-                SPAWN_UNIT(spawner.name, 'nuketech', thenuker.room.name, []);
+                var suresult = SPAWN_UNIT(spawner.name, 'nuketech', thenuker.room.name, []);
+                console.log('Spawning nuke refiller: ' + suresult);
             } else {
                 console.log('Unable to spawn nuke refiller... all spawns may be busy.');
             }

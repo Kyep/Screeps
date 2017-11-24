@@ -4,7 +4,7 @@ module.exports = {
 
     run: function(creep) {
         if(creep.room.name != creep.memory[MEMORY_HOME]) {
-            creep.moveTo(creep.getHomePos());
+            creep.moveToRUP(creep.getHomePos());
             return 0;
         }
         
@@ -29,7 +29,7 @@ module.exports = {
             var target = creep.pos.findClosestByRange(targets)
             if(target.spawning != null) {
                 if(creep.pos.getRangeTo(target) > 3) {
-                    creep.moveTo(target);
+                    creep.moveToRUP(target);
                 }
                 return 0;
             }
@@ -45,7 +45,7 @@ module.exports = {
                     creep.memory[MEMORY_RENEWALS]++;
                 }
             } else if(result == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target);
+                creep.moveToRUP(target);
             } else if (result == ERR_NOT_ENOUGH_ENERGY) {
                 if (creep.carry.energy > 0) {
                     var amount_to_deposit = Math.min(target.energyCapacity - target.energy, creep.carry.energy);
@@ -55,7 +55,7 @@ module.exports = {
                     }
                 }
             } else if (result == ERR_BUSY) {
-                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_RENEW}});
+                creep.moveToRUP(target);
             }
             //if (result != OK && result != ERR_NOT_IN_RANGE) { console.log('creep ' + creep.name + ' at ' + creep.pos.x + ',' + creep.pos.y + ':' + creep.room.name + ' failed renew: ' + result) }
             return result;

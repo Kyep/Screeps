@@ -44,7 +44,7 @@ module.exports = {
 	            creep.memory[MEMORY_JOB] = JOB_PATROL;
                 creep.announceJob();
             } else {
-                creep.moveTo(creep.getHomePos(), {visualizePathStyle: {stroke: '#ff0000'}})
+                creep.moveToRUP(creep.getHomePos());
             }
 	    } else if(creep.memory[MEMORY_JOB] == JOB_PATROL) {
             if(creep.ticksToLive < 400 && creep.room.name == creep.memory[MEMORY_HOME]) {

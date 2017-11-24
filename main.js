@@ -57,7 +57,7 @@ module.exports.loop = function () {
     var cpu_setup_use = Game.cpu.getUsed();
 
     var divisor = 3;
-    if (Game.cpu.bucket < 9000) {
+    if (Game.cpu.bucket < 1000) {
         console.log('Account: ' + Game.cpu.limit + ', Cycle: ' + Game.cpu.tickLimit + ', Bucket: ' + Game.cpu.bucket);
         divisor = 5;
         if (Game.cpu.bucket < 8000) {
@@ -82,7 +82,7 @@ module.exports.loop = function () {
     global.ESPIONAGE();
 
     if(Game.time % 1000 === 0) {
-        global.SHARE_SPARE_ENERGY(); 
+        //global.SHARE_SPARE_ENERGY(); 
     }
     if(Game.time % 2000 === 0) {
         global.UPDATE_MARKET_ORDERS();
@@ -815,14 +815,21 @@ module.exports.loop = function () {
         creep_cpu_map[creep.memory[MEMORY_ROLE]].unshift(creep_cpu);
         
     }
-    if (cpu_reporting) { 
+    if (cpu_reporting) {
+        var highest_cpu_class = '';
+        var highest_cpu_usage = 0;
         for (var pname in creep_cpu_map) {
             var this_total = 0;
             for (var i = 0; i < creep_cpu_map[pname].length; i++){
                 this_total += creep_cpu_map[pname][i];
             }
             console.log(pname + ': ' + creep_cpu_map[pname].length + ' creeps taking ' + this_total + ' cpu, avg: ' + this_total / creep_cpu_map[pname].length);
+            if (this_total > highest_cpu_usage) {
+                highest_cpu_usage = this_total;
+                highest_cpu_class = pname;
+            }
         }
+        console.log('Best class to optimize: ' + highest_cpu_class + ' with ' + highest_cpu_usage);
     }
     
     cpu_creep_use = Game.cpu.getUsed() - cpu_creep_use;

@@ -1,7 +1,7 @@
 
 // rule: must have  1 move part for 1 every other part, or 2 every other parts if creep uses roads exclusively
-global.empire_workers = { 
-	'upclose': { 'body': [WORK, WORK, CARRY, MOVE] },
+global.empire_workers = {
+    'upclose': { 'body': [WORK, WORK, CARRY, MOVE] },
 	'upfar': { 'body': [WORK, CARRY, MOVE] },
 	'up8': { 'body': [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 'noresizing': 1 },
 
@@ -53,8 +53,8 @@ global.empire_workers = {
 	'siege': { 'body':         global.CONSTRUCT_MILITARY_BODY(0, 1, 2, 0, 0), 'renew_allowed': 0}, // half speed, strong but slow
 	'siegemini': { 'body':     global.CONSTRUCT_MILITARY_BODY(0, 3, 3, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // small.
 	'siegefar': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 6, 6, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
-	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, // ultra-cheap unit used to drain enemy towers.
-	'drainerbig': { 'body': global.CONSTRUCT_MILITARY_BODY(12, 12, 0, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, 
+	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, // ultra-cheap unit used to drain enemy towers.
+	'drainerbig': { 'body': global.CONSTRUCT_MILITARY_BODY(12, 12, 0, 0, 0), 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, 
 
 	'siegebig': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 15, 15, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1950?
 	'healer': { 'body':   global.CONSTRUCT_MILITARY_BODY(10, 8, 0, 0, 20), 'renew_allowed': 0}, // 5,600e!

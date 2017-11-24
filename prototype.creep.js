@@ -131,10 +131,10 @@ Creep.prototype.isAtDestinationRoom = function() {
         console.log(this.name + 'checked isAtDestinationRoom with no MEMORY_DEST');
         return 1;
     }
-    if (this.room.name != this.memory[MEMORY_DEST]) {
-        return 0;
+    if (this.room.name == this.memory[MEMORY_DEST]) {
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 Creep.prototype.isAtDestination = function() {
@@ -159,6 +159,19 @@ Creep.prototype.isAtDestination = function() {
     return 1;
 }
 
+Creep.prototype.moveToRUP = function(dest, rupsteps) {
+    if (rupsteps == undefined || rupsteps == 0) {
+        if (this.memory[MEMORY_REUSEPATH] == undefined) {
+            if (empire_workers[this.memory[MEMORY_ROLE]]['rup'] == undefined) {
+                this.memory[MEMORY_REUSEPATH] = 15;
+                return 0;
+            }
+            this.memory[MEMORY_REUSEPATH] = empire_workers[this.memory[MEMORY_ROLE]]['rup'];
+        }
+        rupsteps = this.memory[MEMORY_REUSEPATH];
+    }
+    this.moveTo(dest, {reusePath: rupsteps});
+}
 
 Creep.prototype.moveToDestination = function() {
     if (this.memory[MEMORY_DEST] == undefined) {
@@ -173,24 +186,27 @@ Creep.prototype.moveToDestination = function() {
         console.log(this.name + ' was ordered to moveToDestination with no MEMORY_DEST_Y');
         return 0;
     }
-    if(this.memory[MEMORY_LAST_WAYPOINT] == undefined || this.memory[MEMORY_LAST_WAYPOINT] != this.room.name) {
-        var redflags = this.room.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_RED && flag.secondaryColor == COLOR_RED) { return 1; } else { return 0; } } });
-        if(redflags.length) {
-            var tflag = redflags[0];
-            if (this.pos.getRangeTo(tflag) > 2) {
-                this.moveTo(tflag);
-                return 1;
+    if (this.isMilitary()) {
+        if(this.memory[MEMORY_LAST_WAYPOINT] == undefined || this.memory[MEMORY_LAST_WAYPOINT] != this.room.name) {
+            var redflags = this.room.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_RED && flag.secondaryColor == COLOR_RED) { return 1; } else { return 0; } } });
+            if(redflags.length) {
+                var tflag = redflags[0];
+                if (this.pos.getRangeTo(tflag) > 2) {
+                    this.moveTo(tflag);
+                    return 1;
+                } else {
+                    this.memory[MEMORY_LAST_WAYPOINT] = this.room.name;
+                }
             } else {
                 this.memory[MEMORY_LAST_WAYPOINT] = this.room.name;
             }
-        } else {
-            this.memory[MEMORY_LAST_WAYPOINT] = this.room.name;
         }
     }
     var dest_room = this.memory[MEMORY_DEST];
     var dest_x = this.memory[MEMORY_DEST_X];
     var dest_y = this.memory[MEMORY_DEST_Y];
-    this.moveTo(new RoomPosition(dest_x, dest_y, dest_room));
+    this.moveToRUP(new RoomPosition(dest_x, dest_y, dest_room));
+
     return 1;
 }
 

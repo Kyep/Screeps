@@ -1,14 +1,14 @@
 
 Room.prototype.getShouldUpgrade = function() {
     var gcl_farm_rooms = Memory['gcl_farm'];
-    if (!(this.name in gcl_farm_rooms)) {
+    if (Memory['gcl_farm'].indexOf(this.name) == -1) {
         return 1;
     }
     var room_level = this.getLevel();
     if (room_level == 8) {
-        return 1;
+        return 0;
     }
-    return 0;
+    return 1;
 }
 
 Room.prototype.getMyStructuresCount = function() {

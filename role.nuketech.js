@@ -13,7 +13,7 @@ module.exports = {
             if(creep.carry[resources_needed[i]] > 0) {
                 var tr = creep.transfer(mysilo, resources_needed[i]);
                 if (tr == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(mysilo);
+                    creep.moveToRUP(mysilo);
                 }
                 return;
             }
@@ -33,7 +33,7 @@ module.exports = {
             }
             var wr = creep.withdraw(myterminal, RESOURCE_GHODIUM);
             if (wr == ERR_NOT_IN_RANGE) {
-                creep.moveTo(myterminal);
+                creep.moveToRUP(myterminal);
             }
             return;
         } else if (energy_required > 0) {
@@ -47,7 +47,7 @@ module.exports = {
             }
             var wr = creep.withdraw(mystorage, RESOURCE_ENERGY);
             if (wr == ERR_NOT_IN_RANGE) {
-                creep.moveTo(mystorage);
+                creep.moveToRUP(mystorage);
             }
             return;
         }

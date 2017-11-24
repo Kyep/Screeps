@@ -55,7 +55,7 @@
         'W52S18': {
             'roomname' : '1E',
             'spawn_room': 'W53S18',
-            'backup_spawn_room': 'W56S18',
+            'backup_spawn_room': 'W51S18',
             'sources': {
                 '59bbc4062052a716c3ce7408': {'sourcename':'1E', 'x':11, 'y':14, 'target_x': 10, 'target_y': 13, 'steps':33, 'spaces':3, 
                     'assigned': {'c15harvester': 1, 'hauler': 1},
@@ -370,11 +370,11 @@
             'spawn_room': 'W56S18',
             'sources': {
                 '59bbc3c92052a716c3ce6c47': {'sourcename': '6-N', 'x':31, 'y':30, 'spaces':4,
-                    'assigned': {'bharvester': 2},  // 'upclose': 2, 'harvester': 2
+                    'assigned': {'bharvester': 3},  // 'upclose': 2, 'harvester': 2
                     'expected_income': 85
                 },
                 '59bbc3c92052a716c3ce6c48': {'sourcename': '6-S', 'x':35, 'y':39, 'spaces':4,
-                    'assigned': {'bharvester': 2}, // 'harvester': 4
+                    'assigned': {'bharvester': 3}, // 'harvester': 4
                     'expected_income': 80
                 }
             },
@@ -590,11 +590,11 @@
             'backup_spawn_room': 'W58S17',
             'sources': {
                 '59bbc39f2052a716c3ce671b': {'sourcename': '9-N', 'x':40, 'y':8, 'spaces':3, 'target_x': 39, 'target_y': 8, 'steps':40,
-                    'assigned': {'harvester': 2}, 
+                    'assigned': {'bharvester': 2}, 
                     'expected_income': 85
                 },
                 '59bbc39f2052a716c3ce671c': {'sourcename': '9-S', 'x':46, 'y':25, 'spaces':1,
-                    'assigned': {'harvester': 2}, 
+                    'assigned': {'bharvester': 2}, 
                     'expected_income': 80
                 }
             },
@@ -610,11 +610,11 @@
             'backup_spawn_room': 'W58S17',
             'sources': {
                 '59bbc39f2052a716c3ce6720': {'sourcename': '9S-W', 'x':4, 'y':37, 'spaces':1, 'target_x': 5, 'target_y': 38, 'steps':80,
-                    'assigned': {'c30harvester': 0, 'hauler': 0}, 
+                    'assigned': {'fharvester': 0, 'c30harvester': 1, 'hauler': 1}, 
                     'expected_income': 75
                 },
                 '59bbc39f2052a716c3ce6721': {'sourcename': '9S-E', 'x':34, 'y':38, 'spaces':2, 'target_x': 34, 'target_y': 37, 'steps':80,
-                    'assigned': {'c30harvester': 0, 'hauler': 0}, 
+                    'assigned': {'fharvester': 0, 'c30harvester': 1, 'hauler': 1}, 
                     'expected_income': 70
                 },
                 'reserver': {'sourcename':'9S-R', 'x':25, 'y':25,
@@ -629,11 +629,11 @@
             'backup_spawn_room': 'W58S17',
             'sources': {
                 '59bbc3ad2052a716c3ce68ad': {'sourcename': '9SE-N', 'x':26, 'y':39, 'spaces':2, 'target_x': 25, 'target_y': 39,  'steps':12,
-                    'assigned': {'c30harvester': 0, 'hauler': 0}, 
+                    'assigned': {'fharvester': 1, 'c30harvester': 0, 'hauler': 0}, 
                     'expected_income': 65
                 },
                 '59bbc3ad2052a716c3ce68ae': {'sourcename': '9SE-S', 'x':24, 'y':43, 'spaces':1, 'target_x': 23, 'target_y': 42,  'steps':120,
-                    'assigned': {'c30harvester': 0, 'hauler': 0}, 
+                    'assigned': {'fharvester': 1, 'c30harvester': 0, 'hauler': 0}, 
                     'expected_income': 60
                 },
                 'reserver': {'sourcename':'9SE-R', 'x':25, 'y':25,

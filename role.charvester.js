@@ -77,7 +77,7 @@ module.exports = {
             }
             if(creep.build(csites[0]) == ERR_NOT_IN_RANGE) {
                 console.log(creep.name + ': out of place from container');
-                creep.moveTo(csites[0], {visualizePathStyle: {stroke: COLOR_BUILD}});
+                creep.moveToRUP(csites[0]);
             }
         }
     }

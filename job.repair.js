@@ -17,7 +17,7 @@ module.exports = {
         var repairtarget = creep.pos.findClosestByRange(repairTargets)
         if(repairtarget) {
             if(creep.repair(repairtarget) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(repairtarget, {visualizePathStyle: {stroke: COLOR_REPAIR}});
+                creep.moveToRUP(repairtarget);
             }
         } else {
             return -1;

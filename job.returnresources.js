@@ -123,7 +123,7 @@ module.exports =  {
             var result = creep.transfer(target, RESOURCE_ENERGY, amount_to_deposit);
             //creep.say(result + '/' + amount_to_deposit);            
             if(result == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_DROPOFF}});
+                creep.moveToRUP(target);
             } else if (result == OK) {
                 creep.memory[MEMORY_CONTAINER] = undefined;
                 creep.adjustEarnings(amount_to_deposit);
