@@ -12,7 +12,7 @@ module.exports = {
                 if (creep.room.controller.owner != undefined) {
                     if (creep.room.controller.owner.username != undefined) {
                         if (creep.room.controller.owner.username != creep.owner.username) {
-                            creep.say('Claim!');
+                            creep.say('Attack!');
                             var result = creep.attackController(creep.room.controller);
                             if (result == ERR_NOT_IN_RANGE) {
                                 creep.moveToRUP(creep.room.controller);

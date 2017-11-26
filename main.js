@@ -179,18 +179,19 @@ module.exports.loop = function () {
                     rctype = 'remoteconstructor';
                 }
                 if(projectsList.length > 0) {
-                    for(var sname in empire[rname].sources) {
-                        if (empire[rname].sources[sname]['dynamic'] != undefined) {
-                            continue;
+                    if (empire[rname] != undefined) {
+                        for(var sname in empire[rname].sources) {
+                            if (empire[rname].sources[sname]['dynamic'] != undefined) {
+                                continue;
+                            }
+                            if (empire[rname].sources[sname]['spaces'] != undefined && empire[rname].sources[sname]['spaces'] == 1) {
+                                // If source can't handle another miner, do not assign one.
+                                //empire[rname].sources[sname].assigned = {};
+                                //empire[rname].sources[sname].assigned[rctype] = 1;
+                                continue;
+                            }
+                            empire[rname].sources[sname].assigned[rctype] = 1;
                         }
-                        if (empire[rname].sources[sname]['spaces'] != undefined && empire[rname].sources[sname]['spaces'] == 1) {
-                            // If source can't handle another miner, do not assign one.
-                            //empire[rname].sources[sname].assigned = {};
-                            //empire[rname].sources[sname].assigned[rctype] = 1;
-                            continue;
-                        }
-
-                        empire[rname].sources[sname].assigned[rctype] = 1;
                     }
                 }
             }

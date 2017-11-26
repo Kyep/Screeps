@@ -162,11 +162,13 @@ Creep.prototype.isAtDestination = function() {
 Creep.prototype.moveToRUP = function(dest, rupsteps) {
     if (rupsteps == undefined || rupsteps == 0) {
         if (this.memory[MEMORY_REUSEPATH] == undefined) {
-            if (empire_workers[this.memory[MEMORY_ROLE]]['rup'] == undefined) {
-                this.memory[MEMORY_REUSEPATH] = 15;
-                return 0;
+            this.memory[MEMORY_REUSEPATH] = 15;
+            if (empire_workers[this.memory[MEMORY_ROLE]] != undefined) {
+                if (empire_workers[this.memory[MEMORY_ROLE]]['rup'] == undefined) {
+                    return 0;
+                }
+                this.memory[MEMORY_REUSEPATH] = empire_workers[this.memory[MEMORY_ROLE]]['rup'];
             }
-            this.memory[MEMORY_REUSEPATH] = empire_workers[this.memory[MEMORY_ROLE]]['rup'];
         }
         rupsteps = this.memory[MEMORY_REUSEPATH];
     }

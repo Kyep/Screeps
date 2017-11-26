@@ -54,7 +54,7 @@ global.empire_workers = {
 	'siegemini': { 'body':     global.CONSTRUCT_MILITARY_BODY(0, 3, 3, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // small.
 	'siegefar': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 6, 6, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
 	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, // ultra-cheap unit used to drain enemy towers.
-	'drainerbig': { 'body': global.CONSTRUCT_MILITARY_BODY(12, 12, 0, 0, 0), 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, 
+	'drainerbig': { 'body': global.CONSTRUCT_MILITARY_BODY(0, 12, 0, 0, 12), 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, 
 
 	'siegebig': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 15, 15, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1950?
 	'healer': { 'body':   global.CONSTRUCT_MILITARY_BODY(10, 8, 0, 0, 20), 'renew_allowed': 0}, // 5,600e!

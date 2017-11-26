@@ -609,17 +609,28 @@
             'spawn_room': 'W59S18',
             'backup_spawn_room': 'W58S17',
             'sources': {
-                '59bbc39f2052a716c3ce6720': {'sourcename': '9S-W', 'x':4, 'y':37, 'spaces':1, 'target_x': 5, 'target_y': 38, 'steps':80,
+                '59bbc39f2052a716c3ce6720': {'sourcename': '9S-W', 'x':4, 'y':37, 'spaces':1, 'target_x': 5, 'target_y': 38, 'steps':120,
                     'assigned': {'fharvester': 0, 'c30harvester': 1, 'hauler': 1}, 
                     'expected_income': 75
                 },
-                '59bbc39f2052a716c3ce6721': {'sourcename': '9S-E', 'x':34, 'y':38, 'spaces':2, 'target_x': 34, 'target_y': 37, 'steps':80,
+                '59bbc39f2052a716c3ce6721': {'sourcename': '9S-E', 'x':34, 'y':38, 'spaces':2, 'target_x': 34, 'target_y': 37, 'steps':120,
                     'assigned': {'fharvester': 0, 'c30harvester': 1, 'hauler': 1}, 
                     'expected_income': 70
                 },
                 'reserver': {'sourcename':'9S-R', 'x':25, 'y':25,
-                    'assigned': {'reserver': 0},
+                    'assigned': {'reserver': 1},
                     'expected_income': 69, 'dynamic': 1
+                }
+            }
+        },
+        'W58S18': {
+            'roomname' : '9E',
+            'spawn_room': 'W59S18',
+            'backup_spawn_room': 'W58S17',
+            'sources': {
+                '59bbc3ad2052a716c3ce68a9': {'sourcename': '9E', 'x':41, 'y':18, 'spaces':3, 'target_x': 40, 'target_y': 18, 'steps':60,
+                    'assigned': {'fharvester': 0}, 
+                    'expected_income': 68
                 }
             }
         },
@@ -629,15 +640,15 @@
             'backup_spawn_room': 'W58S17',
             'sources': {
                 '59bbc3ad2052a716c3ce68ad': {'sourcename': '9SE-N', 'x':26, 'y':39, 'spaces':2, 'target_x': 25, 'target_y': 39,  'steps':12,
-                    'assigned': {'fharvester': 1, 'c30harvester': 0, 'hauler': 0}, 
+                    'assigned': {'fharvester': 0, 'c30harvester': 1, 'hauler': 1}, 
                     'expected_income': 65
                 },
                 '59bbc3ad2052a716c3ce68ae': {'sourcename': '9SE-S', 'x':24, 'y':43, 'spaces':1, 'target_x': 23, 'target_y': 42,  'steps':120,
-                    'assigned': {'fharvester': 1, 'c30harvester': 0, 'hauler': 0}, 
+                    'assigned': {'fharvester': 0, 'c30harvester': 1, 'hauler': 1}, 
                     'expected_income': 60
                 },
                 'reserver': {'sourcename':'9SE-R', 'x':25, 'y':25,
-                    'assigned': {'reserver': 0},
+                    'assigned': {'reserver': 1},
                     'expected_income': 59, 'dynamic': 1
                 }
             }
