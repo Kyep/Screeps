@@ -1,5 +1,5 @@
 
-    global.cpu_reporting = 0;
+    global.cpu_reporting = 1;
 
     global.overlord = 'Phisec';
     global.allies = ['Kamots'];

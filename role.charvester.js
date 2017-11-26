@@ -14,8 +14,10 @@ module.exports = {
         if (creep.memory[MEMORY_JOB] == undefined) {
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
         }
-        if (creep.getShouldHide()) {
-            creep.memory[MEMORY_JOB] = JOB_HIDE;
+        if(Game.time % 5 === 0) {
+            if (creep.getShouldHide()) {
+                creep.memory[MEMORY_JOB] = JOB_HIDE;
+            }
         }
         if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_OUT) {
             if (creep.memory[MEMORY_JOURNEYSTART] == undefined ) {

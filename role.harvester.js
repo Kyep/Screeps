@@ -16,6 +16,7 @@ module.exports = {
                 creep.memory[MEMORY_DEST] = source.room.name;
             } else {
                 console.log("WARN: LDH " + creep.name + " has no source with: " + creep.memory[MEMORY_SOURCE]);
+                return;
             }
         }
         if (creep.carry.energy == 0 && creep.memory[MEMORY_JOB] != JOB_TRAVEL_OUT && creep.memory[MEMORY_JOB] != JOB_TRAVEL_BACK && creep.memory[MEMORY_JOB] != JOB_HARVEST && creep.memory[MEMORY_JOB] != JOB_RENEW) {

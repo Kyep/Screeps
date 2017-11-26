@@ -305,3 +305,12 @@ Creep.prototype.isBoosted = function() {
     }
     return boosted_parts;
 }
+
+Creep.prototype.getStructuresInDist = function(dradius) {
+    var top = global.ROOM_CLAMP_COORD(this.pos.y - dradius);
+    var left = global.ROOM_CLAMP_COORD(this.pos.x - dradius);
+    var bottom = global.ROOM_CLAMP_COORD(this.pos.y + dradius);
+    var right =  global.ROOM_CLAMP_COORD(this.pos.x + dradius);
+    var nearby_structures = this.room.lookForAtArea(LOOK_STRUCTURES, top, left, bottom, right);
+    return nearby_structures;
+}

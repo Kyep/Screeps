@@ -760,6 +760,8 @@ module.exports.loop = function () {
 
         if (creep.spawning) {
             // don't even process this creep, it cannot do anything while it is being spawned, and even attempting to do so just wastes CPU.
+        } else if (creep.memory[MEMORY_SLEEPFOR] != undefined && creep.memory[MEMORY_SLEEPFOR] > 0) {
+            creep.memory[MEMORY_SLEEPFOR]--;
         } else if(creep.memory[MEMORY_ROLE] == 'harvester' || creep.memory[MEMORY_ROLE] == 'bharvester' || creep.memory[MEMORY_ROLE] == 'fharvester') {
             roleHarvester.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'c15harvester' || creep.memory[MEMORY_ROLE] == 'c30harvester') {

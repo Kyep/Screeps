@@ -14,8 +14,10 @@ module.exports = {
         if (creep.memory[MEMORY_JOB] == undefined) {
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
         }
-        if (creep.getShouldHide()) {
-            creep.memory[MEMORY_JOB] = JOB_HIDE;
+        if(Game.time % 5 === 0) {
+            if (creep.getShouldHide()) {
+                creep.memory[MEMORY_JOB] = JOB_HIDE;
+            }
         }
         if (creep.memory[MEMORY_JOB] == JOB_HIDE) {
             if (creep.getShouldHide()) {
@@ -25,84 +27,109 @@ module.exports = {
             } else {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
             }
-        }
-        if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_OUT) {
-            if (creep.carry.energy > (creep.carryCapacity / 2)) {
-	            creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
-	            return 0;
-            } else if (!creep.isAtDestinationRoom()) {
-                creep.moveToDestination(10);
-                return 0
+        } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_OUT) {
+            // If we are not at the destination room, go there.
+            if (!creep.isAtDestinationRoom()) {
+                creep.moveToDestination();
+                return 0;
             }
-            if (creep.memory[MEMORY_H_CONTAINER] != undefined) {
-                var thecontainer = Game.getObjectById(creep.memory[MEMORY_H_CONTAINER]);
-                if (thecontainer != undefined) {
-                    var crange = creep.pos.getRangeTo(thecontainer);
-                    if (thecontainer.store.energy > 0) {
-                        if (creep.withdraw(thecontainer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                            creep.moveToRUP(thecontainer);
-                        } else {
-
-                        }
-                    } else {
-                        if (creep.pos.getRangeTo(thecontainer) > 2) {
-                            creep.moveToRUP(thecontainer);
-                        }
-                    }
-
-                    if(crange < 2) {
-                        var energypile = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: (s) => s.energy > 0});
-                        if(energypile.length){
-                            creep.say('pile!');
-                            creep.pickup(energypile[0]);
-                        }
-                    }
-                } else {
-                    creep.memory[MEMORY_H_CONTAINER] = undefined;
+            // If we are there, but >=75% full, go back.
+            if (creep.carry.energy > (creep.carryCapacity * 0.75)) {
+                creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
+                return 0;
+            }
+            // If we are there, but don't have our container memorized, look to memorize it.
+            if (creep.memory[MEMORY_H_CONTAINER] == undefined) {
+                var target_source = Game.getObjectById(creep.memory[MEMORY_SOURCE]);
+                if (target_source == undefined) {
+                    console.log(creep.name + ": Warning, souce " + creep.memory[MEMORY_SOURCE] + " cannot be GOBID." + creep.room.name);
+                    return 0;
+                }
+                var container_search_range = 1;
+                var nearby_containers = target_source.pos.findInRange(FIND_STRUCTURES, container_search_range, { filter: { structureType: STRUCTURE_CONTAINER } } ); // Expensive, but only once per 20 ticks if there is no container (already rare)
+                var thecontainer = undefined;
+                if (nearby_containers.length == 0) {
+                    // If there is no container built within 1 tile of our target source, sleep for 20T, then check again.
+                    creep.memory[MEMORY_SLEEPFOR] = 20;
+                    return 0;
+                }
+                // Otherwise, store that container in memory as our container.
+                thecontainer = nearby_containers[0];
+                creep.memory[MEMORY_H_CONTAINER] = thecontainer.id;
+                
+                // And finally, issue a warning if there are multiple containers at a source.
+                if (nearby_containers.length > 1) {
+                    console.log(creep.name + ": warning: multiple containers detected.");
                 }
                 return 0;
             }
-            var target_source = Game.getObjectById(creep.memory[MEMORY_SOURCE]);
-            if (target_source == undefined) {
-                console.log(creep.name + ": Warning, souce " + creep.memory[MEMORY_SOURCE] + " cannot be GOBID." + creep.room.name);
+
+            // If we get this far, we are in the right destination room, and we have a container to pick up from.
+            // First, check if our memory is still valid. (container might have been destroyed)
+            var thecontainer = Game.getObjectById(creep.memory[MEMORY_H_CONTAINER]);
+            if (thecontainer == undefined) {
+                creep.memory[MEMORY_H_CONTAINER] = undefined;
                 return 0;
             }
-            var container_search_range = 1;
-            var nearby_containers = target_source.pos.findInRange(FIND_STRUCTURES, container_search_range, { filter: { structureType: STRUCTURE_CONTAINER } } );
-            var thecontainer = undefined;
-            if (nearby_containers.length == 0) {
-                // wait for a container to be constructed;
+
+            // Next, try to withdraw from the container.
+            // If we are too far away, move closer.
+            var withdraw_result = creep.withdraw(thecontainer, RESOURCE_ENERGY);
+            if (withdraw_result == ERR_NOT_IN_RANGE) {
+                creep.moveToRUP(thecontainer);
                 return 0;
             }
-            thecontainer = nearby_containers[0];
-            if (nearby_containers.length > 1) {
-                console.log(creep.name + ": warning: multiple containers detected.");
+            if (creep.carry.energy == creep.carryCapacity) {
+                return 0;
             }
-            creep.memory[MEMORY_H_CONTAINER] = thecontainer.id;
+            
+            // We haven't been able to withdraw from the container. So, look for energy on the floor.
+            var energypile = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: (s) => s.energy > 0}); // Expensive, but will only execute at most once per 10 ticks, if hauler is in dest room, and container is in range but empty.
+            if(energypile.length){
+                creep.say('pile!');
+                var p_result = creep.pickup(energypile[0]);
+                if (p_result == OK) {
+                    return 0;
+                }
+            }
+
+            // If we get this far, we have a container that we should be able to withdraw from, but we cannot. And there is nothing on the floor, either. Sleep for 10t and try again.
+            console.log(creep.name + ': sleeping due to no nearby resources');
+            creep.memory[MEMORY_SLEEPFOR] = 10;
+            return 0;
+
         } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_BACK) {
+            
+            // If we are home, get away from the room edge, then check for links.
             if (creep.room.name == creep.memory[MEMORY_HOME]) {
                 if (creep.pos.x < 2 || creep.pos.x > 47 || creep.pos.y < 2 || creep.pos.y > 47) {
                     // Continue in a little bit, get off the edge before changing state.
                 } else {
                     creep.memory[MEMORY_JOB] = JOB_USELINK;
                 }
-
-                
                 creep.moveToRUP(creep.getHomePos());
                 return 0;
             }
+
+            // While en route, look for roads to repair - if we can.
             if(creep.carry.energy > 0) {
-                var targets = creep.pos.findInRange(FIND_STRUCTURES, 3, {
-                    filter: function(structure){
-                        return (structure.hits < structure.hitsMax) && (structure.structureType != STRUCTURE_WALL) && (structure.structureType != STRUCTURE_RAMPART)
+                var nearby_structures = creep.getStructuresInDist(2);
+                if(nearby_structures.length) {
+                    for (var i = 0; i < nearby_structures.length; i++) {
+                        var thetarget = nearby_structures[i];
+                        if (thetarget.structureType != STRUCTURE_ROAD) {
+                            continue;
+                        }
+                        if (thetarget.hits == thetarget.hitsMax) {
+                            continue;
+                        }
+                        creep.repair(thetarget);
+                        break;
                     }
-                })
-                if(targets.length) {
-                    var target = creep.pos.findClosestByRange(targets)
-                    creep.repair(target);
                 }
             }
             creep.moveToRUP(creep.getHomePos());
+
         } else if (creep.memory[MEMORY_JOB] == JOB_USELINK) {
             if(empire[creep.memory[MEMORY_DEST]] == undefined) {
                 return 0;
@@ -112,23 +139,27 @@ module.exports = {
                 console.log(creep.name + 'undefined source: ' + creep.memory[MEMORY_DEST] + ' / ' + creep.memory[MEMORY_SOURCE]);
                 return 0;
             }
-            var targets = creep.pos.findInRange(FIND_STRUCTURES, 10, {
-                filter: function(structure){
-                    return (structure.structureType == STRUCTURE_LINK) && (structure.energy < structure.energyCapacity && structure.cooldown == 0) && structure.isActive()
+            var nearby_structures = creep.getStructuresInDist(5);
+            if(nearby_structures.length) {
+                for (var i = 0; i < nearby_structures.length; i++) {
+                    var thetarget = nearby_structures[i];
+                    if (thetarget.structureType != STRUCTURE_LINK) {
+                        continue;
+                    }
+                    if (thetarget.energy == thetarget.energyCapacity) {
+                        continue;
+                    }
+                    if (!thetarget.isActive()) {
+                        continue;
+                    }
+                    var result = creep.transfer(thetarget, RESOURCE_ENERGY);
+                    if (result == ERR_NOT_IN_RANGE) {
+                        creep.moveToRUP(thetarget);
+                        return 0;
+                    }
+                    break;
                 }
-            });
-            if (!targets.length) {
-                creep.memory[MEMORY_JOB] = JOB_RETURN; 
-                //console.log(creep.name + ' reports no link to use');
-                return 0;
             }
-            var target = targets[0];
-            var result = creep.transfer(target, RESOURCE_ENERGY);
-            if (result == ERR_NOT_IN_RANGE) {
-                creep.moveToRUP(target);
-                return 0;
-            }
-            //console.log(creep.name + " at " + creep.room.name + ':' + creep.pos.x + ',' + creep.pos.y + ' deposited energy into link' + target.id);
             creep.memory[MEMORY_JOB] = JOB_RETURN;
 
         } else if (creep.memory[MEMORY_JOB] == JOB_RETURN) {
@@ -136,27 +167,20 @@ module.exports = {
                 creep.say('ret->H');
                 var newpos = creep.getHomePos();
                 creep.moveToRUP(newpos);
-                //console.log(creep.name + ': WARNING: got stuck in JOB_RETURN outside its HOME: ' + creep.room.name + 
-                //'at ' + creep.pos.x + ',' + creep.pos.y + ' v ' + creep.memory[MEMORY_HOME] + ' carrying: ' + creep.carry.energy + ' of ' + creep.carryCapacity + ' moving to: ' + JSON.stringify(newpos));
                return 0;
             }
-            //creep.say('pos OK');
             if (creep.room.storage == undefined || !creep.room.storage.isActive()) {
-                /*if (creep.room.name != creep.memory[MEMORY_HOME]) {
-                    creep.memory.job = JOB_TRAVEL_BACK;
-                    console.log(creep.name + ': WARNING: got stuck in JOB_RETURN outside its HOME: ' + creep.room.name + 
-                    'at ' + creep.pos.x + ',' + creep.pos.y + ' v ' + creep.memory[MEMORY_HOME] + ' carrying: ' + creep.carry.energy + ' of ' + creep.carryCapacity);
-                } else*/ 
-                if (jobReturnresources.run(creep, 1, 1, 1, 1, 1, 0) == -1) { // if room has no storage unit, return to extensions.
+                var try_return = jobReturnresources.run(creep, 1, 1, 1, 1, 1, 0);
+                if (try_return == -1) { // if it is not possible to return resources, upgrade instead.
                     creep.memory[MEMORY_JOB] = JOB_UPGRADE;
                     creep.say('UPGRADE');
                     return;
                 }
             } else if (jobReturnresources.run(creep, 1, 1, 0.5, 1, 1, 0) == -1) {
-                // wait.
+                // Sleep for a few seconds, then try again.
+                creep.memory[MEMORY_SLEEPFOR] = 5;
             }
             if(creep.carry.energy == 0) {
-                //creep.say("Empty");
                 creep.memory[MEMORY_JOB] = JOB_RENEW;                
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_RENEW) {

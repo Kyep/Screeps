@@ -21,9 +21,18 @@ global.CONSTRUCT_MILITARY_BODY = function (tough_parts, move_parts, attack_parts
 }
 
 
-
 global.UNIT_COST = (body) => _.sum(body, p => BODYPART_COST[p]);
 global.CREEP_COST = (body) => _.sum(body, p => BODYPART_COST[p.type])
+
+global.ROOM_CLAMP_COORD = function (value) {
+  if (value < 0) {
+    return 0;
+  }
+  if (value > 49) {
+    return 49;
+  }
+  return ;
+}
 
 global.TEMPLATE_COST = function (template_name) {
     if ( empire_workers[template_name] == undefined) {
