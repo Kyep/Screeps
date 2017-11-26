@@ -50,7 +50,7 @@ module.exports = {
                 var thecontainer = undefined;
                 if (nearby_containers.length == 0) {
                     // If there is no container built within 1 tile of our target source, sleep for 20T, then check again.
-                    creep.memory[MEMORY_SLEEPFOR] = 20;
+                    creep.sleepFor(20);
                     return 0;
                 }
                 // Otherwise, store that container in memory as our container.
@@ -84,18 +84,20 @@ module.exports = {
             }
             
             // We haven't been able to withdraw from the container. So, look for energy on the floor.
-            var energypile = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: (s) => s.energy > 0}); // Expensive, but will only execute at most once per 10 ticks, if hauler is in dest room, and container is in range but empty.
-            if(energypile.length){
-                creep.say('pile!');
-                var p_result = creep.pickup(energypile[0]);
-                if (p_result == OK) {
-                    return 0;
+            var drops = creep.getDropsInDist(1);
+            if(drops.length){
+                creep.say('drops!');
+                if (drops[0].resourceType == RESOURCE_ENERGY) {
+                    var p_result = creep.pickup(drops[0]);
+                    if (p_result == OK) {
+                        return 0;
+                    }
                 }
             }
 
             // If we get this far, we have a container that we should be able to withdraw from, but we cannot. And there is nothing on the floor, either. Sleep for 10t and try again.
-            console.log(creep.name + ': sleeping due to no nearby resources');
-            creep.memory[MEMORY_SLEEPFOR] = 10;
+            //console.log(creep.name + ': sleeping due to no nearby resources');
+            creep.sleepFor(10);
             return 0;
 
         } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_BACK) {
@@ -178,7 +180,7 @@ module.exports = {
                 }
             } else if (jobReturnresources.run(creep, 1, 1, 0.5, 1, 1, 0) == -1) {
                 // Sleep for a few seconds, then try again.
-                creep.memory[MEMORY_SLEEPFOR] = 5;
+                creep.sleepFor(5);
             }
             if(creep.carry.energy == 0) {
                 creep.memory[MEMORY_JOB] = JOB_RENEW;                

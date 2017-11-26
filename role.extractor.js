@@ -32,6 +32,9 @@ module.exports = {
                 if (result == ERR_NOT_IN_RANGE) {
                     creep.moveToRUP(mineral);
                 } else if (result = ERR_TIRED) {
+                    if (mineral.mineralAmount == 0 && mineral.ticksToRegeneration > 20) {
+                        creep.sleepFor(20);
+                    }
                     // just wait.
                 }
             }

@@ -22,12 +22,12 @@ module.exports = {
             if (towersonly) {
     	        if (jobReturnresources.run(creep, 0, 0, 0.75, 0, 0) == -1) { // fill towers first.
     	            if (jobReturnresources.run(creep, 1, 1, 0.5, 0, 0) == -1) { // fill other things.
-                    //
+                        creep.sleepFor(5);
                     }
                 }
             } else {
     	        if (jobReturnresources.run(creep, 1, 1, 0.5, 0, 0) == -1) { // fill most things.
-                    //
+                    creep.sleepFor(5);
                 }
             }
         } else {

@@ -7,6 +7,14 @@ Creep.prototype.announceJob = function() {
     this.say(this.memory[MEMORY_JOB]);
 }
 
+Creep.prototype.sleepFor = function(ticks) {
+    if(this.memory[MEMORY_SLEEPFOR] == undefined) {
+        this.memory[MEMORY_SLEEPFOR] = 0;
+    }
+    this.memory[MEMORY_SLEEPFOR] += ticks;
+}
+
+
 Creep.prototype.setupMemory = function() {
     if(this.memory[MEMORY_CREATED_AT] == undefined) {
         this.memory[MEMORY_CREATED_AT] = Game.time;
@@ -313,4 +321,13 @@ Creep.prototype.getStructuresInDist = function(dradius) {
     var right =  global.ROOM_CLAMP_COORD(this.pos.x + dradius);
     var nearby_structures = this.room.lookForAtArea(LOOK_STRUCTURES, top, left, bottom, right);
     return nearby_structures;
+}
+
+Creep.prototype.getDropsInDist = function(dradius) {
+    var top = global.ROOM_CLAMP_COORD(this.pos.y - dradius);
+    var left = global.ROOM_CLAMP_COORD(this.pos.x - dradius);
+    var bottom = global.ROOM_CLAMP_COORD(this.pos.y + dradius);
+    var right =  global.ROOM_CLAMP_COORD(this.pos.x + dradius);
+    var nearby_drops = this.room.lookForAtArea(LOOK_RESOURCES, top, left, bottom, right);
+    return nearby_drops;
 }

@@ -14,6 +14,9 @@ module.exports = {
         }
         var result = creep.harvest(source);
         if (result == ERR_NOT_IN_RANGE || result == ERR_NOT_ENOUGH_RESOURCES) {
+            if (source.energy == 0 && source.ticksToRegeneration > 20) {
+                creep.sleepFor(20);
+            }
             creep.moveToRUP(source);
         } else if (result == OK) {
             // DO NOT adjustEarnings here. That doesn't account for harvesters who spend their money on the way back repairing roads.
