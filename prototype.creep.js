@@ -319,8 +319,18 @@ Creep.prototype.getStructuresInDist = function(dradius) {
     var left = global.ROOM_CLAMP_COORD(this.pos.x - dradius);
     var bottom = global.ROOM_CLAMP_COORD(this.pos.y + dradius);
     var right =  global.ROOM_CLAMP_COORD(this.pos.x + dradius);
-    var nearby_structures = this.room.lookForAtArea(LOOK_STRUCTURES, top, left, bottom, right);
+    var nearby_structures = this.room.lookForAtArea(LOOK_STRUCTURES, top, left, bottom, right, true);
+    //console.log(this.name + ': at ' + this.pos.x + ',' + this.pos.y + ': gSID between ' + top + ',' + left + ' and ' + bottom + ',' + right + ' returns count: ' + nearby_structures.length);
+    //this.say('rect!');
     return nearby_structures;
+}
+
+Creep.prototype.pointStructuresInDist = function(dradius) {
+    var nearby = this.getStructuresInDist(dradius);
+    for (var i = 0; i < nearby.length; i++) {
+        console.log(JSON.stringify(nearby[i]));
+        new RoomVisual(this.room.name).line(this.pos.x, this.pos.y, nearby[i].x, nearby[i].y);
+    }
 }
 
 Creep.prototype.getDropsInDist = function(dradius) {
@@ -328,6 +338,31 @@ Creep.prototype.getDropsInDist = function(dradius) {
     var left = global.ROOM_CLAMP_COORD(this.pos.x - dradius);
     var bottom = global.ROOM_CLAMP_COORD(this.pos.y + dradius);
     var right =  global.ROOM_CLAMP_COORD(this.pos.x + dradius);
-    var nearby_drops = this.room.lookForAtArea(LOOK_RESOURCES, top, left, bottom, right);
+    var nearby_drops = this.room.lookForAtArea(LOOK_RESOURCES, top, left, bottom, right, true);
     return nearby_drops;
+}
+
+Creep.prototype.createRoadIfNone = function() {
+    if (this.memory[MEMORY_ATTACKEDAT] != undefined) {
+        var ticks_ago = Game.time - this.memory[MEMORY_ATTACKEDAT];
+        if (ticks_ago < 100) {
+            return -1;
+        }
+    }
+    this.memory['checkroad'] = false;
+    var can_drop_site = global.CAN_CREATE_CSITE();
+    if (can_drop_site) {
+        var objects_here = this.room.lookAt(this);
+        var roads_here = 0;
+        for (var i = 0; i < objects_here.length; i++) {
+            if (objects_here.structureType == STRUCTURE_ROAD) {
+                roads_here++;
+            }    
+        }
+        if (!roads_here) {
+            Game.rooms[this.room.name].createConstructionSite(this.pos.x, this.pos.y, STRUCTURE_ROAD);
+            console.log(this.name + ': CREATED ROAD at ' + this.room.name + ': ' + this.pos.x + ',' + this.pos.y);
+            this.memory['checkroad'] = true;
+        }
+    }
 }

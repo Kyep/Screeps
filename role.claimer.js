@@ -16,6 +16,8 @@ module.exports = {
                             var result = creep.attackController(creep.room.controller);
                             if (result == ERR_NOT_IN_RANGE) {
                                 creep.moveToRUP(creep.room.controller);
+                            } else if (result == OK) {
+                                creep.room.destroyHostileStructures()
                             }
                         }
                     }            

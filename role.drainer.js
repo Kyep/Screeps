@@ -14,6 +14,7 @@ module.exports = {
         if (creep.isAtDestinationRoom()) {
             if (creep.updateDestination()) {
                 return;
+                creep.notifyWhenAttacked(false);
             }
             creep.redRally();
             if (heal_parts > 0) {

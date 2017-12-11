@@ -54,9 +54,8 @@ module.exports = {
             } else if (creep.room.name == creep.memory[MEMORY_HOME]) {
                 jobUpgrade.run(creep);
             } else { 
-                creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
+                creep.memory[MEMORY_JOB] = JOB_BUILD;
                 creep.announceJob();
-                //console.log(creep.room.name + ' v ' + creep.memory[MEMORY_HOME]);
             }
         } else if(creep.memory[MEMORY_JOB] == JOB_HARVEST) {
             var retval = jobHarvest.run(creep);

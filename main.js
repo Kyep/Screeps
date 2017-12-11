@@ -82,11 +82,11 @@ module.exports.loop = function () {
     global.ESPIONAGE();
 
     if(Game.time % 1000 === 0) {
-        //global.SHARE_SPARE_ENERGY(); 
+        global.SHARE_SPARE_ENERGY(); 
+        //global.PRESET_ATTACK_WAVE();
     }
     if(Game.time % 2000 === 0) {
         global.UPDATE_MARKET_ORDERS();
-        //global.PRESET_ATTACK_WAVE();
     }
 
     if(Game.time % divisor === 0) {

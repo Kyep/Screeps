@@ -115,21 +115,31 @@ module.exports = {
 
             // While en route, look for roads to repair - if we can.
             if(creep.carry.energy > 0) {
-                var nearby_structures = creep.getStructuresInDist(2);
-                if(nearby_structures.length) {
-                    for (var i = 0; i < nearby_structures.length; i++) {
-                        var thetarget = nearby_structures[i];
-                        if (thetarget.structureType != STRUCTURE_ROAD) {
+                var nearby = creep.getStructuresInDist(2);
+                //console.log(creep.name + ': nearby: ' + nearby.length);
+                if (nearby.length) {
+                    for (var i = 0; i < nearby.length; i++) {
+                        var thetarget = nearby[i];
+                        //console.log(creep.name + ': nearby: ' + JSON.stringify(thetarget.structure));
+                        if (thetarget.structure.structureType != STRUCTURE_ROAD) {
+                            //console.log(creep.name + ' skip non-road');
                             continue;
                         }
-                        if (thetarget.hits == thetarget.hitsMax) {
+                        if (thetarget.structure.hits == thetarget.structure.hitsMax) {
+                            //console.log(creep.name + ' skip full-health');
                             continue;
                         }
-                        creep.repair(thetarget);
+                        var retval = creep.repair(thetarget.structure);
+                        //console.log(creep.name + ' repairing ROAD: ' + retval);
                         break;
                     }
                 }
             }
+            /*
+            if(Game.time % 10 == 0 || (creep.memory['checkroad'] != undefined && creep.memory['checkroad'] == true)) {
+                creep.createRoadIfNone();
+            }
+            */
             creep.moveToRUP(creep.getHomePos());
 
         } else if (creep.memory[MEMORY_JOB] == JOB_USELINK) {

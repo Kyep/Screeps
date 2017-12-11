@@ -20,9 +20,28 @@ global.CONSTRUCT_MILITARY_BODY = function (tough_parts, move_parts, attack_parts
     return partlist;
 }
 
-
 global.UNIT_COST = (body) => _.sum(body, p => BODYPART_COST[p]);
 global.CREEP_COST = (body) => _.sum(body, p => BODYPART_COST[p.type])
+
+global.CAN_CREATE_CSITE = function () {
+    var all_csites = Game.constructionSites;
+    var auto_csite_limit = MAX_CONSTRUCTION_SITES - 30;
+    //console.log('current csites: ' + Object.keys(all_csites).length + ', cap: ' + auto_csite_limit);
+    if (Object.keys(all_csites).length >= auto_csite_limit) {
+        return 0;
+    }
+    return 1
+}
+
+global.DESTROY_ALL_CSITES = function () {
+    var all_csites = Game.constructionSites;
+    for (var site_key in all_csites) {
+        if (all_csites[site_key].structureType != STRUCTURE_ROAD) {
+            continue;
+        }
+        all_csites[site_key].remove();
+    }
+}
 
 global.ROOM_CLAMP_COORD = function (value) {
   if (value < 0) {
@@ -31,7 +50,7 @@ global.ROOM_CLAMP_COORD = function (value) {
   if (value > 49) {
     return 49;
   }
-  return ;
+  return value;
 }
 
 global.TEMPLATE_COST = function (template_name) {
@@ -294,6 +313,8 @@ global.SPAWN_UNIT = function (spawnername, role, targetroomname, roompath, homer
     return result;
 }
 
+
+
 global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, targettext, thecost, homesector, target_x, target_y, renew_allowed, nextdest){
     if (Memory['spawn_count'] == undefined) {
         Memory['spawn_count'] = 0;
@@ -352,52 +373,58 @@ global.ATTACK_WAVE = function (spawn_list, unit_type, target_room, roompath) {
     }
 }
 
-global.ROOMLIST_ATTACK_WAVE = function (roomlist, unit_type, target_room, roompath) {
+global.ROOMLIST_ATTACK_WAVE = function (roomlist, unit_type, target_room, roompath, target_x, target_y) {
+    if (roomlist == undefined) {
+        console.log('arg 2 must be roomlist');
+        return -1;
+    }
+    if (!roomlist.length) {
+        console.log('arg 2 must be roomlist, at least one room name');
+        return -1;
+    }
     if (unit_type == undefined) {
         console.log('arg 2 must be unit_type');
-        return;
+        return -1;
     }
     if (target_room == undefined) {
         console.log('arg 3 must be target_room');
-        return;
+        return -1;
     }
-    for (var sname in Game.spawns) {
-        if (roomlist.indexOf(Game.spawns[sname].room.name) == -1) {
-            continue;   
+    var spawncount = 0;
+    for (var rname in Game.rooms) {
+        if (roomlist.indexOf(rname) != -1) {
+            var res = Game.rooms[rname].createUnit(unit_type, target_room, roompath, rname, target_x, target_y);
+            console.log('ROOMLIST_ATTACK_WAVE: ' + rname + ' ' + res);
+            if(res) {
+                spawncount++;
+            }
         }
-        var suresult = SPAWN_UNIT(sname, unit_type, target_room, roompath);
-        console.log(sname + ': ' + suresult);
     }
+    return spawncount;
 }
 
 global.PRESET_ATTACK_WAVE = function () {
     /* TARGETS: 
-        W60S10: junction that eduter insists on sending scouts through.
+        W59 and then W85, S3: edtuer's rooms.
     */
-
-    SPAWN_UNIT('Spawn6','scout','W55S10',['W57S10','W60S10']); // north base.
-	//SPAWN_UNIT('Spawn14','scout','W55S10',['W57S10','W60S10','W60S9']); // north base.
-
-    /*
-    //SPAWN_UNIT('Spawn6','slasher','W56S12',['W56S13','W57S13', 'W57S12']); // north base.
-    //SPAWN_UNIT('Spawn6','siegemini','W55S10',['W59S10','W59S11']); // north base.
-    SPAWN_UNIT('Spawn6','siegemini','W55S10',['W57S10','W57S11']); // north base.
-
-    SPAWN_UNIT('Spawn3','scout','W55S10',['W56S10','W56S11']); // NE base
-    SPAWN_UNIT('Spawn9','siegemini','W55S10',['W56S10','W56S11']);
     
-    //SPAWN_UNIT('Spawn11','scout','W60S17',['W60S16','W60S12', 'W59S12']); // W base, harass his NW mining operation
-    SPAWN_UNIT('Spawn11','siegemini','W60S17',['W60S16','W60S12', 'W57S12', 'W57S11']); // W base, his primary
+    /*
 
-    SPAWN_UNIT('Spawn8','slasher','W54S17',['W54S16', 'W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14', 'W57S11']); // gaurdian base, harass his s base mining
-    SPAWN_UNIT('Spawn12','siegemini','W54S17',['W54S16', 'W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14', 'W57S11']); // siege him too
+    var primary_target = 'W60S10';
+    var waypoint_list = ['W60S3']; // , 'W59S3', 'W58S3'];
+    var target_x = 1;
+    var target_y = 30;
+    
+    ROOMLIST_ATTACK_WAVE(['W57S11'], 'scout', primary_target, waypoint_list, target_x, target_y); // ,'W57S14'
+    
+    */
+    
+    // nearby rooms spawn large drainers
+    //ROOMLIST_ATTACK_WAVE(['W57S11','W57S14'], 'drainerbig', primary_target, waypoint_list, target_x, target_y);
 
-    SPAWN_UNIT('Spawn1','siegemini','W54S16',['W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14', 'W57S11']); // keep it small, swamps!
-    SPAWN_UNIT('Spawn4','siegemini','W54S16',['W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14', 'W57S11']); // keep it small, swamps!
+    // further away units spawn big siege creeps
+    //ROOMLIST_ATTACK_WAVE(['W53S12','W58S17','W51S14'], 'siegebig', primary_target, waypoint_list, target_x, target_y);
 
-    SPAWN_UNIT('Spawn2','siegemini','W53S18',['W54S16', 'W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14','W57S11']); // keep it small, swamps!
-    SPAWN_UNIT('Spawn5','siegemini','W53S18',['W54S16', 'W54S15', 'W55S15', 'W55S14', 'W56S14','W57S14','W57S11']); // keep it small, swamps!
-    */    
 }
 
 global.MASS_RETARGET = function (role, newtarget, waypoints) {
@@ -457,7 +484,7 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname) {
     }
     var spawners_secondary_preferred = 0;
     var spawners_secondary_allowed = 1;
-    if (room_primary_level > 0 && room_primary_level < 4) {
+    if (room_primary_level > 0 && room_primary_level < 5) {
         spawners_secondary_preferred = 1;
     } else if (room_primary_level > 5) {
         spawners_secondary_allowed = 0;

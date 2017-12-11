@@ -7,8 +7,21 @@ module.exports = {
             creep.moveToDestination();
             return;
         } else if (creep.updateDestination()) {
+            creep.notifyWhenAttacked(false);
             return;
         }
+        
+        /*
+        target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: (s) => s.structureType != STRUCTURE_CONTROLLER});
+        if (target) {
+            new RoomVisual(creep.room.name).line(creep.pos, target.pos, {color: 'red'});
+            if(creep.attack(target) == ERR_NOT_IN_RANGE) {
+                creep.moveToRUP(target);
+            }
+            return 0;
+        }
+        */
+        
 
         var enemy_creeps = creep.room.find(FIND_HOSTILE_CREEPS); 
         for(var i = 0; i < enemy_creeps.length; i++) {
@@ -32,7 +45,7 @@ module.exports = {
 
         //var redflags = creep.pos.findClosestByPath(FIND_FLAGS, {filter: (f) => f.color == COLOR_RED && f.secondaryColor == COLOR_ORANGE});
         // the above does not work the below does, find out why.
-        var redflags = creep.pos.findInRange(FIND_FLAGS, 25, { filter: function(flag){ if(flag.color == COLOR_RED && flag.secondaryColor == COLOR_ORANGE) { return 1; } else { return 0; } } });
+        var redflags = creep.pos.findInRange(FIND_FLAGS, 15, { filter: function(flag){ if(flag.color == COLOR_RED && flag.secondaryColor == COLOR_ORANGE) { return 1; } else { return 0; } } });
         if(redflags.length) {
             var theflag = redflags[0];
             var structures_at = creep.room.lookForAt(LOOK_STRUCTURES, theflag.pos.x, theflag.pos.y, theflag.pos);
@@ -49,9 +62,11 @@ module.exports = {
 
         //var valid_structure_targets = [STRUCTURE_SPAWN];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
 
-        //var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_LINK, STRUCTURE_STORAGE, STRUCTURE_TERMINAL];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
+        var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_STORAGE, STRUCTURE_TERMINAL];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
         //var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_TERMINAL, STRUCTURE_LAB];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
-        var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_RAMPART, STRUCTURE_EXTENSION, STRUCTURE_SPAWN, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_LINK, STRUCTURE_EXTRACTOR];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
+        //var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_RAMPART, STRUCTURE_EXTENSION, STRUCTURE_SPAWN, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_LINK, STRUCTURE_EXTRACTOR];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
+        //var valid_structure_targets = [STRUCTURE_TOWER]
+        //  
         
         var enemy_structures = creep.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType != STRUCTURE_CONTROLLER}); 
         var valid_targets = [];

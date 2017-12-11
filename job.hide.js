@@ -7,6 +7,7 @@ module.exports = {
             console.log(creep.name + ": You are calling jobHide.run without a creep as a param.");
             return 0;
         }
+        creep.memory[MEMORY_ATTACKEDAT] = Game.time; 
         if (creep.room.name == creep.memory[MEMORY_HOME]) {
             // inside base, we identify the base safespot and hide there.
             var hidex = 25;

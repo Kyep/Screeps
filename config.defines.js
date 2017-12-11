@@ -20,6 +20,7 @@ global.MEMORY_H_CONTAINER = 'container_h';
 global.MEMORY_EARNINGS = 'earnings';
 global.MEMORY_JOURNEYSTART = 'journeystart';
 global.MEMORY_ATTACKEDIN = 'attackedin'
+global.MEMORY_ATTACKEDAT = 'attackedat'
 global.MEMORY_RALLYROOM = 'rallyroom';
 global.MEMORY_LAST_WAYPOINT = 'lastwaypoint';
 global.MEMORY_REUSEPATH = 'reusepath';

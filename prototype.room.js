@@ -1,5 +1,8 @@
 
 Room.prototype.getShouldUpgrade = function() {
+    
+    //  Memory['gcl_farm'] = ['W53S18', 'W59S18', 'W53S17', 'W57S14']
+    
     var gcl_farm_rooms = Memory['gcl_farm'];
     if (Memory['gcl_farm'].indexOf(this.name) == -1) {
         return 1;
@@ -9,6 +12,39 @@ Room.prototype.getShouldUpgrade = function() {
         return 0;
     }
     return 1;
+}
+
+Room.prototype.dropRoads = function() {
+    if(empire[this.name] == undefined) {
+        return -1;
+    }
+    var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(this.name);
+    var spawner = gsapfr[0];
+    var using_primary = gsapfr[1];
+    if (!using_primary) {
+        return -2;
+    }
+    var spawner_pos = spawner.pos;
+    for (var sid in empire[this.name]['sources']) {
+        if (empire[this.name]['sources']['dynamic'] != undefined && empire[this.name]['sources']['dynamic'] == true) {
+            continue;
+        }
+        var source = Game.getObjectById(sid);
+        if (!source) {
+            continue;
+        }
+        var path = PathFinder.search(spawner.pos, source.pos, {'range': 1, 'swampCost': 1});
+        console.log(this.name + ': dropRoads: ' + sid + ': ' + path.path.length);
+        for (var thispos in path.path) {
+            var roadpos = path.path[thispos];
+            var rname = roadpos.roomName;
+            if (rname == this.name) {
+                Game.rooms[rname].visual.circle(roadpos.x, roadpos.y, rname);
+                Game.rooms[rname].createConstructionSite(roadpos.x, roadpos.y, STRUCTURE_ROAD);
+            }
+        }
+    }
+
 }
 
 Room.prototype.getMyStructuresCount = function() {
@@ -324,9 +360,9 @@ Room.prototype.deleteAlert = function() {
     var end_msg = 'ATTACK on ' + this.name + ' by ' + myalert['hostileUsername'] + ' worth ' + myalert['hostileCostMax'] + ' ENDED after ' + alert_age + ' ticks.';
     console.log(end_msg);
     if (myalert['hostileUsername'] != 'Invader') {
-        if (myalert['hostileCostMax'] > 50 || myalert['hostileUsername'] != 'eduter') {
+        //if (myalert['hostileCostMax'] > 50 || myalert['hostileUsername'] != 'eduter') {
             Game.notify(end_msg);
-        }
+        //}
     }
 
     // Actually delete the alert.
@@ -394,5 +430,70 @@ Room.prototype.updateAlert = function(enemy_details, nuke_details) {
 
     Memory['sectors_under_attack'][this.name] = thisalert;
     return thisalert;
+}
+
+Room.prototype.destroyHostileStructures = function() {
+    var enemy_structures = this.find(FIND_HOSTILE_STRUCTURES); 
+    for (var i = 0; i < enemy_structures.length; i++) {
+        enemy_structures[i].destroy();
+    }
+    var enemy_csites = this.find(FIND_HOSTILE_CONSTRUCTION_SITES);
+    for (var i = 0; i < enemy_csites.length; i++) {
+        enemy_csites[i].remove();
+    }
+    
+}
+
+
+Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, dest_x, dest_y) {
+
+    var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(this.name);
+    var spawner = gsapfr[0];
+    var using_primary = gsapfr[1];
+    
+    if(!spawner) {
+        console.log('Room.prototype.createUnit: No spawner free when attempting spawn in ' + this.name);
+        return 0;
+    }
+    if(!using_primary) {
+        console.log('Room.prototype.createUnit: No PRIMARY spawner free when attempting spawn in ' + this.name);
+        return 0;
+    }
+    if (role == undefined) {
+        console.log('Room.prototype.createUnit: ARG1 (role) missing ' + this.name);
+        return 0;
+    }
+    if (targetroomname == undefined) {
+        targetroomname = this.name;
+    }
+    if (homeroom == undefined) {
+        homeroom = this.name;
+    }
+    if (homeroom == undefined) {
+        homeroom = this.name;
+    }
+    if (dest_x == undefined) {
+        dest_x = 25;
+    }
+    if (dest_y == undefined) {
+        dest_y = 25;
+    }
+    if (empire_workers[role] == undefined) {
+        console.log('Room.prototype.createUnit: Invalid role');
+        return 0;
+    }
+    if (empire_workers[role]['noresize'] != undefined) {
+        if (empire_workers[role]['noresize'] == 1) {
+            console.log('That role requires resizing.');
+            return 0;
+        }        
+    }
+    var rbap = spawner.getRoleBodyAndProperties(role);
+    var partlist = rbap['body'];
+    var renew_allowed = rbap['renew_allowed'];
+    var result = SPAWNCUSTOM(spawner, '', partlist, role, 
+                        '', targetroomname, global.UNIT_COST(empire_workers[role]['body']), 
+                        homeroom, dest_x, dest_y, 0, roompath);
+    return result;
 }
 
