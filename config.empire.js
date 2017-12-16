@@ -12,6 +12,7 @@
         'military_roles': ['scout', 'slasher', 'rogue', 'ninja', 'ninjaheals', 'dragon', 'siegedragon', 'boss', 'wizard', 'healer', 'siege', 'siegefar', 'siegemini', 'drainer', 'antikite16', 'antikite8', 'antikite4', 'antikite2'],
         'defense_roles': ['boss', 'dragon', 'ninja', 'rogue', 'slasher', 'scout'], // LIST MOST POWERFUL FIRST.
         'defense_roles_ranged': ['antikite16', 'antikite8', 'antikite4', 'antikite2'], // LIST MOST POWERFUL FIRST.
+        'siege_roles': ['siegebig','drainerbig','healer'], 
         'alerts_duration' : 34560, // alerts last ~24h, or until we've verified that whatever caused them is dead.
         'alerts_recycle' : 0,
         'alerts_reassign': {}, // Don't reassign anything.

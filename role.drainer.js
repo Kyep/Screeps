@@ -7,7 +7,7 @@ module.exports = {
             
             if (heal_parts > 0) {
                 creep.heal(creep);
-                creep.say('heal');
+                //creep.say('heal');
                 return 0;
             }
         }
@@ -22,10 +22,10 @@ module.exports = {
                 if (hurtfriendly) {
                     var frange = creep.pos.getRangeTo(hurtfriendly);
                     if (frange == 1) {
-                        creep.say('h melee');
+                        //creep.say('h melee');
                         creep.heal(hurtfriendly);
                     } else if (frange < 4) {
-                        creep.say('h range');
+                        //creep.say('h range');
                         creep.rangedHeal(hurtfriendly);
                     }
                 }

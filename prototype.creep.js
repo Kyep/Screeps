@@ -134,6 +134,13 @@ Creep.prototype.isMilitary = function() {
     return 0;
 }
 
+Creep.prototype.isSiege = function() {
+    if (empire_defaults['siege_roles'].includes(this.memory[MEMORY_ROLE])) {
+        return 1;
+    }
+    return 0;
+}
+
 Creep.prototype.isAtDestinationRoom = function() {
     if (this.memory[MEMORY_DEST] == undefined) {
         console.log(this.name + 'checked isAtDestinationRoom with no MEMORY_DEST');

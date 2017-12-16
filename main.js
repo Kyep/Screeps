@@ -3,6 +3,8 @@
 // requirements ONLY
 
 require('global_functions');
+require('global.commands');
+require('global.espionage');
 
 require('config.empire');
 require('config.units');

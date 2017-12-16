@@ -38,7 +38,7 @@ global.empire_workers = {
     'ninjaheals': { 'body': global.CONSTRUCT_MILITARY_BODY(2, 9, 6, 0, 1), 'noresizing': 1, 'renew_allowed': 0}, // 1,050e, 1,800 HP, 180 DPS. 
     'dragon': { 'body':     global.CONSTRUCT_MILITARY_BODY(6, 16, 10, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1,660e, 3,200 HP, 300 DPS.
     'siegedragon': { 'body':global.CONSTRUCT_MILITARY_BODY(4, 14, 10, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1,540e, 2,800 HP, 300 DPS.
-    'boss': { 'body':       global.CONSTRUCT_MILITARY_BODY(10, 20, 8, 0, 2), 'noresizing': 1, 'renew_allowed': 0}, // 2,240e, 4,000 HP, 240 DPS, 24 HPS.
+    'boss': { 'body':       global.CONSTRUCT_MILITARY_BODY(8, 23, 12, 0, 3), 'noresizing': 1, 'renew_allowed': 0}, // 2,240e, 4,000 HP, 240 DPS, 24 HPS.
     
     // ANTIKITE
     'antikite2': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 2, 0, 2, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak2'}, 
@@ -54,9 +54,9 @@ global.empire_workers = {
 	'siegemini': { 'body':     global.CONSTRUCT_MILITARY_BODY(0, 3, 3, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // small.
 	'siegefar': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 6, 6, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
 	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, // ultra-cheap unit used to drain enemy towers.
-	'drainerbig': { 'body': global.CONSTRUCT_MILITARY_BODY(0, 13, 1, 0, 12), 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, 
+	'drainerbig': { 'body': global.CONSTRUCT_MILITARY_BODY(3, 15, 0, 0, 12), 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, 
 
-	'siegebig': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 15, 15, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1950?
+	'siegebig': { 'body':      global.CONSTRUCT_MILITARY_BODY(2, 17, 15, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1950?
 	'healer': { 'body':   global.CONSTRUCT_MILITARY_BODY(10, 8, 0, 0, 20), 'renew_allowed': 0}, // 5,600e!
 
     // Territory control classes
