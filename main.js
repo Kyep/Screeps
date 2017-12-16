@@ -81,7 +81,7 @@ module.exports.loop = function () {
     global.UPDATE_OBSERVERS(observe_energy);
     global.ESPIONAGE();
 
-    if(Game.time % 1000 === 0) {
+    if(Game.time % 250 === 0) {
         global.SHARE_SPARE_ENERGY(); 
         //global.PRESET_ATTACK_WAVE();
     }

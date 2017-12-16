@@ -17,8 +17,10 @@
         'alerts_reassign': {}, // Don't reassign anything.
         'repairmax_creeps' : 250000,
         'repairmax_towers' : 150000,
-        'terminal_energy_min' : 50000,
-        'terminal_energy_max' : 60000,
+        'terminal_energy_min' : 50000, // below this, don't withdraw any energy from terminal
+        'terminal_energy_sell' : 60000, // above this, try to sell energy for credits
+        'terminal_energy_share' : 90000, // above this, give away energy
+        'terminal_energy_max' : 150000, // above this, refuse to allow any more energy to be deposited in the terminal
         'storage_energy_max' : 1000000,
         'room_energy_min' : 100000, // 50k in terminal, 50k in storage
         'room_energy_max' : 300000, // 50k in termal, 250k in storage
@@ -47,8 +49,8 @@
                 }
             },
             'safespot': {'x': 9, 'y':25 },
-            //'mineralid' : '59bbc644ae9e1411a425ad40',
-            //'mineraltype': RESOURCE_HYDROGEN
+            'mineralid' : '59bbc644ae9e1411a425ad40',
+            'mineraltype': RESOURCE_HYDROGEN
         },
 
         // 1st base remote mining
@@ -674,7 +676,7 @@
             },
             'safespot': {'x': 40, 'y':18 },
             'mineralid': '59bbc643ae9e1411a425abf8',
-            'mineraltype': RESOURCE_UTRIUM
+            'mineraltype': RESOURCE_UTRIUM,
             
         },
         // 10 Expansions

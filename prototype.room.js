@@ -497,3 +497,93 @@ Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, 
     return result;
 }
 
+
+
+Room.prototype.sellResource = function (mtype) {
+    var amount_sellable = this.terminal.store[mtype];
+    if(!amount_sellable) {
+        console.log(this.name + ': cannot sell ' + mtype + ' - none available to sell.');
+        return 0;
+    }
+    if(this.terminal.cooldown) {
+        console.log(this.name + ': cannot sell ' + mtype + ' - terminal is on cooldown.');
+        return 0;
+    }
+    var room_orders = Game.market.getAllOrders({'type': ORDER_SELL, 'roomName': this.name, 'resourceType': mtype});
+    var order_id = undefined;
+    var old_price = 0;
+    for (var thisorder in room_orders) {
+        if (thisorder.remainingAmount == 0) {
+            continue;
+        }
+        order_id = room_orders[thisorder]['id'];
+        old_price = room_orders[thisorder]['price'];
+    }
+    if (order_id == undefined) {
+        //console.log(rname + ': has no order for ' + mtype);
+    } else {
+        //console.log(rname + ': existing order ' + order_id);
+    }
+    var sell_price = 0;
+    var global_sell_orders = Game.market.getAllOrders({'type': ORDER_SELL, 'resourceType': mtype});
+    for (var porder in global_sell_orders) {
+        if(global_sell_orders[porder]['remainingAmount'] == 0) {
+            continue;
+        }
+       if (sell_price == 0) {
+           sell_price = global_sell_orders[porder]['price'];
+        } else if (global_sell_orders[porder]['price'] < sell_price) {
+           sell_price = global_sell_orders[porder]['price'];
+       }
+        //console.log(global_sell_orders[porder]['price']);
+    }
+    var buy_price = 0;
+    var effective_buy_price = 0;
+    var buy_order_id = undefined;
+    var buy_order_amount = undefined;
+    var global_buy_orders = Game.market.getAllOrders({'type': ORDER_BUY, 'resourceType': mtype});
+    for (var porder in global_buy_orders) {
+        if(global_buy_orders[porder]['remainingAmount'] == 0) {
+            continue;
+        }
+        var price_of_energy = 0.08;
+        var e_cost = (Game.market.calcTransactionCost(100, this.name, global_buy_orders[porder]['roomName']) / 100);
+        var this_efbp = global_buy_orders[porder]['price'] - (e_cost * price_of_energy); 
+        //console.log(rname + ', ' + mtype + ', ' + global_buy_orders[porder]['id'] + ', ' + global_buy_orders[porder]['price'] + ' -> ' + this_efbp + '(' + e_cost + ')');
+        if (buy_price == 0) {
+           buy_price = global_buy_orders[porder]['price'];
+           effective_buy_price = this_efbp;
+           buy_order_id = global_buy_orders[porder]['id'];
+           buy_order_amount = global_buy_orders[porder]['remainingAmount'];
+        } else if (this_efbp > effective_buy_price) {
+           buy_price = global_buy_orders[porder]['price'];
+           effective_buy_price = this_efbp;
+           buy_order_id = global_buy_orders[porder]['id'];
+           buy_order_amount = global_buy_orders[porder]['remainingAmount'];
+       }
+    }
+    var amount_to_sell = amount_sellable;
+    if (amount_to_sell > 10000) {
+        amount_to_sell = 10000;
+    }
+    if(effective_buy_price > sell_price && buy_order_id != undefined) {
+        if (buy_order_amount < amount_to_sell) {
+            amount_to_sell = buy_order_amount;
+        }
+        //var retval = 'TEST'; 
+        var retval = Game.market.deal(buy_order_id, amount_to_sell, this.name);
+        console.log('MARKET: DEAL buy order: ' + buy_order_id + ' on: ' + mtype + ' from: ' + this.name + ' at: ' + buy_price + ' (effectively: ' + effective_buy_price + ', still better than ' + sell_price + ') sending: ' + amount_to_sell + ' result: ' + retval);
+    } else if(order_id == undefined) {
+        var retval = Game.market.createOrder(ORDER_SELL, mtype, sell_price, amount_to_sell, this.name);
+        console.log('MARKET: CREATE sell order for ' + amount_to_sell + ' units of ' + mtype + ' from ' + this.name + ' at ' + sell_price + ' result ' + retval);
+    } else {
+        if (old_price == sell_price) {
+            console.log('MARKET: PERFECT existing order ' + order_id + ' for ' + mtype + ' in ' + this.name + ' selling at ' + old_price);
+        } else if (old_price < sell_price) {
+            // not possible? 
+        } else {
+            console.log('MARKET: REPRICE order ' + order_id + ' from ' + old_price + ' to ' + sell_price);
+            Game.market.changeOrderPrice(order_id, sell_price);
+        }
+    }
+}
