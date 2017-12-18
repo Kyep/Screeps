@@ -58,6 +58,7 @@ StructureSpawn.prototype.getRoleBodyAndProperties = function(roletext, tgtroom, 
     }
     //console.log(work_units + ' based on ' + global.UNIT_COST(part_template) + ' in ' + this.room.energyCapacityAvailable);
     var renew_allowed = 1;
+    
     /*
     if (spawner_mobs[spawner.name] == undefined ) {
         work_units = 1;
@@ -71,6 +72,7 @@ StructureSpawn.prototype.getRoleBodyAndProperties = function(roletext, tgtroom, 
         }
     }
     */
+    
     if (empire_workers[roletext]['renew_allowed'] != undefined) {
         if (empire_workers[roletext]['renew_allowed'] == 0) {
             renew_allowed = 0;   

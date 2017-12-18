@@ -1,8 +1,13 @@
 
+Room.prototype.getHostileCreeps = function() {
+    return this.find(FIND_HOSTILE_CREEPS, {filter: function(c){ if (allies.includes(c.owner.username)) { return false } else { return true } } });
+}
+Room.prototype.getHostileStructures = function() {
+    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (allies.includes(s.owner.username) || s.structureType == STRUCTURE_CONTROLLER) { return false } else { return true } } });
+}
+
 Room.prototype.getShouldUpgrade = function() {
-    
     //  Memory['gcl_farm'] = ['W53S18', 'W59S18', 'W53S17', 'W57S14']
-    
     var gcl_farm_rooms = Memory['gcl_farm'];
     if (Memory['gcl_farm'].indexOf(this.name) == -1) {
         return 1;
@@ -63,7 +68,7 @@ Room.prototype.getTowerRepairMax = function() {
     } else if (lvl == 4) {
         return 25000;
     } else if (lvl == 8) {
-        return 2000000; // two million max.
+        return 1000000; 
     } else {
         return 50000 * lvl;
     }
@@ -348,7 +353,6 @@ Room.prototype.deleteAlert = function() {
 
             if (empire_defaults['alerts_reassign'][spname] != undefined) {
                 Game.creeps[crname].memory[MEMORY_DEST] = empire_defaults['alerts_reassign'][spname];
-                Game.creeps[crname].notifyWhenAttacked(false);
                 console.log('HARASS: sent ' + crname + ' to harass' + empire_defaults['alerts_reassign'][spname]);
                 Game.notify('HARASS: sent ' + crname + ' to harass' + empire_defaults['alerts_reassign'][spname]);
             }
@@ -497,7 +501,34 @@ Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, 
     return result;
 }
 
-
+Room.prototype.createSiegeTeam = function (targetroomname, roompath, dest_x, dest_y) {
+    var free_spawns = this.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
+    if (free_spawns.length < 2) {
+        console.log('createSiegeTeam('+this.name+'): <2 free spawners.');
+        return false;
+    }
+    var tank_design = 'siegebig';
+    var healer_design = 'siegehealer';
+    var tank_properties = TEMPLATE_PROPERTIES(tank_design);
+    var healer_properties = TEMPLATE_PROPERTIES(healer_design);
+    var tank_cost = tank_properties['cost'];
+    var tank_body = tank_properties['parts'];
+    var healer_cost = healer_properties['cost'];
+    var healer_body = healer_properties['parts'];
+    var total_cost = tank_cost + healer_cost;
+    var room_free_energy = this.energyAvailable;
+    if (total_cost > room_free_energy) {
+        console.log('createSiegeTeam('+this.name+'): total energy cost ' + total_cost + ' exceeds current room energy level: ' + room_free_energy);
+        return false;
+    }
+    var thetank = SPAWNCUSTOM(free_spawns[0], '', tank_body, tank_design, '', targetroomname, tank_cost, this.name, dest_x, dest_y, 0, roompath);
+    var thehealer = SPAWNCUSTOM(free_spawns[1], '', healer_body, healer_design, '', targetroomname, healer_cost, this.name, dest_x, dest_y, 0, roompath);
+    //var thetank = this.createUnit('siege', targetroomname, roompath, this.name, dest_x, dest_y);
+    console.log('tank: ' + thetank);
+    //var thehealer = this.createUnit('siegehealer', targetroomname, roompath, this.name, dest_x, dest_y);
+    console.log('healer: ' + thehealer);
+    return true;
+}
 
 Room.prototype.sellResource = function (mtype) {
     var amount_sellable = this.terminal.store[mtype];

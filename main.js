@@ -32,6 +32,7 @@ var roleBuilderStorage = require('role.builderstorage');
 var roleTeller = require('role.teller');
 var roleRemoteconstructor = require('role.remoteconstructor');
 var roleSiege = require('role.siege');
+var roleSiegeHealer = require('role.siegehealer');
 var roleDrainer = require('role.drainer');
 var roleSigner = require('role.signer');
 var roleLabtech = require('role.labtech');
@@ -85,7 +86,9 @@ module.exports.loop = function () {
 
     if(Game.time % 250 === 0) {
         global.SHARE_SPARE_ENERGY(); 
-        //global.PRESET_ATTACK_WAVE();
+    }
+    if(Game.time % 500 === 0) {
+        global.PRESET_ATTACK_WAVE();
     }
     if(Game.time % 2000 === 0) {
         global.UPDATE_MARKET_ORDERS();
@@ -661,7 +664,7 @@ module.exports.loop = function () {
         var theroom = Game.rooms[rname];
         
         // If hostiles in room, focus fire.        
-        var enemiesList = theroom.find(FIND_HOSTILE_CREEPS);
+        var enemiesList = theroom.getHostileCreeps();
         if (enemiesList.length) {
             var highest_threat = -1;
             var best_target = undefined;
@@ -761,7 +764,9 @@ module.exports.loop = function () {
         var creep_cpu = Game.cpu.getUsed();
 
         if (creep.spawning) {
-            // don't even process this creep, it cannot do anything while it is being spawned, and even attempting to do so just wastes CPU.
+            // creeps cannot do anything while they're being spawned.
+        } else if (!creep.hasSetDefaults()) {
+            creep.setDefaults();
         } else if (creep.memory[MEMORY_SLEEPFOR] != undefined && creep.memory[MEMORY_SLEEPFOR] > 0) {
             creep.memory[MEMORY_SLEEPFOR]--;
         } else if(creep.memory[MEMORY_ROLE] == 'harvester' || creep.memory[MEMORY_ROLE] == 'bharvester' || creep.memory[MEMORY_ROLE] == 'fharvester') {
@@ -788,9 +793,10 @@ module.exports.loop = function () {
             roleDrainer.run(creep, 1);
         } else if(creep.memory[MEMORY_ROLE] == 'siege' || creep.memory[MEMORY_ROLE] == 'siegefar' || creep.memory[MEMORY_ROLE] == 'siegemini' || creep.memory[MEMORY_ROLE] == 'siegebig') {
             roleSiege.run(creep);
+        } else if(creep.memory[MEMORY_ROLE] == 'siegehealer') {
+            roleSiegeHealer.run(creep);
         } else if (empire_defaults['military_roles'].includes(creep.memory[MEMORY_ROLE])) {
             roleAdventurer.run(creep);
-
         } else if(creep.memory[MEMORY_ROLE] == 'scavenger' || creep.memory[MEMORY_ROLE] == 'bigscavenger') {
             roleScavenger.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'claimer' || creep.memory[MEMORY_ROLE] == 'bclaimer') {

@@ -7,12 +7,10 @@ module.exports =  {
         var melee_parts = creep.getActiveBodyparts(ATTACK);
         var ranged_parts = creep.getActiveBodyparts(RANGED_ATTACK);
         var heal_parts = creep.getActiveBodyparts(HEAL);
-        var target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS); // creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS, {filter: (s) => s.getActiveBodyparts(HEAL) > 0});
+        var target = creep.getClosestHostileCreep();
+
         if (!target) {
-            target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
-        }
-        if (!target) {
-            target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES,{filter: (s) => s.structureType != STRUCTURE_CONTROLLER});
+            target = creep.getClosestHostileStructure();
         }
         var rangetotarget = 0;
         if (target) {
@@ -115,7 +113,7 @@ module.exports =  {
         // 3rd, should we rangedAttack, or rangedMassattack? Contrary to docks, rangedheal on yourself blocks ATTACK, so we can't do that here.
 
         if (rangedAttackPower > healPower || hurtfriendly == undefined || rangetohurtfriendly > 3) {
-            var nearby_enemies = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
+            var nearby_enemies = creep.getHostileCreepsInRange(3);
             if (nearby_enemies.length >= 2) {
                 creep.rangedMassAttack();
             } else {

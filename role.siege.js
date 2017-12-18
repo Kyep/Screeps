@@ -3,13 +3,73 @@
 module.exports = {
     
     run: function(creep) {
+        
+        var myhealer = creep.getHealer();
+        if (creep.isAtHomeRoom()) {
+            if(!myhealer) {
+                creep.say('...healer?');
+                //creep.sleepFor(5);
+                return;
+            }
+        }
+        if (myhealer && myhealer.room.name == creep.room.name) {
+            var therange = creep.pos.getRangeTo(myhealer);
+            if (therange > 2) {
+                creep.moveTo(myhealer);
+                return;
+            }
+        }
+        
         if(!creep.isAtDestinationRoom()){
             creep.moveToDestination();
             return;
         } else if (creep.updateDestination()) {
-            creep.notifyWhenAttacked(false);
             return;
         }
+        
+        var target = creep.getClosestHostileCreep();
+        if (target) {
+            var trange = creep.pos.getRangeTo(target);
+            if (trange == 1) {
+                creep.attack(target);
+                return;
+            } else if (trange <= 3) {
+                if(creep.attack(target) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(target);
+                }
+                return;
+            }
+        }
+
+        var structure_target = creep.getClosestHostileStructure();
+        if (structure_target) {
+            target = structure_target;
+        }
+        if (target) {
+            if(creep.attack(target) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(target);
+            }
+            return;
+        }
+        creep.redRally();
+        
+        creep.avoidEdges();
+        return;
+        
+        
+        /*
+        target = creep.getClosestHostileSiegeTarget();
+        var path_to_target = PathFinder.search(creep.pos, {'pos': target.pos, 'range': 1});
+        if (path_to_target['incomplete'] == true) {
+            
+        }*/
+        if (!target) {
+            target = creep.getClosestHostileStructure();
+            if (!target) {
+                target = creep.getClosestHostileCreep();
+            }
+        }
+
         
         /*
         target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: (s) => s.structureType != STRUCTURE_CONTROLLER});
@@ -22,7 +82,7 @@ module.exports = {
         }
         */
         
-
+        /*
         var enemy_creeps = creep.room.find(FIND_HOSTILE_CREEPS); 
         for(var i = 0; i < enemy_creeps.length; i++) {
             var them = enemy_creeps[i];
@@ -40,11 +100,10 @@ module.exports = {
             }
             new RoomVisual(creep.room.name).line(creep.pos, target.pos, {color: 'red'});
             return;
-        }
+        }*/
 
 
-        //var redflags = creep.pos.findClosestByPath(FIND_FLAGS, {filter: (f) => f.color == COLOR_RED && f.secondaryColor == COLOR_ORANGE});
-        // the above does not work the below does, find out why.
+        /*
         var redflags = creep.pos.findInRange(FIND_FLAGS, 15, { filter: function(flag){ if(flag.color == COLOR_RED && flag.secondaryColor == COLOR_ORANGE) { return 1; } else { return 0; } } });
         if(redflags.length) {
             var theflag = redflags[0];
@@ -59,14 +118,17 @@ module.exports = {
                 return 0;
         	}
         }
+        */
 
-        //var valid_structure_targets = [STRUCTURE_SPAWN];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
+        var valid_structure_targets = [];
+        valid_structure_targets.push(STRUCTURE_TOWER);
+        valid_structure_targets.push(STRUCTURE_SPAWN);
+        valid_structure_targets.push(STRUCTURE_RAMPART);
 
-        var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_STORAGE, STRUCTURE_TERMINAL];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
-        //var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_TERMINAL, STRUCTURE_LAB];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
-        //var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_RAMPART, STRUCTURE_EXTENSION, STRUCTURE_SPAWN, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_LINK, STRUCTURE_EXTRACTOR];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
-        //var valid_structure_targets = [STRUCTURE_TOWER]
-        //  
+        //var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_STORAGE, STRUCTURE_TERMINAL];  
+        //var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_EXTENSION, STRUCTURE_SPAWN, STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LINK];
+        //var valid_structure_targets = [STRUCTURE_TOWER, STRUCTURE_RAMPART, STRUCTURE_EXTENSION, STRUCTURE_SPAWN, STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_LINK, STRUCTURE_EXTRACTOR];  // , STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_LAB, STRUCTURE_RAMPART, 
+ 
         
         var enemy_structures = creep.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType != STRUCTURE_CONTROLLER}); 
         var valid_targets = [];
@@ -100,6 +162,7 @@ module.exports = {
                 creep.moveToRUP(target);
             }
         } else {
+            
             var destroy_csites = 1;
             if (creep.room.controller != undefined) {
                 if (creep.room.controller.owner != undefined) {
@@ -117,6 +180,7 @@ module.exports = {
                     return 0;
                 }
             }
+            
 
             if (Game.time % 200 === 0) {
                 console.log('ALERT: SIEGE CREEP ' + creep.name + ' IN ' + creep.room.name + ' HAS NO TARGET! GIVE THEM A JOB!');

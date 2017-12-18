@@ -214,8 +214,14 @@ global.PRESET_ATTACK_WAVE = function (btype) {
         W59 and then W85, S3: edtuer's rooms.
     */
     
+    //slower but safer route: ROOMLIST_ATTACK_WAVE(['W58S17','W59S18'], 'boss', 'W60S17', ['W60S25','W57S25','W57S24'], 18, 29);
+    ROOMLIST_ATTACK_WAVE(['W58S17','W59S18'], 'boss', 'W60S17', ['W60S20','W57S20','W57S21','W58S21','W58S22','W57S23','W57S24'], 18, 29);
+    ROOMLIST_ATTACK_WAVE(['W53S18','W56S18'], 'boss', 'W55S20', ['W56S20','W57S23','W55S23'], 30, 30);
+    
+    //ROOMLIST_ATTACK_WAVE(['W56S18'], 'bclaimer', 'W55S20', ['W56S20','W57S23','W55S23'], 30, 30);
+    //ROOMLIST_ATTACK_WAVE(['W56S18'], 'bclaimer', 'W55S20', ['W56S20','W57S23','W57S24'], 30, 30);
 
-
+    /*
     var primary_target = 'W52S9'; // W60S10 W53S10
     var waypoint_list = []; // 'W60S3', 'W59S3', 'W58S3'];
     var target_x = 40;
@@ -226,8 +232,8 @@ global.PRESET_ATTACK_WAVE = function (btype) {
     }
     
     //btype = 'siegebig';
-    
     ROOMLIST_ATTACK_WAVE(roomlist, btype, primary_target, waypoint_list, target_x, target_y);
+    */
 
     //ROOMLIST_ATTACK_WAVE(['W57S11'], 'scout', primary_target, waypoint_list, target_x, target_y); // ,'W57S14'    
     // nearby rooms spawn large drainers

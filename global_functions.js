@@ -103,6 +103,7 @@ global.TEMPLATE_PROPERTIES = function (template_name) {
         var hps = heal_parts * HEAL_POWER;
         retval['hps'] = hps;
     }
+    retval['parts'] = thebody;
     console.log(JSON.stringify(retval));
     return retval;
 }
@@ -282,7 +283,7 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname) {
     if (room_primary_level > 0 && room_primary_level < 5) {
         spawners_secondary_preferred = 1;
     } else if (room_primary_level > 5) {
-        spawners_secondary_allowed = 0;
+        //spawners_secondary_allowed = 0;
     }
     //console.log('GET_SPAWNER_FOR_ROOM: ' + theroomname + ': ' + spawners_primary.length + '/' + (spawners_primary.length + spawners_primary_unavailable.length) + ' primary, ' + spawners_secondary.length + ' secondary. Secondary pref: ' + spawners_secondary_preferred);
     if (spawners_primary.length && (!spawners_secondary_preferred || global.ROOM_UNDER_ATTACK(theroomname))) {

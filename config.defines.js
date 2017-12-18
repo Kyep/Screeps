@@ -25,6 +25,9 @@ global.MEMORY_RALLYROOM = 'rallyroom';
 global.MEMORY_LAST_WAYPOINT = 'lastwaypoint';
 global.MEMORY_REUSEPATH = 'reusepath';
 global.MEMORY_SLEEPFOR = 'sleepfor';
+global.MEMORY_INIT = 'init_time';
+global.MEMORY_TANK = 'tank';
+global.MEMORY_HEALER = 'healer';
 
 global.JOB_HARVEST = 'mine';
 global.JOB_BUILD = 'build';

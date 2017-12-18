@@ -474,7 +474,7 @@
         'W58S17': {
             'roomname' : '7',
             'spawn_room': 'W58S17',
-            'backup_spawn_room': 'W56S18',
+            'backup_spawn_room': 'W59S17',
             'sources': {
                 '59bbc3ad2052a716c3ce68a6': {'sourcename': '7-W', 'x':8, 'y':27, 'spaces':4,
                     'assigned': {'bharvester': 2}, 
@@ -487,7 +487,7 @@
             },
             'safespot': {'x': 9, 'y':32 },
             'mineralid': '59bbc643ae9e1411a425ab8f',
-            'mineraltype': RESOURCE_ZYNTHIUM
+            'mineraltype': RESOURCE_KEANIUM
             
         },  
         // 7W

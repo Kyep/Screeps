@@ -26,7 +26,7 @@ module.exports = {
                 }
             }
             if (checktargets) {
-                var target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
+                var target = creep.getClosestHostileCreep();
                 if(target) {
                     creep.memory[MEMORY_JOB] = JOB_PATROL;
                     return;
@@ -53,7 +53,7 @@ module.exports = {
             } else if (creep.room.name == creep.memory[MEMORY_DEST]) {
                 jobPatrol.run(creep);
             } else {
-                target = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS);
+                target = creep.getClosestHostileCreep();
                 if(target) {
                     jobPatrol.run(creep);
                 } else {

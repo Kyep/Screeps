@@ -23,7 +23,7 @@ global.empire_workers = {
 	'upstorclose': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 1, MOVE: 1}), 'renew_allowed': 0, 'abbr': 'USc' },  // halfspeed on roads, quarter speed offroad
 	'upstorfar': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'renew_allowed': 0, 'abbr': 'USf' },  // halfspeed on roads, quarter speed offroad
 	'labtech': { 'body': global.CONSTRUCT_BODY({CARRY: 12, MOVE: 6}), 'abbr': 'Tec' },
-	'nuketech': { 'body': global.CONSTRUCT_BODY({CARRY: 12, MOVE: 6}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'NUKE'  },
+	'nuketech': { 'body': global.CONSTRUCT_BODY({CARRY: 12, MOVE: 6}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'NUKE' },
 
     // MILITARY CREEP DESIGN RULES:
     // 1. Must have 1:1 movespeed offroad. All NPCs do this, and 2/3 (4/6 counting RCL>=4) have a ranged attack. Catching them is hopeless without one.
@@ -37,7 +37,7 @@ global.empire_workers = {
 	'rogue': { 'body':      global.CONSTRUCT_BODY({TOUGH: 2, MOVE: 6, ATTACK: 4}), 'noresizing': 1, 'renew_allowed': 0}, // 640e, 1,200 HP, 120 DPS. Capable of out-damaging a RCL<4 healer.
     'ninja': { 'body':      global.CONSTRUCT_BODY({TOUGH: 2, MOVE: 8, ATTACK: 6}), 'noresizing': 1, 'renew_allowed': 0}, // 900e, 1,600 HP, 180 DPS. 
     'dragon': { 'body':     global.CONSTRUCT_BODY({TOUGH: 6, MOVE: 16, ATTACK: 10}), 'noresizing': 1, 'renew_allowed': 0}, // 1,660e, 3,200 HP, 300 DPS.
-    'boss': { 'body':       global.CONSTRUCT_BODY({TOUGH: 8, MOVE: 23, ATTACK: 12, HEAL: 3}), 'noresizing': 1, 'renew_allowed': 0}, // 2,240e, 4,000 HP, 240 DPS, 24 HPS.
+    'boss': { 'body':       global.CONSTRUCT_BODY({TOUGH: 8, MOVE: 25, ATTACK: 13, HEAL: 4}), 'noresizing': 1, 'renew_allowed': 0}, // 
 
     // ANTIKITE
     'antikite2': { 'body':  global.CONSTRUCT_BODY({RANGED_ATTACK: 2, MOVE: 2}), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak2'}, 
@@ -49,8 +49,12 @@ global.empire_workers = {
 	'wizard': { 'body':   [MOVE, RANGED_ATTACK], 'renew_allowed': 0}, // horrificly expensive anti-crowd unit
 
     // Anti-player ATTACK classes
-	'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, ATTACK: 20}), 'renew_allowed': 0},    // {"cost":2900,"dps":600}
-	'siege': { 'body':     global.CONSTRUCT_BODY({MOVE: 3, ATTACK: 3}), 'noresizing': 1, 'renew_allowed': 0}, 
+	'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, ATTACK: 20}), 'renew_allowed': 0, 'abbr': 'SB'},    // {"cost":2900,"dps":600}
+	'siege': { 'body':     global.CONSTRUCT_BODY({MOVE: 3, ATTACK: 3}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'S'},
+
+	//'siegehealer': { 'body':     global.CONSTRUCT_BODY({MOVE: 3, HEAL: 3}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'},
+	'siegehealer': { 'body':     global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, HEAL: 20}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'},
+
 	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, 
 	'drainerbig': { 'body': global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 20, HEAL: 15}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, // {"cost":4800,"hps":180}
 
@@ -65,6 +69,6 @@ global.empire_workers = {
 	'signer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, 
 
     // Base maint/defense classes.
-	'teller': { 'body': global.CONSTRUCT_BODY({CARRY: 6, MOVE: 3}), 'noresizing': 1, 'renew_allowed': 0},
+	'teller': { 'body': global.CONSTRUCT_BODY({CARRY: 10, MOVE: 5}), 'noresizing': 1, 'renew_allowed': 0},
 	'teller-towers': { 'body': global.CONSTRUCT_BODY({CARRY: 10, MOVE: 5}), 'noresizing': 1, 'renew_allowed': 0 }
 }

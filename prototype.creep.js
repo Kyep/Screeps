@@ -1,3 +1,42 @@
+Creep.prototype.getClosestHostileCreep = function() {
+    return this.pos.findClosestByPath(FIND_HOSTILE_CREEPS, {filter: function(c){ if (allies.includes(c.owner.username)) { return false } else { return true } } });
+}
+
+Creep.prototype.getHostileCreepsInRange = function(therange) {
+    return this.pos.findInRange(FIND_HOSTILE_CREEPS, therange, {filter: function(c){ if (allies.includes(c.owner.username)) { return false } else { return true } } });
+}
+
+Creep.prototype.getClosestHostileStructure = function() {
+    return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (allies.includes(s.owner.username) || s.structureType == STRUCTURE_CONTROLLER) { return false } else { return true } } });
+}
+
+Creep.prototype.getClosestHostileSiegeTarget = function() {
+    return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, 
+        {filter: function(s){ 
+            if (allies.includes(s.owner.username)) { 
+                return false; 
+            }
+            if (s.structureType == STRUCTURE_TOWER || s.structureType == STRUCTURE_SPAWN) { 
+                return true;
+            }
+            return false;
+        }}
+    );
+}
+
+Creep.prototype.hasSetDefaults = function() {
+    if (this.memory[MEMORY_INIT] == undefined) {
+        return false;
+    }
+    return true;
+}
+
+Creep.prototype.setDefaults = function() {
+    if (this.isMilitary()) {
+        this.notifyWhenAttacked(false);
+    }
+    this.memory[MEMORY_INIT] = Game.time;
+}
 
 Creep.prototype.announceJob = function() {
     if(this.memory[MEMORY_JOB] == undefined) {
@@ -143,12 +182,123 @@ Creep.prototype.isSiege = function() {
     return 0;
 }
 
+/*
+Creep.prototype.needsHealer = function() {
+    if (!this.isSiege()) {
+        return false;
+    }
+    var myhealer = this.getHealer();
+    if (myhealer == undefined) {
+        return true;
+    }
+    return false;
+}
+
+Creep.prototype.isHealer = function() {
+    var heal_parts = this.getActiveBodyparts(HEAL);
+    if (heal_parts == 0) {
+        return false;
+    }
+    var attack_parts = this.getActiveBodyparts(ATTACK);
+    if (attack_parts > 0) {
+        return false;
+    }
+    var rattack_parts = this.getActiveBodyparts(RANGED_ATTACK);
+    if (rattack_parts > 0) {
+        return false;
+    }
+    return true;
+}
+
+
+
+*/
+Creep.prototype.getHealer = function() {
+    if (this.memory[MEMORY_HEALER] == undefined) {
+        return undefined;
+    }
+    var healer_name = this.memory[MEMORY_HEALER];
+    if (Game.creeps[healer_name] == undefined) {
+        console.log(this.name + ': clearing saved healer name, as ' + healer_name + ' is apparently dead now.');
+        this.memory[MEMORY_HEALER] = undefined;
+        return undefined;
+    }
+    return Game.creeps[healer_name];
+}
+
+
+Creep.prototype.getTank = function() {
+    if (this.memory[MEMORY_TANK] == undefined) {
+        return undefined;
+    }
+    var tank_name = this.memory[MEMORY_TANK];
+    if (Game.creeps[tank_name] == undefined) {
+        console.log(this.name + ': clearing saved tank_name, as ' + tank_name + ' is apparently dead now.');
+        this.memory[MEMORY_TANK] = undefined;
+        return undefined;
+    }
+    return Game.creeps[tank_name];
+}
+
+Creep.prototype.assignTank = function() {
+    var my_creeps_here = this.room.find(FIND_MY_CREEPS);
+    for (var i = 0; i < my_creeps_here.length; i++) {
+        var thisguy = my_creeps_here[i];
+        if (thisguy == this) {
+            continue;
+        }
+        if (!thisguy.isSiege()) {
+            continue;
+        }
+        //console.log(this.name + ': assignTank, considering ' + thisguy.name);
+
+        if (thisguy.getHealer() != undefined) {
+            continue;
+        }
+        // GOOD CANDIDATE.
+        this.memory[MEMORY_TANK] = thisguy.name;
+        thisguy.memory[MEMORY_HEALER] = this.name;
+        this.say('<3 tnk!');
+        thisguy.say('<3 hlr!');
+        return true;
+    }
+    return false;
+}
+
+Creep.prototype.avoidEdges = function() {
+    if (this.pos.x == 0) {
+        this.move(_.sample([TOP_RIGHT, RIGHT, BOTTOM_RIGHT]));
+        return true;
+    } else if (this.pos.x == 49) {
+        this.move(_.sample([TOP_LEFT, LEFT, BOTTOM_LEFT]));
+        return true;
+    } else if (this.pos.y == 0) {
+        this.move(_.sample([BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]));
+        return true;
+    } else if (this.pos.y == 49) {
+        this.move(_.sample([TOP_LEFT, TOP, TOP_RIGHT]));
+        return true;
+    }
+    return false;
+}
+
 Creep.prototype.isAtDestinationRoom = function() {
     if (this.memory[MEMORY_DEST] == undefined) {
         console.log(this.name + 'checked isAtDestinationRoom with no MEMORY_DEST');
         return 1;
     }
     if (this.room.name == this.memory[MEMORY_DEST]) {
+        return 1;
+    }
+    return 0;
+}
+
+Creep.prototype.isAtHomeRoom = function() {
+    if (this.memory[MEMORY_HOME] == undefined) {
+        console.log(this.name + 'checked isAtHomeRoom with no MEMORY_HOME');
+        return 1;
+    }
+    if (this.room.name == this.memory[MEMORY_HOME]) {
         return 1;
     }
     return 0;
