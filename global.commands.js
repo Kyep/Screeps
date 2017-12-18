@@ -142,15 +142,19 @@ global.REPORT_CREEPS = function(prune) {
 
 // ----------------------- WAR ----------------------------------------------------------
 
-global.SPAWN_TELLERS = function () {
+global.SPAWN_EVERYWHERE = function (btype) {
+    if (btype == undefined) {
+        btype = 'teller';
+    }
     for (var rname in Game.rooms) {
         var rlvl = Game.rooms[rname].getLevel();
         if (rlvl >= 5) {
-            console.log('spawning teller for: ' + rname);
-            Game.rooms[rname].createUnit('teller', rname);
+            var retval = Game.rooms[rname].createUnit(btype, rname);
+            console.log('spawning ' + btype + ' for: ' + rname + ' result: ' + retval);
         }
     }
 }
+
 
 global.ATTACK_WAVE = function (spawn_list, unit_type, target_room, roompath) {
     if (spawn_list.length < 1) {
@@ -190,7 +194,7 @@ global.ROOMLIST_ATTACK_WAVE = function (roomlist, unit_type, target_room, roompa
         return -1;
     }
     
-    var bodycostarr = global.TEMPLATE_COST(unit_type);
+    var tprops = global.TEMPLATE_PROPERTIES(unit_type);
     
     var spawncount = 0;
     for (var rname in Game.rooms) {

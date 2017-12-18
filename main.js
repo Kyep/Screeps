@@ -573,8 +573,8 @@ module.exports.loop = function () {
                             if(empire[rname].sources[skey]['target_y'] != undefined) { target_y = empire[rname].sources[skey]['target_y']; }
 
                             if(!using_primary) {
-                                console.log('SECONDARY SPAWNING: ' + spawner.name + ' in ' + spawner.room.name + ' created ' + spawnrole + ' for |' + empire[rname].sources[skey]['sourcename'] + 
-                                '| cost: ' + thecost + '/' + spawner.room.energyAvailable + ' capacity:' + spawner.room.energyCapacityAvailable + ' based out of ' + home_room+ ' with renew: ' + renew_allowed);
+                                //console.log('SECONDARY SPAWNING: ' + spawner.name + ' in ' + spawner.room.name + ' created ' + spawnrole + ' for |' + empire[rname].sources[skey]['sourcename'] + 
+                                //'| cost: ' + thecost + '/' + spawner.room.energyAvailable + ' capacity:' + spawner.room.energyCapacityAvailable + ' based out of ' + home_room+ ' with renew: ' + renew_allowed);
                             }
 
                             spawn_queue[spawner.name] = {
@@ -676,9 +676,9 @@ module.exports.loop = function () {
             for (var tnum in rtowers[rname]) {
                 var thistower = rtowers[rname][tnum];
                 thistower.attack(best_target);
-                thistower.room.visual.circle(thistower.pos, {fill: 'transparent', radius: TOWER_OPTIMAL_RANGE, stroke: 'green'});
-                thistower.room.visual.circle(thistower.pos, {fill: 'transparent', radius: TOWER_FALLOFF_RANGE, stroke: 'yellow'});
-                thistower.room.visual.line(thistower.pos, best_target.pos, {color: 'red'});
+                //thistower.room.visual.circle(thistower.pos, {fill: 'transparent', radius: TOWER_OPTIMAL_RANGE, stroke: 'green'});
+                //thistower.room.visual.circle(thistower.pos, {fill: 'transparent', radius: TOWER_FALLOFF_RANGE, stroke: 'yellow'});
+                //thistower.room.visual.line(thistower.pos, best_target.pos, {color: 'red'});
             }
             continue;
         }

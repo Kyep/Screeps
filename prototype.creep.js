@@ -115,6 +115,8 @@ Creep.prototype.getRepairMax = function() {
         return 10000;
     } else if (lvl == 4) {
         return 25000;
+    } else if (lvl == 8) {
+        return 2000000;
     } else {
         return 40000 * lvl;
     }

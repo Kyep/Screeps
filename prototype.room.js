@@ -63,9 +63,9 @@ Room.prototype.getTowerRepairMax = function() {
     } else if (lvl == 4) {
         return 25000;
     } else if (lvl == 8) {
-        return 1000000; // one million max.
+        return 2000000; // two million max.
     } else {
-        return 40000 * lvl;
+        return 50000 * lvl;
     }
 }
 

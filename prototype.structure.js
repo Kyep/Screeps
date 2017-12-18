@@ -46,7 +46,11 @@ StructureSpawn.prototype.getRoleBodyAndProperties = function(roletext, tgtroom, 
     if (energy_cap > 4500) {
         energy_cap = 4500;
     }
-    var work_units = Math.max(1, Math.floor(energy_cap / global.UNIT_COST(part_template)));
+    var build_cost = global.UNIT_COST(part_template);
+    if (build_cost == 0) {
+        console.log('WARNING: ' + roletext + ' for ' + tgtroom + ' returned zero build cost for: ' + part_template);
+    }
+    var work_units = Math.max(1, Math.floor(energy_cap / build_cost));
     var max_units = Math.floor(50 / part_template.length);
     if (work_units > max_units) {
         //console.log('Warning: when building body for ' + roletext + ' work_units got to be ' + work_units + ' but we can only support ' + max_units + ' of this template.');

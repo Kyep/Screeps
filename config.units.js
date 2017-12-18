@@ -1,72 +1,70 @@
 
 // rule: must have  1 move part for 1 every other part, or 2 every other parts if creep uses roads exclusively
-global.empire_workers = {
-    'upclose': { 'body': [WORK, WORK, CARRY, MOVE] },
-	'upfar': { 'body': [WORK, CARRY, MOVE] },
-	'up8': { 'body': [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 'noresizing': 1 },
+global.empire_workers = { 
+    'upclose': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 1, MOVE: 1}) },
+	'upfar': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 1}) },
+	'up8': { 'body': global.CONSTRUCT_BODY({WORK: 8, CARRY: 4, MOVE: 12}), 'noresizing': 1 },
 
-	'remoteconstructor': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], 'renew_allowed': 0, 'abbr': 'RC'},
-	'minirc': { 'body': [WORK, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'miniRC'},
+	'remoteconstructor': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 4}), 'renew_allowed': 0, 'abbr': 'RC'},
+	'minirc': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 4}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'miniRC'},
 
-	'harvester': { 'body': [WORK, CARRY, MOVE] },
-	'fharvester': { 'body': [WORK, CARRY, MOVE, MOVE] },
-	'bharvester': { 'body': [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], 'noresizing': 1, 'abbr': 'bHar'}, // 800e. takes 6 WORK units to deplete a c30 vein. These have 4. So you need 2 per base, allowing some refill time.
-	'c15harvester': { 'body': [WORK, WORK, WORK, CARRY, MOVE, MOVE], 'noresizing': 1, 'abbr': 'c15'},
-	'c30harvester': { 'body': [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'abbr': 'c30' },
-	'hauler': { 'body': [WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'abbr': 'haul'},
+	'harvester': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 1}) },
+	'fharvester': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 2}) },
+	'bharvester': { 'body': global.CONSTRUCT_BODY({WORK: 4, CARRY: 4, MOVE: 4}), 'noresizing': 1, 'abbr': 'bHar'}, // 800e. takes 6 WORK units to deplete a c30 vein. These have 4. So you need 2 per base, allowing some refill time.
+	'c15harvester': { 'body': global.CONSTRUCT_BODY({WORK: 3, CARRY: 1, MOVE: 2}), 'noresizing': 1, 'abbr': 'c15'},
+	'c30harvester': { 'body': global.CONSTRUCT_BODY({WORK: 6, CARRY: 1, MOVE: 3}), 'noresizing': 1, 'abbr': 'c30' },
+	'hauler': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 3, MOVE: 3}), 'noresizing': 1, 'abbr': 'haul'},
 
-	'extractor': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 'abbr': 'Ext' },
-	'scavenger': { 'body': [WORK, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
-	'bigscavenger': { 'body': [CARRY, MOVE] },
-	'builder': { 'body': [WORK, CARRY, MOVE] },
-	'builderstorage': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 'renew_allowed': 0, 'abbr': 'BS' }, // full speed on roads
-	'upstorclose': { 'body': [WORK, WORK, CARRY, MOVE], 'renew_allowed': 0, 'abbr': 'USc' },  // halfspeed on roads, quarter speed offroad
-	'upstorfar': { 'body': [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 'renew_allowed': 0, 'abbr': 'USf' },  // halfspeed on roads, quarter speed offroad
-	'labtech': { 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 'abbr': 'Tec' },
-	'nuketech': { 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'NUKE'  },
+	'extractor': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'abbr': 'Ext' },
+	'scavenger': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 5, MOVE: 3}), 'noresizing': 1, 'renew_allowed': 0 },
+	'bigscavenger': { 'body': global.CONSTRUCT_BODY({CARRY: 1, MOVE: 1}) },
+	'builder': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 1}) },
+	'builderstorage': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'renew_allowed': 0, 'abbr': 'BS' }, // full speed on roads
+	'upstorclose': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 1, MOVE: 1}), 'renew_allowed': 0, 'abbr': 'USc' },  // halfspeed on roads, quarter speed offroad
+	'upstorfar': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'renew_allowed': 0, 'abbr': 'USf' },  // halfspeed on roads, quarter speed offroad
+	'labtech': { 'body': global.CONSTRUCT_BODY({CARRY: 12, MOVE: 6}), 'abbr': 'Tec' },
+	'nuketech': { 'body': global.CONSTRUCT_BODY({CARRY: 12, MOVE: 6}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'NUKE'  },
 
     // MILITARY CREEP DESIGN RULES:
-    // 1. all NPC invaders have 1:1 move speed offroad, 2/3 (4/6 counting RCL>=4 invaders) have a ranged attack, and another 1/3rd have ranged heals. Thus creeps MUST have 1:1 movespeed. If they do not, they might get kited.
-    // 2. costs are ATTACK:80, RANGED_ATTACK:150, HEAL:250. ATTACK also has power 30, RANGED_ATTACK 10 and HEAL 12. Thus in MOST situations ATTACK is clearly preferable to all other options, as it is both cheapest AND strongest.
-    // 3. notably, TOUGH only costs ***TEN*** energy (60 with MOVE), so its worthwhile to put TOUGH parts on everything. The only question is: how many.
-    // global.CONSTRUCT_MILITARY_BODY(tough_parts, move_parts, attack_parts, rangedattack_parts, heal_parts)
+    // 1. Must have 1:1 movespeed offroad. All NPCs do this, and 2/3 (4/6 counting RCL>=4) have a ranged attack. Catching them is hopeless without one.
+    // 2. Favor ATTACK over RANGED_ATTACK as it is cheaper/stronger for all cases except groups of enemies with heal.
+    // 3. TOUGH parts cost 60 (including 50 for MOVE) so including a few is a good idea.
+
     // Anti-invader defense classes.
-    'scout': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 1, 1, 0, 0), 'noresizing': 1, 'renew_allowed': 0 }, // 130e, 200 HP, 30 DPS. Disposable scout.
-    'slasher': { 'body':    global.CONSTRUCT_MILITARY_BODY(2, 4, 2, 0, 0), 'noresizing': 1, 'renew_allowed': 0 }, // 380e, 800 HP, 60 DPS. Bread-and-butter defender, should be able to take most RCL<4 invaders by itself.
-	'rogue': { 'body':      global.CONSTRUCT_MILITARY_BODY(2, 6, 4, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 640e, 1,200 HP, 120 DPS. Capable of out-damaging a RCL<4 healer.
-    'ninja': { 'body':      global.CONSTRUCT_MILITARY_BODY(2, 8, 6, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 900e, 1,600 HP, 180 DPS. 
-    'ninjaheals': { 'body': global.CONSTRUCT_MILITARY_BODY(2, 9, 6, 0, 1), 'noresizing': 1, 'renew_allowed': 0}, // 1,050e, 1,800 HP, 180 DPS. 
-    'dragon': { 'body':     global.CONSTRUCT_MILITARY_BODY(6, 16, 10, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1,660e, 3,200 HP, 300 DPS.
-    'siegedragon': { 'body':global.CONSTRUCT_MILITARY_BODY(4, 14, 10, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1,540e, 2,800 HP, 300 DPS.
-    'boss': { 'body':       global.CONSTRUCT_MILITARY_BODY(8, 23, 12, 0, 3), 'noresizing': 1, 'renew_allowed': 0}, // 2,240e, 4,000 HP, 240 DPS, 24 HPS.
-    
+
+    'scout': { 'body':      global.CONSTRUCT_BODY({ATTACK: 1, MOVE: 1}), 'noresizing': 1, 'renew_allowed': 0 }, // 130e, 200 HP, 30 DPS. Disposable scout.
+    'slasher': { 'body':    global.CONSTRUCT_BODY({ATTACK: 2, MOVE: 2}), 'noresizing': 1, 'renew_allowed': 0 }, // 380e, 800 HP, 60 DPS. Bread-and-butter defender, should be able to take most RCL<4 invaders by itself.
+	'rogue': { 'body':      global.CONSTRUCT_BODY({TOUGH: 2, MOVE: 6, ATTACK: 4}), 'noresizing': 1, 'renew_allowed': 0}, // 640e, 1,200 HP, 120 DPS. Capable of out-damaging a RCL<4 healer.
+    'ninja': { 'body':      global.CONSTRUCT_BODY({TOUGH: 2, MOVE: 8, ATTACK: 6}), 'noresizing': 1, 'renew_allowed': 0}, // 900e, 1,600 HP, 180 DPS. 
+    'dragon': { 'body':     global.CONSTRUCT_BODY({TOUGH: 6, MOVE: 16, ATTACK: 10}), 'noresizing': 1, 'renew_allowed': 0}, // 1,660e, 3,200 HP, 300 DPS.
+    'boss': { 'body':       global.CONSTRUCT_BODY({TOUGH: 8, MOVE: 23, ATTACK: 12, HEAL: 3}), 'noresizing': 1, 'renew_allowed': 0}, // 2,240e, 4,000 HP, 240 DPS, 24 HPS.
+
     // ANTIKITE
-    'antikite2': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 2, 0, 2, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak2'}, 
-    'antikite4': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 4, 0, 4, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak4'}, 
-    'antikite8': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 8, 0, 8, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak8'}, 
-    'antikite16': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 16, 0, 16, 0), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak16'}, 
+    'antikite2': { 'body':  global.CONSTRUCT_BODY({RANGED_ATTACK: 2, MOVE: 2}), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak2'}, 
+    'antikite4': { 'body':  global.CONSTRUCT_BODY({RANGED_ATTACK: 4, MOVE: 4}), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak4'}, 
+    'antikite8': { 'body':  global.CONSTRUCT_BODY({RANGED_ATTACK: 8, MOVE: 8}), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak8'}, 
+    'antikite16': { 'body': global.CONSTRUCT_BODY({RANGED_ATTACK: 16, MOVE: 16}), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak16'}, 
 
     // Anti-player defense classes
 	'wizard': { 'body':   [MOVE, RANGED_ATTACK], 'renew_allowed': 0}, // horrificly expensive anti-crowd unit
 
     // Anti-player ATTACK classes
-	'siege': { 'body':         global.CONSTRUCT_MILITARY_BODY(0, 1, 2, 0, 0), 'renew_allowed': 0}, // half speed, strong but slow
-	'siegemini': { 'body':     global.CONSTRUCT_MILITARY_BODY(0, 3, 3, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // small.
-	'siegefar': { 'body':      global.CONSTRUCT_MILITARY_BODY(0, 6, 6, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // super-basic, but 1:1 move speed even on untiled surfaces.
-	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, // ultra-cheap unit used to drain enemy towers.
-	'drainerbig': { 'body': global.CONSTRUCT_MILITARY_BODY(3, 15, 0, 0, 12), 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, 
+	'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, ATTACK: 20}), 'renew_allowed': 0},    // {"cost":2900,"dps":600}
+	'siege': { 'body':     global.CONSTRUCT_BODY({MOVE: 3, ATTACK: 3}), 'noresizing': 1, 'renew_allowed': 0}, 
+	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, 
+	'drainerbig': { 'body': global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 20, HEAL: 15}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, // {"cost":4800,"hps":180}
 
-	'siegebig': { 'body':      global.CONSTRUCT_MILITARY_BODY(2, 17, 15, 0, 0), 'noresizing': 1, 'renew_allowed': 0}, // 1950?
-	'healer': { 'body':   global.CONSTRUCT_MILITARY_BODY(10, 8, 0, 0, 20), 'renew_allowed': 0}, // 5,600e!
+	'healer': { 'body':   global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, HEAL: 20}) }, //{"cost":6300,"hps":240}
+
 
     // Territory control classes
-	'reserver' : { 'body': [CLAIM, CLAIM, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
+	'reserver' : { 'body': global.CONSTRUCT_BODY({CLAIM: 2, MOVE: 2}), 'noresizing': 1, 'renew_allowed': 0 },
 	'sreserver' : { 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 	'claimer': { 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
-	'bclaimer': { 'body': [CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, CLAIM, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 'renew_allowed': 0 },
+	'bclaimer': { 'body': global.CONSTRUCT_BODY({CLAIM: 14, MOVE: 14}), 'renew_allowed': 0 },
 	'signer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, 
 
     // Base maint/defense classes.
-	'teller': { 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0},
-	'teller-towers': { 'body': [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 'noresizing': 1, 'renew_allowed': 0 }
+	'teller': { 'body': global.CONSTRUCT_BODY({CARRY: 6, MOVE: 3}), 'noresizing': 1, 'renew_allowed': 0},
+	'teller-towers': { 'body': global.CONSTRUCT_BODY({CARRY: 10, MOVE: 5}), 'noresizing': 1, 'renew_allowed': 0 }
 }

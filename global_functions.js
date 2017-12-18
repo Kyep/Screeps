@@ -1,26 +1,34 @@
 
 
-global.CONSTRUCT_MILITARY_BODY = function (tough_parts, move_parts, attack_parts, rangedattack_parts, heal_parts) {
+
+global.CONSTRUCT_BODY = function (bdetails) {
     var partlist = [];
-    for (var i = 0; i < tough_parts; i++) {
-        partlist.push(TOUGH);
-    }
-    for (var i = 0; i < move_parts; i++) {
-        partlist.push(MOVE);
-    }
-    for (var i = 0; i < attack_parts; i++) {
-        partlist.push(ATTACK);
-    }
-    for (var i = 0; i < rangedattack_parts; i++) {
-        partlist.push(RANGED_ATTACK);
-    }
-    for (var i = 0; i < heal_parts; i++) {
-        partlist.push(HEAL);
+    var part_types = Object.getOwnPropertyNames(bdetails);
+    //console.log('CONSTRUCT_BODY: ' + JSON.stringify(bdetails) + ' -> ' + part_types);
+    for (var i = 0; i < part_types.length; i++) {
+        var this_type = part_types[i];
+        var this_amount = bdetails[this_type];
+        for (var j = 0; j < this_amount; j++) {
+            partlist.push(this_type.toLowerCase());
+        }
     }
     return partlist;
 }
 
-global.UNIT_COST = (body) => _.sum(body, p => BODYPART_COST[p]);
+global.UNIT_COST = function (thebody) {
+    var total_cost = 0;
+    for(var i = 0; i < thebody.length; i++) {
+        var this_part = thebody[i].toLowerCase();
+        if (BODYPART_COST[this_part] == undefined) {
+            console.log('UNIT_COST: unknown bodypart: ' + this_part);
+        } else {
+            total_cost += BODYPART_COST[this_part];
+        }
+    }
+    return total_cost;
+}
+
+//global.UNIT_COST = (body) => _.sum(body, p => BODYPART_COST[p]);
 global.CREEP_COST = (body) => _.sum(body, p => BODYPART_COST[p.type])
 
 global.CAN_CREATE_CSITE = function () {
@@ -53,7 +61,7 @@ global.ROOM_CLAMP_COORD = function (value) {
   return value;
 }
 
-global.TEMPLATE_COST = function (template_name) {
+global.TEMPLATE_PROPERTIES = function (template_name) {
     if ( empire_workers[template_name] == undefined) {
         console.log('Invalid role');
         return 0;
@@ -62,27 +70,41 @@ global.TEMPLATE_COST = function (template_name) {
         console.log('Invalid role');
         return 0;
     }
+    
     var thebody = empire_workers[template_name]['body'];
-    var parts = {};
-    parts[ATTACK] = 0;
-    parts[RANGED_ATTACK] = 0;
-    parts[HEAL] = 0;
-
-    for (var i = 0; i < thebody.length; i++) {
-        if (thebody[i] == ATTACK) {
-            parts[ATTACK]++;
-        }
-        if (thebody[i] == RANGED_ATTACK) {
-            parts[ATTACK]++;
-        }
-        if (thebody[i] == HEAL) {
-            parts[HEAL]++;
-        }
-    }
     var retval = {}
     retval['cost'] = global.UNIT_COST(thebody);
-    retval['parts'] = parts;
+    //retval['parts'] = thebody;
+    
+    var attack_parts = 0;
+    var ranged_attack_parts = 0;
+    var heal_parts = 0;
+    
+    for (var i = 0; i < thebody.length; i++) {
+        if (thebody[i] == ATTACK) {
+            attack_parts++;
+        }
+        if (thebody[i] == RANGED_ATTACK) {
+            ranged_attack_parts++;
+        }
+        if (thebody[i] == HEAL) {
+            heal_parts++;
+        }
+    }
+    if (attack_parts > 0) {
+        var dps = attack_parts * ATTACK_POWER;
+        retval['dps'] = dps;
+    }
+    if (ranged_attack_parts > 0) {
+        var ranged_dps = ranged_attack_parts * RANGED_ATTACK_POWER;
+        retval['ranged_dps'] = ranged_dps;
+    }
+    if (heal_parts > 0) {
+        var hps = heal_parts * HEAL_POWER;
+        retval['hps'] = hps;
+    }
     console.log(JSON.stringify(retval));
+    return retval;
 }
 
 
@@ -204,11 +226,9 @@ global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, t
     crmemory[MEMORY_SPAWNERROOM] = spawner.room.name;
     crmemory[MEMORY_RENEW] = renew_allowed;
     crmemory[MEMORY_NEXTDEST] = nextdest;
-    //console.log("SPAWNING: " + roletext + " for (" + sourcetext + ') target: ' + targettext + ' (' + target_x + ',' + target_y + ') with cost: ' + thecost + ' based out of ' + homesector);
-    //var result = spawner.createCreep(partlist, crname, 
-    //    {'role': roletext, 'source': sourcetext, 'target': targettext, 'home': homesector, 'target_x': target_x, 'target_y': target_y, 'spawnername': spawner.name, 'renew_allowed': renew_allowed});
     var result = spawner.createCreep(partlist, crname, crmemory);
-    //console.log(spawner.name + ': ' + result);
+    //console.log(spawner.name + ': (' + result + ') for ' + crname + ' and ' + partlist + ' and ' + crmemory);
+
     Memory['spawn_count'] += 1;
     return result;
 }
@@ -636,11 +656,16 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
     }
     var theirthreat = myalert['hostileCost'];
     var alert_age = Game.time - myalert['attackStart'];
-    if (towercount > 0 && myalert['hostileUsername'] == 'Invader' && alert_age < 60) {
-        theirthreat -= (1000 * towercount);
+    if (towercount > 0) {
+        if (myalert['hostileUsername'] != 'Invader' && alert_age < 60) {
+            theirthreat -= (1000 * towercount);
+        }
         if (Game.rooms[roomname] != undefined && Game.rooms[roomname].storage != undefined) {
             baseforce['teller-towers'] = 1;
-            if (theirthreat > 8000) {
+            if (theirthreat > 15000) {
+                baseforce['teller-towers'] = 2;
+                baseforce['teller'] = 2;
+            } else if (theirthreat > 8000) {
                 baseforce['teller'] = 1;
             }
         }
@@ -672,7 +697,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         if (myalert['hostileCount'] == 1 && myalert['hostileRanged'] == 1) {
             // there is one guy, he's ranged, and he cannot heal. This is probably a kiting attack.
             defense_roles = empire_defaults['defense_roles_ranged'];
-            console.log('KITING DETECTED: ' + roomname);
+            //console.log('KITING DETECTED: ' + roomname);
         }
         for (var i = 0; i < defense_roles.length; i++) {
             var oname = defense_roles[i];
