@@ -349,10 +349,12 @@ Creep.prototype.moveToDestination = function() {
     }
     if (this.memory[MEMORY_DEST_X] == undefined) {
         console.log(this.name + ' was ordered to moveToDestination with no MEMORY_DEST_X');
+        this.memory[MEMORY_DEST_X] = 25;
         return 0;
     }
     if (this.memory[MEMORY_DEST_Y] == undefined) {
         console.log(this.name + ' was ordered to moveToDestination with no MEMORY_DEST_Y');
+        this.memory[MEMORY_DEST_Y] = 25;
         return 0;
     }
     if (this.isMilitary()) {

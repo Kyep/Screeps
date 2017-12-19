@@ -15,6 +15,24 @@ global.CONSTRUCT_BODY = function (bdetails) {
     return partlist;
 }
 
+global.LAB_STATUS = function() {
+    console.log(JSON.stringify(Memory['ongoing_reactions']));
+    console.log(JSON.stringify(Memory['assigned_labs']));
+}
+
+global.RESET_ALL_LABS = function() {
+    Memory['ongoing_reactions'] = {}
+    Memory['assigned_labs'] = {}
+    for (var crname in Game.creeps) {
+        var crmem = Game.creeps[crname].memory
+        if (crmem[MEMORY_ROLE] == "labtech") {
+            if (crmem[MEMORY_JOB] == "fill_lab") {
+                crmem[MEMORY_JOB] = "idle";
+            }
+        }
+    }
+}
+
 global.UNIT_COST = function (thebody) {
     var total_cost = 0;
     for(var i = 0; i < thebody.length; i++) {
@@ -359,7 +377,7 @@ global.UPDATE_MARKET_ORDERS = function() {
             continue;
         }
         var mtype = empire[rname]['mineraltype'];
-        if(Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] < 1000) {
+        if(Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] < 20000) {
             //console.log('MARKET: ' + rname + ': has <1k of sale mineral: ' + mtype);
             continue;
         }
@@ -375,96 +393,6 @@ global.UPDATE_MARKET_ORDERS = function() {
     return 'OK';
 }
 
-global.READY_LAUNCHERS = function() {
-    var ticks_per_second = 2.9;
-    var available_nukers = [];
-    for(var id in Game.structures){
-        if(Game.structures[id].structureType == STRUCTURE_NUKER){
-            if (!Game.structures[id].isActive()) {
-                console.log('LAUNCHER: inactive ' + Game.structures[id].room.name);
-                continue;
-            }
-            if (Game.structures[id].cooldown > 0) {
-                var hrs = ((Game.structures[id].cooldown * ticks_per_second) / (60 * 60));
-                console.log('LAUNCHER: on cooldown ' + Game.structures[id].room.name + ', for ' + hrs + ' hours');
-                continue;
-            }
-            if (Game.structures[id].energy != Game.structures[id].energyCapacity) {
-                console.log('LAUNCHER: lacks energy ' + Game.structures[id].room.name);
-                continue;
-            }
-            if (Game.structures[id].ghodium != Game.structures[id].ghodiumCapacity) {
-                console.log('LAUNCHER: lacks ghodium ' + Game.structures[id].room.name);
-                continue;
-            }
-            console.log('LAUNCHER: OK in ' + Game.structures[id].room.name);
-            available_nukers.push(id);
-        }
-    }
-    return available_nukers;
-}
-
-global.IS_NUKABLE = function(roomname) {
-    var all_nukers = []
-    for(var id in Game.structures){
-        if(Game.structures[id].structureType == STRUCTURE_NUKER){
-            all_nukers.push(id);
-        }
-    }
-    var launchrooms_in_range = []
-    for (var i = 0; i < all_nukers.length; i++) {
-        var thenuker = Game.structures[all_nukers[i]];
-        var therange = Game.map.getRoomLinearDistance(thenuker.room.name, roomname);
-        if (therange > NUKE_RANGE) {
-            console.log('NUKE: launcher in room ' + thenuker.room.name + ' is out of range. (' + therange + ' > ' + NUKE_RANGE + ')');
-            continue;
-        } 
-        launchrooms_in_range.push(thenuker.room.name);
-    }
-    if (launchrooms_in_range.length == 0) {
-        console.log('No nuke launchers were in range of: ' + roomname);
-        return 0;
-    }
-    console.log('You have ' + launchrooms_in_range.length + ' launchers able to hit ' + roomname + ': ' + launchrooms_in_range);
-    return launchrooms_in_range.length;
-}
-
-global.LAUNCH_NUKE = function(roomx, roomy, roomname) {
-    var available_nukers = global.READY_LAUNCHERS();
-
-    console.log('NUKE: ' + available_nukers.length + ' launcher(s) available.'); 
-    for (var i = 0; i < available_nukers.length; i++) {
-        var thenuker = Game.structures[available_nukers[i]];
-        if (Game.map.getRoomLinearDistance(thenuker.room.name, roomname) > NUKE_RANGE) {
-            console.log('NUKE: launcher in room ' + thenuker.room.name + ' is available, but out of range.');
-            continue;
-        }
-        console.log('NUKE: launcher in room ' + thenuker.room.name + ' is available.');
-        var result = thenuker.launchNuke(new RoomPosition(roomx, roomy, roomname));
-        if (result == OK) {
-            console.log('NUCLEAR LAUNCH DETECTED! ' + result);
-            
-            // Spawn a refiller.
-            
-            var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(thenuker.room.name);
-            var spawner = gsapfr[0];
-            var using_primary = gsapfr[1];
-            
-            if (spawner != undefined) {
-                var suresult = SPAWN_UNIT(spawner.name, 'nuketech', thenuker.room.name, []);
-                console.log('Spawning nuke refiller: ' + suresult);
-            } else {
-                console.log('Unable to spawn nuke refiller... all spawns may be busy.');
-            }
-            return 1;
-            
-        } else {
-            console.log('RESULT: ' + result);
-        }
-    }
-    console.log('NUKE: no available launcher can target: ' + roomname);
-    return 0;
-}
 
 global.SHARE_SPARE_ENERGY = function() {
     
@@ -557,36 +485,6 @@ global.SHARE_SPARE_ENERGY = function() {
 }
 
 
-
-/*
-global.DETECT_NUKES = function() {
-    for(var rname in Game.rooms) {
-        var lvl = Game.rooms[rname].getLevel();
-        if (lvl < 1) {
-            continue;
-        }
-        if (Game.rooms[rname].controller.owner.username != overlord) {
-            continue;
-        }
-
-        var incoming_nukes = Game.rooms[rname].find(FIND_NUKES);
-        if (incoming_nukes.length == 0) {
-            console.log('SCANNING: ' + rname + ' for nukes. None found.');
-            continue;
-        }
-        var nmsg = '!!!!! NUKE: ' + incoming_nukes.length + ' nuke(s) incoming on ' + rname;
-        console.log(nmsg);
-        Game.notify(nmsg);
-        for (var i = 0; i < incoming_nukes.length; i++) {
-            var thenuke = incoming_nukes[i];
-            if (thenuke.timeToLand < 200) {
-                
-            }
-        }
-    }
-}
-*/
-
 global.ROOM_UNDER_ATTACK = function(roomname) {
     var myalert = Memory['sectors_under_attack'][roomname];
     if (myalert == undefined) {
@@ -633,11 +531,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
             try_safemode = 1;
         }
     }
-    /* // no point, nuke does damage through safemode
-    if (myalert['nukeCount'] > 0 && myalert['nukeTimeToLand'] < 100){
-        try_safemode = 1;
-    }
-    */
+
     if (try_safemode) {
         var cc = Game.rooms[roomname].controller;
         var is_in_safemode = 0;

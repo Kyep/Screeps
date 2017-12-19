@@ -39,10 +39,10 @@ var roleLabtech = require('role.labtech');
 var roleNuketech = require('role.nuketech');
 
 var structureLink = require('structure.link');
-var structureLab = require('structure.lab');
 
 var cleaner = require('task.cleanmemory');
 var expansionplanner = require('task.expansion');
+var taskscience = require('task.science');
 
 // ---------------------------
 // CONFIG
@@ -85,12 +85,12 @@ module.exports.loop = function () {
     global.ESPIONAGE();
 
     if(Game.time % 250 === 0) {
-        global.SHARE_SPARE_ENERGY(); 
+        //global.SHARE_SPARE_ENERGY(); 
     }
     if(Game.time % 500 === 0) {
-        global.PRESET_ATTACK_WAVE();
+        //global.PRESET_ATTACK_WAVE();
     }
-    if(Game.time % 2000 === 0) {
+    if(Game.time % 500 === 0) {
         global.UPDATE_MARKET_ORDERS();
     }
 
@@ -99,6 +99,7 @@ module.exports.loop = function () {
         // EXPANSION CONTROLLER
         var cpu_planner_use = Game.cpu.getUsed();
         expansionplanner.process()
+        taskscience.process()
         cpu_planner_use = Game.cpu.getUsed() - cpu_planner_use;
         if (cpu_reporting) { console.log('CPU cpu_planner_use: ' +cpu_planner_use); }
 
@@ -267,14 +268,16 @@ module.exports.loop = function () {
                 if (empire[rname]['mineralid'] != undefined) {
                     var mineralpatch = Game.getObjectById(empire[rname]['mineralid'])
                     if (mineralpatch) {
-                        if (mineralpatch.mineralAmount > 0) {
+                        var got_minerals = Game.rooms[rname].terminal.store[empire[rname]['mineraltype']];
+                        if (got_minerals >= empire_defaults['mineralcap']) {
+                            //console.log(rname + ' is capped on minerals with ' + got_minerals + ' > ' + empire_defaults['mineralcap']);
+                        } else if (mineralpatch.mineralAmount > 0) {
                             var rhid = empire[rname]['roomname'];
                             var mysname = rhid + '-mining';
                             if(empire[rname].sources[mysname] == undefined) {
                                 empire[rname].sources[mysname] = { 'sourcename': mysname, 'x':20, 'y':20, 'assigned': {}, 'expected_income': 50 }
                             }
                             empire[rname].sources[mysname]['assigned'] = {'extractor': 1}
-                            //console.log('ASSIGNED EXTRACTOR FOR '+ rname);
                         }
                     }
                 }
@@ -652,9 +655,6 @@ module.exports.loop = function () {
         }
         if(Game.structures[id].structureType == STRUCTURE_LINK){
             structureLink.run(Game.structures[id]);
-        }
-        if(Game.structures[id].structureType == STRUCTURE_LAB){
-            structureLab.run(Game.structures[id]);
         }
     }
 

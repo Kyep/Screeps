@@ -532,10 +532,11 @@ Room.prototype.createSiegeTeam = function (targetroomname, roompath, dest_x, des
 
 Room.prototype.sellResource = function (mtype) {
     var amount_sellable = this.terminal.store[mtype];
-    if(!amount_sellable) {
+    if(amount_sellable == undefined || amount_sellable <= 10000) {
         console.log(this.name + ': cannot sell ' + mtype + ' - none available to sell.');
         return 0;
     }
+    amount_sellable = amount_sellable - 10000;
     if(this.terminal.cooldown) {
         console.log(this.name + ': cannot sell ' + mtype + ' - terminal is on cooldown.');
         return 0;

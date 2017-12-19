@@ -282,3 +282,145 @@ global.RETARGET_SIEGE = function (newtarget, waypoints, newx, newy) {
         }
     }
 }
+
+// ----------------------------- NUKES ------------------------------------------------
+
+
+global.READY_LAUNCHERS = function() {
+    var ticks_per_second = 2.9;
+    var available_nukers = [];
+    for(var id in Game.structures){
+        if(Game.structures[id].structureType == STRUCTURE_NUKER){
+            if (!Game.structures[id].isActive()) {
+                console.log('LAUNCHER: inactive ' + Game.structures[id].room.name);
+                continue;
+            }
+            if (Game.structures[id].cooldown > 0) {
+                var hrs = ((Game.structures[id].cooldown * ticks_per_second) / (60 * 60));
+                console.log('LAUNCHER: on cooldown ' + Game.structures[id].room.name + ', for ' + hrs + ' hours');
+                continue;
+            }
+            if (Game.structures[id].energy != Game.structures[id].energyCapacity) {
+                console.log('LAUNCHER: lacks energy ' + Game.structures[id].room.name);
+                continue;
+            }
+            if (Game.structures[id].ghodium != Game.structures[id].ghodiumCapacity) {
+                console.log('LAUNCHER: lacks ghodium ' + Game.structures[id].room.name);
+                continue;
+            }
+            console.log('LAUNCHER: OK in ' + Game.structures[id].room.name);
+            available_nukers.push(id);
+        }
+    }
+    return available_nukers;
+}
+
+global.IS_NUKABLE = function(roomname) {
+    var all_nukers = []
+    for(var id in Game.structures){
+        if(Game.structures[id].structureType == STRUCTURE_NUKER){
+            all_nukers.push(id);
+        }
+    }
+    var launchrooms_in_range = []
+    for (var i = 0; i < all_nukers.length; i++) {
+        var thenuker = Game.structures[all_nukers[i]];
+        var therange = Game.map.getRoomLinearDistance(thenuker.room.name, roomname);
+        if (therange > NUKE_RANGE) {
+            console.log('NUKE: launcher in room ' + thenuker.room.name + ' is out of range. (' + therange + ' > ' + NUKE_RANGE + ')');
+            continue;
+        } 
+        launchrooms_in_range.push(thenuker.room.name);
+    }
+    if (launchrooms_in_range.length == 0) {
+        console.log('No nuke launchers were in range of: ' + roomname);
+        return 0;
+    }
+    console.log('You have ' + launchrooms_in_range.length + ' launchers able to hit ' + roomname + ': ' + launchrooms_in_range);
+    return launchrooms_in_range.length;
+}
+
+global.GET_ALL_NUKE_FLAGS = function() {
+    var white_flags = _.filter(Game.flags, (flag) => (flag.color == COLOR_WHITE) && (flag.secondaryColor == COLOR_WHITE));
+    var nuke_targets = []
+    for (var i = 0; i < white_flags.length; i++) {
+        nuke_targets.push(white_flags[i]);
+    }
+    
+    return nuke_targets;
+}
+
+global.LIST_ALL_NUKE_FLAGS = function() {
+    var white_flags = global.GET_ALL_NUKE_FLAGS();
+    for (var i = 0; i < white_flags.length; i++) {
+        console.log('Nuke target: ' + white_flags[i].pos);
+    }
+    return true;
+}
+
+global.CLEAR_ALL_NUKE_FLAGS = function() {
+    var white_flags = global.GET_ALL_NUKE_FLAGS();
+    for (var i = 0; i < white_flags.length; i++) {
+        console.log('Nuke target: ' + white_flags[i].pos + ' - deleted.');
+        white_flags[i].remove();
+    }
+    return true;
+}
+
+global.GET_NUKE_FLAG_IN_ROOM = function(roomname) {
+    var white_flags = _.filter(Game.flags, (flag) => (flag.color == COLOR_WHITE) && (flag.secondaryColor == COLOR_WHITE) && flag.pos.roomName == roomname);
+    if (white_flags.length == 0) {
+        return undefined;
+    } else {
+        return white_flags[0];
+    }
+}
+
+global.LAUNCH_NUKE = function(roomname) {
+    var available_nukers = global.READY_LAUNCHERS();
+
+    console.log('NUKE: ' + available_nukers.length + ' launcher(s) available.'); 
+    
+    var target_flag = global.GET_NUKE_FLAG_IN_ROOM(roomname);
+    
+    if (target_flag == undefined) {
+        console.log('NUKE: no target white/white flag in: ' + roomname);
+        return 0;
+    }
+    var missile_target_pos = target_flag.pos;
+    
+    for (var i = 0; i < available_nukers.length; i++) {
+        var thenuker = Game.structures[available_nukers[i]];
+        if (Game.map.getRoomLinearDistance(thenuker.room.name, roomname) > NUKE_RANGE) {
+            console.log('NUKE: launcher in room ' + thenuker.room.name + ' is available, but out of range.');
+            continue;
+        }
+        console.log('NUKE: launcher in room ' + thenuker.room.name + ' is available.');
+        var result = thenuker.launchNuke(missile_target_pos);
+        if (result == OK) {
+            console.log('NUCLEAR LAUNCH DETECTED! ' + result);
+            
+            // Delete the target flag
+            target_flag.remove();
+            
+            // Spawn a refiller.
+            
+            var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(thenuker.room.name);
+            var spawner = gsapfr[0];
+            var using_primary = gsapfr[1];
+            
+            if (spawner != undefined) {
+                var suresult = SPAWN_UNIT(spawner.name, 'nuketech', thenuker.room.name, []);
+                console.log('Spawning nuke refiller: ' + suresult);
+            } else {
+                console.log('Unable to spawn nuke refiller... all spawns may be busy.');
+            }
+            return 1;
+            
+        } else {
+            console.log('RESULT: ' + result);
+        }
+    }
+    console.log('NUKE: no available launcher can target: ' + roomname);
+    return 0;
+}

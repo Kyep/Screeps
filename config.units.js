@@ -22,7 +22,7 @@ global.empire_workers = {
 	'builderstorage': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'renew_allowed': 0, 'abbr': 'BS' }, // full speed on roads
 	'upstorclose': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 1, MOVE: 1}), 'renew_allowed': 0, 'abbr': 'USc' },  // halfspeed on roads, quarter speed offroad
 	'upstorfar': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'renew_allowed': 0, 'abbr': 'USf' },  // halfspeed on roads, quarter speed offroad
-	'labtech': { 'body': global.CONSTRUCT_BODY({CARRY: 12, MOVE: 6}), 'abbr': 'Tec' },
+	'labtech': { 'body': global.CONSTRUCT_BODY({CARRY: 6, MOVE: 3}), 'abbr': 'LTec' },
 	'nuketech': { 'body': global.CONSTRUCT_BODY({CARRY: 12, MOVE: 6}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'NUKE' },
 
     // MILITARY CREEP DESIGN RULES:
