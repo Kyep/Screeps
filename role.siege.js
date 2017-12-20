@@ -7,9 +7,12 @@ module.exports = {
         var myhealer = creep.getHealer();
         if (creep.isAtHomeRoom()) {
             if(!myhealer) {
-                creep.say('...healer?');
-                //creep.sleepFor(5);
-                return;
+                var tickspassed = (Game.time - creep.memory[MEMORY_INIT]);
+                if (tickspassed < 40) { // give them 40 T to find a healer.
+                    creep.say('H' + tickspassed);
+                    //creep.sleepFor(5);
+                    return;
+                }
             }
         }
         if (myhealer && myhealer.room.name == creep.room.name) {

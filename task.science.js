@@ -251,7 +251,7 @@ module.exports = {
             var local_component = reaction['local_resource'];
             var mined_mineral_amount = factory_room_terminal.store[local_component];
             if (mined_mineral_amount == undefined || mined_mineral_amount < 3000) {
-                console.log('Science: skipping ' + goal + '/' + factory_room_name + ' because local_room room terminal lacks 3000 ' + local_component);
+                //console.log('Science: skipping ' + goal + '/' + factory_room_name + ' because local_room room terminal lacks 3000 ' + local_component);
                 continue;
             }
             if (factory_room_terminal.store[goal] != undefined && factory_room_terminal.store[goal] >= 20000) {

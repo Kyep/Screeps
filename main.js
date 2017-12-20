@@ -14,7 +14,6 @@ require('prototype.creep');
 require('prototype.room');
 require('prototype.structure');
 
-
 var roleHarvester = require('role.harvester');
 var roleCHarvester = require('role.charvester');
 var roleHauler = require('role.hauler');

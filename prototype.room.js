@@ -3,7 +3,7 @@ Room.prototype.getHostileCreeps = function() {
     return this.find(FIND_HOSTILE_CREEPS, {filter: function(c){ if (allies.includes(c.owner.username)) { return false } else { return true } } });
 }
 Room.prototype.getHostileStructures = function() {
-    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (allies.includes(s.owner.username) || s.structureType == STRUCTURE_CONTROLLER) { return false } else { return true } } });
+    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (allies.includes(s.owner.username) || s.structureType == STRUCTURE_CONTROLLER || s.structureType == STRUCTURE_POWER_BANK) { return false } else { return true } } });
 }
 
 Room.prototype.getShouldUpgrade = function() {
@@ -502,7 +502,7 @@ Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, 
 }
 
 Room.prototype.createSiegeTeam = function (targetroomname, roompath, dest_x, dest_y) {
-    var free_spawns = this.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
+    var free_spawns = this.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable(true)); } });
     if (free_spawns.length < 2) {
         console.log('createSiegeTeam('+this.name+'): <2 free spawners.');
         return false;

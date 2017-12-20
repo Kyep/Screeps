@@ -106,7 +106,10 @@ StructureSpawn.prototype.getRoleBodyAndProperties = function(roletext, tgtroom, 
     return retval;
 }
 
-StructureSpawn.prototype.isAvailable = function() {
+StructureSpawn.prototype.isAvailable = function(force) {
+    if (force == undefined) {
+        force = false;
+    }
     if(!this.isActive()) {
         return 0;
     }
@@ -114,26 +117,28 @@ StructureSpawn.prototype.isAvailable = function() {
         //console.log(this.name + ' not available due to spawning in progress');
         return 0;
     }
-    var crlist = this.pos.findInRange(FIND_CREEPS, 3);
-    var creeps_renewing = 0;
-    for (var i = 0; i < crlist.length; i++) {
-        if (crlist[i].memory[MEMORY_JOB] == undefined) {
-            continue;
+    if (!force) {
+        var crlist = this.pos.findInRange(FIND_CREEPS, 3);
+        var creeps_renewing = 0;
+        for (var i = 0; i < crlist.length; i++) {
+            if (crlist[i].memory[MEMORY_JOB] == undefined) {
+                continue;
+            }
+            if (crlist[i].memory[MEMORY_JOB] != JOB_RENEW) {
+                continue;
+            }
+            if (!crlist[i].getRenewEnabled()) {
+                continue;
+            }
+            if (!crlist[i].getNeeded()) {
+                continue;
+            }
+            creeps_renewing++;
         }
-        if (crlist[i].memory[MEMORY_JOB] != JOB_RENEW) {
-            continue;
+        if (creeps_renewing > 0) {
+            return 0;
+            //console.log(this.name + ' not available due to creeps renewing');
         }
-        if (!crlist[i].getRenewEnabled()) {
-            continue;
-        }
-        if (!crlist[i].getNeeded()) {
-            continue;
-        }
-        creeps_renewing++;
-    }
-    if (creeps_renewing > 0) {
-        return 0;
-        //console.log(this.name + ' not available due to creeps renewing');
     }
     return 1;
 }

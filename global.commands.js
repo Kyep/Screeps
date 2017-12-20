@@ -215,9 +215,20 @@ global.PRESET_ATTACK_WAVE = function (btype) {
     */
     
     //slower but safer route: ROOMLIST_ATTACK_WAVE(['W58S17','W59S18'], 'boss', 'W60S17', ['W60S25','W57S25','W57S24'], 18, 29);
-    ROOMLIST_ATTACK_WAVE(['W58S17','W59S18'], 'boss', 'W60S17', ['W60S20','W57S20','W57S21','W58S21','W58S22','W57S23','W57S24'], 18, 29);
-    ROOMLIST_ATTACK_WAVE(['W53S18','W56S18'], 'boss', 'W55S20', ['W56S20','W57S23','W55S23'], 30, 30);
+    //ROOMLIST_ATTACK_WAVE(['W58S17','W59S18'], 'boss', 'W60S17', ['W60S20','W57S20','W57S21','W58S21','W58S22','W57S23','W57S24'], 18, 29);
+    //ROOMLIST_ATTACK_WAVE(['W53S18','W56S18'], 'boss', 'W55S20', ['W56S20','W57S23','W55S23'], 30, 30);
     
+    var source_room_list = ['W59S18', 'W53S18', 'W56S18'] // 'W59S18', 'W58S17'
+    //['W57S11','W57S14','W53S12','W51S14'];
+    
+    for (var i = 0; i < source_room_list.length; i++) {
+    	//Game.rooms[source_room_list[i]].createSiegeTeam('W55S20', ['W57S23', 'W57S25', 'W56S26', 'W56S27'], 31, 9);
+    	var result = Game.rooms[source_room_list[i]].createUnit('siegebig', 'W55S20', ['W57S23', 'W57S25', 'W56S26', 'W56S27'], 31, 9);
+    	console.log(source_room_list[i] + ': ' + result);
+    }
+    //ROOMLIST_ATTACK_WAVE(['W58S17','W59S18'], 'siegebig', 'W60S17', ['W60S20','W57S20','W57S21','W58S21','W58S22','W57S23','W57S24'], 18, 29);
+    //ROOMLIST_ATTACK_WAVE(['W53S18','W56S18'], 'siegehealer', 'W55S20', ['W56S20','W57S23','W55S23'], 30, 30);
+
     //ROOMLIST_ATTACK_WAVE(['W56S18'], 'bclaimer', 'W55S20', ['W56S20','W57S23','W55S23'], 30, 30);
     //ROOMLIST_ATTACK_WAVE(['W56S18'], 'bclaimer', 'W55S20', ['W56S20','W57S23','W57S24'], 30, 30);
 
