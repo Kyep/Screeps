@@ -142,3 +142,14 @@ StructureSpawn.prototype.isAvailable = function(force) {
     }
     return 1;
 }
+
+StructureLab.prototype.isAvailable = function() {
+    if (this.mineralAmount > 0) {
+        return false;
+    }
+    var assigned_labs = Memory['assigned_labs'];
+    if (assigned_labs[this.id] != undefined) {
+        return false;
+    }
+    return true;
+}

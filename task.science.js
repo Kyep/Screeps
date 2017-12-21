@@ -65,60 +65,51 @@ module.exports = {
             var rm = Game.rooms[this_reaction['local_room']];
             if (this_reaction['state'] == 0) {
                 // ASSIGNING LABS
-                var rlabs = rm.find(FIND_MY_STRUCTURES, { filter: function(structure){ if(structure.structureType == STRUCTURE_LAB) { return 1; } else { return 0; } } });
+                var rlabs = rm.find(FIND_MY_STRUCTURES, { filter: function(structure){ if(structure.structureType == STRUCTURE_LAB && structure.isAvailable()) { return 1; } else { return 0; } } });
                 if (rlabs.length < 3) {
                     if (Game.time % 50 === 0) {
                         console.log('Science: ongoing_reaction ' + goal + ' is stuck in a room ' + rname + ' without 3 labs...');
                     }
                     continue;
                 }
-                
-                for (var lab in rlabs) {
-                    var thislab = rlabs[lab];
-                    var thislabid = thislab.id;
-                    if (thislab.mineralAmount > 0) {
-                        continue;
-                    }
-                    if (assigned_labs[thislabid] != undefined) {
-                        var reactionid = assigned_labs[thislabid]['reactionid'];
-                        if (assigned_labs[thislabid]['endproduct'] == undefined || assigned_labs[thislabid]['endproduct'] != goal) {
-                            //console.log('Science: skipping lab assigned to another project: ' + thislabid);
-                            continue;
-                        }
-                    }
-                    if (this_reaction['input_1'] == undefined) {
-                        console.log('Science: assigned ' + thislabid + ' in ' + rm.name + ' as input_1 for ' + goal);
-                        this_reaction['input_1'] = thislabid;
-                        assigned_labs[thislabid] = {'mineralid': local_resource, 'purpose': 'reaction', 'endproduct': goal, 'action': 'fill'};
-                        continue;
-                    } else {
-                        var first_lab = Game.structures[this_reaction['input_1']];
-                        var range_to = first_lab.pos.getRangeTo(thislab);
-                        if (range_to > 2) {
-                            //console.log('Science: skipping too-far lab ID: ' + thislabid);
-                            continue;
-                        }
-                        if (this_reaction['input_2'] == undefined) {
-                            console.log('Science: assigned ' + thislabid + ' in ' + rm.name + ' as input_2 for ' + goal);
-                            this_reaction['input_2'] = thislabid;
-                            assigned_labs[thislabid] = {'mineralid': remote_resource, 'purpose': 'reaction', 'endproduct': goal,  'action': 'fill'};
-                            continue;
-                        } else if (this_reaction['output'] == undefined) {
-                            console.log('Science: assigned ' + thislabid + ' in ' + rm.name + ' as output for ' + goal);
-                            this_reaction['output'] = thislabid;
-                            assigned_labs[thislabid] = {'mineralid': goal, 'purpose': 'reaction', 'endproduct': goal,  'action': 'ignore'};
-                            continue;
-                        }
-                    }
-                }
-                
-                if (this_reaction['input_1'] == undefined || this_reaction['input_2'] == undefined || this_reaction['output'] == undefined) {
-                    console.log('Science: ongoing_reaction ' + goal + ' lacks appropriate labs. Debug: ' + JSON.stringify(this_reaction));
+                var input_lab_1 = _.sample(rlabs);
+                if (input_lab_1 == undefined || input_lab_1.id == undefined) {
+                    console.log('Science: ' + rname + '/' + goal + ': lab 1 unpickable, debug: ' + JSON.stringify(rlabs));
                     continue;
                 }
+                var rlabs2 = rm.find(FIND_MY_STRUCTURES, { filter: function(structure){ 
+                    if (structure.structureType == STRUCTURE_LAB && structure.isAvailable() && structure.pos.getRangeTo(input_lab_1) <= 2 && structure.id != input_lab_1.id) { return 1; } else { return 0; } 
+                } });
+                var input_lab_2 = _.sample(rlabs2);
+                if (input_lab_2 == undefined || input_lab_2.id == undefined) {
+                    console.log('Science: ' + rname + '/' + goal + ': lab 2 unpickable, debug: ' + JSON.stringify(rlabs2));
+                    continue;
+                }
+                var rlabs3 = rm.find(FIND_MY_STRUCTURES, { filter: function(structure){ 
+                    if (structure.structureType == STRUCTURE_LAB && structure.isAvailable() && structure.pos.getRangeTo(input_lab_1) <= 2 && structure.id != input_lab_1.id 
+                    && structure.pos.getRangeTo(input_lab_2) <= 2 && structure.id != input_lab_2.id) { return 1; } else { return 0; } 
+                    
+                } });
+                var output_lab = _.sample(rlabs3);
+                if (output_lab == undefined || output_lab.id == undefined) {
+                    console.log('Science: ' + rname + '/' + goal + ': lab 3 unpickable, debug: ' + JSON.stringify(rlabs3));
+                    continue;
+                }                
+
+                // We're good to go, do assignments.
+                this_reaction['input_1'] = input_lab_1.id;
+                assigned_labs[input_lab_1.id] = {'mineralid': local_resource, 'purpose': 'reaction', 'endproduct': goal, 'action': 'fill'};
+                
+                this_reaction['input_2'] = input_lab_2.id;
+                assigned_labs[input_lab_2.id] = {'mineralid': remote_resource, 'purpose': 'reaction', 'endproduct': goal,  'action': 'fill'};
+                
+                this_reaction['output'] = output_lab.id;
+                assigned_labs[output_lab.id] = {'mineralid': goal, 'purpose': 'reaction', 'endproduct': goal,  'action': 'ignore'};
+                
+                
                 this_reaction['state'] = 1;
                 this_reaction['reactionid'] = rm.name + goal + Game.time;
-                console.log('Science: ongoing_reaction ' + goal + ' was successfully assigned labs!');
+                console.log('Science: ongoing_reaction ' + goal + ' was successfully assigned labs! Debug: ' + JSON.stringify(this_reaction));
                 
                 Memory['ongoing_reactions'][goal] = this_reaction;
                 Memory['assigned_labs'] = assigned_labs;
@@ -138,7 +129,7 @@ module.exports = {
                     if(terminal.store[local_resource] != undefined && terminal.store[local_resource] > 0) {
                         local_amt = terminal.store[local_resource];
                     }
-                    console.log('Science: ' + rname + '/' + goal + ': waiting for lab1 ' + lab_input_1.id + ' to fill with ' + local_resource + ' (' + lab_input_1.mineralAmount + '/' + lab_input_1.mineralCapacity + '), ' + local_amt + ' in storage.');
+                    //console.log('Science: ' + rname + '/' + goal + ': waiting for lab1 ' + lab_input_1.id + ' to fill with ' + local_resource + ' (' + lab_input_1.mineralAmount + '/' + lab_input_1.mineralCapacity + '), ' + local_amt + ' in storage.');
                     Memory['assigned_labs'][lab_input_1.id] = {'mineralid': local_resource, 'purpose': 'reaction', 'endproduct': goal,  'action': 'fill'};
                     new RoomVisual(rm.name).text(local_resource, lab_input_1.pos.x, lab_input_1.pos.y + 1.5, {color: 'red', backgroundColor: 'white', font: 0.8});
                     continue;
@@ -148,7 +139,7 @@ module.exports = {
                     if(terminal.store[remote_resource] != undefined && terminal.store[remote_resource] > 0) {
                         remote_amt = terminal.store[remote_resource];
                     }
-                    console.log('Science: ' + rname + '/' + goal + ': waiting for lab2 ' + lab_input_2.id + ' to fill with ' + remote_resource + ' (' + lab_input_2.mineralAmount + '/' + lab_input_2.mineralCapacity + '), ' + remote_amt + ' in storage.');
+                    //console.log('Science: ' + rname + '/' + goal + ': waiting for lab2 ' + lab_input_2.id + ' to fill with ' + remote_resource + ' (' + lab_input_2.mineralAmount + '/' + lab_input_2.mineralCapacity + '), ' + remote_amt + ' in storage.');
                     Memory['assigned_labs'][lab_input_2.id] = {'mineralid': remote_resource, 'purpose': 'reaction', 'endproduct': goal,  'action': 'fill'};
                     new RoomVisual(rm.name).text(remote_resource, lab_input_2.pos.x, lab_input_2.pos.y + 1.5, {color: 'red', backgroundColor: 'white', font: 0.8});
                     continue;
@@ -162,6 +153,16 @@ module.exports = {
                 
                 Memory['ongoing_reactions'][goal] = this_reaction;
                 Memory['assigned_labs'] = assigned_labs;
+                
+                for (var crname in Game.creeps) {
+                    if (Game.creeps[crname].memory[MEMORY_ROLE] != 'labtech') {
+                        continue;
+                    }
+                    if (Game.creeps[crname].memory[MEMORY_DEST] != rname) {
+                        continue;
+                    }
+                    Game.creeps[crname].memory[MEMORY_JOB] = JOB_IDLE;
+                }
                 
             } else if (this_reaction['state'] == 2) {
                 // letting the reaction run.
@@ -178,14 +179,19 @@ module.exports = {
                 var remote_storage = lab_input_2.mineralAmount;
                 
                 var result = lab_output.runReaction(lab_input_1, lab_input_2);
-                if (lab_output.mineralAmount != lab_output.mineralCapacity) {
-                    var result_string = '';
-                    if (result != OK) {
-                        result_string = ', NON-OK RESULT: ' + result;
-                    }
-                    //console.log('Science: ' + rname + '/' + goal + ': (lab ' + lab_output.id + ') running output: ' + lab_output.mineralAmount + '/' + lab_output.mineralCapacity + result_string);
-                    continue;
+                if (result != OK) {
+                    console.log('Science: ' + rname + '/' + goal + ': (lab ' + lab_output.id + ') running output: ' + lab_output.mineralAmount + '/' + lab_output.mineralCapacity + ': result:' + result);
                 }
+                if (result == ERR_NOT_IN_RANGE || result == ERR_INVALID_ARGS) {
+                    var setup_fail_msg = 'Science: ' + rname + '/' + goal + ': (lab ' + lab_output.id + ') FATAL SETUP ERROR, BAD DISTANCE OR LAB MATERIALS MISMATCH.  Debug: ' + JSON.stringify(this_reaction);
+                    console.log(setup_fail_msg);
+                    Game.notify(setup_fail_msg);
+                } else {
+                    if (lab_output.mineralAmount != lab_output.mineralCapacity && lab_input_1.mineralAmount >= 5 && lab_input_2.mineralAmount >= 5){
+                        continue;
+                    }
+                }
+                
                 console.log('Science: ' + rname + '/' + goal + ': lab ' + lab_output.id + ' is FINISHED. Cleaning up...');
                 this_reaction['state'] = 3;
 
@@ -309,7 +315,7 @@ module.exports = {
             // Yes, we should create one!            
             ongoing_reactions[goal] = reaction;
             reaction['state'] = 0;
-            console.log('Science: CREATED LIVE REACTION TASK FOR: ' + goal);
+            console.log('Science: CREATED LIVE REACTION TASK FOR: ' + goal + '/' + factory_room_name + ': ' + JSON.stringify(reaction));
             
         }
     }

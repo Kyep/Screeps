@@ -7,7 +7,7 @@ Room.prototype.getHostileStructures = function() {
 }
 
 Room.prototype.getShouldUpgrade = function() {
-    //  Memory['gcl_farm'] = ['W53S18', 'W59S18', 'W53S17', 'W57S14']
+    //  Memory['gcl_farm'] = ['W53S18','W59S18','W53S17','W57S14']
     var gcl_farm_rooms = Memory['gcl_farm'];
     if (Memory['gcl_farm'].indexOf(this.name) == -1) {
         return 1;

@@ -552,7 +552,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
     var theirthreat = myalert['hostileCost'];
     var alert_age = Game.time - myalert['attackStart'];
     if (towercount > 0) {
-        if (myalert['hostileUsername'] != 'Invader' && alert_age < 60) {
+        if (myalert['hostileUsername'] == 'Invader' && alert_age < 120) {
             theirthreat -= (1000 * towercount);
         }
         if (Game.rooms[roomname] != undefined && Game.rooms[roomname].storage != undefined) {

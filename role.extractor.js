@@ -25,16 +25,17 @@ module.exports = {
                 }
             }
 
-            mineral = Game.getObjectById(creep.memory.mineralid);
+            mineral = Game.getObjectById(creep.memory['mineralid']);
             if (mineral) {
+                if (mineral.mineralAmount == 0 && mineral.ticksToRegeneration > 1500) {
+                    creep.memory[MEMORY_ROLE] = 'recycler';
+                    return;
+                }
                 
                 var result = creep.harvest(mineral);
                 if (result == ERR_NOT_IN_RANGE) {
                     creep.moveToRUP(mineral);
                 } else if (result = ERR_TIRED) {
-                    if (mineral.mineralAmount == 0 && mineral.ticksToRegeneration > 20) {
-                        creep.sleepFor(20);
-                    }
                     // just wait.
                 }
             }
@@ -51,12 +52,10 @@ module.exports = {
             }
         }
         if (creep.memory[MEMORY_JOB] == JOB_RENEW) {
-            mineral = Game.getObjectById(creep.memory.mineralid);
-            if (mineral) {
-                if (mineral.mineralAmount == 0) {
-                    console.log(creep.name + ' IS SELF RECYCLING BECAUSE THERE ARE NO MINERALS LEFT IN: ' + creep.room.name);
-                    creep.memory[MEMORY_ROLE] = 'recycler';
-                }   
+            mineral = Game.getObjectById(creep.memory['mineralid']);
+            if (mineral == undefined || mineral.mineralAmount == undefined || mineral.mineralAmount == 0) {
+                console.log(creep.name + ' IS SELF RECYCLING BECAUSE THERE ARE NO MINERALS LEFT IN: ' + creep.room.name);
+                creep.memory[MEMORY_ROLE] = 'recycler';
             }
             if (creep.ticksToLive > 500) {
                 if (_.sum(creep.carry) > 0) {
