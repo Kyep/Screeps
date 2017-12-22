@@ -16,19 +16,22 @@ module.exports = {
         var mymineral = creep.memory['mineralid'];
         
         if (myjob == 'fill_lab') {
+            var amount_to_withdraw = mylab.mineralCapacity - mylab.mineralAmount;
+            if (amount_to_withdraw == 0) {
+                creep.say('done!');
+                creep.memory[MEMORY_JOB] = 'idle';
+                return;
+            }
             if (creep.carry[mymineral] != undefined && creep.carry[mymineral] > 0) {
                 if (creep.transfer(mylab, mymineral) == ERR_NOT_IN_RANGE) {
                     creep.moveToRUP(mylab);
                 }
             } else if (myterminal.store[mymineral] != undefined && myterminal.store[mymineral] > 0) {
-                var amount_to_withdraw = mylab.mineralCapacity - mylab.mineralAmount;
+                
                 if (amount_to_withdraw > creep.carryCapacity) {
                     amount_to_withdraw = creep.carryCapacity;
                 }
-                if (amount_to_withdraw == 0) {
-                    creep.say('done!');
-                    creep.memory[MEMORY_JOB] = 'idle';
-                } else if (creep.withdraw(myterminal, mymineral, amount_to_withdraw) == ERR_NOT_IN_RANGE) {
+                if (creep.withdraw(myterminal, mymineral, amount_to_withdraw) == ERR_NOT_IN_RANGE) {
                     creep.moveToRUP(myterminal);
                 }
             } else {

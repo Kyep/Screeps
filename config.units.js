@@ -23,7 +23,7 @@ global.empire_workers = {
 	'upstorclose': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 1, MOVE: 1}), 'renew_allowed': 0, 'abbr': 'USc' },  // halfspeed on roads, quarter speed offroad
 	'upstorfar': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'renew_allowed': 0, 'abbr': 'USf' },  // halfspeed on roads, quarter speed offroad
 	'labtech': { 'body': global.CONSTRUCT_BODY({CARRY: 6, MOVE: 3}), 'abbr': 'LTec' },
-	'nuketech': { 'body': global.CONSTRUCT_BODY({CARRY: 12, MOVE: 6}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'NUKE' },
+	'nuketech': { 'body': global.CONSTRUCT_BODY({CARRY: 12, MOVE: 6}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'NUKE', 'rup': 3 },
 
     // MILITARY CREEP DESIGN RULES:
     // 1. Must have 1:1 movespeed offroad. All NPCs do this, and 2/3 (4/6 counting RCL>=4) have a ranged attack. Catching them is hopeless without one.
@@ -69,6 +69,6 @@ global.empire_workers = {
 	'signer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, 
 
     // Base maint/defense classes.
-	'teller': { 'body': global.CONSTRUCT_BODY({CARRY: 10, MOVE: 5}), 'noresizing': 1, 'renew_allowed': 0},
-	'teller-towers': { 'body': global.CONSTRUCT_BODY({CARRY: 10, MOVE: 5}), 'noresizing': 1, 'renew_allowed': 0 }
+	'teller': { 'body': global.CONSTRUCT_BODY({CARRY: 10, MOVE: 5}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 5},
+	'teller-towers': { 'body': global.CONSTRUCT_BODY({CARRY: 10, MOVE: 5}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 5 }
 }

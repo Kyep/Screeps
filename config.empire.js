@@ -732,5 +732,27 @@
             }
         },
 
+        // 11 Base
+        'W52S23': {
+            'roomname': '11',
+            'spawn_room': 'W52S23',
+            'backup_spawn_room': 'W51S18',
+            'sources': {
+                '59bbc4072052a716c3ce7417': {'sourcename': '11-N', 'x':29, 'y':20, 'spaces':5, 'target_x': 28, 'target_y': 20, 'steps':10,
+                    'assigned': {'fharvester': 2}, 
+                    'expected_income': 90
+                },
+                '59bbc4072052a716c3ce7418': {'sourcename': '11-S', 'x':36, 'y':30, 'spaces':1, 'target_x': 35, 'target_y': 29, 
+                    'assigned': {'fharvester': 2}, 
+                    'expected_income': 95
+                }
+            },
+            'safespot': {'x': 13, 'y':23 },
+            //'mineralid': '59bbc645ae9e1411a425adb0',
+            //'mineraltype': RESOURCE_LEMERGIUM,
+            
+        },
+
+
     }
     

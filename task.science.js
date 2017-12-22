@@ -6,13 +6,13 @@ module.exports = {
         var assigned_labs = Memory['assigned_labs'];
     
         var product_chains = {
-            RESOURCE_ZYNTHIUM_KEANITE: {
+            RESOURCE_ZYNTHIUM_KEANITE: {            // 1st pre-req for GHODIUM
                 'local_room': 'W58S17',
                 'local_resource': RESOURCE_KEANIUM,
                 'remote_resource': RESOURCE_ZYNTHIUM,
                 'remote_room': 'W51S14'
             }, 
-            RESOURCE_UTRIUM_LEMERGITE: {
+            RESOURCE_UTRIUM_LEMERGITE: {            // 2nd pre-req for GHODIUM
                 'local_room': 'W53S12',
                 'local_resource': RESOURCE_LEMERGIUM, // have to buy this on market, no valid source for us :(
                 'remote_resource': RESOURCE_UTRIUM,
@@ -28,28 +28,39 @@ module.exports = {
             },
             */
     
-            RESOURCE_UTRIUM_HYDRIDE: {
+            RESOURCE_UTRIUM_HYDRIDE: {              // +100% ATTACK (T1)
                 'local_room': 'W57S14',
                 'local_resource': RESOURCE_UTRIUM, 
                 'remote_resource': RESOURCE_HYDROGEN,
                 'remote_room': 'W53S18'
             },
+            RESOURCE_UTRIUM_ACID: {                 // +200% ATTACK (T2)
+                'local_room': 'W57S14',
+                'local_resource': RESOURCE_UTRIUM_HYDRIDE, 
+                'remote_resource': RESOURCE_HYDROXIDE,
+                'remote_room': 'W53S18'
+            },
             /*
-            RESOURCE_GHODIUM_OXIDE: {
+            RESOURCE_GHODIUM_OXIDE: {               // -30% DMG TAKEN
                 'local_room': 'W57S11',
                 'local_resource': RESOURCE_OXYGEN,
                 'remote_resource': RESOURCE_GHODIUM,
                 'remote_room': 'W53S12'
             },
             */
-            RESOURCE_LEMERGIUM_OXIDE: {
+            RESOURCE_LEMERGIUM_OXIDE: {             // +100% HEAL
                 'local_room': 'W53S12',
                 'local_resource': RESOURCE_LEMERGIUM, // have to buy this on market, no valid source for us :(
                 'remote_resource': RESOURCE_OXYGEN,
                 'remote_room': 'W53S12'
             }, 
-            
-            RESOURCE_HYDROXIDE: {
+            RESOURCE_LEMERGIUM_ALKALIDE: {             // +200% HEAL (T2)
+                'local_room': 'W53S12',
+                'local_resource': RESOURCE_LEMERGIUM_OXIDE, // have to buy this on market, no valid source for us :(
+                'remote_resource': RESOURCE_HYDROXIDE,
+                'remote_room': 'W53S18'
+            }, 
+            RESOURCE_HYDROXIDE: {                   // REQUIRED FOR T2 BOOSTS
                 'local_room': 'W53S18',
                 'local_resource': RESOURCE_HYDROGEN,
                 'remote_resource': RESOURCE_OXYGEN,
@@ -313,9 +324,12 @@ module.exports = {
                 continue;
             }
             // Yes, we should create one!            
-            ongoing_reactions[goal] = reaction;
             reaction['state'] = 0;
+            reaction['creation_time'] = Game.time;
+            ongoing_reactions[goal] = reaction;
             console.log('Science: CREATED LIVE REACTION TASK FOR: ' + goal + '/' + factory_room_name + ': ' + JSON.stringify(reaction));
+            
+            return; // This prevents us from creating multiple live reactions in a single tick, which could lead to two reactions competing for the same stockpile.
             
         }
     }

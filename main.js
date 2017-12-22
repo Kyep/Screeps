@@ -267,16 +267,19 @@ module.exports.loop = function () {
                 if (empire[rname]['mineralid'] != undefined) {
                     var mineralpatch = Game.getObjectById(empire[rname]['mineralid'])
                     if (mineralpatch) {
-                        var got_minerals = Game.rooms[rname].terminal.store[empire[rname]['mineraltype']];
-                        if (got_minerals >= empire_defaults['mineralcap']) {
-                            //console.log(rname + ' is capped on minerals with ' + got_minerals + ' > ' + empire_defaults['mineralcap']);
-                        } else if (mineralpatch.mineralAmount > 0) {
-                            var rhid = empire[rname]['roomname'];
-                            var mysname = rhid + '-mining';
-                            if(empire[rname].sources[mysname] == undefined) {
-                                empire[rname].sources[mysname] = { 'sourcename': mysname, 'x':20, 'y':20, 'assigned': {}, 'expected_income': 50 }
+                        var term = Game.rooms[rname].terminal;
+                        if (term) {
+                            var got_minerals = Game.rooms[rname].terminal.store[empire[rname]['mineraltype']];
+                            if (got_minerals >= empire_defaults['mineralcap']) {
+                                //console.log(rname + ' is capped on minerals with ' + got_minerals + ' > ' + empire_defaults['mineralcap']);
+                            } else if (mineralpatch.mineralAmount > 0) {
+                                var rhid = empire[rname]['roomname'];
+                                var mysname = rhid + '-mining';
+                                if(empire[rname].sources[mysname] == undefined) {
+                                    empire[rname].sources[mysname] = { 'sourcename': mysname, 'x':20, 'y':20, 'assigned': {}, 'expected_income': 50 }
+                                }
+                                empire[rname].sources[mysname]['assigned'] = {'extractor': 1}
                             }
-                            empire[rname].sources[mysname]['assigned'] = {'extractor': 1}
                         }
                     }
                 }

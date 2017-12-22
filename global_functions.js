@@ -377,7 +377,7 @@ global.UPDATE_MARKET_ORDERS = function() {
             continue;
         }
         var mtype = empire[rname]['mineraltype'];
-        if(Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] < 20000) {
+        if(Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] < 30000) {
             //console.log('MARKET: ' + rname + ': has <1k of sale mineral: ' + mtype);
             continue;
         }

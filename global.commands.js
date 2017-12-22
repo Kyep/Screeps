@@ -316,7 +316,15 @@ global.READY_LAUNCHERS = function() {
                 continue;
             }
             if (Game.structures[id].ghodium != Game.structures[id].ghodiumCapacity) {
-                console.log('LAUNCHER: lacks ghodium ' + Game.structures[id].room.name);
+                var g_amt = Game.structures[id].ghodium;
+                if (g_amt == undefined) {
+                    g_amt = 0;
+                }
+                var g_storage = Game.structures[id].room.terminal.store[RESOURCE_GHODIUM];
+                if (g_storage == undefined) {
+                    g_storage = 0;
+                }
+                console.log('LAUNCHER: lacks ghodium ' + Game.structures[id].room.name + ' (' + g_amt + ' in launcher, ' + g_storage + ' in storage)');
                 continue;
             }
             console.log('LAUNCHER: OK in ' + Game.structures[id].room.name);

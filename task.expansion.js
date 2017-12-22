@@ -11,6 +11,7 @@ module.exports = {
             if(rooms_to_claim[rname] != undefined) {
                 // To claim a room, define it like this:
                 // Memory['rooms_to_claim'] = {'W57S14': {'controllerid': '59bbc3bb2052a716c3ce6a2f', 'gcltarget': 9 }}
+                // Memory['rooms_to_claim'] = {'W52S23': {'controllerid': '59bbc4072052a716c3ce7416', 'gcltarget': 10 }}
                 var expansiontarget = Game.rooms[rname];
                 var controllertarget = Game.getObjectById(rooms_to_claim[rname]['controllerid']);
                 var gcltarget = rooms_to_claim[rname]['gcltarget'];
