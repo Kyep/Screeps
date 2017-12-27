@@ -104,6 +104,11 @@ module.exports = {
                 var output_lab = _.sample(rlabs3);
                 if (output_lab == undefined || output_lab.id == undefined) {
                     console.log('Science: ' + rname + '/' + goal + ': lab 3 unpickable, debug: ' + JSON.stringify(rlabs3));
+
+                    // in case of a previous, non-cleaned reaction, spawn a lab tech
+                    empire[rname].sources['labs'] = {'sourcename': empire[rname]['roomname'] + '-L', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 25, 'dynamic': 1}
+                    empire[rname].sources['labs'].assigned['labtech'] = 1;
+
                     continue;
                 }                
 
