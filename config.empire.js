@@ -164,7 +164,6 @@
                     'expected_income': 40, 'dynamic': 1
                 }
             },
-            'road_origin': { 'x': 32, 'y': 48 }
         },
         
         // 3rd base
@@ -215,7 +214,6 @@
                     'expected_income': 40, 'dynamic': 1
                 }
             },
-            'road_origin': { 'x': 16, 'y': 1 }
         },
 
         // 4th Base
@@ -254,7 +252,6 @@
                     'expected_income': 30, 'dynamic': 1
                 }
             },
-            'road_origin': { 'x': 30, 'y': 48 }
         },
         'W52S12': {
             'roomname' : '4E',
@@ -280,6 +277,7 @@
                 }*/
             }
         },
+        /*
         'W52S11': {
             'roomname' : '4NE',
             'spawn_room': 'W53S12',
@@ -290,6 +288,7 @@
                 }
             }
         },
+        */
         'W55S12': {
             'roomname' : '4WW',
             'spawn_room': 'W53S12',
@@ -308,26 +307,18 @@
                 }
             }
         },
-        // 5th base, disabled for the moment.
-        /*
+        // 5th base
+        
         'W52S17': {
             'roomname' : '5',
             'spawn_room': 'W52S17',
-
-            'expansion': {
-                'gcltarget': 5,
-                'controllerid': '59bbc4062052a716c3ce7405',
-                'spawner_x': 24,
-                'spawner_y': 28,
-                'expansionsource': '59bbc4062052a716c3ce7406'
-            },
-
+            'backup_spawn_room': 'W51S18',
             'sources': {
-                '59bbc4062052a716c3ce7404': {'sourcename': '5-W', 'x':11, 'y':18, 'target_x': 11, 'target_y': 18, 
+                '59bbc4062052a716c3ce7404': {'sourcename': '5-W', 'x':10, 'y':19, 'target_x': 11, 'target_y': 18, 'spaces':1,
                     'assigned': {'harvester': 2},
                     'expected_income': 90
                 },
-                '59bbc4062052a716c3ce7406': {'sourcename': '5-E', 'x':21, 'y':30, 'target_x': 20, 'target_y': 30, 
+                '59bbc4062052a716c3ce7406': {'sourcename': '5-E', 'x':21, 'y':31, 'target_x': 20, 'target_y': 30, 'spaces':3,
                     'assigned': {'harvester': 1, 'upclose': 1},
                     'expected_income': 80
                 }
@@ -338,13 +329,14 @@
         'W52S16': {
             'roomname' : '5N',
             'spawn_room': 'W52S17',
+            'backup_spawn_room': 'W51S18',
             'sources': {
-                '59bbc4062052a716c3ce7401': {'sourcename': '5N-E', 'x':44, 'y':27, 'target_x': 44, 'target_y': 27, 
-                    'assigned': {'c15harvester': 1, 'hauler': 1},
+                '59bbc4062052a716c3ce7401': {'sourcename': '5N-E', 'x':45, 'y':26, 'target_x': 44, 'target_y': 26, 
+                    'assigned': {'c30harvester': 1, 'hauler': 1},
                     'expected_income': 50
                 },
-                '59bbc4062052a716c3ce7402': {'sourcename': '5N-W', 'x':9, 'y':43, 'target_x': 9, 'target_y': 43, 
-                    'assigned': {'c15harvester': 1, 'hauler': 1},
+                '59bbc4062052a716c3ce7402': {'sourcename': '5N-W', 'x':8, 'y':44, 'target_x': 9, 'target_y': 43, 
+                    'assigned': {'c30harvester': 1, 'hauler': 1},
                     'expected_income': 40
                 },
                 'reserver': {'sourcename':'5N-R', 'x':25, 'y':25,
@@ -353,7 +345,7 @@
                 }
             }
         },
-        */
+
         /*
         'W51S15': {
             'roomname' : 'X3-NN',
@@ -636,7 +628,7 @@
             'backup_spawn_room': 'W58S17',
             'sources': {
                 '59bbc3ad2052a716c3ce68a9': {'sourcename': '9E', 'x':41, 'y':18, 'spaces':3, 'target_x': 40, 'target_y': 18, 'steps':60,
-                    'assigned': {'fharvester': 0}, 
+                    'assigned': {'c15harvester': 1, 'hauler': 1}, 
                     'expected_income': 68
                 }
             }

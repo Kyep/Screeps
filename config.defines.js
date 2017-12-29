@@ -46,6 +46,10 @@ global.JOB_STOREMINERALS = 'storeminerals';
 global.JOB_USELINK = 'uselink'
 global.JOB_HIDE = 'hide';
 
+// Rooms
+global.MEMORY_ROAD_NETWORK = 'road_network';
+
+
 global.COLOR_HARVEST = '#ffffff';
 global.COLOR_UPGRADE = '#0000ff';
 global.COLOR_BUILD = '#0000ff';

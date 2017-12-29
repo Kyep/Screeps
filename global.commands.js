@@ -1,3 +1,54 @@
+global.RECREATE_ROAD_NETWORKS = function() {
+    var remaining = Object.keys(empire);
+    for (var rname in Game.rooms) {
+        if (empire[rname] == undefined) {
+            continue;
+        }
+        var grm = Game.rooms[rname];
+        grm.memory[MEMORY_ROAD_NETWORK] = [];
+        var origins = grm.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_WHITE && flag.secondaryColor == COLOR_BLUE) { return 1; } else { return 0; } } });
+        if (origins.length) {
+            for (var a = 0; a < origins.length; a++) {
+                grm.createRoadNetwork(origins[a].pos.x, origins[a].pos.y);
+            }
+            var ipos = remaining.indexOf(rname);
+            if (ipos > -1) {
+                remaining.splice(ipos, 1);
+            }
+        } else {
+            console.log('RECREATE_ROAD_NETWORKS: ' + rname + ': no ORIGIN flag');
+        }
+    }
+    console.log('RECREATE_ROAD_NETWORKS: remaining after creation: ' + remaining);
+    global.SHOW_ROAD_NETWORKS();
+}
+
+global.SHOW_ROAD_NETWORKS = function() {
+    for (var rname in Game.rooms) {
+        var grm = Game.rooms[rname];
+        grm.showRoadNetwork();
+    }
+}
+
+global.ENERGY_STATUS = function() {
+    for (var rname in Game.rooms) {
+        var rm = Game.rooms[rname];
+        if (!rm.isMine()) {
+            continue;
+        }
+        var storage_energy = 0;
+        if (rm.storage != undefined && rm.storage.store != undefined && rm.storage.store[RESOURCE_ENERGY] != undefined) {
+           storage_energy = rm.storage.store[RESOURCE_ENERGY];
+        }
+        var terminal_energy = 0;
+        if (rm.terminal != undefined && rm.terminal.store != undefined && rm.terminal.store[RESOURCE_ENERGY] != undefined) {
+           terminal_energy = rm.storage.store[RESOURCE_ENERGY];
+        }
+        var total_energy = storage_energy + terminal_energy;
+        console.log(rname + ': E:' + total_energy + ' (term:' + terminal_energy + ')');
+    }
+    
+}
 
 global.REPORT_EARNINGS = function() {
     for (var cr in Game.creeps) {

@@ -1,3 +1,31 @@
+StructureRoad.prototype.inRoadNetwork = function() {
+    var net = this.room.memory[MEMORY_ROAD_NETWORK];
+    if (net == undefined) {
+        //console.log(this.room + ': has no room road network defined in memory.');
+        return false;
+    }
+    if (net.length == 0) {
+        return false;
+    }
+    for (var i = 0; i < net.length; i++) {
+        var thispos = net[i];
+        //console.log(JSON.stringify(thispos));
+        if (this.pos.x != thispos["x"]) {
+            continue;
+        }
+        if (this.pos.y != thispos["y"]) {
+            continue;
+        }
+        /*if (this.pos.roomName != thispos[x]) {
+            continue;
+        }*/
+        return true;
+    }
+    
+    return false;
+
+}
+
 
 StructureTower.prototype.getPowerForRange = function(initialpower, dist) {
     var expected_effect = initialpower;

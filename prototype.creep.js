@@ -516,7 +516,7 @@ Creep.prototype.createRoadIfNone = function() {
         var objects_here = this.room.lookAt(this);
         var roads_here = 0;
         for (var i = 0; i < objects_here.length; i++) {
-            if (objects_here.structureType == STRUCTURE_ROAD) {
+            if (objects_here[i].structureType == STRUCTURE_ROAD) {
                 roads_here++;
             }    
         }

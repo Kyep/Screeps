@@ -1,3 +1,85 @@
+Room.prototype.createRoadNetwork = function(origin_x, origin_y) {
+    
+    if (origin_x == undefined || origin_y == undefined) {
+        console.log('createRoadNetworkk: FAIL, no origin_x or no origin_y');
+        return false;
+    }
+    var origin = new RoomPosition(origin_x, origin_y, this.name);
+
+    /*
+    var white_flags = _.filter(Game.flags, (flag) => (flag.color == COLOR_WHITE) && (flag.secondaryColor == COLOR_GREY) && (flag.room != undefined) && (flag.room.name == this.name));
+    for (var i = 0; i < white_flags.length; i++) {
+        white_flags[i].remove();
+    }
+    */
+    
+    var all_csites = Game.constructionSites;
+    for (var site_key in all_csites) {
+        var cs = all_csites[site_key];
+        //var cs = Game.getObjectById(csites[i]);
+        if (cs.room == undefined) {
+            continue;
+        }
+        if (cs.room.name != this.name) {
+            continue;
+        }
+        if (cs.structureType != STRUCTURE_ROAD) {
+            continue;
+        }
+        cs.remove();
+    }
+    
+    this.memory[MEMORY_ROAD_NETWORK] = [];
+    
+    var all_sources = this.find(FIND_SOURCES);
+    var all_dest_flags = this.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_WHITE && flag.secondaryColor == COLOR_RED) { return 1; } else { return 0; } } });
+    //console.log(this.name + ' ' + all_sources.length + ' sources, ' + all_dest_flags.length + ' dest flags.');
+    var all_dests = []
+    all_dests = all_sources.concat(all_dest_flags);
+    
+    
+    //console.log(this.name + ': total sources: ' + all_dests.length + ': ' + JSON.stringify(all_dests));
+    var rnum = 1;
+    for (var i = 0; i < all_dests.length; i++) {
+        var this_dest = all_dests[i];
+        var path_to_dest = origin.findPathTo(this_dest, {'ignoreCreeps': true});
+        //console.log('createRoads: source: ' + this_dest.id + ', i: ' + i + ', path length: ' + path_to_dest.length);
+        for (var j = 0; j < path_to_dest.length; j++) {
+            rnum++;
+            var pos_x = path_to_dest[j]['x'];
+            var pos_y = path_to_dest[j]['y'];
+            var path_pos = new RoomPosition(pos_x, pos_y, this.name);
+            var objects_here = this.lookAt(path_pos);
+            var roads_here = 0;
+            for (var k = 0; k < objects_here.length; k++) {
+                if (objects_here[k].structureType == STRUCTURE_ROAD) {
+                    roads_here++;
+                }    
+            }
+            if (!roads_here) {
+                Game.rooms[this.name].createConstructionSite(pos_x, pos_y, STRUCTURE_ROAD);
+                //console.log(this.name + ': CREATED ROAD at: ' + pos_x + ',' + pos_y);
+            }
+            this.memory[MEMORY_ROAD_NETWORK].push(path_pos);
+            
+            //var flag_var = path_pos.createFlag(this.name + ' road ' + rnum, COLOR_WHITE, COLOR_GREY);
+            //console.log(flag_var);
+            
+        }
+        //console.log('createRoads: dest: ' + this_dest.id + ', completed');
+    }
+}
+
+Room.prototype.showRoadNetwork = function() {
+    var rnet = this.memory[MEMORY_ROAD_NETWORK];
+    if (rnet == undefined || rnet.length == 0) {
+        return false;
+    }
+    for (var i = 0; i < rnet.length; i++) {
+        var thispos = rnet[i];
+        new RoomVisual(this.name).circle(thispos, {stroke: 'green'});
+    }
+}
 
 Room.prototype.getHostileCreeps = function() {
     return this.find(FIND_HOSTILE_CREEPS, {filter: function(c){ if (allies.includes(c.owner.username)) { return false } else { return true } } });
@@ -151,6 +233,19 @@ Room.prototype.getLevel = function() {
         return 0;
     }
     return this.controller.level;
+}
+
+Room.prototype.isMine = function() {
+    if (this.controller == undefined) {
+        return false;
+    }
+    if (this.controller.owner == undefined) {
+        return false;
+    }
+    if (this.controller.owner.username != overlord) {
+        return false;
+    }
+    return true;
 }
 
 Room.prototype.hasAlert = function() {

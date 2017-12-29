@@ -12,21 +12,21 @@ module.exports = {
                 'remote_resource': RESOURCE_ZYNTHIUM,
                 'remote_room': 'W51S14'
             }, 
-            RESOURCE_UTRIUM_LEMERGITE: {            // 2nd pre-req for GHODIUM
+            RESOURCE_UTRIUM_LEMERGITE: {            // 2nd pre-req for GHODIUM 
                 'local_room': 'W53S12',
                 'local_resource': RESOURCE_LEMERGIUM, // have to buy this on market, no valid source for us :(
                 'remote_resource': RESOURCE_UTRIUM,
                 'remote_room': 'W57S14'
             },
 
-            /*
+            
             RESOURCE_GHODIUM: {
                 'local_room': 'W53S12',
                 'local_resource': RESOURCE_UTRIUM_LEMERGITE, 
                 'remote_resource': RESOURCE_ZYNTHIUM_KEANITE,
                 'remote_room': 'W58S17'
             },
-            */
+            
     
             RESOURCE_UTRIUM_HYDRIDE: {              // +100% ATTACK (T1)
                 'local_room': 'W57S14',

@@ -433,7 +433,7 @@ global.SHARE_SPARE_ENERGY = function() {
         var storage_used = _.sum(Game.rooms[send_to].terminal.store);
         var storage_capacity = Game.rooms[send_to].terminal.storeCapacity;
         var storage_free = storage_capacity - storage_used;
-        if (storage_free < 80000) {
+        if (storage_free < 100000) {
             console.log('SHARE_SPARE_ENERGY: ' + send_to + ' is too full (only ' + storage_free + ' free) to accept more energy.');
             return;
         }

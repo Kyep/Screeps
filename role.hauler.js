@@ -51,6 +51,7 @@ module.exports = {
                 if (nearby_containers.length == 0) {
                     // If there is no container built within 1 tile of our target source, sleep for 20T, then check again.
                     creep.sleepFor(20);
+                    creep.say('zzz 20');
                     return 0;
                 }
                 // Otherwise, store that container in memory as our container.
@@ -78,6 +79,8 @@ module.exports = {
             if (withdraw_result == ERR_NOT_IN_RANGE) {
                 creep.moveToRUP(thecontainer);
                 return 0;
+            } else if (withdraw_result == OK) {
+                return 0;
             }
             if (creep.carry.energy == creep.carryCapacity) {
                 return 0;
@@ -98,6 +101,7 @@ module.exports = {
             // If we get this far, we have a container that we should be able to withdraw from, but we cannot. And there is nothing on the floor, either. Sleep for 10t and try again.
             //console.log(creep.name + ': sleeping due to no nearby resources');
             creep.sleepFor(10);
+            creep.say('zzz 10');
             return 0;
 
         } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_BACK) {
@@ -129,17 +133,24 @@ module.exports = {
                             //console.log(creep.name + ' skip full-health');
                             continue;
                         }
+                        var irn = thetarget.structure.inRoadNetwork();
+                        if (irn) {
+                            //new RoomVisual(creep.room.name).line(creep.pos, thetarget.structure.pos, {color: 'green'});
+                        } else {
+                            //new RoomVisual(creep.room.name).line(creep.pos, thetarget.structure.pos, {color: 'red'});
+                            continue;
+                        }
                         var retval = creep.repair(thetarget.structure);
                         //console.log(creep.name + ' repairing ROAD: ' + retval);
                         break;
                     }
                 }
             }
-            /*
-            if(Game.time % 10 == 0 || (creep.memory['checkroad'] != undefined && creep.memory['checkroad'] == true)) {
-                creep.createRoadIfNone();
+            
+            if(Game.time % 25 == 0 || (creep.memory['checkroad'] != undefined && creep.memory['checkroad'] == true)) {
+                //creep.createRoadIfNone();
             }
-            */
+            
             creep.moveToRUP(creep.getHomePos());
 
         } else if (creep.memory[MEMORY_JOB] == JOB_USELINK) {
@@ -190,6 +201,7 @@ module.exports = {
                 }
             } else if (jobReturnresources.run(creep, 1, 1, 0.5, 1, 1, 0) == -1) {
                 // Sleep for a few seconds, then try again.
+                creep.say('zzz 5');
                 creep.sleepFor(5);
             }
             if(creep.carry.energy == 0) {
@@ -207,7 +219,9 @@ module.exports = {
                 return;
             }
             var result = jobUpgrade.run(creep);
-            creep.say(result);
+            if (result != ERR_NOT_IN_RANGE) {
+                creep.say(result);
+            }
         } else {
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
         }
