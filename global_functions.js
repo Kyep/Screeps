@@ -298,7 +298,7 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname) {
     }
     var spawners_secondary_preferred = 0;
     var spawners_secondary_allowed = 1;
-    if (room_primary_level > 0 && room_primary_level < 5) {
+    if (room_primary_level > 0 && room_primary_level < 6) {
         spawners_secondary_preferred = 1;
     } else if (room_primary_level > 5) {
         //spawners_secondary_allowed = 0;
@@ -633,3 +633,63 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
     empire[roomname].sources['PATROLFORCE'] = {'sourcename': empire[roomname]['roomname'] + '-pforce', 'x':25, 'y':25,
         'assigned': patrolforce, 'expected_income': 94, 'dynamic': 1}
 }
+
+
+global.CREATE_GROWERS = function() {
+    for (var rname in empire) {
+        var droom = Game.rooms[rname];
+        if (droom == undefined) {
+            continue;
+        }
+        var rlvl = droom.getLevel();
+        if (rlvl < 1 || rlvl > 6) {
+            continue;
+        }
+		var bsr = empire[rname]['backup_spawn_room'];
+        if (bsr == undefined) {
+            console.log('CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has no bsr');
+            continue;
+        }
+        var oroom = Game.rooms[bsr];
+        if (oroom == undefined) {
+            console.log('CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has undefined BSR');
+            continue;
+        }
+        var grower_names = [];
+        for (var crname in Game.creeps) {
+            if (Game.creeps[crname].memory[MEMORY_ROLE] != 'grower') {
+                continue;
+            }
+            if (Game.creeps[crname].memory[MEMORY_HOME] != bsr) {
+                continue;
+            }
+            if (Game.creeps[crname].memory[MEMORY_DEST] != rname) {
+                continue;
+            }
+            grower_names.push(crname);
+        }
+        if (grower_names.length >= 10) {
+            console.log('CANDIDATE FAIL: ' + bsr + ' => ' + rname + ' (level: ' + rlvl + ') has ' + grower_names.length + ' existing grower(s) : ' + grower_names);
+            continue;
+        }
+        var storages = droom.find(FIND_STRUCTURES, {
+                        filter: (structure) => {
+                            return (
+                                    structure.structureType == STRUCTURE_STORAGE
+                            );
+                        } } );
+        if (!storages.length) {
+            console.log('CANDIDATE FAIL: ' + rname + ' has no storage');
+            continue;
+        }
+        var st_unit = storages[0];
+        var d_x = st_unit.pos.x;
+        var d_y = st_unit.pos.y;
+        var result = oroom.createUnit('grower', rname, [], oroom.name, d_x, d_y);
+        console.log('CANDIDATE: ' + bsr + ' => ' + rname + ' (level: ' + rlvl + ') storage: ' + d_x + ', ' + d_y + ' result: ' + result);
+            
+    }
+}
+
+
+

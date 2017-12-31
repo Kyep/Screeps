@@ -307,7 +307,9 @@ module.exports = {
                 }
                 var remote_terminal_object = remote_room_object.terminal;
                 if (remote_terminal_object.store[remote_resource] == undefined || remote_terminal_object.store[remote_resource] < 3000) {
-                    console.log('Science: ' + goal + '/' + factory_room_name + ': the remote ' + remote_room_name + ' lacks 3k ' + remote_resource);
+                    if (Game.time % 100 == 0) {
+                        console.log('Science: ' + goal + '/' + factory_room_name + ': the remote ' + remote_room_name + ' lacks 3k ' + remote_resource);
+                    }
                     continue;
                 }
                 if (remote_terminal_object.cooldown) {

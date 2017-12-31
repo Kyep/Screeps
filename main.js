@@ -21,6 +21,7 @@ var roleHauler = require('role.hauler');
 var roleExtractor = require('role.extractor');
 var roleUpgrader = require('role.upgrader');
 var roleUpgraderStorage = require('role.upgraderstorage');
+var roleGrower = require('role.grower');
 var roleBuilder = require('role.builder');
 var roleAdventurer = require('role.adventurer');
 var roleScavenger = require('role.scavenger');
@@ -84,6 +85,7 @@ module.exports.loop = function () {
     global.ESPIONAGE();
 
     if(Game.time % 250 === 0) {
+        global.CREATE_GROWERS();
         global.SHARE_SPARE_ENERGY(); 
     }
     if(Game.time % 500 === 0) {
@@ -154,15 +156,18 @@ module.exports.loop = function () {
                     //console.log(rname + 'owner <3 ' + Game.rooms[rname].controller.owner.username);
                     continue;
                 } else if (Game.rooms[rname] != undefined && Game.rooms[rname].controller != undefined && Game.rooms[rname].controller.level != 8) {
-                    // No point spawning upgraders to upgrade a level 8 room.
-                    empire[rname].sources['upgrader'] = {'sourcename': empire[rname]['roomname'] + '-U', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 5, 'dynamic': 1}
+                    empire[rname].sources['upgrader'] = {'sourcename': empire[rname]['roomname'] + '-U', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 75, 'dynamic': 1}
                     var ugtype = 'upstorclose';
                     if(empire[rname]['farcontroller'] != undefined) {
                         ugtype = 'upstorfar';
                     }
-                    var r_multiplier = Math.round(energy_reserves / empire_defaults['room_energy_min']);
-                    if (r_multiplier > 5) { 
-                        r_multiplier = 5; 
+                    var r_multiplier = 8; // by default, assume we have other terminals feeding us.
+                    if (Game.rooms[rname].terminal == undefined || !Game.rooms[rname].terminal.isActive()) {
+                        // Assume no remote boosts.
+                        r_multiplier = Math.round(energy_reserves / empire_defaults['room_energy_min']);
+                        if (r_multiplier > 8) { 
+                            r_multiplier = 8; 
+                        }
                     }
                     if (r_multiplier > 0) {
                         //console.log(rname + ' ' + r_multiplier + ' ' + ugtype);
@@ -694,11 +699,22 @@ module.exports.loop = function () {
                 filter: function(structure){
                     if(structure.structureType == STRUCTURE_RAMPART){
                         return (structure.hits < repairMax)
-                    }else{
+                    } else {
                         return 0
                     }
                 }
         });
+        if (!repairTargets.length) {
+            repairTargets = theroom.find(FIND_STRUCTURES, {
+                filter: function(structure){
+                    if(structure.structureType == STRUCTURE_ROAD){
+                        return (structure.hits < structure.hitsMax)
+                    } else {
+                        return 0
+                    }
+                }
+            });
+        }
         if (!repairTargets.length) {
             repairTargets = theroom.find(FIND_STRUCTURES, {
                 filter: function(structure){
@@ -783,6 +799,8 @@ module.exports.loop = function () {
             roleUpgrader.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'upstorclose' || creep.memory[MEMORY_ROLE] == 'upstorfar') {
             roleUpgraderStorage.run(creep);
+        } else if(creep.memory[MEMORY_ROLE] == 'grower') {
+            roleGrower.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'builder') {
             roleBuilder.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'builderstorage') {

@@ -91,7 +91,7 @@ module.exports = {
                 continue;
             }
             var controller_level = Game.rooms[rname].controller.level;
-            if (controller_level >= 7) {
+            if (controller_level == 8) {
                 continue;
             }
             var csites = Game.rooms[rname].find(FIND_MY_CONSTRUCTION_SITES);
@@ -158,9 +158,7 @@ module.exports = {
                     }
                     Game.notify(rname +': deployed level ' + (rmem+1) + ' extensions and walls.');
                     Game.rooms[rname].memory['known_level'] = 2;
-                    if(empire[rname]['spawns_from'] != undefined) {
-                        Game.spawns[empire[rname]['spawns_from']].recycleObsolete();
-                    }
+                    Game.rooms[rname].recycleObsolete();
                 }
             } else if (rmem == 2) {
                 if (controller_level >= 3) {
@@ -222,9 +220,7 @@ module.exports = {
                         continue;
                     }
                     Game.rooms[rname].memory['known_level'] = 3;
-                    if(empire[rname]['spawns_from'] != undefined) {
-                        Game.spawns[empire[rname]['spawns_from']].recycleObsolete();
-                    }
+                    Game.rooms[rname].recycleObsolete();
                 }
             } else if (rmem == 3) {
                 if (controller_level >= 4) {
@@ -248,9 +244,7 @@ module.exports = {
                         continue;
                     }
                     Game.rooms[rname].memory['known_level'] = 4;
-                    if(empire[rname]['spawns_from'] != undefined) {
-                        Game.spawns[empire[rname]['spawns_from']].recycleObsolete();
-                    }
+                    Game.rooms[rname].recycleObsolete();
                 }
             } else if (rmem == 4) {
                 if (controller_level >= 5) {
@@ -283,9 +277,7 @@ module.exports = {
                         continue;
                     }
                     Game.rooms[rname].memory['known_level'] = 5;
-                    if(empire[rname]['spawns_from'] != undefined) {
-                        Game.spawns[empire[rname]['spawns_from']].recycleObsolete();
-                    }
+                    Game.rooms[rname].recycleObsolete();
                 }
             } else if (rmem == 5) {
                 if (controller_level >= 6) {
@@ -327,9 +319,21 @@ module.exports = {
                         continue;
                     }
                     Game.rooms[rname].memory['known_level'] = 6;
-                    if(empire[rname]['spawns_from'] != undefined) {
-                        Game.spawns[empire[rname]['spawns_from']].recycleObsolete();
-                    }
+                    Game.rooms[rname].recycleObsolete();
+                }
+            } else if (rmem == 6) {
+                if (controller_level >= 7) {
+                    Game.rooms[rname].memory['known_level'] = 7;
+                    Game.rooms[rname].recycleObsolete();
+                }
+            } else if (rmem == 7) {
+                if (controller_level >= 8) {
+                    Game.rooms[rname].memory['known_level'] = 8;
+                    Game.rooms[rname].recycleObsolete();
+                }
+            } else if (rmem == 8) {
+                if (controller_level < 8) {
+                    Game.rooms[rname].memory['known_level'] = controller_level;
                 }
             }
         }

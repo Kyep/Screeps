@@ -381,6 +381,29 @@ Creep.prototype.moveToDestination = function() {
     return 1;
 }
 
+Creep.prototype.moveToHome = function() {
+    if (this.memory[MEMORY_HOME] == undefined) {
+        console.log(this.name + ' was ordered to moveToHome with no MEMORY_HOME');
+        return 0;
+    }
+    if (this.memory[MEMORY_HOME_X] == undefined) {
+        console.log(this.name + ' was ordered to moveToHome with no MEMORY_HOME_X');
+        this.memory[MEMORY_HOME_X] = 25;
+        return 0;
+    }
+    if (this.memory[MEMORY_HOME_Y] == undefined) {
+        console.log(this.name + ' was ordered to moveToHome with no MEMORY_HOME_Y');
+        this.memory[MEMORY_HOME_Y] = 25;
+        return 0;
+    }
+    var home_room = this.memory[MEMORY_HOME];
+    var home_x = this.memory[MEMORY_HOME_X];
+    var home_y = this.memory[MEMORY_HOME_Y];
+    this.moveToRUP(new RoomPosition(home_x, home_y, home_room));
+
+    return 1;
+}
+
 Creep.prototype.updateDestination = function() {
     if (this.memory[MEMORY_NEXTDEST] == undefined) {
         return 0;

@@ -42,7 +42,7 @@ Room.prototype.createRoadNetwork = function(origin_x, origin_y) {
     var rnum = 1;
     for (var i = 0; i < all_dests.length; i++) {
         var this_dest = all_dests[i];
-        var path_to_dest = origin.findPathTo(this_dest, {'ignoreCreeps': true});
+        var path_to_dest = origin.findPathTo(this_dest, {'ignoreCreeps': true, 'maxRooms': 1});
         //console.log('createRoads: source: ' + this_dest.id + ', i: ' + i + ', path length: ' + path_to_dest.length);
         for (var j = 0; j < path_to_dest.length; j++) {
             rnum++;
@@ -146,14 +146,19 @@ Room.prototype.getTowerRepairMax = function() {
     if (lvl < 3) {
         return 0; // no towers at this level anyway
     } else if (lvl == 3) {
-        return 10000;
+        return 1000;
     } else if (lvl == 4) {
-        return 25000;
+        return 5000;
+    } else if (lvl == 5) {
+        return 10000;
+    } else if (lvl == 6) {
+        return 20000;
+    } else if (lvl == 7) {
+        return 500000;
     } else if (lvl == 8) {
         return 1000000; 
-    } else {
-        return 50000 * lvl;
     }
+    return 50000 * lvl;
 }
 
 Room.prototype.getStoredEnergy = function() {
@@ -713,4 +718,29 @@ Room.prototype.sellResource = function (mtype) {
             Game.market.changeOrderPrice(order_id, sell_price);
         }
     }
+}
+
+Room.prototype.recycleObsolete = function () {
+    var nrcount = 0;
+    for (var crname in Game.creeps) {
+        if(Game.creeps[crname].memory[MEMORY_SPAWNERROOM] == undefined) {
+            continue;
+        }
+        if(Game.creeps[crname].memory[MEMORY_SPAWNERROOM] != this.name) {
+            continue;
+        }
+        if(!Game.creeps[crname].getRenewEnabled()) {
+            continue;
+        }
+        
+        var unit_cost = global.CREEP_COST(Game.creeps[crname].body);
+        var energy_cap = this.energyCapacityAvailable;
+        if (unit_cost < energy_cap) {
+            nrcount++;
+            console.log(this.name + ': want to disableRenew ' + crname + ' as their cost ' + unit_cost + ' < ' + energy_cap);
+            Game.creeps[crname].disableRenew();
+        }
+    }
+    console.log(this.name + ': set ' + nrcount + ' probably-obsolete creeps to not renew');
+    
 }

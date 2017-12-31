@@ -14,6 +14,7 @@ global.empire_workers = {
 	'c15harvester': { 'body': global.CONSTRUCT_BODY({WORK: 3, CARRY: 1, MOVE: 2}), 'noresizing': 1, 'abbr': 'c15'},
 	'c30harvester': { 'body': global.CONSTRUCT_BODY({WORK: 6, CARRY: 1, MOVE: 3}), 'noresizing': 1, 'abbr': 'c30' },
 	'hauler': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 3, MOVE: 3}), 'noresizing': 1, 'abbr': 'haul'},
+	'grower': { 'body': global.CONSTRUCT_BODY({CARRY: 25, MOVE: 25}), 'noresizing': 1, 'abbr': 'grow'},
 
 	'extractor': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'abbr': 'Ext' },
 	'scavenger': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 5, MOVE: 3}), 'noresizing': 1, 'renew_allowed': 0 },
