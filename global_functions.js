@@ -344,7 +344,7 @@ global.DELETE_OLD_ORDERS = function() {
     }
 }
 
-global.UPDATE_MARKET_ORDERS = function() {
+global.UPDATE_MARKET_ORDERS = function(allow_energy_sale) {
     
     global.DELETE_OLD_ORDERS();
     
@@ -373,22 +373,27 @@ global.UPDATE_MARKET_ORDERS = function() {
         if (empire[rname] == undefined) {
             continue;
         }
-        if (empire[rname]['mineraltype'] == undefined) {
-            continue;
-        }
-        var mtype = empire[rname]['mineraltype'];
-        if(Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] < 30000) {
-            //console.log('MARKET: ' + rname + ': has <1k of sale mineral: ' + mtype);
-            continue;
-        }
 
-        Game.rooms[rname].sellResource(mtype);
-        
-        var rlvl = Game.rooms[rname].getLevel();
-        if (rlvl == 8 && Game.rooms[rname].terminal.store[RESOURCE_ENERGY] && Game.rooms[rname].terminal.store[RESOURCE_ENERGY] > terminal_energy_sell) {
-            Game.rooms[rname].sellResource(RESOURCE_ENERGY);
+        if (empire[rname]['mineraltype'] != undefined) {
+            var mtype = empire[rname]['mineraltype'];
+            if(Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] < 30000) {
+                //console.log('MARKET: ' + rname + ': has <1k of sale mineral: ' + mtype);
+            } else {
+                Game.rooms[rname].sellResource(mtype);
+            }
         }
         
+        if (allow_energy_sale) {
+            var rlvl = Game.rooms[rname].getLevel();
+            var stored_e = Game.rooms[rname].terminal.store[RESOURCE_ENERGY];
+            if (rlvl < 8) {
+                console.log(rname + ' not selling energy... level:' + rlvl + ' < 8,  avail:' + stored_e);
+            } else if (!stored_e || stored_e < terminal_energy_sell) {
+                console.log(rname + ' not selling energy... level:' + rlvl + ', avail:' + stored_e + ' < ' + terminal_energy_sell);
+            } else {
+                Game.rooms[rname].sellResource(RESOURCE_ENERGY);
+            }
+        }
     }
     return 'OK';
 }
@@ -642,7 +647,7 @@ global.CREATE_GROWERS = function() {
             continue;
         }
         var rlvl = droom.getLevel();
-        if (rlvl < 1 || rlvl > 6) {
+        if (rlvl < 1 || rlvl > 5) {
             continue;
         }
 		var bsr = empire[rname]['backup_spawn_room'];
@@ -655,6 +660,13 @@ global.CREATE_GROWERS = function() {
             console.log('CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has undefined BSR');
             continue;
         }
+        var energy_reserves = oroom.getStoredEnergy();
+        var energy_class = oroom.classifyStoredEnergy(energy_reserves);
+        if (energy_class == ENERGY_EMPTY || energy_class == ENERGY_OK) {
+            console.log('CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has BSR ' + oroom.name + ' with only E = ' + energy_reserves + ' => ' + energy_class);
+            continue;
+        }
+
         var grower_names = [];
         for (var crname in Game.creeps) {
             if (Game.creeps[crname].memory[MEMORY_ROLE] != 'grower') {
@@ -668,7 +680,7 @@ global.CREATE_GROWERS = function() {
             }
             grower_names.push(crname);
         }
-        if (grower_names.length >= 10) {
+        if (grower_names.length >= 6) {
             console.log('CANDIDATE FAIL: ' + bsr + ' => ' + rname + ' (level: ' + rlvl + ') has ' + grower_names.length + ' existing grower(s) : ' + grower_names);
             continue;
         }

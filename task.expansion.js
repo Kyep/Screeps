@@ -91,9 +91,6 @@ module.exports = {
                 continue;
             }
             var controller_level = Game.rooms[rname].controller.level;
-            if (controller_level == 8) {
-                continue;
-            }
             var csites = Game.rooms[rname].find(FIND_MY_CONSTRUCTION_SITES);
             /*
             var repairTargets = Game.rooms[rname].find(FIND_STRUCTURES, {

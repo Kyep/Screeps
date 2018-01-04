@@ -1,3 +1,4 @@
+
 global.RECREATE_ROAD_NETWORKS = function() {
     var remaining = Object.keys(empire);
     for (var rname in Game.rooms) {
@@ -31,21 +32,22 @@ global.SHOW_ROAD_NETWORKS = function() {
 }
 
 global.ENERGY_STATUS = function() {
+    console.log(JSON.stringify(Memory['energy_network']));
     for (var rname in Game.rooms) {
         var rm = Game.rooms[rname];
         if (!rm.isMine()) {
             continue;
         }
         var storage_energy = 0;
-        if (rm.storage != undefined && rm.storage.store != undefined && rm.storage.store[RESOURCE_ENERGY] != undefined) {
+        //if (rm.storage != undefined && rm.storage.store != undefined && rm.storage.store[RESOURCE_ENERGY] != undefined) {
            storage_energy = rm.storage.store[RESOURCE_ENERGY];
-        }
+        //}
         var terminal_energy = 0;
-        if (rm.terminal != undefined && rm.terminal.store != undefined && rm.terminal.store[RESOURCE_ENERGY] != undefined) {
-           terminal_energy = rm.storage.store[RESOURCE_ENERGY];
-        }
+        //if (rm.terminal != undefined && rm.terminal.store != undefined && rm.terminal.store[RESOURCE_ENERGY] != undefined) {
+           terminal_energy = rm.terminal.store[RESOURCE_ENERGY];
+        //}
         var total_energy = storage_energy + terminal_energy;
-        console.log(rname + ': E:' + total_energy + ' (term:' + terminal_energy + ')');
+        console.log(rname + ': E:' + total_energy + ' (term:' + terminal_energy + ') L:' + rm.getLevel() + ' T:' + rm.hasTerminalNetwork() + ' S:' + rm.classifyStoredEnergy());
     }
     
 }

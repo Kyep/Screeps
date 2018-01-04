@@ -163,7 +163,7 @@ Room.prototype.getTowerRepairMax = function() {
 
 Room.prototype.getStoredEnergy = function() {
     var total_energy = 0;
-    if (this.storage != undefined && this.storage.isActive()) {
+    if (this.storage != undefined) {
         total_energy += this.storage.store.energy;
     }
     if (this.terminal != undefined && this.terminal.isActive()) {
@@ -537,15 +537,18 @@ Room.prototype.updateAlert = function(enemy_details, nuke_details) {
 }
 
 Room.prototype.destroyHostileStructures = function() {
+    var stuff_destroyed = 0;
     var enemy_structures = this.find(FIND_HOSTILE_STRUCTURES); 
     for (var i = 0; i < enemy_structures.length; i++) {
         enemy_structures[i].destroy();
+        stuff_destroyed++;
     }
     var enemy_csites = this.find(FIND_HOSTILE_CONSTRUCTION_SITES);
     for (var i = 0; i < enemy_csites.length; i++) {
         enemy_csites[i].remove();
+        stuff_destroyed++;
     }
-    
+    return stuff_destroyed;
 }
 
 
@@ -560,8 +563,8 @@ Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, 
         return 0;
     }
     if(!using_primary) {
-        console.log('Room.prototype.createUnit: No PRIMARY spawner free when attempting spawn in ' + this.name);
-        return 0;
+        //console.log('Room.prototype.createUnit: No PRIMARY spawner free when attempting spawn in ' + this.name);
+        //return 0;
     }
     if (role == undefined) {
         console.log('Room.prototype.createUnit: ARG1 (role) missing ' + this.name);
@@ -662,12 +665,39 @@ Room.prototype.sellResource = function (mtype) {
         if(global_sell_orders[porder]['remainingAmount'] == 0) {
             continue;
         }
-       if (sell_price == 0) {
+        // %%%%%%
+        var rm_range = Game.map.getRoomLinearDistance(this.name, global_sell_orders[porder]['roomName']);
+        if (Game.rooms[global_sell_orders[porder]['roomName']] != undefined) {
+            //console.log('MKT: selling ' + mtype + ' in ' + this.name + ' skip order ' + JSON.stringify(global_sell_orders[porder]) + ' because its room ' + global_sell_orders[porder]['roomName'] + ' is mine');
+        } else if (rm_range >= 40) {
+            //console.log('MKT: selling ' + mtype + ' in ' + this.name + ' skip order ' + JSON.stringify(global_sell_orders[porder]) + ' at ' +  global_sell_orders[porder]['price'] + ' because its room ' + global_sell_orders[porder]['roomName'] + ' has distance: ' + rm_range + ' to me');
+        } else if (sell_price == 0) {
            sell_price = global_sell_orders[porder]['price'];
+           //console.log(global_sell_orders[porder]['id'] + ' selling FIRST at: ' + global_sell_orders[porder]['price'] + ' from ' + global_sell_orders[porder]['roomName']);
         } else if (global_sell_orders[porder]['price'] < sell_price) {
            sell_price = global_sell_orders[porder]['price'];
+           //console.log(global_sell_orders[porder]['id'] + ' selling BETTER at: ' +global_sell_orders[porder]['price'] + ' from ' + global_sell_orders[porder]['roomName']);
        }
         //console.log(global_sell_orders[porder]['price']);
+    }
+    if (mtype == RESOURCE_ENERGY) {
+        if (sell_price < 0.008) {
+            sell_price = 0.008;
+            console.log('MKT: selling ' + mtype + ' in ' + this.name + ': increasing price to configured minimum: ' + sell_price + ' for resource: ' + mtype);
+        }
+        if (sell_price > 0.1) {
+            sell_price = 0.1;
+            console.log('MKT: selling ' + mtype + ' in ' + this.name + ': reducing price to configured maximum: ' + sell_price + ' for resource: ' + mtype);
+        }
+    } else {
+        if (sell_price < 0.1) {
+            sell_price = 0.1;
+            console.log('MKT: selling ' + mtype + ' in ' + this.name + ': increasing price to configured minimum: ' + sell_price + ' for resource: ' + mtype);
+        }
+        if (sell_price > 8) {
+            sell_price = 8;
+            console.log('MKT: selling ' + mtype + ' in ' + this.name + ': reducing price to configured maximum: ' + sell_price + ' for resource: ' + mtype);
+        }
     }
     var buy_price = 0;
     var effective_buy_price = 0;
@@ -695,8 +725,14 @@ Room.prototype.sellResource = function (mtype) {
        }
     }
     var amount_to_sell = amount_sellable;
-    if (amount_to_sell > 10000) {
-        amount_to_sell = 10000;
+    if (mtype == RESOURCE_ENERGY) {
+        if (amount_to_sell > 20000) {
+            amount_to_sell = 20000;
+        }
+    } else {
+        if (amount_to_sell > 10000) {
+            amount_to_sell = 10000;
+        }
     }
     if(effective_buy_price > sell_price && buy_order_id != undefined) {
         if (buy_order_amount < amount_to_sell) {
@@ -712,9 +748,10 @@ Room.prototype.sellResource = function (mtype) {
         if (old_price == sell_price) {
             console.log('MARKET: PERFECT existing order ' + order_id + ' for ' + mtype + ' in ' + this.name + ' selling at ' + old_price);
         } else if (old_price < sell_price) {
-            // not possible? 
+            console.log('MARKET: REPRICE UP order ' + order_id + ' from ' + old_price + ' to ' + sell_price);
+            Game.market.changeOrderPrice(order_id, sell_price);
         } else {
-            console.log('MARKET: REPRICE order ' + order_id + ' from ' + old_price + ' to ' + sell_price);
+            console.log('MARKET: REPRICE DOWN order ' + order_id + ' from ' + old_price + ' to ' + sell_price);
             Game.market.changeOrderPrice(order_id, sell_price);
         }
     }

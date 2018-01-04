@@ -219,8 +219,8 @@ module.exports = {
                 return;
             }
             var result = jobUpgrade.run(creep);
-            if (result != ERR_NOT_IN_RANGE) {
-                creep.say(result);
+            if (result != ERR_NOT_IN_RANGE && result != OK) {
+                creep.say('U:'+result);
             }
         } else {
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;

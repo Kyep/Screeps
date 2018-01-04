@@ -16,9 +16,13 @@ module.exports = {
                             var result = creep.attackController(creep.room.controller);
                             if (result == ERR_NOT_IN_RANGE) {
                                 creep.moveToRUP(creep.room.controller);
-                            } else if (result == OK) {
-                                creep.room.destroyHostileStructures()
                             }
+                        } else {
+                            var victims = creep.room.destroyHostileStructures();
+                            if (victims > 0) {
+                                creep.suicide();
+                            }
+                            creep.sleepFor(25);
                         }
                     }            
                 } else {
@@ -26,7 +30,7 @@ module.exports = {
                     if (result == ERR_NOT_IN_RANGE) {
                         creep.moveToRUP(creep.room.controller);
                     } else if (result == OK) {
-                        creep.suicide();
+                        //
                     }
                 }
             }

@@ -29,17 +29,25 @@ module.exports = {
             } else {
                 creep.memory[MEMORY_JOB] = JOB_RETURN;
             }
-	    } else if (creep.memory[MEMORY_JOB] == JOB_RETURN) {
-	        if (creep.carry.energy == 0) {
-	            if (creep.isAtDestinationRoom() && creep.room.getLevel() > 5) {
-	                creep.disableRenew();
-	            }
-	            creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
-	        } else {
-	            jobReturnresources.run(creep, 1, 1, 0.5, 1, 1);
+        } else if (creep.memory[MEMORY_JOB] == JOB_RETURN) {
+            if (!creep.isAtDestinationRoom()) {
+                creep.moveToDestination();
+            } else if (creep.carry.energy == 0) {
+                if (creep.isAtDestinationRoom() && creep.room.getLevel() > 5) {
+                    creep.disableRenew();
+                }
+                creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
+            } else {
+                jobReturnresources.run(creep, 1, 1, 0.5, 1, 1);
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_BACK) {
             if (creep.isAtHomeRoom()) {
+                var home_ec = creep.room.classifyStoredEnergy();
+                if (home_ec == ENERGY_EMPTY) {
+                    creep.disableRenew();
+                    //creep.memory[MEMORY_ROLE] = 'recycler';
+                    console.log(creep.name + ' has run out of energy to transfer from ' + creep.memory[MEMORY_HOME] + ' to ' + creep.memory[MEMORY_DEST]);
+                }
                 creep.memory[MEMORY_JOB] = JOB_GFS;
             } else {
                 creep.moveToHome();

@@ -70,22 +70,33 @@ module.exports = {
     
         for (var goal in ongoing_reactions) {
             var this_reaction = ongoing_reactions[goal];
+            
+            var reaction_created = 0;
+            if (this_reaction['creation_time']) {
+                reaction_created = this_reaction['creation_time'];
+            }
+            var reaction_age = Game.time - reaction_created;
+            if (reaction_age > 10000) {
+                console.log('Science eval OLD ( ' + reaction_age + ') state ' + this_reaction['state'] + ' reaction for ' + goal + ': ' + JSON.stringify(this_reaction));
+            }
             var rname = this_reaction['local_room'];
             var local_resource = this_reaction['local_resource'];
             var remote_resource = this_reaction['remote_resource'];
             var rm = Game.rooms[this_reaction['local_room']];
             if (this_reaction['state'] == 0) {
+                empire[rname].sources['labs'] = {'sourcename': empire[rname]['roomname'] + '-L', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 25, 'dynamic': 1}
+                empire[rname].sources['labs'].assigned['labtech'] = 1;
                 // ASSIGNING LABS
                 var rlabs = rm.find(FIND_MY_STRUCTURES, { filter: function(structure){ if(structure.structureType == STRUCTURE_LAB && structure.isAvailable()) { return 1; } else { return 0; } } });
                 if (rlabs.length < 3) {
                     if (Game.time % 50 === 0) {
-                        console.log('Science: ongoing_reaction ' + goal + ' is stuck in a room ' + rname + ' without 3 labs...');
+                        console.log('Science: ongoing_reaction ' + goal + ' is stuck in a room ' + rname + ' without 3 labs for ' + reaction_age + '...');
                     }
                     continue;
                 }
                 var input_lab_1 = _.sample(rlabs);
                 if (input_lab_1 == undefined || input_lab_1.id == undefined) {
-                    console.log('Science: ' + rname + '/' + goal + ': lab 1 unpickable, debug: ' + JSON.stringify(rlabs));
+                    console.log('Science: ' + rname + '/' + goal + ': lab 1 unpickable for ' + reaction_age + ', debug: ' + JSON.stringify(rlabs));
                     continue;
                 }
                 var rlabs2 = rm.find(FIND_MY_STRUCTURES, { filter: function(structure){ 
@@ -93,7 +104,7 @@ module.exports = {
                 } });
                 var input_lab_2 = _.sample(rlabs2);
                 if (input_lab_2 == undefined || input_lab_2.id == undefined) {
-                    console.log('Science: ' + rname + '/' + goal + ': lab 2 unpickable, debug: ' + JSON.stringify(rlabs2));
+                    console.log('Science: ' + rname + '/' + goal + ': lab 2 unpickable for ' + reaction_age + ', debug: ' + JSON.stringify(rlabs2));
                     continue;
                 }
                 var rlabs3 = rm.find(FIND_MY_STRUCTURES, { filter: function(structure){ 
@@ -103,12 +114,7 @@ module.exports = {
                 } });
                 var output_lab = _.sample(rlabs3);
                 if (output_lab == undefined || output_lab.id == undefined) {
-                    console.log('Science: ' + rname + '/' + goal + ': lab 3 unpickable, debug: ' + JSON.stringify(rlabs3));
-
-                    // in case of a previous, non-cleaned reaction, spawn a lab tech
-                    empire[rname].sources['labs'] = {'sourcename': empire[rname]['roomname'] + '-L', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 25, 'dynamic': 1}
-                    empire[rname].sources['labs'].assigned['labtech'] = 1;
-
+                    console.log('Science: ' + rname + '/' + goal + ': lab 3 unpickable for ' + reaction_age + ', debug: ' + JSON.stringify(rlabs3));
                     continue;
                 }                
 
@@ -225,10 +231,30 @@ module.exports = {
                 empire[rname].sources['labs'] = {'sourcename': empire[rname]['roomname'] + '-L', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 25, 'dynamic': 1}
                 empire[rname].sources['labs'].assigned['labtech'] = 1;
 
+                if (this_reaction['input_1']){
+                    delete Memory['assigned_labs'][this_reaction['input_1']];
+                }
+                if (this_reaction['input_2']){
+                    delete Memory['assigned_labs'][this_reaction['input_2']];
+                }
+                if (this_reaction['output']){
+                    delete Memory['assigned_labs'][this_reaction['output']];
+                }
+
+                /*
                 var lab_input_1 = Game.structures[this_reaction['input_1']];
                 var lab_input_2 = Game.structures[this_reaction['input_2']];
                 var lab_output = Game.structures[this_reaction['output']];
-                var labs_to_clear = [lab_input_1, lab_input_2, lab_output];
+                var labs_to_clear = [];
+                if (lab_input_1) {
+                    labs_to_clear.push(lab_input_1);
+                }
+                if (lab_input_2) {
+                    labs_to_clear.push(lab_input_2);
+                }
+                if (lab_output) {
+                    labs_to_clear.push(lab_output);
+                }
                 var labs_not_cleared = 0;
                 for (var thislab in labs_to_clear) {
                     if (thislab.mineralAmount > 0) {
@@ -239,11 +265,13 @@ module.exports = {
                 if (labs_not_cleared > 0) {
                     continue;
                 }
-                console.log('Science: ' + rname + '/' + goal + ': lab ' + lab_output.id + ' is FINISHED and CLEANED UP. Deleting...');
-                delete Memory['ongoing_reactions'][goal];
                 delete Memory['assigned_labs'][lab_input_1.id];
                 delete Memory['assigned_labs'][lab_input_2.id];
                 delete Memory['assigned_labs'][lab_output.id];
+                */
+                console.log('Science: reaction ' + rname + '/' + goal + ':  is FINISHED. Deleted...');
+                delete Memory['ongoing_reactions'][goal];
+
                 return;
             }
         }

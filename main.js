@@ -86,13 +86,20 @@ module.exports.loop = function () {
 
     if(Game.time % 250 === 0) {
         global.CREATE_GROWERS();
-        global.SHARE_SPARE_ENERGY(); 
+        //global.SHARE_SPARE_ENERGY(); 
     }
     if(Game.time % 500 === 0) {
         //global.PRESET_ATTACK_WAVE();
     }
     if(Game.time % 500 === 0) {
-        global.UPDATE_MARKET_ORDERS();
+        var saved_energy_network = Memory['energy_network'];
+        var sene = saved_energy_network[ENERGY_EMPTY];
+        var allow_e_sale = false;
+        if (sene[ENERGY_EMPTY] != undefined && sene[ENERGY_EMPTY].length == 0) {
+            allow_e_sale = true;
+        }
+        console.log(allow_e_sale);
+        global.UPDATE_MARKET_ORDERS(allow_e_sale);
     }
 
     if(Game.time % divisor === 0) {
@@ -110,6 +117,8 @@ module.exports.loop = function () {
         var timenow = Game.time;
         var energy_network = { }
 
+        
+
         for(var rname in Game.rooms) {
             // ENERGY MANAGEMENT - PER ROOM
             var energy_reserves = Game.rooms[rname].getStoredEnergy();
@@ -123,7 +132,9 @@ module.exports.loop = function () {
                     energy_network[energy_class] = [];
                 }
                 energy_network[energy_class].push(rname);
-            }
+            }/* else if (Game.rooms[rname].isMine()) {
+                console.log(rname +': ' + energy_reserves + ' => ' + energy_class + ' | ' + Game.rooms[rname].getLevel());
+            }*/
             
             if(energy_class != ENERGY_EMPTY) {
                 // In case we know of an enemy room with storage.
@@ -169,6 +180,7 @@ module.exports.loop = function () {
                             r_multiplier = 8; 
                         }
                     }
+                    //console.log(rname + ': ' + r_multiplier);
                     if (r_multiplier > 0) {
                         //console.log(rname + ' ' + r_multiplier + ' ' + ugtype);
                         empire[rname].sources['upgrader'].assigned[ugtype] = r_multiplier;
@@ -260,7 +272,7 @@ module.exports.loop = function () {
                         var rhid = empire[rname]['roomname'];
                         var mysname = rhid + '-scavenger';
                         if(empire[rname].sources[mysname] == undefined) {
-                            empire[rname].sources[mysname] = { 'sourcename': mysname, 'x':20, 'y':20, 'assigned': {}, 'expected_income': 90 }
+                            empire[rname].sources[mysname] = { 'sourcename': mysname, 'x':20, 'y':20, 'assigned': {}, 'expected_income': 90, 'dynamic': 1 }
                         }
                     empire[rname].sources[mysname].assigned['scavenger'] = 1;
                     }
@@ -272,8 +284,9 @@ module.exports.loop = function () {
                 if (empire[rname]['mineralid'] != undefined) {
                     var mineralpatch = Game.getObjectById(empire[rname]['mineralid'])
                     if (mineralpatch) {
+                        var mlvl = Game.rooms[rname].getLevel();
                         var term = Game.rooms[rname].terminal;
-                        if (term) {
+                        if (mlvl >= 6 && term) {
                             var got_minerals = Game.rooms[rname].terminal.store[empire[rname]['mineraltype']];
                             if (got_minerals >= empire_defaults['mineralcap']) {
                                 //console.log(rname + ' is capped on minerals with ' + got_minerals + ' > ' + empire_defaults['mineralcap']);
@@ -312,15 +325,14 @@ module.exports.loop = function () {
         }
         global.HANDLE_ALL_ROOM_ALERTS();
         
-        //console.log(JSON.stringify(energy_network));
+        Memory['energy_network'] = energy_network;
         if (energy_network[ENERGY_EMPTY] != undefined) {
             if(energy_network[ENERGY_EMPTY].length > 0) {
                 var dest_room = energy_network[ENERGY_EMPTY][0];
                 var potential_senders = [];
                 if(energy_network[ENERGY_FULL] != undefined && energy_network[ENERGY_FULL].length > 0) {
                     potential_senders = potential_senders.concat(energy_network[ENERGY_FULL]);
-                }
-                if(energy_network[ENERGY_SPARE] != undefined && energy_network[ENERGY_SPARE].length > 0) {
+                } else if(energy_network[ENERGY_SPARE] != undefined && energy_network[ENERGY_SPARE].length > 0) {
                     potential_senders = potential_senders.concat(energy_network[ENERGY_SPARE]);
                 }
                 for (var i = 0; i < potential_senders.length; i++) {
@@ -472,15 +484,45 @@ module.exports.loop = function () {
                 var r_status = rname 
                 r_status += ': ';
                 for (var skey in empire[rname].sources) {
+                    var s_dynamic = false;
                     var s_status = 'Source: |' + empire[rname].sources[skey]['sourcename'] + '|: ';
-                    r_status += empire[rname].sources[skey]['sourcename'] + ': ';
+                    var f_d = empire[rname].sources[skey]['dynamic'];
+                    var replace_assign_ml = false;
+                    if (f_d != undefined && f_d == 1) {
+                        s_dynamic = true;
+                    } else {
+                        var spawns_from = empire[rname]['spawn_room'];
+                        if (spawns_from) {
+                            var robj = Game.rooms[spawns_from];
+                            if (robj) {
+                                var rlvl = robj.getLevel();
+                                if (rlvl < 4) {
+                                    replace_assign_ml = true;
+                                }
+                            }
+                        }
+                    }
+                    s_status = 'Source: |' + empire[rname].sources[skey]['sourcename'] + '|: ';
+                    if (replace_assign_ml) {
+                        var newtype = empire_defaults['MSL_4_replacement']
+                        empire[rname].sources[skey].assigned = {}
+                        empire[rname].sources[skey].assigned[newtype] = 2;
+                        r_status += '<font color="yellow">' + empire[rname].sources[skey]['sourcename'] + '</font>: ';
+                    } else {
+                        r_status += empire[rname].sources[skey]['sourcename'] + ': ';
+                    }
+
+
                     if (empire[rname].living == undefined) {
                         empire[rname].living = {};
                     }
                     if (empire[rname].living[skey] == undefined) {
                         empire[rname].living[skey] = {};
                     }
+
+
                     for (var role in empire[rname].sources[skey].assigned) {
+                        
                         if (empire[rname].living[skey][role] == undefined) {
                             empire[rname].living[skey][role] = 0;
                         }
