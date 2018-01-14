@@ -32,6 +32,7 @@ global.UPDATE_OBSERVERS = function(observe_energy) {
     if (Memory['energy_share_dests'] != undefined && observe_energy) {
         rooms_to_observe = Memory['energy_share_dests'];
     }
+    rooms_to_observe = rooms_to_observe.concat(Object.keys(Memory['rooms_to_claim']));
 
     var available_observers = _.shuffle(global.LIST_OBSERVERS());
 

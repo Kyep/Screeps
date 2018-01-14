@@ -5,6 +5,11 @@ global.RECREATE_ROAD_NETWORKS = function() {
         if (empire[rname] == undefined) {
             continue;
         }
+        var psr = empire[rname]['spawn_room'];
+        if (Game.rooms[psr] && Game.rooms[psr].getLevel() < 4) {
+            continue;
+        }
+        
         var grm = Game.rooms[rname];
         grm.memory[MEMORY_ROAD_NETWORK] = [];
         var origins = grm.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_WHITE && flag.secondaryColor == COLOR_BLUE) { return 1; } else { return 0; } } });
@@ -39,13 +44,13 @@ global.ENERGY_STATUS = function() {
             continue;
         }
         var storage_energy = 0;
-        //if (rm.storage != undefined && rm.storage.store != undefined && rm.storage.store[RESOURCE_ENERGY] != undefined) {
+        if (rm.storage != undefined && rm.storage.store != undefined && rm.storage.store[RESOURCE_ENERGY] != undefined) {
            storage_energy = rm.storage.store[RESOURCE_ENERGY];
-        //}
+        }
         var terminal_energy = 0;
-        //if (rm.terminal != undefined && rm.terminal.store != undefined && rm.terminal.store[RESOURCE_ENERGY] != undefined) {
+        if (rm.terminal != undefined && rm.terminal.store != undefined && rm.terminal.store[RESOURCE_ENERGY] != undefined) {
            terminal_energy = rm.terminal.store[RESOURCE_ENERGY];
-        //}
+        }
         var total_energy = storage_energy + terminal_energy;
         console.log(rname + ': E:' + total_energy + ' (term:' + terminal_energy + ') L:' + rm.getLevel() + ' T:' + rm.hasTerminalNetwork() + ' S:' + rm.classifyStoredEnergy());
     }
@@ -359,25 +364,26 @@ global.READY_LAUNCHERS = function() {
                 console.log('LAUNCHER: inactive ' + Game.structures[id].room.name);
                 continue;
             }
+            var g_amt = Game.structures[id].ghodium;
+            if (g_amt == undefined) {
+                g_amt = 0;
+            }
+            var g_storage = Game.structures[id].room.terminal.store[RESOURCE_GHODIUM];
+            if (g_storage == undefined) {
+                g_storage = 0;
+            }
+
             if (Game.structures[id].cooldown > 0) {
                 var hrs = ((Game.structures[id].cooldown * ticks_per_second) / (60 * 60));
-                console.log('LAUNCHER: on cooldown ' + Game.structures[id].room.name + ', for ' + hrs + ' hours');
+                console.log('LAUNCHER: on cooldown ' + Game.structures[id].room.name + ', for ' + hrs + ' hours'  + ' (' + g_amt + ' G in launcher, ' + g_storage + ' G in storage)');
                 continue;
             }
             if (Game.structures[id].energy != Game.structures[id].energyCapacity) {
-                console.log('LAUNCHER: lacks energy ' + Game.structures[id].room.name);
+                console.log('LAUNCHER: lacks energy ' + Game.structures[id].room.name  + ' (' + g_amt + ' G in launcher, ' + g_storage + ' G in storage)');
                 continue;
             }
             if (Game.structures[id].ghodium != Game.structures[id].ghodiumCapacity) {
-                var g_amt = Game.structures[id].ghodium;
-                if (g_amt == undefined) {
-                    g_amt = 0;
-                }
-                var g_storage = Game.structures[id].room.terminal.store[RESOURCE_GHODIUM];
-                if (g_storage == undefined) {
-                    g_storage = 0;
-                }
-                console.log('LAUNCHER: lacks ghodium ' + Game.structures[id].room.name + ' (' + g_amt + ' in launcher, ' + g_storage + ' in storage)');
+                console.log('LAUNCHER: lacks ghodium ' + Game.structures[id].room.name + ' (' + g_amt + ' G in launcher, ' + g_storage + ' G in storage)');
                 continue;
             }
             console.log('LAUNCHER: OK in ' + Game.structures[id].room.name);

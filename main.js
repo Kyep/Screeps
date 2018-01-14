@@ -37,6 +37,7 @@ var roleDrainer = require('role.drainer');
 var roleSigner = require('role.signer');
 var roleLabtech = require('role.labtech');
 var roleNuketech = require('role.nuketech');
+var roleDismantler = require('role.dismantler');
 
 var structureLink = require('structure.link');
 
@@ -95,11 +96,14 @@ module.exports.loop = function () {
         var saved_energy_network = Memory['energy_network'];
         var sene = saved_energy_network[ENERGY_EMPTY];
         var allow_e_sale = false;
-        if (sene[ENERGY_EMPTY] != undefined && sene[ENERGY_EMPTY].length == 0) {
+        if (sene != undefined && sene.length == 0) {
             allow_e_sale = true;
         }
-        console.log(allow_e_sale);
         global.UPDATE_MARKET_ORDERS(allow_e_sale);
+    }
+
+    if(Game.time % 2500 === 0) {
+        RECREATE_ROAD_NETWORKS();
     }
 
     if(Game.time % divisor === 0) {
@@ -875,6 +879,8 @@ module.exports.loop = function () {
             roleLabtech.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'nuketech') {
             roleNuketech.run(creep);
+        } else if(creep.memory[MEMORY_ROLE] == 'dismantler') {
+            roleDismantler.run(creep);
         } else {
             console.log('ALERT: ' + creep.name + ' in room' + creep.room.name + ' has role ' + creep.memory[MEMORY_ROLE] + ' which I do not know how to handle!')
             //creep.suicide();

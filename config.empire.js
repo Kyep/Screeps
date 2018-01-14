@@ -595,6 +595,7 @@
         },
 
         // 9 Base
+        /*
         'W59S18': {
             'roomname': '9',
             'spawn_room': 'W59S18',
@@ -664,6 +665,8 @@
                 }
             }
         },
+        
+        */
 
         // 10 Base
         'W57S14': {
@@ -752,8 +755,8 @@
                 }
             },
             'safespot': {'x': 40, 'y':18 },
-            //'mineralid': '598342aaca90777e307b1343',
-            //'mineraltype': RESOURCE_LEMERGIUM,
+            'mineralid': '598342aaca90777e307b1343',
+            'mineraltype': RESOURCE_LEMERGIUM,
         },
 
         // 11 Expansions
@@ -763,12 +766,16 @@
             'backup_spawn_room': 'W53S18',
             'sources': {
                 '5982fbe9b097071b4adbc5ef': {'sourcename': '11S-W', 'x':6, 'y':21, 'spaces':4, 'target_x': 7, 'target_y': 21, 'steps':70,
-                    'assigned': {'fharvester': 2}, 
+                    'assigned': {'c30harvester': 1, 'hauler': 2}, 
                     'expected_income': 90
                 },
                 '5982fbe9b097071b4adbc5ec': {'sourcename': '11S-E', 'x':13, 'y':28, 'spaces':1, 'target_x': 12, 'target_y': 27, 'steps':70,
-                    'assigned': {'fharvester': 1}, 
+                    'assigned': {'c30harvester': 1, 'hauler': 2}, 
                     'expected_income': 95
+                },
+                'reserver': {'sourcename':'11S-R', 'x':27, 'y':14,
+                    'assigned': {'reserver': 1},
+                    'expected_income': 85, 'dynamic': 1
                 }
             },
             'safespot': {'x': 40, 'y':18 }
@@ -779,17 +786,97 @@
             'spawn_room': 'W48S18',
             'backup_spawn_room': 'W53S18',
             'sources': {
-                '5982fbdcb097071b4adbc4a7': {'sourcename': '11S-W', 'x':9, 'y':26, 'spaces':4, 'target_x': 10, 'target_y': 25, 'steps':70,
-                    'assigned': {'fharvester': 2}, 
-                    'expected_income': 86
-                },
-                '5982fbdcb097071b4adbc4a8': {'sourcename': '11S-E', 'x':30, 'y':32, 'spaces':1, 'target_x': 31, 'target_y': 31, 'steps':70,
-                    'assigned': {'fharvester': 1}, 
+                '5982fbdcb097071b4adbc4a7': {'sourcename': '11W-W', 'x':9, 'y':26, 'spaces':4, 'target_x': 10, 'target_y': 25, 'steps':70,
+                    'assigned': {'c15harvester': 1, 'hauler': 2}, 
                     'expected_income': 80
+                },
+                '5982fbdcb097071b4adbc4a8': {'sourcename': '11W-E', 'x':30, 'y':32, 'spaces':1, 'target_x': 31, 'target_y': 31, 'steps':70,
+                    'assigned': {'c15harvester': 1, 'hauler': 2}, 
+                    'expected_income': 75
+                },
+                'reserver': {'sourcename':'11W-R', 'x':27, 'y':14,
+                    'assigned': {'reserver': 1},
+                    'expected_income': 70, 'dynamic': 1
                 }
             },
             'safespot': {'x': 40, 'y':18 }
-
         },
+
+        // 12 Base
+        'W46S17': {
+            'roomname': '12',
+            'spawn_room': 'W46S17',
+            'backup_spawn_room': 'W53S18',
+            'sources': {
+                '5982fbffb097071b4adbc8ea': {'sourcename': '12-W', 'x':23, 'y':16, 'spaces':3, 'target_x': 24, 'target_y': 16, 'steps':10,
+                    'assigned': {'fharvester': 2}, 
+                    'expected_income': 90
+                },
+                '5982fbffb097071b4adbc8e8': {'sourcename': '12-E', 'x':40, 'y':14, 'spaces':4, 'target_x': 39, 'target_y': 14, 'steps':20,
+                    'assigned': {'fharvester': 1}, 
+                    'expected_income': 95
+                }
+            },
+            'safespot': {'x': 34, 'y':12 },
+            //'mineralid': '598342abca90777e307b13e1',
+            //'mineraltype': RESOURCE_HYDROGEN,
+        },
+        // 12 Expansions
+        'W47S17': {
+            'roomname': '12W',
+            'spawn_room': 'W46S17',
+            'backup_spawn_room': 'W53S18',
+            'sources': {
+                '5982fbf4b097071b4adbc733': {'sourcename': '12W-W', 'x':39, 'y':19, 'spaces':2, 'target_x': 39, 'target_y': 20, 'steps':60,
+                    'assigned': {'c30harvester': 1, 'hauler': 1}, 
+                    'expected_income': 86
+                },
+                '5982fbf4b097071b4adbc734': {'sourcename': '12W-S', 'x':39, 'y':42, 'spaces':3, 'target_x': 39, 'target_y': 41, 'steps':60,
+                    'assigned': {'c30harvester': 1, 'hauler': 1}, 
+                    'expected_income': 80
+                },
+                'reserver': {'sourcename':'12W-R', 'x':25, 'y':25,
+                    'assigned': {'reserver': 1},
+                    'expected_income': 60, 'dynamic': 1
+                }
+            }
+        },
+
+        // 13 Base
+        'W53S6': {
+            'roomname': '13',
+            'spawn_room': 'W53S6',
+            'backup_spawn_room': 'W53S12',
+            'sources': {
+                '59bbc3f62052a716c3ce7260': {'sourcename': '13-N', 'x':13, 'y':13, 'spaces':4, 'target_x': 12, 'target_y': 13, 'steps':20,
+                    'assigned': {'fharvester': 2}, 
+                    'expected_income': 90
+                },
+                '59bbc3f62052a716c3ce7261': {'sourcename': '13-S', 'x':16, 'y':31, 'spaces':4, 'target_x': 15, 'target_y': 31, 'steps':20,
+                    'assigned': {'fharvester': 2}, 
+                    'expected_income': 95
+                }
+            },
+            'safespot': {'x': 40, 'y':18 },
+            //'mineralid': '598342abca90777e307b13e1',
+            //'mineraltype': RESOURCE_HYDROGEN,
+        },
+
+        // 13 Base expansions
+        'W53S5': {
+            'roomname': '13N',
+            'spawn_room': 'W53S5',
+            'sources': {
+                '59bbc3f62052a716c3ce725d': {'sourcename': '13N-W', 'x':8, 'y':33, 'spaces':4, 'target_x': 9, 'target_y': 33, 'steps':60,
+                    'assigned': {'c15harvester': 1, 'hauler': 1}, 
+                    'expected_income': 86
+                },
+                '5982fbdcb097071b4adbc4a8': {'sourcename': '13N-E', 'x':18, 'y':36, 'spaces':1, 'target_x': 17, 'target_y': 35, 'steps':60,
+                    'assigned': {'c15harvester': 1, 'hauler': 1}, 
+                    'expected_income': 80
+                }
+            }
+        },
+
     }
     

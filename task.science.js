@@ -1,74 +1,77 @@
 module.exports = {
     process: function(){
-        
         // Memory['ongoing_reactions'] = {}; Memory['assigned_labs'] = {};
         var ongoing_reactions = Memory['ongoing_reactions'];
         var assigned_labs = Memory['assigned_labs'];
     
-        var product_chains = {
-            RESOURCE_ZYNTHIUM_KEANITE: {            // 1st pre-req for GHODIUM
+        var product_chains = {}
+        product_chains[RESOURCE_ZYNTHIUM_KEANITE] = // 1st pre-req for GHODIUM
+            {
                 'local_room': 'W58S17',
                 'local_resource': RESOURCE_KEANIUM,
                 'remote_resource': RESOURCE_ZYNTHIUM,
                 'remote_room': 'W51S14'
-            }, 
-            RESOURCE_UTRIUM_LEMERGITE: {            // 2nd pre-req for GHODIUM 
-                'local_room': 'W53S12',
-                'local_resource': RESOURCE_LEMERGIUM, // have to buy this on market, no valid source for us :(
+            }
+        product_chains[RESOURCE_UTRIUM_LEMERGITE] = // 2nd pre-req for GHODIUM 
+            {
+                'local_room': 'W48S18',
+                'local_resource': RESOURCE_LEMERGIUM, 
                 'remote_resource': RESOURCE_UTRIUM,
                 'remote_room': 'W57S14'
-            },
-
-            
-            RESOURCE_GHODIUM: {
-                'local_room': 'W53S12',
+            }
+        product_chains[RESOURCE_GHODIUM] = 
+            {
+                'local_room': 'W48S18',
                 'local_resource': RESOURCE_UTRIUM_LEMERGITE, 
                 'remote_resource': RESOURCE_ZYNTHIUM_KEANITE,
                 'remote_room': 'W58S17'
-            },
-            
-    
-            RESOURCE_UTRIUM_HYDRIDE: {              // +100% ATTACK (T1)
+            }
+        product_chains[RESOURCE_UTRIUM_HYDRIDE] =  // +100% ATTACK (T1)
+            {
                 'local_room': 'W57S14',
                 'local_resource': RESOURCE_UTRIUM, 
                 'remote_resource': RESOURCE_HYDROGEN,
                 'remote_room': 'W53S18'
-            },
-            RESOURCE_UTRIUM_ACID: {                 // +200% ATTACK (T2)
+            }
+        product_chains[RESOURCE_UTRIUM_ACID] = // +200% ATTACK (T2)
+            {
                 'local_room': 'W57S14',
                 'local_resource': RESOURCE_UTRIUM_HYDRIDE, 
                 'remote_resource': RESOURCE_HYDROXIDE,
                 'remote_room': 'W53S18'
-            },
-            /*
-            RESOURCE_GHODIUM_OXIDE: {               // -30% DMG TAKEN
-                'local_room': 'W57S11',
-                'local_resource': RESOURCE_OXYGEN,
-                'remote_resource': RESOURCE_GHODIUM,
-                'remote_room': 'W53S12'
-            },
-            */
-            RESOURCE_LEMERGIUM_OXIDE: {             // +100% HEAL
-                'local_room': 'W53S12',
-                'local_resource': RESOURCE_LEMERGIUM, // have to buy this on market, no valid source for us :(
+            }
+        //product_chains[RESOURCE_GHODIUM_OXIDE] = // -30% DMG TAKEN
+            //{
+            //    'local_room': 'W57S11',
+            //    'local_resource': RESOURCE_OXYGEN,
+            //    'remote_resource': RESOURCE_GHODIUM,
+            //    'remote_room': 'W48S18'
+            //}
+        product_chains[RESOURCE_LEMERGIUM_OXIDE] = // // +100% HEAL
+            {
+                'local_room': 'W48S18',
+                'local_resource': RESOURCE_LEMERGIUM,
                 'remote_resource': RESOURCE_OXYGEN,
                 'remote_room': 'W53S12'
-            }, 
-            RESOURCE_LEMERGIUM_ALKALIDE: {             // +200% HEAL (T2)
-                'local_room': 'W53S12',
-                'local_resource': RESOURCE_LEMERGIUM_OXIDE, // have to buy this on market, no valid source for us :(
-                'remote_resource': RESOURCE_HYDROXIDE,
-                'remote_room': 'W53S18'
-            }, 
-            RESOURCE_HYDROXIDE: {                   // REQUIRED FOR T2 BOOSTS
+            }
+        product_chains[RESOURCE_LEMERGIUM_ALKALIDE] = // +200% HEAL (T2)
+            {
+                'local_room': 'W53S18',
+                'local_resource': RESOURCE_HYDROXIDE,
+                'remote_room': 'W48S18',
+                'remote_resource': RESOURCE_LEMERGIUM_OXIDE
+            }
+        product_chains[RESOURCE_HYDROXIDE] = // REQUIRED FOR T2 BOOSTS
+            {
                 'local_room': 'W53S18',
                 'local_resource': RESOURCE_HYDROGEN,
                 'remote_resource': RESOURCE_OXYGEN,
                 'remote_room': 'W53S12'
-            },
-        }
+            }
+
     
         for (var goal in ongoing_reactions) {
+            
             var this_reaction = ongoing_reactions[goal];
             
             var reaction_created = 0;
@@ -282,7 +285,6 @@ module.exports = {
                 //console.log('Science: skipping ' + goal + ' because it has a live reaction.');
                 continue;
             }
-    
             var reaction = product_chains[goal];
             var factory_room_name = reaction['local_room'];
             if (factory_room_name == undefined) {
@@ -304,10 +306,18 @@ module.exports = {
                 //console.log('Science: skipping ' + goal + '/' + factory_room_name + ' because local_room room terminal lacks 3000 ' + local_component);
                 continue;
             }
-            if (factory_room_terminal.store[goal] != undefined && factory_room_terminal.store[goal] >= 20000) {
-                console.log('Science: skipping ' + goal + '/' + factory_room_name + ' because we already have at least 20k of the end product ' + goal);
-                continue;
+            var product_amount = 0;
+            if (factory_room_terminal.store[goal] != undefined) {
+                product_amount = factory_room_terminal.store[goal];
             }
+            if (product_amount >= 20000) {
+                //console.log('Science: skipping ' + goal + '/' + factory_room_name + ' because we already have ' + product_amount + ' of our 20k target for ' + goal);
+                continue;
+            } else {
+                //console.log('Science: for ' + goal + '/' + factory_room_name + ' has ' + factory_room_terminal.store[goal] + ' of goal :::' + goal);
+                //console.log(JSON.stringify(factory_room_terminal.store));
+            }
+            
             if (reaction['remote_resource'] == undefined) {
                 console.log('Science: skipping ' + goal + '/' + factory_room_name + ' because it has no remote_resource.');
                 continue;
@@ -350,8 +360,8 @@ module.exports = {
             }
             // we're ready to start a reaction, and there is NOT one in progress. Should we create one?
             var output_products = factory_room_terminal.store[goal];
-            if (output_products != undefined && output_products >= 6000) {
-                console.log('Science: ' + goal + '/' + factory_room_name + ': not proceeding because ' + factory_room_name + ' already has 6k ' + goal);
+            if (output_products != undefined && output_products >= 20000) {
+                console.log('Science: ' + goal + '/' + factory_room_name + ': not proceeding because ' + factory_room_name + ' already has 20k ' + goal);
                 continue;
             }
             if (ongoing_reactions[goal] != undefined) {

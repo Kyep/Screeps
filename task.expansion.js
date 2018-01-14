@@ -28,14 +28,14 @@ module.exports = {
                 } else if (controllertarget == undefined) {
                     console.log(rname + ': EXPANSION: CONTROLLER TARGET UNDEFINED - CHECK YOU HAVE UNITS THERE.');
                     for(var sid in empire[rname].sources) {
-                        empire[rname].sources[sid].assigned = {'remoteconstructor': 1, 'claimer': 1}
+                        empire[rname].sources[sid].assigned = {'remoteconstructor': 1, 'claimer': 1, 'rogue': 1}
                     }
                     continue;
                 // CASE 2b: I don't own the room.
                 } else if (controllertarget.owner == undefined || controllertarget.owner['username'] != overlord) {
                     console.log(rname + ': EXPANSION: TRYING TO CLAIM CONTROLLER ');
                     for(var sid in empire[rname].sources) {
-                        empire[rname].sources[sid].assigned = {'remoteconstructor': 1, 'claimer': 1}
+                        empire[rname].sources[sid].assigned = {'remoteconstructor': 1, 'claimer': 2, 'rogue': 1}
                     }
                     continue;
                 // CASE 3: I have already claimed the room.
@@ -59,6 +59,11 @@ module.exports = {
                         console.log('EXPAND: ' + expansiontarget + ': WAIT FOR SPAWNER TO BE BUILT, PROGRESS: ' + csite.progress + '/' + csite.progressTotal);
                     } else {
                         console.log('EXPAND: ' + expansiontarget + ': CREATE SPAWNER');
+                        var enemyspawns = expansiontarget.find(FIND_HOSTILE_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_SPAWN});
+                        if(enemyspawns.length) {
+                            console.log('***** ' + ' EXPAND: ' + expansiontarget + ': WAIT FOR ENEMY SPAWNS TO DIE');
+                            continue;
+                        }
                         var spawnerflags = expansiontarget.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_YELLOW && flag.secondaryColor == COLOR_RED) { return 1; } else { return 0; } } });
                         if(spawnerflags.length) {
                             for(var i = 0; i < spawnerflags.length; i++) {

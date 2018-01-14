@@ -298,7 +298,7 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname) {
     }
     var spawners_secondary_preferred = 0;
     var spawners_secondary_allowed = 1;
-    if (room_primary_level > 0 && room_primary_level < 6) {
+    if (room_primary_level > 0 && room_primary_level < 5) {
         spawners_secondary_preferred = 1;
     } else if (room_primary_level > 5) {
         //spawners_secondary_allowed = 0;
