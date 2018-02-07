@@ -13,6 +13,8 @@ module.exports = {
         // If attacked, -> JOB_HIDE, then back to JOB_TRAVEL_OUT.
         if (creep.memory[MEMORY_JOB] == undefined) {
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
+            creep.memory[MEMORY_STEPS_EXPECTED] = empire[creep.memory[MEMORY_DEST]]['sources'][creep.memory[MEMORY_SOURCE]]['steps'];
+            creep.memory[MEMORY_STEPS_ACTUAL] = 0;
         }
         if(Game.time % 5 === 0) {
             if (creep.getShouldHide()) {
@@ -29,6 +31,12 @@ module.exports = {
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_OUT) {
             // If we are not at the destination room, go there.
+            var actual_steps = creep.memory[MEMORY_STEPS_ACTUAL];
+            if(actual_steps == undefined) {
+                actual_steps = 0;
+            }
+            actual_steps++;
+            creep.memory[MEMORY_STEPS_ACTUAL] = actual_steps;
             if (!creep.isAtDestinationRoom()) {
                 creep.moveToDestination();
                 return 0;
@@ -36,6 +44,13 @@ module.exports = {
             // If we are there, but >=75% full, go back.
             if (creep.carry.energy > (creep.carryCapacity * 0.75)) {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
+                if(creep.memory[MEMORY_STEPS_EXPECTED] == undefined) {
+                    if (empire[creep.memory[MEMORY_DEST]] && empire[creep.memory[MEMORY_DEST]]['sources'] && empire[creep.memory[MEMORY_DEST]]['sources'][creep.memory[MEMORY_SOURCE]] && empire[creep.memory[MEMORY_DEST]]['sources'][creep.memory[MEMORY_SOURCE]]['steps']) {
+                        creep.memory[MEMORY_STEPS_EXPECTED] = empire[creep.memory[MEMORY_DEST]]['sources'][creep.memory[MEMORY_SOURCE]]['steps'];
+                    }
+                }
+                //console.log(creep.name + ' -> ' + creep.memory[MEMORY_DEST] + ': expected: ' + creep.memory[MEMORY_STEPS_EXPECTED] + ' but actual: ' + creep.memory[MEMORY_STEPS_ACTUAL]);
+                
                 return 0;
             }
             // If we are there, but don't have our container memorized, look to memorize it.
@@ -199,7 +214,7 @@ module.exports = {
                     creep.say('UPGRADE');
                     return;
                 }
-            } else if (jobReturnresources.run(creep, 1, 1, 0.5, 1, 1, 0) == -1) {
+            } else if (jobReturnresources.run(creep, 1, 1, 0.5, 1, 1, 1) == -1) {
                 // Sleep for a few seconds, then try again.
                 creep.say('zzz 5');
                 creep.sleepFor(5);
@@ -210,6 +225,7 @@ module.exports = {
         } else if (creep.memory[MEMORY_JOB] == JOB_RENEW) {
             if (creep.ticksToLive > 500 || !creep.getRenewEnabled()) {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
+                creep.memory[MEMORY_STEPS_ACTUAL] = 0;
             } else {
                 jobRenew.run(creep);
             }
@@ -224,6 +240,7 @@ module.exports = {
             }
         } else {
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
+            creep.memory[MEMORY_STEPS_ACTUAL] = 0;
         }
     }
 }

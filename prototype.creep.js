@@ -10,6 +10,20 @@ Creep.prototype.getClosestHostileStructure = function() {
     return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (allies.includes(s.owner.username) || s.structureType == STRUCTURE_CONTROLLER) { return false } else { return true } } });
 }
 
+Creep.prototype.getClosestHostileStructureInTypes = function(valid_types) {
+    return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
+        filter: function(s){
+            if (allies.includes(s.owner.username) || s.structureType == STRUCTURE_CONTROLLER) {
+                return false
+            }
+            if(valid_types.includes(s.structureType)) {
+                return true; 
+            }
+            return false;
+        }
+    });
+}
+
 Creep.prototype.getClosestHostileSiegeTarget = function() {
     return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, 
         {filter: function(s){ 

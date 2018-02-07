@@ -1,3 +1,10 @@
+global.REPORT_TERMINALS = function() {
+    for (var rname in Game.rooms) { if(Game.rooms[rname].terminal) { console.log(rname + ' ' + JSON.stringify(Game.rooms[rname].terminal.store)); } }
+}
+
+global.REPORT_WORKERS = function() {
+    Memory['config.reportworkers'] = 1;
+}
 
 global.RECREATE_ROAD_NETWORKS = function() {
     var remaining = Object.keys(empire);

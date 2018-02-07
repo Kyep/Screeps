@@ -69,7 +69,7 @@ module.exports =  {
                         filter: (structure) => {
                             return (
                                     (
-                                       (structure.structureType == STRUCTURE_TERMINAL && structure.store.energy < terminal_energy_max)
+                                       (structure.structureType == STRUCTURE_TERMINAL && structure.store.energy < terminal_energy_max && _.sum(structure.store) < (structure.storeCapacity * 0.9))
                                        || (structure.structureType == STRUCTURE_LAB && structure.energy < 2000)
                                     ) && structure.isActive()
                             );
@@ -135,7 +135,7 @@ module.exports =  {
             return result;
 
         } else {
-            creep.say('RR: nodest');
+            creep.say('RR: !D: ' + fill_storage);
             return -1;
         }
 	}

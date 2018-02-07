@@ -8,8 +8,8 @@ module.exports = {
         if (creep.isAtHomeRoom()) {
             if(!myhealer) {
                 var tickspassed = (Game.time - creep.memory[MEMORY_INIT]);
-                if (tickspassed < 40) { // give them 40 T to find a healer.
-                    creep.say('H' + tickspassed);
+                if (tickspassed < 30) { // give them 30 T to find a healer.
+                    creep.say('HLR? ' + tickspassed);
                     //creep.sleepFor(5);
                     return;
                 }
@@ -35,16 +35,19 @@ module.exports = {
             var trange = creep.pos.getRangeTo(target);
             if (trange == 1) {
                 creep.attack(target);
-                return;
             } else if (trange <= 3) {
                 if(creep.attack(target) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(target);
                 }
-                return;
             }
+            return;
         }
 
-        var structure_target = creep.getClosestHostileStructure();
+        var valid_types = [STRUCTURE_SPAWN, STRUCTURE_TOWER];
+        var structure_target = creep.getClosestHostileStructureInTypes(valid_types);
+        if (!structure_target) {
+            structure_target = creep.getClosestHostileStructure();
+        }
         if (structure_target) {
             target = structure_target;
         }

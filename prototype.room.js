@@ -81,6 +81,8 @@ Room.prototype.showRoadNetwork = function() {
     }
 }
 
+
+
 Room.prototype.getHostileCreeps = function() {
     return this.find(FIND_HOSTILE_CREEPS, {filter: function(c){ if (allies.includes(c.owner.username)) { return false } else { return true } } });
 }
@@ -536,18 +538,24 @@ Room.prototype.updateAlert = function(enemy_details, nuke_details) {
     return thisalert;
 }
 
-Room.prototype.destroyHostileStructures = function() {
+Room.prototype.destroyHostileSpawns = function() {
     var stuff_destroyed = 0;
     var enemy_structures = this.find(FIND_HOSTILE_STRUCTURES); 
     for (var i = 0; i < enemy_structures.length; i++) {
-        enemy_structures[i].destroy();
-        stuff_destroyed++;
+        if(enemy_structures[i].structureType != undefined && enemy_structures[i].structureType == STRUCTURE_SPAWN) {
+            enemy_structures[i].destroy();
+            stuff_destroyed++;
+        }
     }
+    /*
     var enemy_csites = this.find(FIND_HOSTILE_CONSTRUCTION_SITES);
     for (var i = 0; i < enemy_csites.length; i++) {
         enemy_csites[i].remove();
         stuff_destroyed++;
     }
+    */
+    console.log(stuff_destroyed);
+
     return stuff_destroyed;
 }
 
@@ -669,7 +677,7 @@ Room.prototype.sellResource = function (mtype) {
         var rm_range = Game.map.getRoomLinearDistance(this.name, global_sell_orders[porder]['roomName']);
         if (Game.rooms[global_sell_orders[porder]['roomName']] != undefined) {
             //console.log('MKT: selling ' + mtype + ' in ' + this.name + ' skip order ' + JSON.stringify(global_sell_orders[porder]) + ' because its room ' + global_sell_orders[porder]['roomName'] + ' is mine');
-        } else if (rm_range >= 40) {
+        //} else if (rm_range >= 40) {
             //console.log('MKT: selling ' + mtype + ' in ' + this.name + ' skip order ' + JSON.stringify(global_sell_orders[porder]) + ' at ' +  global_sell_orders[porder]['price'] + ' because its room ' + global_sell_orders[porder]['roomName'] + ' has distance: ' + rm_range + ' to me');
         } else if (sell_price == 0) {
            sell_price = global_sell_orders[porder]['price'];
@@ -690,8 +698,8 @@ Room.prototype.sellResource = function (mtype) {
             console.log('MKT: selling ' + mtype + ' in ' + this.name + ': reducing price to configured maximum: ' + sell_price + ' for resource: ' + mtype);
         }
     } else {
-        if (sell_price < 0.1) {
-            sell_price = 0.1;
+        if (sell_price < 0.085) {
+            sell_price = 0.085;
             console.log('MKT: selling ' + mtype + ' in ' + this.name + ': increasing price to configured minimum: ' + sell_price + ' for resource: ' + mtype);
         }
         if (sell_price > 8) {

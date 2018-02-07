@@ -129,6 +129,9 @@ StructureSpawn.prototype.isAvailable = function(force) {
         var crlist = this.pos.findInRange(FIND_CREEPS, 3);
         var creeps_renewing = 0;
         for (var i = 0; i < crlist.length; i++) {
+            if(crlist[i].memory == undefined) {
+                continue;
+            }
             if (crlist[i].memory[MEMORY_JOB] == undefined) {
                 continue;
             }
@@ -151,6 +154,14 @@ StructureSpawn.prototype.isAvailable = function(force) {
     return 1;
 }
 
+StructureLab.prototype.isUnassigned = function() {
+    var assigned_labs = Memory['assigned_labs'];
+    if (assigned_labs[this.id] != undefined) {
+        return false;
+    }
+    return true;
+}
+
 StructureLab.prototype.isAvailable = function() {
     if (this.mineralAmount > 0) {
         return false;
@@ -161,3 +172,5 @@ StructureLab.prototype.isAvailable = function() {
     }
     return true;
 }
+
+

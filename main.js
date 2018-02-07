@@ -492,20 +492,30 @@ module.exports.loop = function () {
                     var s_status = 'Source: |' + empire[rname].sources[skey]['sourcename'] + '|: ';
                     var f_d = empire[rname].sources[skey]['dynamic'];
                     var replace_assign_ml = false;
+                    var use_dismantle = false;
+                    var spawns_from = empire[rname]['spawn_room'];
+                    
                     if (f_d != undefined && f_d == 1) {
                         s_dynamic = true;
                     } else {
-                        var spawns_from = empire[rname]['spawn_room'];
                         if (spawns_from) {
                             var robj = Game.rooms[spawns_from];
                             if (robj) {
                                 var rlvl = robj.getLevel();
-                                if (rlvl < 4) {
+                                if (rlvl > 0 && rlvl < 4) {
                                     replace_assign_ml = true;
                                 }
                             }
                         }
                     }
+                    if(rname == spawns_from && Game.rooms[rname]) {
+                        var eslist = Game.rooms[rname].getHostileStructures();
+                        if (eslist.length) {
+                            use_dismantle = 1;
+                        }
+                    }
+                    
+                    
                     s_status = 'Source: |' + empire[rname].sources[skey]['sourcename'] + '|: ';
                     if (replace_assign_ml) {
                         var newtype = empire_defaults['MSL_4_replacement']
@@ -515,7 +525,9 @@ module.exports.loop = function () {
                     } else {
                         r_status += empire[rname].sources[skey]['sourcename'] + ': ';
                     }
-
+                    if (use_dismantle) {
+                        empire[rname].sources[skey].assigned['dismantler'] = 2;
+                    }
 
                     if (empire[rname].living == undefined) {
                         empire[rname].living = {};
@@ -568,7 +580,7 @@ module.exports.loop = function () {
                                 continue;
                             }*/              
                             if (empire_workers[role] == undefined) {
-                                console.log(spawner.name + ': UNDEFINED ROLE: ' + role)
+                                console.log(spawner.name + ': UNDEFINED ROLE: ' + role);
                                 continue;
                             }
 

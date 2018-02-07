@@ -7,6 +7,7 @@ global.empire_workers = {
 
 	'remoteconstructor': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 4}), 'renew_allowed': 0, 'abbr': 'RC'},
 	'minirc': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 4}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'miniRC'},
+	'dismantler': { 'body': global.CONSTRUCT_BODY({WORK: 10, CARRY: 10, MOVE: 10}), 'renew_allowed': 1, 'abbr': 'DIS'},
 
 	'harvester': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 1}) },
 	'fharvester': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 2}) },
@@ -53,7 +54,7 @@ global.empire_workers = {
 	'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, ATTACK: 20}), 'renew_allowed': 0, 'abbr': 'SB'},    // {"cost":2900,"dps":600}
 	'siege': { 'body':     global.CONSTRUCT_BODY({MOVE: 3, ATTACK: 3}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'S'},
 
-	//'siegehealer': { 'body':     global.CONSTRUCT_BODY({MOVE: 3, HEAL: 3}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'},
+	//'siegehealer': { 'body':     global.CONSTRUCT_BODY({MOVE: 1, HEAL: 1}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'},
 	'siegehealer': { 'body':     global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, HEAL: 20}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'},
 
 	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, 

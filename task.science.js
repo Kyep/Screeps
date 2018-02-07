@@ -79,8 +79,11 @@ module.exports = {
                 reaction_created = this_reaction['creation_time'];
             }
             var reaction_age = Game.time - reaction_created;
-            if (reaction_age > 10000) {
+            if (reaction_age > 5000 && this_reaction['state'] != 3) {
                 console.log('Science eval OLD ( ' + reaction_age + ') state ' + this_reaction['state'] + ' reaction for ' + goal + ': ' + JSON.stringify(this_reaction));
+                Memory['ongoing_reactions'][goal]['state'] = 3;
+                continue;
+                
             }
             var rname = this_reaction['local_room'];
             var local_resource = this_reaction['local_resource'];
@@ -366,6 +369,11 @@ module.exports = {
             }
             if (ongoing_reactions[goal] != undefined) {
                 console.log('Science: ' + goal + '/' + factory_room_name + ': BUG: already have a LIVE REACTION TASK FOR: ' + goal + ' when we went to create one!');
+                continue;
+            }
+            var rlabs = Game.rooms[factory_room_name].find(FIND_MY_STRUCTURES, { filter: function(structure){ if(structure.structureType == STRUCTURE_LAB && structure.isUnassigned()) { return 1; } else { return 0; } } });
+            if (rlabs.length < 3) {
+                //console.log('Science: ' + goal + '/' + factory_room_name + ': cannot create live reaction task for: ' + goal + ' as that room does not have three unassigned labs!');
                 continue;
             }
             // Yes, we should create one!            

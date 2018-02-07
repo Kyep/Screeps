@@ -28,6 +28,8 @@ global.MEMORY_SLEEPFOR = 'sleepfor';
 global.MEMORY_INIT = 'init_time';
 global.MEMORY_TANK = 'tank';
 global.MEMORY_HEALER = 'healer';
+global.MEMORY_STEPS_ACTUAL = 'steps_actual';
+global.MEMORY_STEPS_EXPECTED = 'steps_expected';
 
 global.JOB_HARVEST = 'mine';
 global.JOB_BUILD = 'build';
@@ -45,6 +47,7 @@ global.JOB_EXTRACT ='extract';
 global.JOB_STOREMINERALS = 'storeminerals';
 global.JOB_USELINK = 'uselink'
 global.JOB_HIDE = 'hide';
+global.JOB_DISMANTLE = 'dismantle';
 
 // Rooms
 global.MEMORY_ROAD_NETWORK = 'road_network';
