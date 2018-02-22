@@ -1,3 +1,63 @@
+global.REPORT_STRUCTURES = function() {
+    var always_blacklist = ['container', 'link', 'lab']
+    for (var rname in Game.rooms) {
+        var robj = Game.rooms[rname];
+        if (!robj.isMine()) {
+            continue;
+        }
+        var rlvl = robj.getLevel();
+
+        var r_messages = []
+
+        var s_actual = {}
+        var my_structures = robj.find(FIND_STRUCTURES);
+        for (var i = 0; i < my_structures.length; i++) {
+            if(s_actual[my_structures[i].structureType] == undefined) {
+                s_actual[my_structures[i].structureType] = 0;
+            }
+            s_actual[my_structures[i].structureType]++;
+        }
+        var my_csites = robj.find(FIND_MY_CONSTRUCTION_SITES);
+        for (var i = 0; i < my_csites.length; i++) {
+            if(s_actual[my_csites[i].structureType] == undefined) {
+                s_actual[my_csites[i].structureType] = 0;
+            }
+            s_actual[my_csites[i].structureType]++;
+        }
+        var s_intended = {}
+        for (var stype in CONTROLLER_STRUCTURES) {
+            var key_value = CONTROLLER_STRUCTURES[stype][rlvl];
+            s_intended[stype] = key_value;
+            //console.log('rname: set s_intended ' + s_intended[stype] + ' for ' + stype);
+        }
+        for (var skey in s_intended) {
+            var actual = 0;
+            if (s_actual[skey] != undefined) {
+                actual = s_actual[skey];
+            }
+            var intended = s_intended[skey];
+            if (intended == 0) {
+                continue;
+            }
+            if (intended <= actual) {
+                continue;
+            }
+            if (intended > 100) {
+                continue;
+            }
+            if (always_blacklist.includes(skey)) {
+                continue;
+            }
+            r_messages.push(skey + ': ' + actual + '/' + intended)
+        }
+        if (r_messages.length > 0) {
+            console.log(rname + ': ' + r_messages );
+        }
+    }
+    
+}
+
+
 global.REPORT_TERMINALS = function() {
     for (var rname in Game.rooms) { if(Game.rooms[rname].terminal) { console.log(rname + ' ' + JSON.stringify(Game.rooms[rname].terminal.store)); } }
 }
@@ -365,10 +425,22 @@ global.RETARGET_SIEGE = function (newtarget, waypoints, newx, newy) {
 global.READY_LAUNCHERS = function() {
     var ticks_per_second = 2.9;
     var available_nukers = [];
+    var missing_nukers = []
+    for(var rname in Game.rooms) {
+        var robj = Game.rooms[rname];
+        if(robj.isMine() && robj.getLevel() == 8) {
+            missing_nukers.push(rname);
+        }
+    }
     for(var id in Game.structures){
         if(Game.structures[id].structureType == STRUCTURE_NUKER){
+            if (!Game.structures[id].room.isMine()) {
+                console.log('LAUNCHER: located in room ' + Game.structures[id].room.name + ' which I do not own.');
+                continue;
+            }
+            _.pull(missing_nukers, Game.structures[id].room.name);
             if (!Game.structures[id].isActive()) {
-                console.log('LAUNCHER: inactive ' + Game.structures[id].room.name);
+                console.log('LAUNCHER: inactive ' + Game.structures[id].room.name + '(RLVL: ' + Game.structures[id].room.getLevel() + ')');
                 continue;
             }
             var g_amt = Game.structures[id].ghodium;
@@ -393,10 +465,11 @@ global.READY_LAUNCHERS = function() {
                 console.log('LAUNCHER: lacks ghodium ' + Game.structures[id].room.name + ' (' + g_amt + ' G in launcher, ' + g_storage + ' G in storage)');
                 continue;
             }
-            console.log('LAUNCHER: OK in ' + Game.structures[id].room.name);
+            console.log('LAUNCHER: OK in ' + Game.structures[id].room.name  + ' (' + g_amt + ' G in launcher, ' + g_storage + ' G in storage)');
             available_nukers.push(id);
         }
     }
+    console.log('MISSING: ' + JSON.stringify(missing_nukers));
     return available_nukers;
 }
 

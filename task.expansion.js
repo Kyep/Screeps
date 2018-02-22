@@ -10,7 +10,7 @@ module.exports = {
         for(var rname in empire) {
             if(rooms_to_claim[rname] != undefined) {
                 // To claim a room, define it like this:
-                // Memory['rooms_to_claim'] = {'W57S14': {'controllerid': '59bbc3bb2052a716c3ce6a2f', 'gcltarget': 9 }}
+                // Memory['rooms_to_claim'] = {'W55S8': {'controllerid': '59bbc3da2052a716c3ce6e4b', 'gcltarget': 13 }}
                 // Memory['rooms_to_claim'] = {'W52S23': {'controllerid': '59bbc4072052a716c3ce7416', 'gcltarget': 10 }}
                 var expansiontarget = Game.rooms[rname];
                 var controllertarget = Game.getObjectById(rooms_to_claim[rname]['controllerid']);
@@ -20,22 +20,28 @@ module.exports = {
                 // CASE 1: My GCL is too low.
                 if (Game.gcl.level < gcltarget) {
                     // don't do anything, reservers are pointless.
-                    for(var sid in empire[rname].sources) {
-                        empire[rname].sources[sid].assigned = {}
+                    for(var sid in global.empire[rname].sources) {
+                        global.empire[rname].sources[sid].assigned = {}
                     }
                     continue;
                 // CASE 2a: I have no vision of the room, I assume I don't own it.
                 } else if (controllertarget == undefined) {
                     console.log(rname + ': EXPANSION: CONTROLLER TARGET UNDEFINED - CHECK YOU HAVE UNITS THERE.');
-                    for(var sid in empire[rname].sources) {
-                        empire[rname].sources[sid].assigned = {'remoteconstructor': 1, 'claimer': 1, 'rogue': 1}
+                    //global.empire[rname].sources['CLAIM'] = { 'sourcename':'CLAIM', 'x':25, 'y':25, 'target_x': 25, 'target_y': 25, 'expected_income': 75, 'assigned': { 'remoteconstructor': 1, 'claimer': 1, 'rogue': 1 } } 
+                    for(var sid in global.empire[rname].sources) {
+                        global.empire[rname].sources[sid].assigned = {'remoteconstructor': 1, 'claimer': 1, 'rogue': 1}
                     }
                     continue;
                 // CASE 2b: I don't own the room.
                 } else if (controllertarget.owner == undefined || controllertarget.owner['username'] != overlord) {
                     console.log(rname + ': EXPANSION: TRYING TO CLAIM CONTROLLER ');
-                    for(var sid in empire[rname].sources) {
-                        empire[rname].sources[sid].assigned = {'remoteconstructor': 1, 'claimer': 2, 'rogue': 1}
+                    //global.empire[rname].sources['CLAIM'] = { 'sourcename':'CLAIM', 'x':25, 'y':25, 'target_x': 25, 'target_y': 25, 'expected_income': 75, 'assigned': { 'remoteconstructor': 1, 'claimer': 1, 'rogue': 1 } } 
+                    for(var sid in global.empire[rname].sources) {
+                        global.empire[rname].sources[sid].assigned = {'remoteconstructor': 1, 'claimer': 1, 'rogue': 1}
+                    }
+                    //console.log(JSON.stringify(global.empire[rname].sources));
+                    if (global.empire[rname]['backup_spawn_room'] == undefined) {
+                        console.log('warning: ' + rname + ' has undefined backup_spawn_room');
                     }
                     continue;
                 // CASE 3: I have already claimed the room.
@@ -50,8 +56,8 @@ module.exports = {
                 var controller_level = controllertarget.level;
                 if (spawner_name == '') {
                     // CASE 5: I own the room, the controller is level 1 (can have spawn) but there is no spawn
-                    for(var sid in empire[rname].sources) {
-                        empire[rname].sources[sid].assigned = {'remoteconstructor': 2}
+                    for(var sid in global.empire[rname].sources) {
+                        global.empire[rname].sources[sid].assigned = {'remoteconstructor': 2, 'claimer': 1, 'rogue': 1}
                     }
                     var csites = expansiontarget.find(FIND_MY_CONSTRUCTION_SITES);
                     if(csites.length) {
@@ -60,15 +66,21 @@ module.exports = {
                     } else {
                         console.log('EXPAND: ' + expansiontarget + ': CREATE SPAWNER');
                         var enemyspawns = expansiontarget.find(FIND_HOSTILE_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_SPAWN});
-                        if(enemyspawns.length) {
-                            console.log('***** ' + ' EXPAND: ' + expansiontarget + ': WAIT FOR ENEMY SPAWNS TO DIE');
+                        if(enemyspawns.length > 0) {
+                            console.log('***** ' + ' EXPAND: ' + expansiontarget + ': WAIT FOR ENEMY SPAWNS TO DIE: ' + enemyspawns.length );
+                            if (Game.rooms[rname] != undefined) {
+                                Game.rooms[rname].destroyHostileSpawns();
+                            }
                             continue;
                         }
                         var spawnerflags = expansiontarget.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_YELLOW && flag.secondaryColor == COLOR_RED) { return 1; } else { return 0; } } });
                         if(spawnerflags.length) {
                             for(var i = 0; i < spawnerflags.length; i++) {
-                                expansiontarget.createConstructionSite(spawnerflags[i].pos.x, spawnerflags[i].pos.y, STRUCTURE_SPAWN);
-                                spawnerflags[i].remove();
+                                var crv = expansiontarget.createConstructionSite(spawnerflags[i].pos.x, spawnerflags[i].pos.y, STRUCTURE_SPAWN);
+                                console.log('create spawner returned: ' + crv);
+                                if(crv == OK) {
+                                    spawnerflags[i].remove();
+                                }
                             }
                             continue;
                         } else {

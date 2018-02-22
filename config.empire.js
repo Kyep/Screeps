@@ -2,7 +2,8 @@
     global.cpu_reporting = 0;
 
     global.overlord = 'Phisec';
-    global.allies = ['Kamots'];
+    global.allies = ['Kamots', 'Shibdib', 'nyoom'];
+    global.enemies = ['Asasel'];
     
     global.empire_defaults = {
         'spawner': '59ce24a6b1421365236708e4',
@@ -26,7 +27,7 @@
         'terminal_energy_sell' : 60000, // above this, try to sell energy for credits
         'terminal_energy_share' : 90000, // above this, give away energy
         'terminal_energy_max' : 100000, // above this, refuse to allow any more energy to be deposited in the terminal
-        'mineralcap' : 100000, // once terminal has this many minerals, no more will be mined in a room.
+        'mineralcap' : 500000, // once terminal has this many minerals, no more will be mined in a room.
         'storage_energy_max' : 1000000,
         'room_energy_min' : 100000, // 50k in terminal, 50k in storage
         'room_energy_max' : 300000, // 50k in termal, 250k in storage
@@ -942,6 +943,7 @@
         'W54S8': {
             'roomname': '14N',
             'spawn_room': 'W54S9',
+            'backup_spawn_room': 'W53S12',
             'sources': {
                 '59bbc3e72052a716c3ce7088': {'sourcename': '14N-W', 'x':5, 'y':29, 'spaces':1, 'target_x': 4, 'target_y': 30, 'steps':70,
                     'assigned': {'c30harvester': 1, 'hauler': 1}, 
@@ -957,5 +959,46 @@
                 }
             }
         },
+
+        // 15 Base
+        'W55S8': {
+            'roomname': '15',
+            'spawn_room': 'W55S8',
+            'backup_spawn_room': 'W57S11',
+            'sources': {
+                '59bbc3da2052a716c3ce6e4a': {'sourcename': '15-W', 'x':8, 'y':32, 'spaces':2, 'target_x': 9, 'target_y': 33, 'steps':20,
+                    'assigned': {'fharvester': 2}, 
+                    'expected_income': 90
+                },
+                '59bbc3da2052a716c3ce6e4c': {'sourcename': '15-E', 'x':40, 'y':46, 'spaces':3, 'target_x': 40, 'target_y': 46, 'steps':40,
+                    'assigned': {'fharvester': 2}, 
+                    'expected_income': 95
+                }
+            },
+            'safespot': {'x': 17, 'y':15 },
+            //'mineralid': '59bbc644ae9e1411a425ac92',
+            //'mineraltype': RESOURCE_HYDROGEN,
+        },
+        // 15 Base expansions
+        'W55S9': {
+            'roomname': '15S',
+            'spawn_room': 'W55S8',
+            'backup_spawn_room': 'W57S11',
+            'sources': {
+                '59bbc3da2052a716c3ce6e50': {'sourcename': '15S-W', 'x':4, 'y':43, 'spaces':1, 'target_x': 5, 'target_y': 42, 'steps':70,
+                    'assigned': {'c30harvester': 1, 'hauler': 1}, 
+                    'expected_income': 86
+                },
+                '59bbc3da2052a716c3ce6e4f': {'sourcename': '15S-E', 'x':20, 'y':33, 'spaces':4, 'target_x': 19, 'target_y': 33, 'steps':60,
+                    'assigned': {'c30harvester': 1, 'hauler': 1}, 
+                    'expected_income': 80
+                },
+                'reserver': {'sourcename':'15S-R', 'x':25, 'y':25,
+                    'assigned': {'reserver': 1},
+                    'expected_income': 60, 'dynamic': 1
+                }
+            }
+        },
+
     }
     

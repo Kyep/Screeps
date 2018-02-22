@@ -87,7 +87,8 @@ Room.prototype.getHostileCreeps = function() {
     return this.find(FIND_HOSTILE_CREEPS, {filter: function(c){ if (allies.includes(c.owner.username)) { return false } else { return true } } });
 }
 Room.prototype.getHostileStructures = function() {
-    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (allies.includes(s.owner.username) || s.structureType == STRUCTURE_CONTROLLER || s.structureType == STRUCTURE_POWER_BANK) { return false } else { return true } } });
+    var structure_blacklist = [STRUCTURE_CONTROLLER, STRUCTURE_POWER_BANK, STRUCTURE_KEEPER_LAIR];
+    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (allies.includes(s.owner.username) || structure_blacklist.includes(s.structureType)) { return false } else { return true } } });
 }
 
 Room.prototype.getShouldUpgrade = function() {
@@ -242,17 +243,52 @@ Room.prototype.getLevel = function() {
     return this.controller.level;
 }
 
-Room.prototype.isMine = function() {
+Room.prototype.getOwner = function() {
     if (this.controller == undefined) {
-        return false;
+        return undefined;
     }
     if (this.controller.owner == undefined) {
+        return undefined;
+    }
+    if (this.controller.owner.username) {
+        return this.controller.owner.username;
+    }
+    return undefined;
+}
+
+Room.prototype.getOwnerOrReserver = function() {
+    if (this.controller == undefined) {
+        return undefined;
+    }
+    if (this.controller.owner == undefined) {
+        return undefined;
+    }
+    if (this.controller.owner != undefined && this.controller.owner.username != undefined && allies.includes(this.controller.owner.username)) {
+        return this.controller.owner.username;
+    }
+    if (this.controller.reservation != undefined && this.controller.reservation.username != undefined && allies.includes(this.controller.reservation.username)) {
+        return this.controller.reservation.username;
+    }
+    return undefined;
+}
+
+Room.prototype.isMine = function() {
+    var owner = this.getOwner();
+    if (owner && owner == overlord) {
+        return true;
+    }
+    return false;
+}
+
+Room.prototype.isAllied = function() {
+    var uname = this.getOwnerOrReserver();
+    if (uname == undefined) {
         return false;
     }
-    if (this.controller.owner.username != overlord) {
-        return false;
+    if (allies.includes(uname)) {
+        return true;
     }
-    return true;
+    return false;
 }
 
 Room.prototype.hasAlert = function() {
@@ -466,9 +502,9 @@ Room.prototype.deleteAlert = function() {
     var end_msg = 'ATTACK on ' + this.name + ' by ' + myalert['hostileUsername'] + ' worth ' + myalert['hostileCostMax'] + ' ENDED after ' + alert_age + ' ticks.';
     console.log(end_msg);
     if (myalert['hostileUsername'] != 'Invader') {
-        //if (myalert['hostileCostMax'] > 50 || myalert['hostileUsername'] != 'eduter') {
+        if (myalert['hostileCostMax'] > 50) {
             Game.notify(end_msg);
-        //}
+        }
     }
 
     // Actually delete the alert.
@@ -515,7 +551,7 @@ Room.prototype.updateAlert = function(enemy_details, nuke_details) {
         } else if (thisalert['hostileUsername'] == 'Invader') {
             console.log('ATTACK: NEW NPC ATTACK DETECTED: ' + attack_details );
         } else {
-            if (thisalert['hostileCostMax'] > 50 || thisalert['hostileUsername'] != 'eduter') {
+            if (thisalert['hostileCostMax'] > 50) {
                 Game.notify('NON-NPC ATTACK! ' + attack_details);
             }
             console.log('ATTACK: NEW *PLAYER* ATTACK DETECTED: ' + attack_details );

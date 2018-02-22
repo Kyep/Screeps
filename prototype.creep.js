@@ -7,7 +7,12 @@ Creep.prototype.getHostileCreepsInRange = function(therange) {
 }
 
 Creep.prototype.getClosestHostileStructure = function() {
-    return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (allies.includes(s.owner.username) || s.structureType == STRUCTURE_CONTROLLER) { return false } else { return true } } });
+    var rlvl = this.room.getLevel();
+    var invalid_types = [STRUCTURE_CONTROLLER];
+    if (rlvl == 0) {
+        invalid_types.push(STRUCTURE_RAMPART);
+    }
+    return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (allies.includes(s.owner.username) || invalid_types.includes(s.structureType)) { return false } else { return true } } });
 }
 
 Creep.prototype.getClosestHostileStructureInTypes = function(valid_types) {
@@ -353,8 +358,14 @@ Creep.prototype.moveToRUP = function(dest, rupsteps) {
         }
         rupsteps = this.memory[MEMORY_REUSEPATH];
     }
-    this.moveTo(dest, {reusePath: rupsteps});
+    if (this.isSiege()) {
+        this.moveTo(dest, {reusePath: rupsteps, maxRooms: 25});
+    } else {
+        this.moveTo(dest, {reusePath: rupsteps});
+    }
 }
+
+
 
 Creep.prototype.moveToDestination = function() {
     if (this.memory[MEMORY_DEST] == undefined) {
