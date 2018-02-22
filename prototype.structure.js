@@ -1,3 +1,12 @@
+
+Structure.prototype.isInvincible = function() {
+    var structure_blacklist = [STRUCTURE_CONTROLLER, STRUCTURE_POWER_BANK, STRUCTURE_KEEPER_LAIR];
+    if (structure_blacklist.includes(this.structureType)) {
+        return true;
+    }
+    return false;
+}
+
 StructureRoad.prototype.inRoadNetwork = function() {
     var net = this.room.memory[MEMORY_ROAD_NETWORK];
     if (net == undefined) {

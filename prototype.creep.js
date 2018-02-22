@@ -7,40 +7,47 @@ Creep.prototype.getHostileCreepsInRange = function(therange) {
 }
 
 Creep.prototype.getClosestHostileStructure = function() {
-    var rlvl = this.room.getLevel();
-    var invalid_types = [STRUCTURE_CONTROLLER];
-    if (rlvl == 0) {
-        invalid_types.push(STRUCTURE_RAMPART);
-    }
-    return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (IS_ALLY(s.owner.username) || invalid_types.includes(s.structureType)) { return false } else { return true } } });
+    return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
+        filter: function(s){
+            if(s.isInvincible()) {
+                return false;
+            }
+            if (s.structureType == STRUCTURE_RAMPART) {
+                if (s.isPublic) {
+                    return false;
+                }
+            }
+            if (s.owner) {
+                if (s.owner.username) {
+                    if (IS_ALLY(s.owner.username)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+    });
 }
 
 Creep.prototype.getClosestHostileStructureInTypes = function(valid_types) {
     return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
         filter: function(s){
-            if (IS_ALLY(s.owner.username) || s.structureType == STRUCTURE_CONTROLLER) {
+            if (s.isInvincible()) {
                 return false
             }
-            if(valid_types.includes(s.structureType)) {
-                return true; 
-            }
-            return false;
-        }
-    });
-}
-
-Creep.prototype.getClosestHostileSiegeTarget = function() {
-    return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, 
-        {filter: function(s){ 
-            if (IS_ALLY(s.owner.username)) { 
+            if(!valid_types.includes(s.structureType)) {
                 return false; 
             }
-            if (s.structureType == STRUCTURE_TOWER || s.structureType == STRUCTURE_SPAWN) { 
-                return true;
+            if (s.owner) {
+                if (s.owner.username) {
+                    if (IS_ALLY(s.owner.username)) {
+                        return false;
+                    }
+                }
             }
-            return false;
-        }}
-    );
+            return true;
+        }
+    });
 }
 
 Creep.prototype.hasSetDefaults = function() {

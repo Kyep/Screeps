@@ -26,49 +26,49 @@ global.LIST_OBSERVERS = function() {
     return available_observers;
 }
 
+global.ASSIGN_OBSERVERS = function(available_observers, target_rooms) {
+    var spy_count = 0;
+    var already_spied = []
+    for (var i = 0; i < available_observers.length; i++) {
+        for (var t = 0; t < target_rooms.length; t++) {
+            var this_target = target_rooms[t];
+            if (already_spied.includes(this_target)) {
+                continue;
+            }
+            var obsrange = Game.map.getRoomLinearDistance(available_observers[i].room.name, this_target);
+            if (obsrange > OBSERVER_RANGE) {
+                continue;
+            }
+            var result = available_observers[i].observeRoom(this_target);
+            already_spied.push(this_target);
+            //console.log('OBS: observer in ' + available_observers[i].room.name + ' now observing ' + this_target + ' with result: ' + result);
+            spy_count++;
+            break;
+        }
+    }
+    return spy_count;
+}
+
 global.UPDATE_OBSERVERS = function(observe_energy) {
-    
+
+    var available_observers = _.shuffle(global.LIST_OBSERVERS());
+    var espionage_targets = _.shuffle(global.ESPIONAGE_LIST_TARGETS());
     var rooms_to_observe = [];
     if (Memory['energy_share_dests'] != undefined && observe_energy) {
         rooms_to_observe = rooms_to_observe.concat(Memory['energy_share_dests']);
     }
     rooms_to_observe = rooms_to_observe.concat(Object.keys(Memory['rooms_to_claim']));
-
-    var available_observers = _.shuffle(global.LIST_OBSERVERS());
-
-    //console.log('OBS: ' + available_observers.length + ' observer(s) available, ' + rooms_to_observe.length + ' observation targets: ' + JSON.stringify(rooms_to_observe)); 
-    if (available_observers.length == 0) {
-        return;
+    if (espionage_targets.length) {
+        var retval = global.ASSIGN_OBSERVERS(available_observers, espionage_targets);
+        return retval;
     }
-    if (rooms_to_observe.length > available_observers.length) {
-        console.log('OBS: WARNING: we only have ' + available_observers.length + ' observers, but you are trying to monitor ' + rooms_to_observe.length + ' rooms!');
-    } else if (available_observers.length > rooms_to_observe.length) {
-        var espionage_targets = global.ESPIONAGE_LIST_TARGETS();
-        var spare_capacity = available_observers.length - rooms_to_observe.length;
-        for (var i = 0; i < spare_capacity && i < espionage_targets.length; i++) {
-            var new_element = espionage_targets[i];
-            rooms_to_observe.push(new_element);
-            //console.log('OBS: ' + spare_capacity + ' spare capacity, adding ' + new_element + ' for espionage');
-        }
-    } else {
-        //console.log('OBS: no spare_capacity for espionage');
-    }
-    for (var i = 0; i < available_observers.length && i < rooms_to_observe.length; i++) {
-        var theobs = available_observers[i];
-        var obsrange = Game.map.getRoomLinearDistance(theobs.room.name, rooms_to_observe[i]);
-        if (obsrange > OBSERVER_RANGE) {
-            //console.log('OBS: observer in ' + theobs.room.name + ' cannot monitor ' + rooms_to_observe[i] + ' as it is ' + obsrange + ' >10 rooms away.');
-            continue;
-        }
-        var result = theobs.observeRoom(rooms_to_observe[i]);
-        //console.log('OBS: observer in ' + theobs.room.name + ' now observing ' + rooms_to_observe[i] + ' with result: ' + result);
-    }
+    var retval = global.ASSIGN_OBSERVERS(rooms_to_observe, espionage_targets);
+    return retval;
 }
 
 global.ESPIONAGE_CREATE_TARGETS = function() {
-	var start_x = 49;
+	var start_x = 41;
 	var end_x = 59;
-	//var end_x = 50;
 	var start_y = 1;
 	var end_y = 29;
 	var espionage_targets = [];
@@ -205,8 +205,8 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units) {
                 if (einfo['allied']) { 
                     // do nothing, ally room.
                 } else if (einfo['enemy_spawns'] && einfo['level'] >= 1) {
-                    console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
-                        einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners. ');// + count_my_creeps + '/' + attacker_limit + ' assigned.');
+                    //console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
+                    //    einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners. ');// + count_my_creeps + '/' + attacker_limit + ' assigned.');
                 } else if (einfo['enemy_towers']) {
                     console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
                         + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Spawn drainers as it has towers only. '  + count_my_creeps + '/' + drainer_limit + ' assigned.');
@@ -218,7 +218,11 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units) {
                     console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
                         + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Cleanup junk room. '  + count_my_creeps + '/' + cleaner_limit + ' assigned.');
                     if(fbase && count_my_creeps < cleaner_limit) {
-                        var created = fbase.createUnit('siegebig', tgt);
+                        var stype = 'siege';
+                        if (einfo['enemy_structures'] > 10) {
+                            stype = 'siegebig';
+                        }
+                        var created = fbase.createUnit(stype, tgt);
                         console.log('SPAWNED: ' + created);
                     }
                 }

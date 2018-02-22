@@ -30,6 +30,7 @@ global.MEMORY_TANK = 'tank';
 global.MEMORY_HEALER = 'healer';
 global.MEMORY_STEPS_ACTUAL = 'steps_actual';
 global.MEMORY_STEPS_EXPECTED = 'steps_expected';
+global.MEMORY_FRUSTRATION = 'frustration';
 
 global.JOB_HARVEST = 'mine';
 global.JOB_BUILD = 'build';

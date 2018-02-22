@@ -86,9 +86,9 @@ Room.prototype.showRoadNetwork = function() {
 Room.prototype.getHostileCreeps = function() {
     return this.find(FIND_HOSTILE_CREEPS, {filter: function(c){ if (IS_ALLY(c.owner.username)) { return false } else { return true } } });
 }
+
 Room.prototype.getHostileStructures = function() {
-    var structure_blacklist = [STRUCTURE_CONTROLLER, STRUCTURE_POWER_BANK, STRUCTURE_KEEPER_LAIR];
-    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (IS_ALLY(s.owner.username) || structure_blacklist.includes(s.structureType)) { return false } else { return true } } });
+    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (IS_ALLY(s.owner.username) || s.isInvincible()) { return false } else { return true } } });
 }
 
 Room.prototype.getShouldUpgrade = function() {
