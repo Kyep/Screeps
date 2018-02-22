@@ -14,6 +14,8 @@ require('prototype.creep');
 require('prototype.room');
 require('prototype.structure');
 
+require('lib.loanuserlist');
+
 var roleHarvester = require('role.harvester');
 var roleCHarvester = require('role.charvester');
 var roleHauler = require('role.hauler');
@@ -46,13 +48,6 @@ var expansionplanner = require('task.expansion');
 var taskscience = require('task.science');
 
 // ---------------------------
-// CONFIG
-// ---------------------------
-
-
-
-
-// ---------------------------
 // BEGIN MAIN LOOP 
 // ---------------------------
 
@@ -72,6 +67,7 @@ module.exports.loop = function () {
     for(var cr in Game.creeps) {
         Game.creeps[cr].setupMemory();
     }
+    global.populateLOANlist();
 
     cpu_setup_use = Game.cpu.getUsed() - cpu_setup_use;
     if (cpu_reporting) { console.log('CPU cpu_setup_use: ' + cpu_setup_use); }
@@ -83,15 +79,19 @@ module.exports.loop = function () {
     }
 
     global.UPDATE_OBSERVERS(observe_energy);
-    global.ESPIONAGE();
 
     if(Game.time % 250 === 0) {
         global.CREATE_GROWERS();
         //global.SHARE_SPARE_ENERGY(); 
     }
-    if(Game.time % 500 === 0) {
+    if(Game.time % 2500 === 0) {
         //global.PRESET_ATTACK_WAVE();
+        global.ESPIONAGE_ATTACK_PLANS(true);
+        global.ESPIONAGE_RESET_TARGETS();
     }
+
+    global.ESPIONAGE();
+
     if(Game.time % 500 === 0) {
         var saved_energy_network = Memory['energy_network'];
         var sene = saved_energy_network[ENERGY_EMPTY];

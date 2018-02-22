@@ -30,7 +30,7 @@ global.UPDATE_OBSERVERS = function(observe_energy) {
     
     var rooms_to_observe = [];
     if (Memory['energy_share_dests'] != undefined && observe_energy) {
-        rooms_to_observe = Memory['energy_share_dests'];
+        rooms_to_observe = rooms_to_observe.concat(Memory['energy_share_dests']);
     }
     rooms_to_observe = rooms_to_observe.concat(Object.keys(Memory['rooms_to_claim']));
 
@@ -134,7 +134,6 @@ global.ESPIONAGE_GET_TARGET = function() {
 
 global.ESPIONAGE_REGEN_TARGETS = function() {
     Memory['espionage'] = {}
-    Memory['espionage']['players'] = {}
     Memory['espionage']['rooms'] = {}
     Memory['espionage']['fob'] = {}
     var new_target_list = _.shuffle(global.ESPIONAGE_CREATE_TARGETS());
@@ -168,7 +167,11 @@ global.ESPIONAGE_SHOW_ROOM = function(rname) {
 
 global.ESPIONAGE_ATTACK_PLANS = function(spawn_units) {
     
-    var concurrency_limit = 1;
+    var attacker_limit = 1;
+    var drainer_limit = 1;
+    var cleaner_limit = 1;
+    
+    var range_limit = 5;
     
     if (Memory['espionage']['fob'] == undefined) {
         return false;
@@ -182,7 +185,7 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units) {
             var tgt = fobs[fobname][i];
             var einfo = Memory['espionage']['rooms'][tgt];
             if (einfo) {
-                if (einfo['spawn_dist'] >= 6) {
+                if (einfo['spawn_dist'] >= range_limit) {
                     continue;
                 }
                 if (!einfo['enemy_structures']) {
@@ -199,22 +202,23 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units) {
                 }
                 var count_my_creeps = ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt);
                 
-                if (einfo['enemy_spawns'] && einfo['level'] >= 1) {
-                    console.log('- ATTACK PLAN: ' + fobname + ' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
-                        einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Manual attack only as it has spawners. ' + count_my_creeps + '/' + concurrency_limit + ' assigned.');
+                if (einfo['allied']) { 
+                    // do nothing, ally room.
+                } else if (einfo['enemy_spawns'] && einfo['level'] >= 1) {
+                    console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
+                        einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners. ');// + count_my_creeps + '/' + attacker_limit + ' assigned.');
                 } else if (einfo['enemy_towers']) {
-                    console.log('- ATTACK PLAN: ' + fobname + ' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
-                        + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Spawn drainers as it has towers only. '  + count_my_creeps + '/' + concurrency_limit + ' assigned.');
-                    //concurrency_limit = 2;
-                    if(fbase && count_my_creeps < concurrency_limit) {
+                    console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
+                        + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Spawn drainers as it has towers only. '  + count_my_creeps + '/' + drainer_limit + ' assigned.');
+                    if(fbase && count_my_creeps < drainer_limit) {
                         var created = fbase.createUnit('drainerbig', tgt);
                         console.log('SPAWNED: ' + created);
                     }
                 } else {
-                    console.log('- ATTACK PLAN: ' + fobname + ' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
-                        + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Cleanup junk room. '  + count_my_creeps + '/' + concurrency_limit + ' assigned.');
-                    if(fbase && count_my_creeps < concurrency_limit) {
-                        var created = fbase.createUnit('siege', tgt);
+                    console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
+                        + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Cleanup junk room. '  + count_my_creeps + '/' + cleaner_limit + ' assigned.');
+                    if(fbase && count_my_creeps < cleaner_limit) {
+                        var created = fbase.createUnit('siegebig', tgt);
                         console.log('SPAWNED: ' + created);
                     }
                 }
@@ -255,10 +259,6 @@ global.ESPIONAGE = function() {
     }
     var target_list = global.ESPIONAGE_LIST_TARGETS();
 
-    if (target_list.length == 0) {
-        //console.log('Espionage report: ' + JSON.stringify(Memory['espionage']['players']));
-        return;
-    }
     var num_processed = 0;
     var levels_added = 0;
     for (var rname in Game.rooms) {
@@ -266,6 +266,15 @@ global.ESPIONAGE = function() {
             //console.log('ESPIONAGE: scoring ' + rname);
             var theroom = Game.rooms[rname];
             Memory['espionage']['rooms'][rname] = {}
+
+            Memory['espionage']['rooms'][rname]['allied'] = false;
+            var rowner = theroom.getOwnerOrReserver();
+            if(rowner) {
+                Memory['espionage']['rooms'][rname]['owner'] = rowner;
+                if (IS_ALLY(rowner)) {
+                    Memory['espionage']['rooms'][rname]['allied'] = true;
+                }
+            }
 
             var enemy_structures = theroom.getHostileStructures();
             Memory['espionage']['rooms'][rname]['enemy_structures'] = enemy_structures.length;
@@ -305,26 +314,8 @@ global.ESPIONAGE = function() {
                     Memory['espionage']['fob'][sfrom].push(rname);
                 }
             }
-            Memory['espionage']['rooms'][rname]['allied'] = theroom.isAllied();
             Memory['espionage']['rooms'][rname]['level'] = rlvl;
-            Memory['espionage']['rooms'][rname]['owner'] = undefined;
 
-            if (theroom.controller != undefined) {
-                if (theroom.controller.owner != undefined) {
-                    if (theroom.controller.owner.username != undefined) {
-                        Memory['espionage']['rooms'][rname]['owner'] = theroom.controller.owner.username;
-                        if (theroom.controller.owner.username != overlord) {
-                            var room_owner = theroom.controller.owner.username;
-                            if (Memory['espionage']['players'][room_owner] == undefined) {
-                                Memory['espionage']['players'][room_owner] = theroom.controller.level;
-                            }
-                            
-                            Memory['espionage']['players'][room_owner] += theroom.controller.level;
-                            levels_added += theroom.controller.level;
-                        }
-                    }
-                }
-            }
             if(!theroom.isMine() && enemy_structures.length) {
                 //console.log('ESPIONAGE: saved room ' + rname + ' (' + num_processed + '/' + target_list.length + '): ' + JSON.stringify(Memory['espionage']['rooms'][rname]));
             }
@@ -332,6 +323,6 @@ global.ESPIONAGE = function() {
             num_processed++;
         }
     }
-    //console.log('ESPIONAGE: processed ' + num_processed + '/' + target_list.length + ', adding: ' + levels_added + ' running: ' + JSON.stringify(Memory['espionage']['players']));
+    //console.log('ESPIONAGE: processed ' + num_processed + '/' + target_list.length + ', adding: ' + levels_added);
     //console.log('ESPIONAGE: ' + JSON.stringify(Memory['espionage']));
 }

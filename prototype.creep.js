@@ -1,9 +1,9 @@
 Creep.prototype.getClosestHostileCreep = function() {
-    return this.pos.findClosestByPath(FIND_HOSTILE_CREEPS, {filter: function(c){ if (allies.includes(c.owner.username)) { return false } else { return true } } });
+    return this.pos.findClosestByPath(FIND_HOSTILE_CREEPS, {filter: function(c){ if (IS_ALLY(c.owner.username)) { return false } else { return true } } });
 }
 
 Creep.prototype.getHostileCreepsInRange = function(therange) {
-    return this.pos.findInRange(FIND_HOSTILE_CREEPS, therange, {filter: function(c){ if (allies.includes(c.owner.username)) { return false } else { return true } } });
+    return this.pos.findInRange(FIND_HOSTILE_CREEPS, therange, {filter: function(c){ if (IS_ALLY(c.owner.username)) { return false } else { return true } } });
 }
 
 Creep.prototype.getClosestHostileStructure = function() {
@@ -12,13 +12,13 @@ Creep.prototype.getClosestHostileStructure = function() {
     if (rlvl == 0) {
         invalid_types.push(STRUCTURE_RAMPART);
     }
-    return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (allies.includes(s.owner.username) || invalid_types.includes(s.structureType)) { return false } else { return true } } });
+    return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (IS_ALLY(s.owner.username) || invalid_types.includes(s.structureType)) { return false } else { return true } } });
 }
 
 Creep.prototype.getClosestHostileStructureInTypes = function(valid_types) {
     return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
         filter: function(s){
-            if (allies.includes(s.owner.username) || s.structureType == STRUCTURE_CONTROLLER) {
+            if (IS_ALLY(s.owner.username) || s.structureType == STRUCTURE_CONTROLLER) {
                 return false
             }
             if(valid_types.includes(s.structureType)) {
@@ -32,7 +32,7 @@ Creep.prototype.getClosestHostileStructureInTypes = function(valid_types) {
 Creep.prototype.getClosestHostileSiegeTarget = function() {
     return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, 
         {filter: function(s){ 
-            if (allies.includes(s.owner.username)) { 
+            if (IS_ALLY(s.owner.username)) { 
                 return false; 
             }
             if (s.structureType == STRUCTURE_TOWER || s.structureType == STRUCTURE_SPAWN) { 

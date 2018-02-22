@@ -84,11 +84,11 @@ Room.prototype.showRoadNetwork = function() {
 
 
 Room.prototype.getHostileCreeps = function() {
-    return this.find(FIND_HOSTILE_CREEPS, {filter: function(c){ if (allies.includes(c.owner.username)) { return false } else { return true } } });
+    return this.find(FIND_HOSTILE_CREEPS, {filter: function(c){ if (IS_ALLY(c.owner.username)) { return false } else { return true } } });
 }
 Room.prototype.getHostileStructures = function() {
     var structure_blacklist = [STRUCTURE_CONTROLLER, STRUCTURE_POWER_BANK, STRUCTURE_KEEPER_LAIR];
-    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (allies.includes(s.owner.username) || structure_blacklist.includes(s.structureType)) { return false } else { return true } } });
+    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (IS_ALLY(s.owner.username) || structure_blacklist.includes(s.structureType)) { return false } else { return true } } });
 }
 
 Room.prototype.getShouldUpgrade = function() {
@@ -260,32 +260,26 @@ Room.prototype.getOwnerOrReserver = function() {
     if (this.controller == undefined) {
         return undefined;
     }
-    if (this.controller.owner == undefined) {
-        return undefined;
-    }
-    if (this.controller.owner != undefined && this.controller.owner.username != undefined && allies.includes(this.controller.owner.username)) {
+    if (this.controller.owner != undefined && this.controller.owner.username != undefined) {
         return this.controller.owner.username;
     }
-    if (this.controller.reservation != undefined && this.controller.reservation.username != undefined && allies.includes(this.controller.reservation.username)) {
+    if (this.controller.reservation != undefined && this.controller.reservation.username != undefined) {
         return this.controller.reservation.username;
     }
+    var enemy_structures = this.find(FIND_HOSTILE_STRUCTURES); 
+    for (var i = 0; i < enemy_structures.length; i++) {
+        if(enemy_structures[i].structureType == STRUCTURE_SPAWN) {
+            if(enemy_structures[i].owner && enemy_structures[i].owner.username) {
+                return enemy_structures[i].owner.username;
+            }
+        }
+    }    
     return undefined;
 }
 
 Room.prototype.isMine = function() {
     var owner = this.getOwner();
     if (owner && owner == overlord) {
-        return true;
-    }
-    return false;
-}
-
-Room.prototype.isAllied = function() {
-    var uname = this.getOwnerOrReserver();
-    if (uname == undefined) {
-        return false;
-    }
-    if (allies.includes(uname)) {
         return true;
     }
     return false;
@@ -326,7 +320,7 @@ Room.prototype.shouldHaveAlert = function(enemy_details, nuke_details) {
     }
     
     if (enemy_details['hostileCount'] > 0) {
-        if (!allies.includes(enemy_details['hostileUsername'])) {
+        if (!IS_ALLY(enemy_details['hostileUsername'])) {
             return 1;
         }
     }
@@ -406,13 +400,16 @@ Room.prototype.createAlert = function(enemy_details, nuke_details) {
         exit_arr.push(texits[ex]);
     }
     for (var tc in Game.creeps) {
-        if(!exit_arr.includes(Game.creeps[tc].room.name)) { // if they aren't next door, skip them.
+        if (!exit_arr.includes(Game.creeps[tc].room.name)) { // if they aren't next door, skip them.
             continue;
         }
-        if(Game.creeps[tc].memory[MEMORY_ROLE] == undefined) {
+        if (Game.creeps[tc].memory[MEMORY_ROLE] == undefined) {
             continue;
         }
-        if (!empire_defaults['military_roles'].includes(Game.creeps[tc].memory[MEMORY_ROLE])) {
+        if (!Game.creeps[tc].isMilitary()) {
+            continue;
+        }
+        if (Game.creeps[tc].isSiege()) {
             continue;
         }
         var theirEnemies = Game.creeps[tc].room.find(FIND_HOSTILE_CREEPS);

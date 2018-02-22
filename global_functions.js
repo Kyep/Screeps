@@ -1,5 +1,16 @@
 
+global.IS_ALLY = function (uname) {
+    if (global.LOANlist != undefined) {
+        if (global.LOANlist.includes(uname)) {
+            return true;
+        }
+    }
+    if (allies.includes(uname)) {
+        return true;
+    }
+    return false;
 
+}
 
 global.CONSTRUCT_BODY = function (bdetails) {
     var partlist = [];

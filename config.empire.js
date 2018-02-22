@@ -2,7 +2,7 @@
     global.cpu_reporting = 0;
 
     global.overlord = 'Phisec';
-    global.allies = ['Kamots', 'Shibdib', 'nyoom'];
+    global.allies = []; // not including anyone in alliance.
     global.enemies = ['Asasel'];
     
     global.empire_defaults = {
