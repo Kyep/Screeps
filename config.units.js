@@ -51,7 +51,8 @@ global.empire_workers = {
 	'wizard': { 'body':   [MOVE, RANGED_ATTACK], 'renew_allowed': 0}, // horrificly expensive anti-crowd unit
 
     // Anti-player ATTACK classes
-	'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, ATTACK: 20}), 'renew_allowed': 0, 'abbr': 'SB'},    // {"cost":2900,"dps":600}
+	//'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, ATTACK: 20}), 'renew_allowed': 0, 'abbr': 'SB'},    // {"cost":2900,"dps":600}
+	'siegebig': { 'body':      global.CONSTRUCT_BODY({MOVE: 20, WORK: 20}), 'renew_allowed': 0, 'abbr': 'SB'},    // {"cost":2900,"dps":600}
 	'siege': { 'body':     global.CONSTRUCT_BODY({MOVE: 3, ATTACK: 3}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'S'},
 
 	//'siegehealer': { 'body':     global.CONSTRUCT_BODY({MOVE: 1, HEAL: 1}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'},

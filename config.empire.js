@@ -783,25 +783,24 @@
             'safespot': {'x': 40, 'y':18 }
 
         },
-        'W49S18': {
-            'roomname': '11W',
+        'W47S19': {
+            'roomname': '11SE',
             'spawn_room': 'W48S18',
             //'backup_spawn_room': 'W53S18',
             'sources': {
-                '5982fbdcb097071b4adbc4a7': {'sourcename': '11W-W', 'x':9, 'y':26, 'spaces':4, 'target_x': 10, 'target_y': 25, 'steps':70,
+                '5982fbf4b097071b4adbc739': {'sourcename': '11SE-W', 'x':7, 'y':19, 'spaces':1, 'target_x': 8, 'target_y': 20, 'steps':110,
                     'assigned': {'c15harvester': 1, 'hauler': 2}, 
-                    'expected_income': 80
+                    'expected_income': 50
                 },
-                '5982fbdcb097071b4adbc4a8': {'sourcename': '11W-E', 'x':30, 'y':32, 'spaces':1, 'target_x': 31, 'target_y': 31, 'steps':70,
+                '5982fbf4b097071b4adbc73a': {'sourcename': '11SE-E', 'x':25, 'y':33, 'spaces':4, 'target_x': 24, 'target_y': 32, 'steps':110,
                     'assigned': {'c15harvester': 1, 'hauler': 2}, 
-                    'expected_income': 75
+                    'expected_income': 40
                 },
-                'reserver': {'sourcename':'11W-R', 'x':27, 'y':14,
+                'reserver': {'sourcename':'11SE-R', 'x':11, 'y':36,
                     'assigned': {'reserver': 1},
-                    'expected_income': 70, 'dynamic': 1
+                    'expected_income': 30, 'dynamic': 1
                 }
-            },
-            'safespot': {'x': 40, 'y':18 }
+            }
         },
 
         // 12 Base

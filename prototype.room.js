@@ -722,8 +722,8 @@ Room.prototype.sellResource = function (mtype) {
         //console.log(global_sell_orders[porder]['price']);
     }
     if (mtype == RESOURCE_ENERGY) {
-        if (sell_price < 0.008) {
-            sell_price = 0.008;
+        if (sell_price < 0.005) {
+            sell_price = 0.005;
             console.log('MKT: selling ' + mtype + ' in ' + this.name + ': increasing price to configured minimum: ' + sell_price + ' for resource: ' + mtype);
         }
         if (sell_price > 0.1) {
@@ -731,8 +731,8 @@ Room.prototype.sellResource = function (mtype) {
             console.log('MKT: selling ' + mtype + ' in ' + this.name + ': reducing price to configured maximum: ' + sell_price + ' for resource: ' + mtype);
         }
     } else {
-        if (sell_price < 0.085) {
-            sell_price = 0.085;
+        if (sell_price < 0.05) {
+            sell_price = 0.05;
             console.log('MKT: selling ' + mtype + ' in ' + this.name + ': increasing price to configured minimum: ' + sell_price + ' for resource: ' + mtype);
         }
         if (sell_price > 8) {

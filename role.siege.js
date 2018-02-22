@@ -4,6 +4,9 @@ module.exports = {
     
     run: function(creep) {
         
+        var melee_parts = creep.getActiveBodyparts(ATTACK);
+        var work_parts = creep.getActiveBodyparts(WORK);
+        
         var myhealer = creep.getHealer();
         if (creep.isAtHomeRoom()) {
             if(!myhealer) {
@@ -30,35 +33,47 @@ module.exports = {
             return;
         }
         
-        var target = creep.getClosestHostileCreep();
-        if (target) {
-            var trange = creep.pos.getRangeTo(target);
-            if (trange == 1) {
-                creep.attack(target);
-            } else if (trange <= 3) {
-                if(creep.attack(target) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(target);
-                }
-            }
-            return;
-        }
-
-        var valid_types = [STRUCTURE_SPAWN, STRUCTURE_TOWER];
-        var structure_target = creep.getClosestHostileStructureInTypes(valid_types);
-        if (!structure_target) {
-            structure_target = creep.getClosestHostileStructure();
-        }
-        if (structure_target) {
-            target = structure_target;
-        }
-        if (target) {
-            if(creep.attack(target) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(target);
-            }
-            return;
-        }
-        creep.redRally();
+        var target = undefined;
         
+        if (melee_parts) {
+            target = creep.getClosestHostileCreep();
+            if (target) {
+                var trange = creep.pos.getRangeTo(target);
+                if (trange == 1) {
+                    creep.attack(target);
+                } else if (trange <= 3) {
+                    if(creep.attack(target) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(target);
+                    }
+                }
+                return;
+            }
+        }
+        
+        if (work_parts || melee_parts) {
+            var valid_types = [STRUCTURE_SPAWN, STRUCTURE_TOWER];
+            var structure_target = creep.getClosestHostileStructureInTypes(valid_types);
+            if (!structure_target) {
+                structure_target = creep.getClosestHostileStructure();
+            }
+            if (structure_target) {
+                target = structure_target;
+            }
+            if (target) {
+                if (work_parts) {
+                    if (creep.dismantle(target) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(target);
+                    }
+                } else {
+                    if (creep.attack(target) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(target);
+                    }
+                }
+                return;
+            }
+        }
+        
+        creep.redRally();
         creep.avoidEdges();
         return;
         

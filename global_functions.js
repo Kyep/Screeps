@@ -105,11 +105,15 @@ global.TEMPLATE_PROPERTIES = function (template_name) {
     retval['cost'] = global.UNIT_COST(thebody);
     //retval['parts'] = thebody;
     
+    var work_parts = 0;
     var attack_parts = 0;
     var ranged_attack_parts = 0;
     var heal_parts = 0;
     
     for (var i = 0; i < thebody.length; i++) {
+        if (thebody[i] == WORK) {
+            work_parts++;
+        }
         if (thebody[i] == ATTACK) {
             attack_parts++;
         }
@@ -119,6 +123,10 @@ global.TEMPLATE_PROPERTIES = function (template_name) {
         if (thebody[i] == HEAL) {
             heal_parts++;
         }
+    }
+    if (work_parts > 0) {
+        var dismantle_dps = work_parts * DISMANTLE_POWER;
+        retval['dismantle_dps'] = dismantle_dps;
     }
     if (attack_parts > 0) {
         var dps = attack_parts * ATTACK_POWER;
