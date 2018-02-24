@@ -1,3 +1,8 @@
+global.FLAG_TYPE_TO_COLORS_COLORS = function (sconstant) {
+    var result = global.empire_flags[sconstant];
+    return result;
+}
+
 
 global.IS_ALLY = function (uname) {
     if (global.LOANlist != undefined) {
@@ -9,7 +14,13 @@ global.IS_ALLY = function (uname) {
         return true;
     }
     return false;
+}
 
+global.IS_ENEMY = function (uname) {
+    if (enemies.includes(uname)) {
+        return true;
+    }
+    return false;
 }
 
 global.CONSTRUCT_BODY = function (bdetails) {

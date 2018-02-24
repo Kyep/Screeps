@@ -39,7 +39,7 @@ global.empire_workers = {
 	'rogue': { 'body':      global.CONSTRUCT_BODY({TOUGH: 2, MOVE: 6, ATTACK: 4}), 'noresizing': 1, 'renew_allowed': 0}, // 640e, 1,200 HP, 120 DPS. Capable of out-damaging a RCL<4 healer.
     'ninja': { 'body':      global.CONSTRUCT_BODY({TOUGH: 2, MOVE: 8, ATTACK: 6}), 'noresizing': 1, 'renew_allowed': 0}, // 900e, 1,600 HP, 180 DPS. 
     'dragon': { 'body':     global.CONSTRUCT_BODY({TOUGH: 6, MOVE: 16, ATTACK: 10}), 'noresizing': 1, 'renew_allowed': 0}, // 1,660e, 3,200 HP, 300 DPS.
-    'boss': { 'body':       global.CONSTRUCT_BODY({TOUGH: 8, MOVE: 25, ATTACK: 13, HEAL: 4}), 'noresizing': 1, 'renew_allowed': 0}, // 
+    'boss': { 'body':       global.CONSTRUCT_BODY({TOUGH: 6, MOVE: 22, ATTACK: 22}), 'noresizing': 1, 'renew_allowed': 0}, // "cost":2920,"dps":660
 
     // ANTIKITE
     'antikite2': { 'body':  global.CONSTRUCT_BODY({RANGED_ATTACK: 2, MOVE: 2}), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak2'}, 

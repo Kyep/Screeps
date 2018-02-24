@@ -1,18 +1,256 @@
-Room.prototype.createRoadNetwork = function(origin_x, origin_y) {
+Room.prototype.getFlagsByType = function(structuretype) {
+    var color_list = FLAG_TYPE_TO_COLORS_COLORS(structuretype);
+    if (color_list == undefined || !color_list.length) {
+        return [];
+    }
+    return this.getFlagsByColors(color_list[0],color_list[1]);
+}
+
+Room.prototype.getFlagsByColors = function(primary, secondary) {
+    if (primary == undefined || secondary == undefined) {
+        return [];
+    }
+    return this.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == primary && flag.secondaryColor == secondary) { return 1; } else { return 0; } } });
+}
+
+Room.prototype.deleteFlagList = function(listofflags) {
+    var count_deleted = 0;
+    for (var f = 0; f < listofflags.length; f++) {
+        listofflags[f].remove();
+        count_deleted++;
+    }
+    return count_deleted;
+}
+
+Room.prototype.deleteAllFlags = function() {
+    var count_deleted = 0;
+    var all_flags = this.find(FIND_FLAGS);
+    for (var f = 0; f < all_flags.length; f++) {
+        all_flags[f].remove();
+        count_deleted++;
+    }
+    return count_deleted;
+}
+
+Room.prototype.deleteFlagsByType = function(structuretype) {
+    return this.deleteFlagList(this.getFlagsByType(structuretype));
+}
+
+Room.prototype.convertFlagsToStructures = function(structuretype, count) {
+    var count_built = 0;
+    if (!structuretype) {
+        console.log(this.name + ': convertFlagsToStructures: missing structuretype');
+        return count_built;
+    }
+    if (!count) {
+        console.log(this.name + ': convertFlagsToStructures: missing count');
+        return count_built;
+    }
+    console.log(this.name + ': convertFlagsToStructures('+structuretype+', '+count+')');
+    var aflags = this.getFlagsByType(structuretype);
+    if (!aflags.length) {
+        console.log(this.name + ': convertFlagsToStructures: missing flags for ' + structuretype);
+        return count_built;
+    }
+    for (var i = 0; i < count && i < aflags.length; i++) {
+        var tflag = aflags[i];
+        var cresult = this.createConstructionSite(tflag.pos.x, tflag.pos.y, structuretype);
+        if (cresult == OK) {
+            tflag.remove();
+            count_built++;
+            console.log(this.name + ': convertFlagsToStructures: STARTED CONSTRUCTION:' + structuretype);
+        } else {
+            console.log(this.name + ': convertFlagsToStructures: FAILED to convert ' + tflag + ' into a ' + structuretype);
+        }
+    }
+    return count_built;    
+}
+
+Room.prototype.checkStructures = function() {
+    var always_blacklist = ['container', 'link', 'lab'];
+    var newly_built = 0;
+    if (!this.isMine()) {
+        return newly_built;
+    }
+    var r_messages = [];
+    var rlvl = this.getLevel();
+    var s_actual = {}
+    var my_structures = this.find(FIND_STRUCTURES);
+    for (var i = 0; i < my_structures.length; i++) {
+        if(s_actual[my_structures[i].structureType] == undefined) {
+            s_actual[my_structures[i].structureType] = 0;
+        }
+        s_actual[my_structures[i].structureType]++;
+    }
+    var my_csites = this.find(FIND_MY_CONSTRUCTION_SITES);
+    for (var i = 0; i < my_csites.length; i++) {
+        if(s_actual[my_csites[i].structureType] == undefined) {
+            s_actual[my_csites[i].structureType] = 0;
+        }
+        s_actual[my_csites[i].structureType]++;
+    }
+    var s_intended = {}
+    for (var stype in CONTROLLER_STRUCTURES) {
+        var key_value = CONTROLLER_STRUCTURES[stype][rlvl];
+        s_intended[stype] = key_value;
+    }
+    for (var skey in s_intended) {
+        var actual = 0;
+        if (s_actual[skey] != undefined) {
+            actual = s_actual[skey];
+        }
+        var intended = s_intended[skey];
+        if (intended == 0) {
+            continue;
+        }
+        if (intended <= actual) {
+            continue;
+        }
+        if (intended > 100) {
+            continue;
+        }
+        if (always_blacklist.includes(skey)) {
+            continue;
+        }
+        r_messages.push(skey + ': ' + actual + '/' + intended);
+        newly_built += this.convertFlagsToStructures(skey, intended - actual);
+        
+    }
+    if (r_messages.length > 0) {
+        console.log(rname + ': ' + r_messages );
+    }
+    return newly_built;
+}
+
+Room.prototype.generateFlags = function() {
+    if(this.isMine()) {
+        
+    } else if (this.isEnemy()) {
+        this.markNuclearTargets();
+    }
+}
+
+Room.prototype.markNuclearTargets = function() {
+    if(this.isMine() || !this.isEnemy()) {
+        return false;
+    }
+
+    var nuke_list = this.find(FIND_NUKES);
+    if (nuke_list.length) {
+        //console.log(this.name + ': markNuclearTargets: ' + ' skipped due to incoming nukes.');
+        return false;
+    }
+
+    this.deleteAllFlags();
+    //this.deleteFlagsByType(FLAG_GROUNDZERO); 
+
+    if (this.getLevel() < 1) {
+        // Don't auto-set nuke flags on rooms which aren't owned by anyone.
+        return false;
+    }
+
+    var flag_colors = FLAG_TYPE_TO_COLORS_COLORS(FLAG_GROUNDZERO);
+    if (!flag_colors || !flag_colors.length) {
+        console.log(this.name + ': markNuclearTargets: ' + ' nuclear flag colors not defined.');
+        return false;
+    }
+    var flag_primary = flag_colors[0];
+    var flag_secondary = flag_colors[1];
     
+    var enemy_structures = this.getHostileStructures();
+    var enemy_spawns = [];
+    for (var i = 0; i < enemy_structures.length; i++) {
+        if(enemy_structures[i].structureType == STRUCTURE_SPAWN) {
+            enemy_spawns.push(enemy_structures[i]);
+        }
+    }
+    var rowner = this.getOwner();
+    var tgtid = this.name;
+    if (rowner) {
+        tgtid += ' (' + rowner + ')';
+    }
+    if (enemy_spawns.length == 0) {
+        //console.log(tgtid + ': markNuclearTargets: ' + ' no spawns to target');
+    } else if (enemy_spawns.length == 1) {
+        if (enemy_spawns[0].killableWithNukes(1)) {
+            //console.log(tgtid + ': markNuclearTargets: ' + ' 1 spawn, >10m HP.');
+        } else {
+            var flg = this.createFlag(enemy_spawns[0].pos.x, enemy_spawns[0].pos.y, undefined, flag_primary, flag_secondary);
+            //console.log(tgtid + ': markNuclearTargets: ' + ' 1 spawn, set marker: ' + flg);
+            return true;
+        }
+    } else {
+        var total_x = 0;
+        var total_y = 0;
+        for (var i = 0; i < enemy_spawns.length; i++) {
+            total_x += enemy_spawns[i].pos.x;
+            total_y += enemy_spawns[i].pos.y;
+            if (!enemy_spawns[i].killableWithNukes(1)) {
+                continue;
+            }
+            var valid_plan = true;
+            for (var j = 0; j < enemy_spawns.length; j++) {
+                if (enemy_spawns[i] == enemy_spawns[j]) {
+                    continue;
+                }
+                if (enemy_spawns[i].pos.getRangeTo(enemy_spawns[j]) > 2) {
+                    valid_plan = false;
+                }
+                if (!enemy_spawns[j].killableWithNukes(0.5)) {
+                    valid_plan = false;
+                }
+            }
+            if (valid_plan) {
+                var flg = this.createFlag(enemy_spawns[i].pos.x, enemy_spawns[i].pos.y, undefined, flag_primary, flag_secondary);
+                //console.log(tgtid + ': markNuclearTargets: ' + enemy_spawns.length + ' spawns to target, set simple marker: ' + flg);
+                return true;
+            }
+            
+        }
+        var avg_x = Math.round(total_x / enemy_spawns.length);
+        var avg_y = Math.round(total_y / enemy_spawns.length);
+        var alpha_pos = new RoomPosition(avg_x, avg_y, this.name);
+        var valid_plan = true;
+        for (var i = 0; i < enemy_spawns.length; i++) {
+            var this_sp = enemy_spawns[i];
+            var dist = alpha_pos.getRangeTo(this_sp);
+            if (dist == 0) {
+                if (!enemy_spawns[i].killableWithNukes(1)) {
+                    //console.log(this.name + ': mNT: ' + avg_x + '/' + avg_y + ': spawn on my tile has >10m hp');
+                    valid_plan = false;
+                }
+            } else if (dist < 3) {
+                if (!enemy_spawns[i].killableWithNukes(0.5)) {
+                    //console.log(this.name + ': mNT: ' + avg_x + '/' + avg_y + ': spawn ' + dist + ' away has >5m HP.');
+                    valid_plan = false;
+                }
+            } else {
+                //console.log(this.name + ': mNT: ' + avg_x + '/' + avg_y + ': spawn ' + dist + ' away is out of range.');
+                valid_plan = false;
+            }
+            if (valid_plan == false) {
+                break;
+            }
+        }
+        if (valid_plan) {
+            var flg = this.createFlag(avg_x, avg_y, undefined, flag_primary, flag_secondary);
+            //console.log(tgtid + ': markNuclearTargets: ' + enemy_spawns.length + ' spawns to target. Set avg marker: ' + flg);
+            return true;
+        } else {
+            //console.log(tgtid + ': markNuclearTargets: ' + enemy_spawns.length + ' spawns. >1 nuke required.');
+        }
+    }
+    return false;
+}
+
+
+Room.prototype.createRoadNetwork = function(origin_x, origin_y) {
     if (origin_x == undefined || origin_y == undefined) {
         console.log('createRoadNetworkk: FAIL, no origin_x or no origin_y');
         return false;
     }
     var origin = new RoomPosition(origin_x, origin_y, this.name);
 
-    /*
-    var white_flags = _.filter(Game.flags, (flag) => (flag.color == COLOR_WHITE) && (flag.secondaryColor == COLOR_GREY) && (flag.room != undefined) && (flag.room.name == this.name));
-    for (var i = 0; i < white_flags.length; i++) {
-        white_flags[i].remove();
-    }
-    */
-    
     var all_csites = Game.constructionSites;
     for (var site_key in all_csites) {
         var cs = all_csites[site_key];
@@ -32,18 +270,19 @@ Room.prototype.createRoadNetwork = function(origin_x, origin_y) {
     this.memory[MEMORY_ROAD_NETWORK] = [];
     
     var all_sources = this.find(FIND_SOURCES);
-    var all_dest_flags = this.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_WHITE && flag.secondaryColor == COLOR_RED) { return 1; } else { return 0; } } });
-    //console.log(this.name + ' ' + all_sources.length + ' sources, ' + all_dest_flags.length + ' dest flags.');
+    var all_dest_flags = this.getFlagsByType(FLAG_ROADDEST);
     var all_dests = []
     all_dests = all_sources.concat(all_dest_flags);
     
+    if (this.getLevel() >= 6) {
+        var all_minerals = this.find(FIND_MINERALS);
+        all_dests = all_dests.concat(all_minerals);
+    }
     
-    //console.log(this.name + ': total sources: ' + all_dests.length + ': ' + JSON.stringify(all_dests));
     var rnum = 1;
     for (var i = 0; i < all_dests.length; i++) {
         var this_dest = all_dests[i];
         var path_to_dest = origin.findPathTo(this_dest, {'ignoreCreeps': true, 'maxRooms': 1});
-        //console.log('createRoads: source: ' + this_dest.id + ', i: ' + i + ', path length: ' + path_to_dest.length);
         for (var j = 0; j < path_to_dest.length; j++) {
             rnum++;
             var pos_x = path_to_dest[j]['x'];
@@ -58,15 +297,9 @@ Room.prototype.createRoadNetwork = function(origin_x, origin_y) {
             }
             if (!roads_here) {
                 Game.rooms[this.name].createConstructionSite(pos_x, pos_y, STRUCTURE_ROAD);
-                //console.log(this.name + ': CREATED ROAD at: ' + pos_x + ',' + pos_y);
             }
             this.memory[MEMORY_ROAD_NETWORK].push(path_pos);
-            
-            //var flag_var = path_pos.createFlag(this.name + ' road ' + rnum, COLOR_WHITE, COLOR_GREY);
-            //console.log(flag_var);
-            
         }
-        //console.log('createRoads: dest: ' + this_dest.id + ', completed');
     }
 }
 
@@ -97,10 +330,12 @@ Room.prototype.getShouldUpgrade = function() {
     if (Memory['gcl_farm'].indexOf(this.name) == -1) {
         return 1;
     }
+    /*
     var room_level = this.getLevel();
     if (room_level == 8) {
         return 0;
     }
+    */
     return 1;
 }
 
@@ -278,8 +513,16 @@ Room.prototype.getOwnerOrReserver = function() {
 }
 
 Room.prototype.isMine = function() {
-    var owner = this.getOwner();
-    if (owner && owner == overlord) {
+    var myowner = this.getOwner();
+    if (myowner && myowner == overlord) {
+        return true;
+    }
+    return false;
+}
+
+Room.prototype.isEnemy = function() {
+    var myowner = this.getOwner();
+    if (IS_ENEMY(myowner)) {
         return true;
     }
     return false;
@@ -370,7 +613,6 @@ Room.prototype.detailEnemies = function() {
     }
     return details;
 }
-
 
 Room.prototype.detailNukes = function() {
     var details = {};

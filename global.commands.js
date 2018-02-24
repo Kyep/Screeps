@@ -1,60 +1,9 @@
 global.REPORT_STRUCTURES = function() {
-    var always_blacklist = ['container', 'link', 'lab']
+    var ns = 0;
     for (var rname in Game.rooms) {
-        var robj = Game.rooms[rname];
-        if (!robj.isMine()) {
-            continue;
-        }
-        var rlvl = robj.getLevel();
-
-        var r_messages = []
-
-        var s_actual = {}
-        var my_structures = robj.find(FIND_STRUCTURES);
-        for (var i = 0; i < my_structures.length; i++) {
-            if(s_actual[my_structures[i].structureType] == undefined) {
-                s_actual[my_structures[i].structureType] = 0;
-            }
-            s_actual[my_structures[i].structureType]++;
-        }
-        var my_csites = robj.find(FIND_MY_CONSTRUCTION_SITES);
-        for (var i = 0; i < my_csites.length; i++) {
-            if(s_actual[my_csites[i].structureType] == undefined) {
-                s_actual[my_csites[i].structureType] = 0;
-            }
-            s_actual[my_csites[i].structureType]++;
-        }
-        var s_intended = {}
-        for (var stype in CONTROLLER_STRUCTURES) {
-            var key_value = CONTROLLER_STRUCTURES[stype][rlvl];
-            s_intended[stype] = key_value;
-            //console.log('rname: set s_intended ' + s_intended[stype] + ' for ' + stype);
-        }
-        for (var skey in s_intended) {
-            var actual = 0;
-            if (s_actual[skey] != undefined) {
-                actual = s_actual[skey];
-            }
-            var intended = s_intended[skey];
-            if (intended == 0) {
-                continue;
-            }
-            if (intended <= actual) {
-                continue;
-            }
-            if (intended > 100) {
-                continue;
-            }
-            if (always_blacklist.includes(skey)) {
-                continue;
-            }
-            r_messages.push(skey + ': ' + actual + '/' + intended)
-        }
-        if (r_messages.length > 0) {
-            console.log(rname + ': ' + r_messages );
-        }
+        ns += Game.rooms[rname].checkStructures();
     }
-    
+    return ns;
 }
 
 
@@ -79,7 +28,7 @@ global.RECREATE_ROAD_NETWORKS = function() {
         
         var grm = Game.rooms[rname];
         grm.memory[MEMORY_ROAD_NETWORK] = [];
-        var origins = grm.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_WHITE && flag.secondaryColor == COLOR_BLUE) { return 1; } else { return 0; } } });
+        var origins = grm.getFlagsByType(FLAG_ROADORIGIN);
         if (origins.length) {
             for (var a = 0; a < origins.length; a++) {
                 grm.createRoadNetwork(origins[a].pos.x, origins[a].pos.y);
@@ -473,64 +422,69 @@ global.READY_LAUNCHERS = function() {
     return available_nukers;
 }
 
-global.IS_NUKABLE = function(roomname) {
+global.IS_NUKABLE = function(roomname, silent) {
     var all_nukers = []
     for(var id in Game.structures){
         if(Game.structures[id].structureType == STRUCTURE_NUKER){
             all_nukers.push(id);
         }
     }
-    var launchrooms_in_range = []
+    var valid_launchers = [];
+    var temporarily_invalid_launchers = [];
+    var outranged_launchers = [];
     for (var i = 0; i < all_nukers.length; i++) {
         var thenuker = Game.structures[all_nukers[i]];
-        var therange = Game.map.getRoomLinearDistance(thenuker.room.name, roomname);
-        if (therange > NUKE_RANGE) {
-            console.log('NUKE: launcher in room ' + thenuker.room.name + ' is out of range. (' + therange + ' > ' + NUKE_RANGE + ')');
-            continue;
-        } 
-        launchrooms_in_range.push(thenuker.room.name);
+        var readycode = thenuker.getReadiness(roomname);
+        if (readycode == OK) {
+            valid_launchers.push(thenuker.room.name);
+        } else if (readycode == ERR_NOT_IN_RANGE) {
+            outranged_launchers.push(thenuker.room.name);
+        } else if (readycode == ERR_NOT_ENOUGH_RESOURCES || readycode == ERR_TIRED || readycode == ERR_RCL_NOT_ENOUGH) {
+            temporarily_invalid_launchers.push(thenuker.room.name);
+        }
     }
-    if (launchrooms_in_range.length == 0) {
-        console.log('No nuke launchers were in range of: ' + roomname);
-        return 0;
+    if(!silent) {
+        console.log('IS_NUKABLE() target ' + roomname + ': ');
+        console.log('- ' + valid_launchers.length + ' ready to fire: ' + valid_launchers);
+        console.log('- ' + temporarily_invalid_launchers.length + ' not ready to fire: ' + temporarily_invalid_launchers);
+        console.log('- ' + outranged_launchers.length + ' out of range: ' + outranged_launchers);
     }
-    console.log('You have ' + launchrooms_in_range.length + ' launchers able to hit ' + roomname + ': ' + launchrooms_in_range);
-    return launchrooms_in_range.length;
+    return valid_launchers.length;
 }
 
 global.GET_ALL_NUKE_FLAGS = function() {
-    var white_flags = _.filter(Game.flags, (flag) => (flag.color == COLOR_WHITE) && (flag.secondaryColor == COLOR_WHITE));
-    var nuke_targets = []
-    for (var i = 0; i < white_flags.length; i++) {
-        nuke_targets.push(white_flags[i]);
-    }
-    
-    return nuke_targets;
+    var flag_colors = FLAG_TYPE_TO_COLORS_COLORS(FLAG_GROUNDZERO);
+    var c1 = flag_colors[0];
+    var c2 = flag_colors[1];
+    return _.filter(Game.flags, (flag) => (flag.color == c1) && (flag.secondaryColor == c2));
 }
 
 global.LIST_ALL_NUKE_FLAGS = function() {
-    var white_flags = global.GET_ALL_NUKE_FLAGS();
-    for (var i = 0; i < white_flags.length; i++) {
-        console.log('Nuke target: ' + white_flags[i].pos);
+    var nuke_flags = global.GET_ALL_NUKE_FLAGS();
+    for (var i = 0; i < nuke_flags.length; i++) {
+        console.log('Nuke target: ' + nuke_flags[i].pos);
     }
     return true;
 }
 
 global.CLEAR_ALL_NUKE_FLAGS = function() {
-    var white_flags = global.GET_ALL_NUKE_FLAGS();
-    for (var i = 0; i < white_flags.length; i++) {
-        console.log('Nuke target: ' + white_flags[i].pos + ' - deleted.');
-        white_flags[i].remove();
+    var nuke_flags = global.GET_ALL_NUKE_FLAGS();
+    for (var i = 0; i < nuke_flags.length; i++) {
+        console.log('Nuke target: ' + nuke_flags[i].pos + ' - deleted.');
+        nuke_flags[i].remove();
     }
     return true;
 }
 
 global.GET_NUKE_FLAG_IN_ROOM = function(roomname) {
-    var white_flags = _.filter(Game.flags, (flag) => (flag.color == COLOR_WHITE) && (flag.secondaryColor == COLOR_WHITE) && flag.pos.roomName == roomname);
-    if (white_flags.length == 0) {
+    var flag_colors = FLAG_TYPE_TO_COLORS_COLORS(FLAG_GROUNDZERO);
+    var c1 = flag_colors[0];
+    var c2 = flag_colors[1];
+    var nuke_flags = _.filter(Game.flags, (flag) => (flag.color == c1) && (flag.secondaryColor == c2) && flag.pos.roomName == roomname);
+    if (nuke_flags.length == 0) {
         return undefined;
     } else {
-        return white_flags[0];
+        return nuke_flags[0];
     }
 }
 
@@ -542,7 +496,7 @@ global.LAUNCH_NUKE = function(roomname) {
     var target_flag = global.GET_NUKE_FLAG_IN_ROOM(roomname);
     
     if (target_flag == undefined) {
-        console.log('NUKE: no target white/white flag in: ' + roomname);
+        console.log('NUKE: no target target flag in: ' + roomname);
         return 0;
     }
     var missile_target_pos = target_flag.pos;

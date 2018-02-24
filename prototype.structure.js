@@ -7,6 +7,29 @@ Structure.prototype.isInvincible = function() {
     return false;
 }
 
+Structure.prototype.killableWithNukes = function(num_nukes) {
+    if (!num_nukes) {
+        num_nukes = 1;
+    }
+    //console.log(this.hits + ' ' + this.getRampartHP() + ' ' + NUKE_DAMAGE[0] + ' ' + num_nukes);
+    return ((NUKE_DAMAGE[0] * num_nukes) > (this.hits + this.getRampartHP()));
+}
+
+Structure.prototype.getRampartHP = function() {
+    var rampart_hp = 0;
+    var objects_here = this.room.lookAt(this.pos);
+    for (var k = 0; k < objects_here.length; k++) {
+        if (objects_here[k]["type"] != "structure") {
+            continue;
+        }
+        var str = objects_here[k]["structure"];
+        if (str.structureType == STRUCTURE_RAMPART) {
+            rampart_hp += str.hits;
+        }
+    }
+    return rampart_hp;
+}
+
 StructureRoad.prototype.inRoadNetwork = function() {
     var net = this.room.memory[MEMORY_ROAD_NETWORK];
     if (net == undefined) {
@@ -182,4 +205,26 @@ StructureLab.prototype.isAvailable = function() {
     return true;
 }
 
-
+StructureNuker.prototype.getReadiness = function(tgtroomname) {
+    if (this.owner.username != overlord) {
+        return ERR_NOT_OWNER;
+    }
+    if (!this.isActive()) {
+        return ERR_RCL_NOT_ENOUGH;
+    }
+    if (this.cooldown > 0) {
+        return ERR_TIRED;
+    }
+    if (this.energy != this.energyCapacity) {
+        return ERR_NOT_ENOUGH_RESOURCES;
+    }
+    if (this.ghodium != this.ghodiumCapacity) {
+        return ERR_NOT_ENOUGH_RESOURCES;
+    }
+    if (tgtroomname) {
+         if (Game.map.getRoomLinearDistance(this.room.name, tgtroomname) > NUKE_RANGE) {
+            return ERR_NOT_IN_RANGE;
+         }
+    }
+    return OK;
+}

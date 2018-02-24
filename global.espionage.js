@@ -62,7 +62,7 @@ global.UPDATE_OBSERVERS = function(observe_energy) {
         var retval = global.ASSIGN_OBSERVERS(available_observers, espionage_targets);
         return retval;
     }
-    var retval = global.ASSIGN_OBSERVERS(rooms_to_observe, espionage_targets);
+    var retval = global.ASSIGN_OBSERVERS(available_observers, rooms_to_observe);
     return retval;
 }
 
@@ -188,25 +188,51 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units) {
                 if (einfo['spawn_dist'] >= range_limit) {
                     continue;
                 }
+
+                var fbase = undefined;
+                if (spawn_units && Game.rooms[fobname] != undefined) {
+                    fbase = Game.rooms[fobname];
+                }
+
                 if (!einfo['enemy_structures']) {
+                    /*
+                    if (spawn_units && einfo['needs_signing'] && ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt, 'signer') == 0) {
+                        var created = fbase.createUnit('signer', tgt);
+                        console.log(' -> ' + tgt + ' (' + einfo['level'] + '), signer: ' + created);
+                    }
+                    */
                     continue;
                 }
                 var ostring = '-';
                 if (einfo['owner']) {
                     ostring = einfo['owner'];
                 }
-                var fbase = undefined;
-                if (spawn_units && Game.rooms[fobname] != undefined) {
-                    fbase = Game.rooms[fobname];
-                    //console.log('FBASE ON: ' + fobname);
-                }
+
                 var count_my_creeps = ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt);
-                
+                var groundzero_flag = GET_NUKE_FLAG_IN_ROOM(tgt);
+                var gz_flag_info = '';
+                if (groundzero_flag) {
+                    gz_flag_info = 'Nuclear target flag: ' + groundzero_flag.pos;
+                    if(IS_NUKABLE(tgt, true)) {
+                        gz_flag_info += ' (NUKABLE)';
+                    }
+                }
+
                 if (einfo['allied']) { 
                     // do nothing, ally room.
+                } else if (einfo['safemode_until'] && einfo['safemode_until'] > Game.time) {
+                    // do nothing, its invincible.
+                } else if (einfo['missiles'] != undefined && einfo['missiles'].length > 0) {
+                    var nuke_locs = []
+                    for (var m = 0; m < einfo['missiles'].length; m++) {
+                        nuke_locs.push(einfo['missiles'][m][0] + '/' + einfo['missiles'][m][1]);
+                    }
+                    var nuke_locs_string = nuke_locs.join(', ');
+                    console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
+                        einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners, ' + nuke_locs.length + ' incoming nukes at: ' + nuke_locs_string);
                 } else if (einfo['enemy_spawns'] && einfo['level'] >= 1) {
-                    //console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
-                    //    einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners. ');// + count_my_creeps + '/' + attacker_limit + ' assigned.');
+                    console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
+                        einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners. '  + gz_flag_info );// + count_my_creeps + '/' + attacker_limit + ' assigned. ' + gz_flag_info );
                 } else if (einfo['enemy_towers']) {
                     console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
                         + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Spawn drainers as it has towers only. '  + count_my_creeps + '/' + drainer_limit + ' assigned.');
@@ -214,12 +240,16 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units) {
                         var created = fbase.createUnit('drainerbig', tgt);
                         console.log('SPAWNED: ' + created);
                     }
+                } else if (einfo['reserved']) {
+                    // Ignore... not worth our time to fuss over.
                 } else {
                     console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
                         + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Cleanup junk room. '  + count_my_creeps + '/' + cleaner_limit + ' assigned.');
                     if(fbase && count_my_creeps < cleaner_limit) {
                         var stype = 'siege';
-                        if (einfo['enemy_structures'] > 10) {
+                        if (einfo['enemy_creeps'] > 0) {
+                            stype = 'boss';
+                        } else if (einfo['enemy_structures'] > 10) {
                             stype = 'siegebig';
                         }
                         var created = fbase.createUnit(stype, tgt);
@@ -234,7 +264,7 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units) {
     }
 }
 
-global.ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM = function(rname) {
+global.ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM = function(rname, roletext) {
     if(!rname) {
         return undefined;
     }
@@ -243,6 +273,11 @@ global.ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM = function(rname) {
         var cr = Game.creeps[crname];
         if (cr.memory[MEMORY_DEST] != rname) {
             continue;
+        }
+        if (roletext != undefined) {
+            if (cr.memory[MEMORY_ROLE] != roletext) {
+                continue;
+            }
         }
         crnum++;
     }
@@ -279,13 +314,57 @@ global.ESPIONAGE = function() {
                     Memory['espionage']['rooms'][rname]['allied'] = true;
                 }
             }
+            var signed_by_me = false;
+            if (theroom.controller) {
+                if (theroom.controller.reservation) {
+                    Memory['espionage']['rooms'][rname]['reserved'] = true;
+                }
+                if (theroom.controller.sign && theroom.controller.sign.username == overlord && theroom.controller.sign.text == empire_defaults['sign']) {
+                    signed_by_me = true;
+                }
+                if (theroom.controller.safeMode) {
+                    Memory['espionage']['rooms'][rname]['safemode_until'] = Game.time + theroom.controller.safeMode;
+                }
+            }
 
             var enemy_structures = theroom.getHostileStructures();
+            var enemy_creeps = theroom.getHostileCreeps();
             Memory['espionage']['rooms'][rname]['enemy_structures'] = enemy_structures.length;
+            Memory['espionage']['rooms'][rname]['enemy_creeps'] = enemy_creeps.length;
             Memory['espionage']['rooms'][rname]['enemy_towers'] = 0;
             Memory['espionage']['rooms'][rname]['enemy_spawns'] = 0;
+
             var rlvl = theroom.getLevel();
+
+            Memory['espionage']['rooms'][rname]['spawn_from'] = undefined;
+            Memory['espionage']['rooms'][rname]['spawn_dist'] = 999;
+            for (var sname in Game.rooms) {
+                if (Game.rooms[sname].isMine()) {
+                    var this_dist = Game.map.getRoomLinearDistance(sname, rname);
+                    if ((sname == rname || this_dist > 0) && this_dist <= 10 && this_dist < Memory['espionage']['rooms'][rname]['spawn_dist']) {
+                        Memory['espionage']['rooms'][rname]['spawn_from'] = sname;
+                        Memory['espionage']['rooms'][rname]['spawn_dist'] = this_dist;
+                    }
+                }
+            }
+            if (Memory['espionage']['rooms'][rname]['spawn_from'] != undefined) {
+                var sfrom = Memory['espionage']['rooms'][rname]['spawn_from'];
+                if (Memory['espionage']['fob'][sfrom] == undefined) {
+                    Memory['espionage']['fob'][sfrom] = [];
+                }
+                Memory['espionage']['fob'][sfrom].push(rname);
+            }
+            if (theroom.controller && !signed_by_me && Memory['espionage']['rooms'][rname]['spawn_dist'] < 3 && Memory['espionage']['rooms'][rname]['enemy_structures'] == 0) {
+                if (!Memory['espionage']['rooms'][rname]['allied']) {
+                    Memory['espionage']['rooms'][rname]['needs_signing'] = true;
+                }
+            }
+            
             if(enemy_structures.length) {
+                
+                theroom.generateFlags();
+                
+                var enemy_spawns = [];
                 for(var i = 0; i < enemy_structures.length; i++) {
                     if (rlvl >= 3 && enemy_structures[i].structureType == STRUCTURE_TOWER) {
                         if(enemy_structures[i].energy > 0) {
@@ -294,28 +373,15 @@ global.ESPIONAGE = function() {
                     }
                     if (enemy_structures[i].structureType == STRUCTURE_SPAWN) {
                         Memory['espionage']['rooms'][rname]['enemy_spawns']++;
-                    }
-                    if (enemy_structures[i].structureType == STRUCTURE_RAMPART && rlvl == 0) {
-                        Memory['espionage']['rooms'][rname]['enemy_structures']--;
+                        enemy_spawns.push(enemy_structures[i]);
                     }
                 }
-                Memory['espionage']['rooms'][rname]['spawn_from'] = undefined;
-                Memory['espionage']['rooms'][rname]['spawn_dist'] = 999;
-                for(var sname in Game.rooms) {
-                    if (Game.rooms[sname].isMine()) {
-                        var this_dist = Game.map.getRoomLinearDistance(sname, rname);
-                        if(this_dist > 0 && this_dist <= 10 && this_dist < Memory['espionage']['rooms'][rname]['spawn_dist']) {
-                            Memory['espionage']['rooms'][rname]['spawn_from'] = sname;
-                            Memory['espionage']['rooms'][rname]['spawn_dist'] = this_dist;
-                        }
+                var nuke_list = theroom.find(FIND_NUKES);
+                for (var i = 0; i < nuke_list.length; i++) {
+                    if (Memory['espionage']['rooms'][rname]['missiles'] == undefined) {
+                        Memory['espionage']['rooms'][rname]['missiles'] = []
                     }
-                }
-                if (Memory['espionage']['rooms'][rname]['spawn_from'] != undefined) {
-                    var sfrom = Memory['espionage']['rooms'][rname]['spawn_from'];
-                    if (Memory['espionage']['fob'][sfrom] == undefined) {
-                        Memory['espionage']['fob'][sfrom] = [];
-                    }
-                    Memory['espionage']['fob'][sfrom].push(rname);
+                    Memory['espionage']['rooms'][rname]['missiles'].push([nuke_list[i].pos.x,nuke_list[i].pos.y]);
                 }
             }
             Memory['espionage']['rooms'][rname]['level'] = rlvl;

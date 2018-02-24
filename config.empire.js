@@ -3,12 +3,13 @@
 
     global.overlord = 'Phisec';
     global.allies = []; // not including anyone in alliance.
-    global.enemies = ['Asasel'];
+    global.enemies = ['Asasel', 'ballisto', 'Mar10G', 'FeTiD', 'Eiskalt'];
     
     global.empire_defaults = {
         'spawner': '59ce24a6b1421365236708e4',
         'room': 'W53S18',
         'sourceid': '59bbc3f82052a716c3ce7289',
+        'sign': 'Reserved. #overlords',
         'priority_roles': ['teller', 'teller-towers'],
         'military_roles': ['scout', 'slasher', 'rogue', 'ninja', 'dragon', 'boss', 'wizard', 'healer', 'siege', 'siegebig', 'drainer', 'drainerbig', 'antikite16', 'antikite8', 'antikite4', 'antikite2'],
         'defense_roles': ['boss', 'dragon', 'ninja', 'rogue', 'slasher', 'scout'], // LIST MOST POWERFUL FIRST.
@@ -783,17 +784,28 @@
             'safespot': {'x': 40, 'y':18 }
 
         },
+        'W47S18': {
+            'roomname': '11E',
+            'spawn_room': 'W48S18',
+            'sources': {
+                '5982fbf4b097071b4adbc737': {'sourcename': '11E', 'x':43, 'y':18, 'spaces':4, 'target_x': 43, 'target_y': 17, 'steps':110,
+                    'assigned': {'fharvester': 1}, 
+                    'expected_income': 50
+                },
+
+            }
+        },
         'W47S19': {
             'roomname': '11SE',
             'spawn_room': 'W48S18',
             //'backup_spawn_room': 'W53S18',
             'sources': {
                 '5982fbf4b097071b4adbc739': {'sourcename': '11SE-W', 'x':7, 'y':19, 'spaces':1, 'target_x': 8, 'target_y': 20, 'steps':110,
-                    'assigned': {'c15harvester': 1, 'hauler': 2}, 
+                    'assigned': {'c30harvester': 1, 'hauler': 1}, 
                     'expected_income': 50
                 },
                 '5982fbf4b097071b4adbc73a': {'sourcename': '11SE-E', 'x':25, 'y':33, 'spaces':4, 'target_x': 24, 'target_y': 32, 'steps':110,
-                    'assigned': {'c15harvester': 1, 'hauler': 2}, 
+                    'assigned': {'c30harvester': 1, 'hauler': 1}, 
                     'expected_income': 40
                 },
                 'reserver': {'sourcename':'11SE-R', 'x':11, 'y':36,

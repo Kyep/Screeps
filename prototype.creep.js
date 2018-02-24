@@ -188,7 +188,7 @@ Creep.prototype.getRepairMax = function() {
 }
 
 Creep.prototype.redRally = function() {
-    var redflags = this.room.find(FIND_FLAGS, { filter: function(flag){ if(flag.color == COLOR_RED && flag.secondaryColor == COLOR_RED) { return 1; } else { return 0; } } });
+    var redflags = this.room.getFlagsByType(FLAG_RALLYMIL);
     if(redflags.length) {
         this.moveTo(redflags[0], {visualizePathStyle: {stroke: COLOR_PATROL}});
     }
@@ -365,14 +365,8 @@ Creep.prototype.moveToRUP = function(dest, rupsteps) {
         }
         rupsteps = this.memory[MEMORY_REUSEPATH];
     }
-    if (this.isSiege()) {
-        this.moveTo(dest, {reusePath: rupsteps, maxRooms: 25});
-    } else {
-        this.moveTo(dest, {reusePath: rupsteps});
-    }
+    this.moveTo(dest, {reusePath: rupsteps});
 }
-
-
 
 Creep.prototype.moveToDestination = function() {
     if (this.memory[MEMORY_DEST] == undefined) {

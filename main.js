@@ -9,6 +9,7 @@ require('global.espionage');
 require('config.empire');
 require('config.units');
 require('config.defines');
+require('config.flags');
 
 require('prototype.creep');
 require('prototype.room');
@@ -87,7 +88,7 @@ module.exports.loop = function () {
     if(Game.time % 2500 === 0) {
         //global.PRESET_ATTACK_WAVE();
         global.ESPIONAGE_ATTACK_PLANS(true);
-        global.ESPIONAGE_RESET_TARGETS();
+        global.ESPIONAGE_REGEN_TARGETS();
     }
 
     global.ESPIONAGE();
@@ -180,8 +181,8 @@ module.exports.loop = function () {
                     if (Game.rooms[rname].terminal == undefined || !Game.rooms[rname].terminal.isActive()) {
                         // Assume no remote boosts.
                         r_multiplier = Math.round(energy_reserves / empire_defaults['room_energy_min']);
-                        if (r_multiplier > 8) { 
-                            r_multiplier = 8; 
+                        if (r_multiplier > 5) { 
+                            r_multiplier = 5; 
                         }
                     }
                     //console.log(rname + ': ' + r_multiplier);
@@ -345,8 +346,8 @@ module.exports.loop = function () {
                     if (source_terminal.store.energy < 25000) {
                         continue;
                     }
-                    var send_result = source_terminal.send(RESOURCE_ENERGY, 25000, dest_room, 'empty room pulls energy from full');
-                    console.log('ENERGYNET: ' + source_room + ' sends energy to (starving) room: ' + dest_room + ', result:' + send_result);
+                    var send_result = source_terminal.send(RESOURCE_ENERGY, 20000, dest_room, 'empty room pulls energy from full');
+                    console.log('ENERGYNET: ' + source_room + '(' + source_terminal.store.energy + ') sends energy to (starving) room: ' + dest_room + ', result:' + send_result);
                     if (send_result == OK) {
                         break;
                     }

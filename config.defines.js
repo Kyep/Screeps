@@ -69,3 +69,7 @@ global.ENERGY_FULL = 'full';
 global.ENERGY_EMPTY = 'empty';
 global.ENERGY_SPARE = 'spare';
 
+global.FLAG_GROUNDZERO = 'nucleartarget';
+global.FLAG_ROADORIGIN = 'roadorigin';
+global.FLAG_ROADDEST = 'roaddest';
+global.FLAG_RALLYMIL = 'mobrallymil';
