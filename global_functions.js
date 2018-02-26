@@ -576,7 +576,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         if (is_in_safemode > 0) {
             // nothing.
         } else if (cc.safeModeAvailable) {
-            //cc.activateSafeMode();
+            cc.activateSafeMode();
             Game.notify('!!!!! WOULD SAFEMODE ACTIVATION: ' + roomname);
             console.log('SAFE MODE ACTIVATED: ATTACK: ' + roomname);
         } else {

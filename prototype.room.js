@@ -66,8 +66,16 @@ Room.prototype.convertFlagsToStructures = function(structuretype, count) {
     return count_built;    
 }
 
+Room.prototype.deleteConstructionSites = function() {
+    var csites = this.find(FIND_CONSTRUCTION_SITES);
+    for (var i = 0; i < csites.length; i++) {
+        csites[i].remove();
+    }
+    return csites.length;
+}
+
 Room.prototype.checkStructures = function() {
-    var always_blacklist = ['container', 'link', 'lab'];
+    var always_blacklist = ['container', 'link'];
     var newly_built = 0;
     if (!this.isMine()) {
         return newly_built;
@@ -117,7 +125,7 @@ Room.prototype.checkStructures = function() {
         
     }
     if (r_messages.length > 0) {
-        console.log(rname + ': ' + r_messages );
+        console.log(this.name + ': ' + r_messages );
     }
     return newly_built;
 }
@@ -321,7 +329,17 @@ Room.prototype.getHostileCreeps = function() {
 }
 
 Room.prototype.getHostileStructures = function() {
-    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ if (IS_ALLY(s.owner.username) || s.isInvincible()) { return false } else { return true } } });
+    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ 
+        if (IS_ALLY(s.owner.username) || s.isInvincible()) { 
+            return false;
+        }
+        if (s.structureType == STRUCTURE_RAMPART) {
+            if (s.isPublic) {
+                return false;
+            }
+        }
+        return true;
+    } });
 }
 
 Room.prototype.getShouldUpgrade = function() {

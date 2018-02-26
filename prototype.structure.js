@@ -209,6 +209,11 @@ StructureNuker.prototype.getReadiness = function(tgtroomname) {
     if (this.owner.username != overlord) {
         return ERR_NOT_OWNER;
     }
+    if (tgtroomname) {
+         if (Game.map.getRoomLinearDistance(this.room.name, tgtroomname) > NUKE_RANGE) {
+            return ERR_NOT_IN_RANGE;
+         }
+    }
     if (!this.isActive()) {
         return ERR_RCL_NOT_ENOUGH;
     }
@@ -220,11 +225,6 @@ StructureNuker.prototype.getReadiness = function(tgtroomname) {
     }
     if (this.ghodium != this.ghodiumCapacity) {
         return ERR_NOT_ENOUGH_RESOURCES;
-    }
-    if (tgtroomname) {
-         if (Game.map.getRoomLinearDistance(this.room.name, tgtroomname) > NUKE_RANGE) {
-            return ERR_NOT_IN_RANGE;
-         }
     }
     return OK;
 }

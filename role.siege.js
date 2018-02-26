@@ -58,10 +58,17 @@ module.exports = {
         
         if (work_parts > 0 || melee_parts > 0) {
             var valid_types = [STRUCTURE_SPAWN, STRUCTURE_TOWER];
+            var valid_types2 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB];
+            var valid_types3 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB, STRUCTURE_LINK, STRUCTURE_NUKER, STRUCTURE_OBSERVER, STRUCTURE_EXTRACTOR, STRUCTURE_RAMPART];
             if (frustration < 100) {
-                target = creep.getClosestHostileStructureInTypes(valid_types);
+                target = creep.getClosestHostileUnRampartedStructureInTypes(valid_types);
+                if (!target) {
+                    target = creep.getClosestHostileStructureInTypes(valid_types);
+                }
+            } else if (frustration < 500) {
+                target = creep.getClosestHostileStructureInTypes(valid_types2);
             } else {
-                target = creep.getClosestHostileStructure();
+                target = creep.getClosestHostileStructureInTypes(valid_types3);
             }
             if (target) {
                 new RoomVisual(creep.room.name).line(creep.pos, target.pos, {color: 'red'});

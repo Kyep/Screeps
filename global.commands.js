@@ -1,9 +1,34 @@
+global.REPORT_RES_HAVE = function() {
+    for (var rname in Game.rooms) {
+        var robj = Game.rooms[rname];
+        if (!robj.isMine()) {
+            continue;
+        }
+        if (!robj.terminal) {
+            continue;
+        }
+        console.log(rname + ': ' + JSON.stringify(robj.terminal.store));
+    }
+}
+
 global.REPORT_STRUCTURES = function() {
     var ns = 0;
     for (var rname in Game.rooms) {
         ns += Game.rooms[rname].checkStructures();
     }
     return ns;
+}
+
+global.REPORT_CSITES = function() {
+    var csites = {}
+    for (var csite in Game.constructionSites) {
+        var this_site = Game.constructionSites[csite];
+        if(csites[this_site.room.name] == undefined) {
+            csites[this_site.room.name] = 0;
+        }
+        csites[this_site.room.name]++;
+    }
+    console.log(JSON.stringify(csites));
 }
 
 
@@ -49,6 +74,19 @@ global.SHOW_ROAD_NETWORKS = function() {
     for (var rname in Game.rooms) {
         var grm = Game.rooms[rname];
         grm.showRoadNetwork();
+    }
+}
+
+global.SHOW_INCOMING_NUKES = function() {
+    for (var rname in Game.rooms) {
+        var grm = Game.rooms[rname];
+        if (!grm.isMine()) {
+            continue;
+        }
+        var incoming = grm.find(FIND_NUKES);
+        if (incoming.length > 0) {
+            console.log(rname + ': ' + incoming.length + ' incoming nuke(s)');
+        }
     }
 }
 
@@ -357,6 +395,7 @@ global.RETARGET_SIEGE = function (newtarget, waypoints, newx, newy) {
         if (!Game.creeps[crname].isSiege()) {
             continue;
         }
+        Game.creeps[crname].memory[MEMORY_FRUSTRATION] = 0;
         Game.creeps[crname].memory[MEMORY_DEST] = newtarget;
         Game.creeps[crname].memory[MEMORY_NEXTDEST] = waypoints;
         if (newx != undefined) {
@@ -396,9 +435,9 @@ global.READY_LAUNCHERS = function() {
             if (g_amt == undefined) {
                 g_amt = 0;
             }
-            var g_storage = Game.structures[id].room.terminal.store[RESOURCE_GHODIUM];
-            if (g_storage == undefined) {
-                g_storage = 0;
+            var g_storage = 0;
+            if (Game.structures[id].room.terminal && Game.structures[id].room.terminal.store[RESOURCE_GHODIUM]) {
+                g_storage = Game.structures[id].room.terminal.store[RESOURCE_GHODIUM];
             }
 
             if (Game.structures[id].cooldown > 0) {

@@ -9,17 +9,14 @@ module.exports = {
         }
         creep.memory[MEMORY_ATTACKEDAT] = Game.time; 
         if (creep.room.name == creep.memory[MEMORY_HOME]) {
-            // inside base, we identify the base safespot and hide there.
-            var hidex = 25;
-            var hidey = 25;
-            if (empire[creep.memory[MEMORY_HOME]]['safespot'] != undefined) {
-                if (empire[creep.memory[MEMORY_HOME]]['safespot']['x'] != undefined && empire[creep.memory[MEMORY_HOME]]['safespot']['y'] != undefined) {
-                    hidex = empire[creep.memory[MEMORY_HOME]]['safespot']['x'];
-                    hidey = empire[creep.memory[MEMORY_HOME]]['safespot']['y'];
-                }
+            var safe_flags = creep.room.getFlagsByType("hideout");
+            if (safe_flags.length == 0) {
+                creep.say('🚧 NO SAFE!');
+                console.log(creep.room + ':  no safespot!');
+            } else {
+                creep.say('🚧 safespot!');
+                creep.moveToRUP(safe_flags[0]);                
             }
-            creep.say('🚧 safespot!');
-            creep.moveToRUP(new RoomPosition(hidex, hidey, creep.memory[MEMORY_HOME]));
             return 0;
         }
         var enemiesList = creep.room.find(FIND_HOSTILE_CREEPS);
@@ -30,9 +27,6 @@ module.exports = {
             }
             creep.say('SAFE?');
             return 0;
-        }
-        if (creep.memory[MEMORY_ATTACKEDIN] == undefined) {
-            
         }
         // We're in danger. 
         // List the exits to this room. Find the ones that are NOT under attack.

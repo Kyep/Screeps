@@ -6,13 +6,13 @@ Creep.prototype.getHostileCreepsInRange = function(therange) {
     return this.pos.findInRange(FIND_HOSTILE_CREEPS, therange, {filter: function(c){ if (IS_ALLY(c.owner.username)) { return false } else { return true } } });
 }
 
-Creep.prototype.getClosestHostileStructure = function() {
+Creep.prototype.getClosestHostileStructure = function(include_public_ramparts) {
     return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
         filter: function(s){
             if(s.isInvincible()) {
                 return false;
             }
-            if (s.structureType == STRUCTURE_RAMPART) {
+            if (!include_public_ramparts && s.structureType == STRUCTURE_RAMPART) {
                 if (s.isPublic) {
                     return false;
                 }
@@ -29,6 +29,7 @@ Creep.prototype.getClosestHostileStructure = function() {
     });
 }
 
+
 Creep.prototype.getClosestHostileStructureInTypes = function(valid_types) {
     return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
         filter: function(s){
@@ -37,6 +38,30 @@ Creep.prototype.getClosestHostileStructureInTypes = function(valid_types) {
             }
             if(!valid_types.includes(s.structureType)) {
                 return false; 
+            }
+            if (s.owner) {
+                if (s.owner.username) {
+                    if (IS_ALLY(s.owner.username)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+    });
+}
+
+Creep.prototype.getClosestHostileUnRampartedStructureInTypes = function(valid_types) {
+    return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
+        filter: function(s){
+            if (s.isInvincible()) {
+                return false
+            }
+            if(!valid_types.includes(s.structureType)) {
+                return false; 
+            }
+            if(s.getRampartHP() > 0) {
+                return false;
             }
             if (s.owner) {
                 if (s.owner.username) {

@@ -85,7 +85,7 @@ module.exports.loop = function () {
         global.CREATE_GROWERS();
         //global.SHARE_SPARE_ENERGY(); 
     }
-    if(Game.time % 2500 === 0) {
+    if(Game.time % 2000 === 0) {
         //global.PRESET_ATTACK_WAVE();
         global.ESPIONAGE_ATTACK_PLANS(true);
         global.ESPIONAGE_REGEN_TARGETS();

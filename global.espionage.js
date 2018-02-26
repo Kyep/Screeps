@@ -376,7 +376,9 @@ global.ESPIONAGE = function() {
                         enemy_spawns.push(enemy_structures[i]);
                     }
                 }
-                var nuke_list = theroom.find(FIND_NUKES);
+            }
+            var nuke_list = theroom.find(FIND_NUKES);
+            if (nuke_list.length > 0) {
                 for (var i = 0; i < nuke_list.length; i++) {
                     if (Memory['espionage']['rooms'][rname]['missiles'] == undefined) {
                         Memory['espionage']['rooms'][rname]['missiles'] = []
@@ -385,6 +387,7 @@ global.ESPIONAGE = function() {
                 }
             }
             Memory['espionage']['rooms'][rname]['level'] = rlvl;
+            Memory['espionage']['rooms'][rname]['last_update'] = Game.time;
 
             if(!theroom.isMine() && enemy_structures.length) {
                 //console.log('ESPIONAGE: saved room ' + rname + ' (' + num_processed + '/' + target_list.length + '): ' + JSON.stringify(Memory['espionage']['rooms'][rname]));

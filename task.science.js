@@ -68,8 +68,29 @@ module.exports = {
                 'remote_resource': RESOURCE_OXYGEN,
                 'remote_room': 'W53S12'
             }
-
-    
+        /*
+        product_chains[RESOURCE_HYDROXIDE] = // REQUIRED FOR T2 BOOSTS, 2ND COPY
+            {
+                'local_room': 'W46S17',
+                'local_resource': RESOURCE_HYDROGEN,
+                'remote_resource': RESOURCE_OXYGEN,
+                'remote_room': 'W56S18'
+            }
+        */
+        product_chains[RESOURCE_ZYNTHIUM_HYDRIDE] = // T1, +100% dismantle
+            {
+                'local_room': 'W53S6',
+                'local_resource': RESOURCE_ZYNTHIUM,
+                'remote_resource': RESOURCE_HYDROGEN,
+                'remote_room': 'W46S17'
+            }
+        product_chains[RESOURCE_ZYNTHIUM_HYDRIDE] = // T2, +200% dismantle
+            {
+                'local_room': 'W53S6',
+                'local_resource': RESOURCE_ZYNTHIUM_HYDRIDE,
+                'remote_resource': RESOURCE_HYDROXIDE,
+                'remote_room': 'W53S18'
+            }
         for (var goal in ongoing_reactions) {
             
             var this_reaction = ongoing_reactions[goal];
@@ -300,7 +321,7 @@ module.exports = {
             }
             var factory_room_terminal = Game.rooms[factory_room_name].terminal;
             if (factory_room_terminal == undefined) {
-                console.log('Science: skipping ' + goal + ' because factory_room_terminal is undefined.');
+                //console.log('Science: skipping ' + goal + ' because factory_room_terminal is undefined.');
                 continue;
             }
             var local_component = reaction['local_resource'];

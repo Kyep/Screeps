@@ -2,7 +2,6 @@
 
 module.exports = {
 
-    /** @param {Creep} creep **/
     run: function(creep) {
         if(creep.memory[MEMORY_SOURCE] == undefined){
             console.log("WARNING: " + creep.name + " has no source!");
