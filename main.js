@@ -13,6 +13,7 @@ require('config.flags');
 
 require('prototype.creep');
 require('prototype.room');
+require('prototype.structures_all');
 require('prototype.structure');
 
 require('lib.loanuserlist');
@@ -388,39 +389,26 @@ module.exports.loop = function () {
         for (var rname in empire) {
             empire[rname].living = {};
         }
-        var spawner_parts = {};
         var room_parts = {}
         for(var name in Memory.creeps) {
             Game.creeps[name].memory[MEMORY_NEEDED] = 0;
-            if(Game.creeps[name].memory.spawner == undefined) {
+            if(Game.creeps[name].memory[MEMORY_SPAWNERROOM] != undefined) {
                 var pcount = Game.creeps[name].body.length;
-                if (Game.creeps[name].memory[MEMORY_SPAWNERNAME] == undefined) {
-                    console.log(name + ' has undefined spawner.');
-                    continue;
+                if (room_parts[Game.creeps[name].memory[MEMORY_SPAWNERROOM]] == undefined) {
+                    room_parts[Game.creeps[name].memory[MEMORY_SPAWNERROOM]] = 0;
                 }
-                if (spawner_parts[Game.creeps[name].memory[MEMORY_SPAWNERNAME]] == undefined) {
-                    spawner_parts[Game.creeps[name].memory[MEMORY_SPAWNERNAME]] = pcount;
-                }  else {
-                    spawner_parts[Game.creeps[name].memory[MEMORY_SPAWNERNAME]] += pcount;
-                }
-                if (Game.creeps[name].memory[MEMORY_SPAWNERROOM] != undefined) {
-                    if (room_parts[Game.creeps[name].memory[MEMORY_SPAWNERROOM]] == undefined) {
-                        room_parts[Game.creeps[name].memory[MEMORY_SPAWNERROOM]] = pcount;
-                    }  else {
-                        room_parts[Game.creeps[name].memory[MEMORY_SPAWNERROOM]] += pcount;
-                    }
-                }
+                room_parts[Game.creeps[name].memory[MEMORY_SPAWNERROOM]] += pcount;
             }
-            if(Game.creeps[name].memory.source == undefined) {
+            if(Game.creeps[name].memory[MEMORY_SOURCE] == undefined) {
                 console.log('WARN: ' + Game.creeps[name] + ' in ' + Game.creeps[name].room.name + ' has no source defined.');
             }
             if(Game.creeps[name].memory[MEMORY_ROLE]) {
                 var myrole = Game.creeps[name].memory[MEMORY_ROLE];
-                if(Game.creeps[name].memory.source != undefined) {
-                    var mysource = Game.creeps[name].memory.source;
-                    var myroom = Game.creeps[name].memory.target;
+                if(Game.creeps[name].memory[MEMORY_SOURCE] != undefined) {
+                    var mysource = Game.creeps[name].memory[MEMORY_SOURCE];
+                    var myroom = Game.creeps[name].memory[MEMORY_DEST];
                     if(empire[myroom] == undefined) {
-                        //console.log('WARN: ' + Game.creeps[name] + ' in ' + Game.creeps[name].room.name + ' has a room defined as target that has no empire definition.');
+                        //console.log('WARN: ' + Game.creeps[name] + ' in ' + Game.creeps[name].room.name + ' has a room defined as dest that has no empire definition.');
                         continue;
                     }
                     if(empire[myroom].living == undefined) {
@@ -436,11 +424,11 @@ module.exports.loop = function () {
                     }
                     //console.log(name + ': Source ' + myroom + '/' + mysource +'/'+ myrole + ' set to ' + empire[myroom].living[mysource][myrole]);
                     var desired = 0;
-                    if(Game.creeps[name].memory.target != undefined && Game.creeps[name].memory.source != undefined && Game.creeps[name].memory[MEMORY_ROLE] != undefined) {
-                        if (empire[Game.creeps[name].memory.target] != undefined) {
-                            if (empire[Game.creeps[name].memory.target].sources[Game.creeps[name].memory.source] != undefined) {
-                                if (empire[Game.creeps[name].memory.target].sources[Game.creeps[name].memory.source].assigned[Game.creeps[name].memory[MEMORY_ROLE]] != undefined) {
-                                    desired = empire[Game.creeps[name].memory.target].sources[Game.creeps[name].memory.source].assigned[Game.creeps[name].memory[MEMORY_ROLE]];
+                    if(Game.creeps[name].memory[MEMORY_DEST] != undefined && Game.creeps[name].memory[MEMORY_SOURCE] != undefined && Game.creeps[name].memory[MEMORY_ROLE] != undefined) {
+                        if (empire[Game.creeps[name].memory[MEMORY_DEST]] != undefined) {
+                            if (empire[Game.creeps[name].memory[MEMORY_DEST]].sources[Game.creeps[name].memory[MEMORY_SOURCE]] != undefined) {
+                                if (empire[Game.creeps[name].memory[MEMORY_DEST]].sources[Game.creeps[name].memory[MEMORY_SOURCE]].assigned[Game.creeps[name].memory[MEMORY_ROLE]] != undefined) {
+                                    desired = empire[Game.creeps[name].memory[MEMORY_DEST]].sources[Game.creeps[name].memory[MEMORY_SOURCE]].assigned[Game.creeps[name].memory[MEMORY_ROLE]];
                                     if (empire[myroom].living[mysource][myrole] <= desired) {
                                         Game.creeps[name].memory[MEMORY_NEEDED] = 1;
                                     } 
@@ -485,6 +473,7 @@ module.exports.loop = function () {
             if(Memory['config.reportworkers'] == undefined) {
                 Memory['config.reportworkers'] = 0;
             }
+            var worker_shortfall = 0;
             for (var rname in empire) {
                 var r_status = rname 
                 r_status += ': ';
@@ -509,8 +498,8 @@ module.exports.loop = function () {
                             }
                         }
                     }
-                    if(rname == spawns_from && Game.rooms[rname]) {
-                        var eslist = Game.rooms[rname].getHostileStructures();
+                    if (rname == spawns_from && Game.rooms[rname] != undefined) {
+                        var eslist = Game.rooms[rname].getHostileStructures(true);
                         if (eslist.length) {
                             use_dismantle = 1;
                         }
@@ -527,7 +516,7 @@ module.exports.loop = function () {
                         r_status += empire[rname].sources[skey]['sourcename'] + ': ';
                     }
                     if (use_dismantle) {
-                        empire[rname].sources[skey].assigned['dismantler'] = 2;
+                        empire[rname].sources[skey].assigned['dismantler'] = 3;
                     }
 
                     if (empire[rname].living == undefined) {
@@ -544,8 +533,12 @@ module.exports.loop = function () {
                             empire[rname].living[skey][role] = 0;
                         }
                         var living_text = empire[rname].living[skey][role];
-                        if (empire[rname].living[skey][role] < empire[rname].sources[skey].assigned[role]) {
+                        var delta = empire[rname].sources[skey].assigned[role] - empire[rname].living[skey][role];
+                        if (delta > 0) {
+                            worker_shortfall += delta;
                             living_text = '<font color="red">' + living_text + '</font>';
+                        } else if (delta < -3) {
+                            living_text = '<font color="purple">' + living_text + '</font>';
                         }
                         s_status += role + ': ' + living_text + '/' + empire[rname].sources[skey].assigned[role] + ' ';
                         r_status += role + ': ' + living_text + '/' + empire[rname].sources[skey].assigned[role] + ' ';
@@ -637,12 +630,12 @@ module.exports.loop = function () {
                                 continue;
                             }
                             
-                            var target_x = 25;
-                            var target_y = 25;
-                            if(empire[rname].sources[skey]['x'] != undefined) { target_x = empire[rname].sources[skey]['x']; }
-                            if(empire[rname].sources[skey]['y'] != undefined) { target_y = empire[rname].sources[skey]['y']; }
-                            if(empire[rname].sources[skey]['target_x'] != undefined) { target_x = empire[rname].sources[skey]['target_x']; }
-                            if(empire[rname].sources[skey]['target_y'] != undefined) { target_y = empire[rname].sources[skey]['target_y']; }
+                            var dest_x = 25;
+                            var dest_y = 25;
+                            if(empire[rname].sources[skey]['x'] != undefined) { dest_x = empire[rname].sources[skey]['x']; }
+                            if(empire[rname].sources[skey]['y'] != undefined) { dest_y = empire[rname].sources[skey]['y']; }
+                            if(empire[rname].sources[skey]['dest_x'] != undefined) { dest_x = empire[rname].sources[skey]['dest_x']; }
+                            if(empire[rname].sources[skey]['dest_y'] != undefined) { dest_y = empire[rname].sources[skey]['dest_y']; }
 
                             if(!using_primary) {
                                 //console.log('SECONDARY SPAWNING: ' + spawner.name + ' in ' + spawner.room.name + ' created ' + spawnrole + ' for |' + empire[rname].sources[skey]['sourcename'] + 
@@ -651,7 +644,7 @@ module.exports.loop = function () {
 
                             spawn_queue[spawner.name] = {
                                 'spawner': spawner.name, 'sname': empire[rname].sources[skey]['sourcename'], 'partlist': partlist, 'spawnrole': spawnrole, 'skey': skey, 'rname': rname, 
-                                'thecost': thecost, 'myroomname': home_room, 'target_x': target_x, 'target_y': target_y,  
+                                'thecost': thecost, 'myroomname': home_room, 'dest_x': dest_x, 'dest_y': dest_y,  
                                 'expected_income': expected_income, 'renew_allowed': renew_allowed, 'nextdest': []
                             }
                             //console.log(JSON.stringify(spawn_queue));
@@ -665,9 +658,9 @@ module.exports.loop = function () {
                 if (Memory['config.reportworkers'] > 0) {
                     console.log(r_status);
                 }
-                
             }
             if (Memory['config.reportworkers'] > 0) {
+                console.log('TOTAL WORKER SHORTFALL: <font color="orange">' + worker_shortfall + '</font>');
                 Memory['config.reportworkers'] -= 1;
             }
             //console.log(JSON.stringify(spawn_queue));
@@ -690,8 +683,8 @@ module.exports.loop = function () {
                         SPAWNCUSTOM(
                             thespawner, spawn_queue[spawnername]['sname'], spawn_queue[spawnername]['partlist'], spawn_queue[spawnername]['spawnrole'], 
                             spawn_queue[spawnername]['skey'], spawn_queue[spawnername]['rname'], spawn_queue[spawnername]['thecost'], 
-                            spawn_queue[spawnername]['myroomname'], spawn_queue[spawnername]['target_x'], 
-                            spawn_queue[spawnername]['target_y'], spawn_queue[spawnername]['renew_allowed'], spawn_queue[spawnername]['nextdest']
+                            spawn_queue[spawnername]['myroomname'], spawn_queue[spawnername]['dest_x'], 
+                            spawn_queue[spawnername]['dest_y'], spawn_queue[spawnername]['renew_allowed'], spawn_queue[spawnername]['nextdest']
                         );
                         thespawner.memory['role_spawning'] = spawn_queue[spawnername]['spawnrole'];
                         thespawner.memory['dest_spawning'] = spawn_queue[spawnername]['rname'];
@@ -745,9 +738,6 @@ module.exports.loop = function () {
             for (var tnum in rtowers[rname]) {
                 var thistower = rtowers[rname][tnum];
                 thistower.attack(best_target);
-                //thistower.room.visual.circle(thistower.pos, {fill: 'transparent', radius: TOWER_OPTIMAL_RANGE, stroke: 'green'});
-                //thistower.room.visual.circle(thistower.pos, {fill: 'transparent', radius: TOWER_FALLOFF_RANGE, stroke: 'yellow'});
-                //thistower.room.visual.line(thistower.pos, best_target.pos, {color: 'red'});
             }
             continue;
         }

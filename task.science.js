@@ -9,87 +9,75 @@ module.exports = {
             {
                 'local_room': 'W58S17',
                 'local_resource': RESOURCE_KEANIUM,
-                'remote_resource': RESOURCE_ZYNTHIUM,
-                'remote_room': 'W51S14'
+                'remote_resource': RESOURCE_ZYNTHIUM
             }
         product_chains[RESOURCE_UTRIUM_LEMERGITE] = // 2nd pre-req for GHODIUM 
             {
                 'local_room': 'W48S18',
                 'local_resource': RESOURCE_LEMERGIUM, 
-                'remote_resource': RESOURCE_UTRIUM,
-                'remote_room': 'W57S14'
+                'remote_resource': RESOURCE_UTRIUM
             }
         product_chains[RESOURCE_GHODIUM] = 
             {
                 'local_room': 'W48S18',
                 'local_resource': RESOURCE_UTRIUM_LEMERGITE, 
-                'remote_resource': RESOURCE_ZYNTHIUM_KEANITE,
-                'remote_room': 'W58S17'
+                'remote_resource': RESOURCE_ZYNTHIUM_KEANITE
             }
         product_chains[RESOURCE_UTRIUM_HYDRIDE] =  // +100% ATTACK (T1)
             {
                 'local_room': 'W57S14',
                 'local_resource': RESOURCE_UTRIUM, 
-                'remote_resource': RESOURCE_HYDROGEN,
-                'remote_room': 'W53S18'
+                'remote_resource': RESOURCE_HYDROGEN
             }
         product_chains[RESOURCE_UTRIUM_ACID] = // +200% ATTACK (T2)
             {
                 'local_room': 'W57S14',
                 'local_resource': RESOURCE_UTRIUM_HYDRIDE, 
-                'remote_resource': RESOURCE_HYDROXIDE,
-                'remote_room': 'W53S18'
+                'remote_resource': RESOURCE_HYDROXIDE
             }
         //product_chains[RESOURCE_GHODIUM_OXIDE] = // -30% DMG TAKEN
             //{
             //    'local_room': 'W57S11',
             //    'local_resource': RESOURCE_OXYGEN,
-            //    'remote_resource': RESOURCE_GHODIUM,
-            //    'remote_room': 'W48S18'
+            //    'remote_resource': RESOURCE_GHODIUM
             //}
         product_chains[RESOURCE_LEMERGIUM_OXIDE] = // // +100% HEAL
             {
                 'local_room': 'W48S18',
                 'local_resource': RESOURCE_LEMERGIUM,
-                'remote_resource': RESOURCE_OXYGEN,
-                'remote_room': 'W53S12'
+                'remote_resource': RESOURCE_OXYGEN
             }
         product_chains[RESOURCE_LEMERGIUM_ALKALIDE] = // +200% HEAL (T2)
             {
                 'local_room': 'W53S18',
                 'local_resource': RESOURCE_HYDROXIDE,
-                'remote_room': 'W48S18',
                 'remote_resource': RESOURCE_LEMERGIUM_OXIDE
             }
         product_chains[RESOURCE_HYDROXIDE] = // REQUIRED FOR T2 BOOSTS
             {
                 'local_room': 'W53S18',
                 'local_resource': RESOURCE_HYDROGEN,
-                'remote_resource': RESOURCE_OXYGEN,
-                'remote_room': 'W53S12'
+                'remote_resource': RESOURCE_OXYGEN
             }
         /*
         product_chains[RESOURCE_HYDROXIDE] = // REQUIRED FOR T2 BOOSTS, 2ND COPY
             {
                 'local_room': 'W46S17',
                 'local_resource': RESOURCE_HYDROGEN,
-                'remote_resource': RESOURCE_OXYGEN,
-                'remote_room': 'W56S18'
+                'remote_resource': RESOURCE_OXYGEN
             }
         */
         product_chains[RESOURCE_ZYNTHIUM_HYDRIDE] = // T1, +100% dismantle
             {
                 'local_room': 'W53S6',
                 'local_resource': RESOURCE_ZYNTHIUM,
-                'remote_resource': RESOURCE_HYDROGEN,
-                'remote_room': 'W46S17'
+                'remote_resource': RESOURCE_HYDROGEN
             }
         product_chains[RESOURCE_ZYNTHIUM_HYDRIDE] = // T2, +200% dismantle
             {
                 'local_room': 'W53S6',
                 'local_resource': RESOURCE_ZYNTHIUM_HYDRIDE,
-                'remote_resource': RESOURCE_HYDROXIDE,
-                'remote_room': 'W53S18'
+                'remote_resource': RESOURCE_HYDROXIDE
             }
         for (var goal in ongoing_reactions) {
             
@@ -346,42 +334,17 @@ module.exports = {
                 console.log('Science: skipping ' + goal + '/' + factory_room_name + ' because it has no remote_resource.');
                 continue;
             }
-            if (reaction['remote_room'] == undefined) {
-                console.log('Science: skipping ' + goal + '/' + factory_room_name + ' because it has no remote_room.');
-                continue;
-            }
             var remote_resource = reaction['remote_resource'];
-            var remote_room_name = reaction['remote_room'];
             if (factory_room_terminal.store[remote_resource] == undefined || factory_room_terminal.store[remote_resource] < 3000) {
-                //console.log('Science: in making ' + goal + ' the terminal in ' + factory_room_name + ' lacks 3k ' + remote_resource + ', trying to get some from ' + remote_room_name);
-                var remote_room_object = Game.rooms[remote_room_name];
-                if (remote_room_object == undefined) {
-                    console.log('Science: ' + goal + '/' + factory_room_name + ': the remote room ' + remote_room_name + ' is undefined.');
+                if (factory_room_terminal.acquireMineralAmount(remote_resource, 3000)) {
+                    console.log('Science: ' + goal + '/' + factory_room_name + ': successfully acquired raw material ' + remote_resource + ' from a remote room');
+                    return;
+                } else {
+                    console.log('Science: ' + goal + '/' + factory_room_name + ': cannot acquire 3k ' + remote_resource);
                     continue;
                 }
-                if (remote_room_object.terminal == undefined) {
-                    console.log('Science: ' + goal + '/' + factory_room_name + ': the remote room ' + remote_room_name + ' has no terminal.');
-                    continue;
-                }
-                if (!remote_room_object.terminal.isActive()) {
-                    console.log('Science: ' + goal + '/' + factory_room_name + ': the remote room ' + remote_room_name + ' has an inactive terminal.');
-                    continue;
-                }
-                var remote_terminal_object = remote_room_object.terminal;
-                if (remote_terminal_object.store[remote_resource] == undefined || remote_terminal_object.store[remote_resource] < 3000) {
-                    if (Game.time % 100 == 0) {
-                        console.log('Science: ' + goal + '/' + factory_room_name + ': the remote ' + remote_room_name + ' lacks 3k ' + remote_resource);
-                    }
-                    continue;
-                }
-                if (remote_terminal_object.cooldown) {
-                    continue;
-                }
-                var send_result = remote_terminal_object.send(remote_resource, 3000, factory_room_name, 'reaction: ' + goal);
-                console.log('Science: ' + goal + '/' + factory_room_name + ': had ' + remote_room_name + ' send 3k ' + remote_resource + ' to ' + factory_room_name + ' with result: ' + send_result);
-                
-                return; // prevents any further resource-sharing from trying to ship the same minerals to two different rooms at once.
             }
+
             // we're ready to start a reaction, and there is NOT one in progress. Should we create one?
             var output_products = factory_room_terminal.store[goal];
             if (output_products != undefined && output_products >= 20000) {

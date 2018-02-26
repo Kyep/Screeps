@@ -207,9 +207,12 @@ global.CONSTRUCT_RESERVER_BODY = function (resticksremaining, maxroomenergy) {
 
 
 global.REFRESH_CREEPS = function() {
+    var nc = 0;
     for (var cr in Game.creeps) {
        Game.creeps[cr].disableRenew(); 
+       nc++;
     }
+    return nc;
 }
 
 global.SPAWN_UNIT = function (spawnername, role, targetroomname, roompath, homeroom) {
@@ -246,7 +249,7 @@ global.SPAWN_UNIT = function (spawnername, role, targetroomname, roompath, homer
 
 
 
-global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, targettext, thecost, homesector, target_x, target_y, renew_allowed, nextdest){
+global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, targettext, thecost, homesector, dest_x, dest_y, renew_allowed, nextdest){
     if (Memory['spawn_count'] == undefined) {
         Memory['spawn_count'] = 0;
     }
@@ -266,11 +269,11 @@ global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, t
     crmemory[MEMORY_ROLE] = roletext;
     crmemory[MEMORY_SOURCE] = sourcetext;
     crmemory[MEMORY_DEST] = targettext;
+    crmemory[MEMORY_DEST_X] = dest_x;
+    crmemory[MEMORY_DEST_Y] = dest_y;
     crmemory[MEMORY_HOME] = homesector;
     crmemory[MEMORY_HOME_X] = spawner.pos.x;
     crmemory[MEMORY_HOME_Y] = spawner.pos.y;
-    crmemory[MEMORY_DEST_X] = target_x;
-    crmemory[MEMORY_DEST_Y] = target_y;
     crmemory[MEMORY_SPAWNERNAME] = spawner.name;
     crmemory[MEMORY_SPAWNERROOM] = spawner.room.name;
     crmemory[MEMORY_RENEW] = renew_allowed;
@@ -284,12 +287,14 @@ global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, t
 
 
 
-global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname) {
+global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname, force) {
     if (empire[theroomname] == undefined) {
         console.log('GET_SPAWNER_FOR_ROOM: undefined empire block for ' + theroomname);
         return [undefined, 1];
     }
-
+    if (force == undefined) {
+        force = false;
+    }
     // Room definitions
     var room_primary = undefined;
     if (empire[theroomname]['spawn_room'] == undefined) {
@@ -309,13 +314,13 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname) {
     var spawners_primary = []
     var spawners_primary_unavailable = []
     if (room_primary != undefined) {
-        spawners_primary = room_primary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
-        spawners_primary_unavailable = room_primary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && !structure.isAvailable()); } });
+        spawners_primary = room_primary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable(force)); } });
+        spawners_primary_unavailable = room_primary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && !structure.isAvailable(force)); } });
     }
 
     var spawners_secondary = []
     if (room_secondary != undefined) {
-        spawners_secondary = room_secondary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable()); } });
+        spawners_secondary = room_secondary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable(force)); } });
     }
     
     var room_primary_level = 0;
@@ -604,7 +609,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         console.log('ATTACK CONFIG WARNING, SECTOR ' + roomname + ' HAS NO spawn_room SET ON ITS ROOM!');
         patrolforce['rogue'] = 1; // the sad default.
     } else if (theirthreat > 0) {
-        var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(roomname);
+        var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(roomname, true);
         var spawner = gsapfr[0];
         var using_primary = gsapfr[1];
         if (spawner == undefined) {
@@ -682,18 +687,18 @@ global.CREATE_GROWERS = function() {
         }
 		var bsr = empire[rname]['backup_spawn_room'];
         if (bsr == undefined) {
-            console.log('CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has no bsr');
+            console.log('CREATE_GROWERS CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has no bsr');
             continue;
         }
         var oroom = Game.rooms[bsr];
         if (oroom == undefined) {
-            console.log('CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has undefined BSR');
+            console.log('CREATE_GROWERS CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has undefined BSR');
             continue;
         }
         var energy_reserves = oroom.getStoredEnergy();
         var energy_class = oroom.classifyStoredEnergy(energy_reserves);
         if (energy_class == ENERGY_EMPTY || energy_class == ENERGY_OK) {
-            console.log('CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has BSR ' + oroom.name + ' with only E = ' + energy_reserves + ' => ' + energy_class);
+            //console.log('CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has BSR ' + oroom.name + ' with only E = ' + energy_reserves + ' => ' + energy_class);
             continue;
         }
 
@@ -711,7 +716,7 @@ global.CREATE_GROWERS = function() {
             grower_names.push(crname);
         }
         if (grower_names.length >= 6) {
-            console.log('CANDIDATE FAIL: ' + bsr + ' => ' + rname + ' (level: ' + rlvl + ') has ' + grower_names.length + ' existing grower(s) : ' + grower_names);
+            console.log('CREATE_GROWERS CANDIDATE FAIL: ' + bsr + ' => ' + rname + ' (level: ' + rlvl + ') has ' + grower_names.length + ' existing grower(s) : ' + grower_names);
             continue;
         }
         var storages = droom.find(FIND_STRUCTURES, {
@@ -721,14 +726,14 @@ global.CREATE_GROWERS = function() {
                             );
                         } } );
         if (!storages.length) {
-            console.log('CANDIDATE FAIL: ' + rname + ' has no storage');
+            console.log('CREATE_GROWERS CANDIDATE FAIL: ' + rname + ' has no storage');
             continue;
         }
         var st_unit = storages[0];
         var d_x = st_unit.pos.x;
         var d_y = st_unit.pos.y;
         var result = oroom.createUnit('grower', rname, [], oroom.name, d_x, d_y);
-        console.log('CANDIDATE: ' + bsr + ' => ' + rname + ' (level: ' + rlvl + ') storage: ' + d_x + ', ' + d_y + ' result: ' + result);
+        console.log('CREATE_GROWERS CANDIDATE: ' + bsr + ' => ' + rname + ' (level: ' + rlvl + ') storage: ' + d_x + ', ' + d_y + ' result: ' + result);
             
     }
 }

@@ -8,7 +8,6 @@ module.exports = {
             if(creep.room.controller) {
                 var result = creep.reserveController(creep.room.controller)
                 if (result == ERR_NOT_IN_RANGE) {
-                    creep.memory.expiresAt += 1
                     creep.moveTo(creep.room.controller, {reusePath: 15});
                 } else if (result == ERR_NOT_OWNER) {
                     //creep.attackController(creep.room.controller); // requires FIVE CLAIM PARTS :(((

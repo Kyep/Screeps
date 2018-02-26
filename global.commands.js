@@ -142,7 +142,7 @@ global.REPORT_EARNINGS = function() {
             continue;
         }
         if (empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]]['sourcename'] == undefined) {
-            console.log('CREEP ' + cr + ' HAS NO SOURCENAME FOR SOURCE: ' + creep.memory.source);
+            console.log('CREEP ' + cr + ' HAS NO SOURCENAME FOR SOURCE: ' + creep.memory[MEMORY_SOURCE]);
             Game.creeps[cr].disableRenew();
             continue;
         }
@@ -174,7 +174,7 @@ global.REPORT_EARNINGS_SOURCES = function() {
             continue;
         }
         if (empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]]['sourcename'] == undefined) {
-            console.log('CREEP ' + cr + ' HAS NO SOURCENAME FOR SOURCE: ' + creep.memory.source);
+            console.log('CREEP ' + cr + ' HAS NO SOURCENAME FOR SOURCE: ' + creep.memory[MEMORY_SOURCE]);
             Game.creeps[cr].disableRenew();
             continue;
         }
@@ -259,16 +259,17 @@ global.SPAWN_EVERYWHERE = function (btype) {
         btype = 'teller';
     }
     for (var rname in Game.rooms) {
-        var rlvl = Game.rooms[rname].getLevel();
-        if (rlvl >= 5) {
-            var retval = Game.rooms[rname].createUnit(btype, rname);
-            console.log('spawning ' + btype + ' for: ' + rname + ' result: ' + retval);
+        var robj = Game.rooms[rname];
+        if (!robj.isMine()) {
+            continue;
         }
+        var retval = Game.rooms[rname].createUnit(btype, rname);
+        console.log('spawning ' + btype + ' for: ' + rname + ' result: ' + retval);
     }
 }
 
 
-global.ATTACK_WAVE = function (spawn_list, unit_type, target_room, roompath) {
+global.ATTACK_WAVE = function (spawn_list, unit_type, dest_room, roompath) {
     if (spawn_list.length < 1) {
         console.log('arg 1 must be spawn_list');
         return;
@@ -277,18 +278,18 @@ global.ATTACK_WAVE = function (spawn_list, unit_type, target_room, roompath) {
         console.log('arg 2 must be unit_type');
         return;
     }
-    if (target_room == undefined) {
-        console.log('arg 3 must be target_room');
+    if (dest_room == undefined) {
+        console.log('arg 3 must be dest_room');
         return;
     }
 
     for (var i = 0; i < spawn_list.length; i++) {
-        var suresult = SPAWN_UNIT(spawn_list[i], unit_type, target_room, roompath);
+        var suresult = SPAWN_UNIT(spawn_list[i], unit_type, dest_room, roompath);
         console.log(spawn_list[i].name + ': ' + suresult);
     }
 }
 
-global.ROOMLIST_ATTACK_WAVE = function (roomlist, unit_type, target_room, roompath, target_x, target_y) {
+global.ROOMLIST_ATTACK_WAVE = function (roomlist, unit_type, dest_room, roompath, dest_x, dest_y) {
     if (roomlist == undefined) {
         console.log('arg 2 must be roomlist');
         return -1;
@@ -301,8 +302,8 @@ global.ROOMLIST_ATTACK_WAVE = function (roomlist, unit_type, target_room, roompa
         console.log('arg 2 must be unit_type');
         return -1;
     }
-    if (target_room == undefined) {
-        console.log('arg 3 must be target_room');
+    if (dest_room == undefined) {
+        console.log('arg 3 must be dest_room');
         return -1;
     }
     
@@ -311,7 +312,7 @@ global.ROOMLIST_ATTACK_WAVE = function (roomlist, unit_type, target_room, roompa
     var spawncount = 0;
     for (var rname in Game.rooms) {
         if (roomlist.indexOf(rname) != -1) {
-            var res = Game.rooms[rname].createUnit(unit_type, target_room, roompath, rname, target_x, target_y);
+            var res = Game.rooms[rname].createUnit(unit_type, dest_room, roompath, rname, dest_x, dest_y);
             console.log('ROOMLIST_ATTACK_WAVE: ' + rname + ' ' + res);
             if(res) {
                 spawncount++;
@@ -321,51 +322,6 @@ global.ROOMLIST_ATTACK_WAVE = function (roomlist, unit_type, target_room, roompa
     return spawncount;
 }
 
-global.PRESET_ATTACK_WAVE = function (btype) {
-    /* TARGETS: 
-        W59 and then W85, S3: edtuer's rooms.
-    */
-    
-    //slower but safer route: ROOMLIST_ATTACK_WAVE(['W58S17','W59S18'], 'boss', 'W60S17', ['W60S25','W57S25','W57S24'], 18, 29);
-    //ROOMLIST_ATTACK_WAVE(['W58S17','W59S18'], 'boss', 'W60S17', ['W60S20','W57S20','W57S21','W58S21','W58S22','W57S23','W57S24'], 18, 29);
-    //ROOMLIST_ATTACK_WAVE(['W53S18','W56S18'], 'boss', 'W55S20', ['W56S20','W57S23','W55S23'], 30, 30);
-    
-    var source_room_list = ['W59S18', 'W53S18', 'W56S18'] // 'W59S18', 'W58S17'
-    //['W57S11','W57S14','W53S12','W51S14'];
-    
-    for (var i = 0; i < source_room_list.length; i++) {
-    	//Game.rooms[source_room_list[i]].createSiegeTeam('W55S20', ['W57S23', 'W57S25', 'W56S26', 'W56S27'], 31, 9);
-    	var result = Game.rooms[source_room_list[i]].createUnit('siegebig', 'W55S20', ['W57S23', 'W57S25', 'W56S26', 'W56S27'], 31, 9);
-    	console.log(source_room_list[i] + ': ' + result);
-    }
-    //ROOMLIST_ATTACK_WAVE(['W58S17','W59S18'], 'siegebig', 'W60S17', ['W60S20','W57S20','W57S21','W58S21','W58S22','W57S23','W57S24'], 18, 29);
-    //ROOMLIST_ATTACK_WAVE(['W53S18','W56S18'], 'siegehealer', 'W55S20', ['W56S20','W57S23','W55S23'], 30, 30);
-
-    //ROOMLIST_ATTACK_WAVE(['W56S18'], 'bclaimer', 'W55S20', ['W56S20','W57S23','W55S23'], 30, 30);
-    //ROOMLIST_ATTACK_WAVE(['W56S18'], 'bclaimer', 'W55S20', ['W56S20','W57S23','W57S24'], 30, 30);
-
-    /*
-    var primary_target = 'W52S9'; // W60S10 W53S10
-    var waypoint_list = []; // 'W60S3', 'W59S3', 'W58S3'];
-    var target_x = 40;
-    var target_y = 40;
-    var roomlist = ['W57S14','W57S11','W53S12','W51S14','W53S18','W51S18'];
-    if (btype == undefined) {
-        btype = 'drainerbig';
-    }
-    
-    //btype = 'siegebig';
-    ROOMLIST_ATTACK_WAVE(roomlist, btype, primary_target, waypoint_list, target_x, target_y);
-    */
-
-    //ROOMLIST_ATTACK_WAVE(['W57S11'], 'scout', primary_target, waypoint_list, target_x, target_y); // ,'W57S14'    
-    // nearby rooms spawn large drainers
-    //ROOMLIST_ATTACK_WAVE(['W57S11','W57S14'], 'drainerbig', primary_target, waypoint_list, target_x, target_y);
-
-    // further away units spawn big siege creeps
-    //ROOMLIST_ATTACK_WAVE(['W53S12','W58S17','W51S14'], 'siegebig', primary_target, waypoint_list, target_x, target_y);
-
-}
 
 global.RETARGET_ROLE = function (role, newtarget, waypoints) {
     if (waypoints == undefined || waypoints == null) {
@@ -556,7 +512,7 @@ global.LAUNCH_NUKE = function(roomname) {
             
             // Spawn a refiller.
             
-            var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(thenuker.room.name);
+            var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(thenuker.room.name, true);
             var spawner = gsapfr[0];
             var using_primary = gsapfr[1];
             

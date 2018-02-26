@@ -25,7 +25,7 @@ module.exports = {
                 }
             }
 
-            mineral = Game.getObjectById(creep.memory['mineralid']);
+            mineral = Game.getObjectById(creep.memory[MEMORY_MINERALID]);
             if (mineral) {
                 if (mineral.mineralAmount == 0 && mineral.ticksToRegeneration > 1500) {
                     creep.memory[MEMORY_ROLE] = 'recycler';
@@ -52,7 +52,7 @@ module.exports = {
             }
         }
         if (creep.memory[MEMORY_JOB] == JOB_RENEW) {
-            mineral = Game.getObjectById(creep.memory['mineralid']);
+            mineral = Game.getObjectById(creep.memory[MEMORY_MINERALID]);
             if (mineral == undefined || mineral.mineralAmount == undefined || mineral.mineralAmount == 0) {
                 console.log(creep.name + ' IS SELF RECYCLING BECAUSE THERE ARE NO MINERALS LEFT IN: ' + creep.room.name);
                 creep.memory[MEMORY_ROLE] = 'recycler';

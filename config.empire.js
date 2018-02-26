@@ -323,11 +323,11 @@
             'spawn_room': 'W52S17',
             'backup_spawn_room': 'W51S18',
             'sources': {
-                '59bbc4062052a716c3ce7401': {'sourcename': '5N-E', 'x':45, 'y':26, 'target_x': 44, 'target_y': 26, 
+                '59bbc4062052a716c3ce7401': {'sourcename': '5N-E', 'x':45, 'y':26, 'target_x': 44, 'target_y': 26, 'steps': 60,
                     'assigned': {'c30harvester': 1, 'hauler': 1},
                     'expected_income': 40
                 },
-                '59bbc4062052a716c3ce7402': {'sourcename': '5N-W', 'x':8, 'y':44, 'target_x': 9, 'target_y': 43, 
+                '59bbc4062052a716c3ce7402': {'sourcename': '5N-W', 'x':8, 'y':44, 'target_x': 9, 'target_y': 43, 'steps': 60,
                     'assigned': {'c30harvester': 1, 'hauler': 1},
                     'expected_income': 30
                 },
@@ -1082,7 +1082,7 @@
                 }
             }
         },
-        'W42S17': {
+        'W43S17': {
             'roomname': '16N',
             'spawn_room': 'W43S18',
             //'backup_spawn_room': 'W46S17', // source keepers.

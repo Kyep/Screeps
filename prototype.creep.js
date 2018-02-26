@@ -83,10 +83,28 @@ Creep.prototype.hasSetDefaults = function() {
 }
 
 Creep.prototype.setDefaults = function() {
-    if (this.isMilitary()) {
+    if (this.isMilitary() || this.isSiege()) {
         this.notifyWhenAttacked(false);
     }
     this.memory[MEMORY_INIT] = Game.time;
+}
+
+Creep.prototype.hideInBase = function() {
+    if (!this.isAtHomeRoom()) {
+        this.moveToRUP(this.getHomePos());
+        this.say('🚧 hide@base!');
+        return true;
+    }
+    var safe_flags = this.room.getFlagsByType("hideout");
+    if (safe_flags.length == 0) {
+        this.say('🚧 NO SAFE!');
+        console.log(this.room + ':  no safespot!');
+        return false;
+    } else {
+        this.say('🚧 safespot!');
+        this.moveToRUP(safe_flags[0]);
+        return true;
+    }
 }
 
 Creep.prototype.announceJob = function() {
@@ -164,7 +182,7 @@ Creep.prototype.getShouldHide = function() {
     if (this.memory[MEMORY_HOME] == this.memory[MEMORY_DEST]) {
         return 0;
     }
-    if (this.memory.attackedin != undefined) {
+    if (this.memory[MEMORY_ATTACKEDIN] != undefined) {
         if (global.ROOM_UNDER_ATTACK(this.memory[MEMORY_ATTACKEDIN])) {
             return 1;
         }

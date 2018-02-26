@@ -44,17 +44,7 @@ module.exports = {
                 // hide in base.
                 // I would rather they not block spawning of combat mobs by renewing.
                 // Also, for long attacks, I would rather not pay their energy cost to maintain them.
-                var hidex = 25;
-                var hidey = 25;
-                if (empire[creep.memory[MEMORY_HOME]]['safespot'] != undefined) {
-                    if (empire[creep.memory[MEMORY_HOME]]['safespot']['x'] != undefined && empire[creep.memory[MEMORY_HOME]]['safespot']['y'] != undefined) {
-                        hidex = empire[creep.memory[MEMORY_HOME]]['safespot']['x'];
-                        hidey = empire[creep.memory[MEMORY_HOME]]['safespot']['y'];
-                    }
-                }
-                creep.say('🚧 hiding!');
-                creep.moveToRUP(new RoomPosition(hidex, hidey, creep.memory[MEMORY_HOME]));
-
+                creep.hideInBase();
             } else {
                 creep.moveToDestination();
             }

@@ -6,14 +6,14 @@ module.exports = {
         var myterminal = creep.room.terminal;
         var myjob = creep.memory[MEMORY_JOB];
         var mylab = undefined;
-        if (creep.memory['labid'] != undefined) {
-            mylab = Game.getObjectById(creep.memory['labid']);
+        if (creep.memory[MEMORY_LABID] != undefined) {
+            mylab = Game.getObjectById(creep.memory[MEMORY_LABID]);
             if (mylab == undefined) {
-                creep.memory['labid'] = undefined;
+                creep.memory[MEMORY_LABID] = undefined;
                 return;
             }
         }
-        var mymineral = creep.memory['mineralid'];
+        var mymineral = creep.memory[MEMORY_MINERALID];
         
         if (myjob == 'fill_lab') {
             var amount_to_withdraw = mylab.mineralCapacity - mylab.mineralAmount;
@@ -72,21 +72,21 @@ module.exports = {
             if (assignment == undefined) {
                 if (thislab.mineralAmount > 0) {
                     creep.memory[MEMORY_JOB] = 'empty_lab';
-                    creep.memory['labid'] = thislab.id;
-                    creep.memory['mineralid'] = thislab.mineralType;
+                    creep.memory[MEMORY_LABID] = thislab.id;
+                    creep.memory[MEMORY_MINERALID] = thislab.mineralType;
                     return;
                 }
                 //console.log(creep.name + ' skip (no assignment): ' + thislab.id );
                 continue;
             }
             
-            var rock = assignment['mineralid'];
+            var rock = assignment[MEMORY_MINERALID];
             if (assignment['action'] == 'fill') {
                 if (thislab.mineralType != undefined && thislab.mineralType != rock && thislab.mineralAmount > 0) {
                     console.log(creep.room.name + ' lab ID ' + thislab.id + ' has mismatched contents. Has: ' + thislab.mineralType + ' Assigned: ' + rock + ' Purpose: ' + assignment['purpose']);
                     creep.memory[MEMORY_JOB] = 'empty_lab';
-                    creep.memory['labid'] = thislab.id;
-                    creep.memory['mineralid'] = thislab.mineralType;
+                    creep.memory[MEMORY_LABID] = thislab.id;
+                    creep.memory[MEMORY_MINERALID] = thislab.mineralType;
                     return;
                 }
                 var amount_needed = thislab.mineralCapacity - thislab.mineralAmount;
@@ -94,8 +94,8 @@ module.exports = {
                     continue;
                 }
                 creep.memory[MEMORY_JOB] = 'fill_lab';
-                creep.memory['labid'] = thislab.id;
-                creep.memory['mineralid'] = rock;
+                creep.memory[MEMORY_LABID] = thislab.id;
+                creep.memory[MEMORY_MINERALID] = rock;
                 return;
 
             } else if (assignment['action'] == 'empty') {
@@ -103,8 +103,8 @@ module.exports = {
                     continue;
                 }
                 creep.memory[MEMORY_JOB] = 'empty_lab';
-                creep.memory['labid'] = thislab.id;
-                creep.memory['mineralid'] = thislab.mineralType;
+                creep.memory[MEMORY_LABID] = thislab.id;
+                creep.memory[MEMORY_MINERALID] = thislab.mineralType;
                 return;
             } else if (assignment['action'] == 'ignore') {
                 //console.log(creep.name + ' skip (ignore): ' + thislab.id );

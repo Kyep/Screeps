@@ -1,10 +1,16 @@
 "use strict";
 
+var jobReturnresources = require('job.returnresources');
+
 module.exports = {
     run: function(creep) {
         if (creep.room.name != creep.memory[MEMORY_HOME]) {
                 creep.moveTo(creep.getHomePos());
                 return 0;
+        }
+        if (creep.carry.energy > 0) {
+            var result = jobReturnresources.run(creep, 1, 1, 1, 1, 1, 0);
+            return;
         }
         var targets = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {

@@ -36,7 +36,7 @@ Room.prototype.deleteFlagsByType = function(structuretype) {
     return this.deleteFlagList(this.getFlagsByType(structuretype));
 }
 
-Room.prototype.convertFlagsToStructures = function(structuretype, count) {
+Room.prototype.convertFlagsToStructures = function(structuretype, count, silent) {
     var count_built = 0;
     if (!structuretype) {
         console.log(this.name + ': convertFlagsToStructures: missing structuretype');
@@ -46,9 +46,11 @@ Room.prototype.convertFlagsToStructures = function(structuretype, count) {
         console.log(this.name + ': convertFlagsToStructures: missing count');
         return count_built;
     }
-    console.log(this.name + ': convertFlagsToStructures('+structuretype+', '+count+')');
+    if (!silent) {
+        console.log(this.name + ': convertFlagsToStructures('+structuretype+', '+count+')');
+    }
     var aflags = this.getFlagsByType(structuretype);
-    if (!aflags.length) {
+    if (!aflags.length && !silent) {
         console.log(this.name + ': convertFlagsToStructures: missing flags for ' + structuretype);
         return count_built;
     }
@@ -75,7 +77,7 @@ Room.prototype.deleteConstructionSites = function() {
 }
 
 Room.prototype.checkStructures = function() {
-    var always_blacklist = ['container', 'link'];
+    var always_blacklist = ['container', 'link', 'lab', 'road'];
     var newly_built = 0;
     if (!this.isMine()) {
         return newly_built;
@@ -114,14 +116,17 @@ Room.prototype.checkStructures = function() {
         if (intended <= actual) {
             continue;
         }
+        var silent = false;
         if (intended > 100) {
-            continue;
+            silent = true;
         }
         if (always_blacklist.includes(skey)) {
             continue;
         }
-        r_messages.push(skey + ': ' + actual + '/' + intended);
-        newly_built += this.convertFlagsToStructures(skey, intended - actual);
+        if (!silent) {
+            r_messages.push(skey + ': ' + actual + '/' + intended);
+        }
+        newly_built += this.convertFlagsToStructures(skey, intended - actual, silent);
         
     }
     if (r_messages.length > 0) {
@@ -328,12 +333,12 @@ Room.prototype.getHostileCreeps = function() {
     return this.find(FIND_HOSTILE_CREEPS, {filter: function(c){ if (IS_ALLY(c.owner.username)) { return false } else { return true } } });
 }
 
-Room.prototype.getHostileStructures = function() {
+Room.prototype.getHostileStructures = function(include_public_ramparts) {
     return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ 
         if (IS_ALLY(s.owner.username) || s.isInvincible()) { 
             return false;
         }
-        if (s.structureType == STRUCTURE_RAMPART) {
+        if (!include_public_ramparts && s.structureType == STRUCTURE_RAMPART) {
             if (s.isPublic) {
                 return false;
             }
@@ -361,7 +366,7 @@ Room.prototype.dropRoads = function() {
     if(empire[this.name] == undefined) {
         return -1;
     }
-    var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(this.name);
+    var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(this.name, true);
     var spawner = gsapfr[0];
     var using_primary = gsapfr[1];
     if (!using_primary) {
@@ -739,7 +744,7 @@ Room.prototype.deleteAlert = function() {
     } else if (empire_defaults['alerts_reassign'] != undefined) {
         for(var crname in Game.creeps) {
 
-            if(Game.creeps[crname].memory.target == this.name && empire_defaults['military_roles'].includes(Game.creeps[crname].memory[MEMORY_ROLE])) {
+            if(Game.creeps[crname].memory[MEMORY_DEST] == this.name && empire_defaults['military_roles'].includes(Game.creeps[crname].memory[MEMORY_ROLE])) {
                 if (Game.creeps[crname].memory[MEMORY_SPAWNERNAME] == undefined) {
                     continue;
                 }
@@ -853,9 +858,13 @@ Room.prototype.destroyHostileSpawns = function() {
 }
 
 
-Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, dest_x, dest_y) {
+Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, dest_x, dest_y, force) {
 
-    var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(this.name);
+    if (force == undefined) {
+        force = false;
+    }
+
+    var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(this.name, force);
     var spawner = gsapfr[0];
     var using_primary = gsapfr[1];
     
@@ -927,9 +936,7 @@ Room.prototype.createSiegeTeam = function (targetroomname, roompath, dest_x, des
     }
     var thetank = SPAWNCUSTOM(free_spawns[0], '', tank_body, tank_design, '', targetroomname, tank_cost, this.name, dest_x, dest_y, 0, roompath);
     var thehealer = SPAWNCUSTOM(free_spawns[1], '', healer_body, healer_design, '', targetroomname, healer_cost, this.name, dest_x, dest_y, 0, roompath);
-    //var thetank = this.createUnit('siege', targetroomname, roompath, this.name, dest_x, dest_y);
     console.log('tank: ' + thetank);
-    //var thehealer = this.createUnit('siegehealer', targetroomname, roompath, this.name, dest_x, dest_y);
     console.log('healer: ' + thehealer);
     return true;
 }

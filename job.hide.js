@@ -5,19 +5,12 @@ module.exports = {
         if (creep == undefined) {
             creep.say('ERROR');
             console.log(creep.name + ": You are calling jobHide.run without a creep as a param.");
-            return 0;
+            return;
         }
         creep.memory[MEMORY_ATTACKEDAT] = Game.time; 
-        if (creep.room.name == creep.memory[MEMORY_HOME]) {
-            var safe_flags = creep.room.getFlagsByType("hideout");
-            if (safe_flags.length == 0) {
-                creep.say('🚧 NO SAFE!');
-                console.log(creep.room + ':  no safespot!');
-            } else {
-                creep.say('🚧 safespot!');
-                creep.moveToRUP(safe_flags[0]);                
-            }
-            return 0;
+        if (creep.isAtHomeRoom()) {
+            creep.hideInBase();
+            return;
         }
         var enemiesList = creep.room.find(FIND_HOSTILE_CREEPS);
         if (!enemiesList.length) {
@@ -26,11 +19,11 @@ module.exports = {
                 creep.moveToRUP(new RoomPosition(25, 25, creep.room.name));
             }
             creep.say('SAFE?');
-            return 0;
+            return;
         }
         // We're in danger. 
         // List the exits to this room. Find the ones that are NOT under attack.
-        // Identify the closest of those, and go there.
+        // Identify the closest of those, and go there, then wait for attack to end.
         var exits = Game.map.describeExits(creep.room.name);
         var shortestpath = undefined;
         var shortestpathlength = 999;
@@ -46,9 +39,11 @@ module.exports = {
         }
         if (shortestpath == undefined) {
             creep.say('no esc!');
+            return;
         } else {
             creep.say('escape!');
             creep.moveByPath(shortestpath);
+            return;
         }
     }
 };

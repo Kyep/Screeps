@@ -1,34 +1,21 @@
 
-Structure.prototype.isInvincible = function() {
-    var structure_blacklist = [STRUCTURE_CONTROLLER, STRUCTURE_POWER_BANK, STRUCTURE_KEEPER_LAIR];
-    if (structure_blacklist.includes(this.structureType)) {
-        return true;
-    }
-    return false;
-}
-
-Structure.prototype.killableWithNukes = function(num_nukes) {
-    if (!num_nukes) {
-        num_nukes = 1;
-    }
-    //console.log(this.hits + ' ' + this.getRampartHP() + ' ' + NUKE_DAMAGE[0] + ' ' + num_nukes);
-    return ((NUKE_DAMAGE[0] * num_nukes) > (this.hits + this.getRampartHP()));
-}
-
-Structure.prototype.getRampartHP = function() {
-    var rampart_hp = 0;
-    var objects_here = this.room.lookAt(this.pos);
-    for (var k = 0; k < objects_here.length; k++) {
-        if (objects_here[k]["type"] != "structure") {
+StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, mineral_amount) {
+    for (var rname in Game.rooms) {
+        var robj = Game.rooms[rname];
+        if (!robj.hasTerminalNetwork()) {
             continue;
         }
-        var str = objects_here[k]["structure"];
-        if (str.structureType == STRUCTURE_RAMPART) {
-            rampart_hp += str.hits;
+        var rterm = robj.terminal;
+        if (rterm.store[mineral_type] && rterm.store[mineral_type] > (mineral_amount + 3000)) {
+            var retval = rterm.send(mineral_type, mineral_amount, this.room.name);
+            if (retval == OK) {
+                return true;
+            }
         }
     }
-    return rampart_hp;
-}
+    console.log(this.room.name + ': requires ' + mineral_amount + ' of ' + mineral_type + ' but cannot find it anywhere...');
+    return false;
+}    
 
 StructureRoad.prototype.inRoadNetwork = function() {
     var net = this.room.memory[MEMORY_ROAD_NETWORK];
