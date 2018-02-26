@@ -1,19 +1,20 @@
 
-StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, mineral_amount) {
+StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, transfer_amount, leave_amount) {
     for (var rname in Game.rooms) {
         var robj = Game.rooms[rname];
         if (!robj.hasTerminalNetwork()) {
             continue;
         }
         var rterm = robj.terminal;
-        if (rterm.store[mineral_type] && rterm.store[mineral_type] > (mineral_amount + 3000)) {
-            var retval = rterm.send(mineral_type, mineral_amount, this.room.name);
+        if (rterm.store[mineral_type] && rterm.store[mineral_type] > (transfer_amount + leave_amount)) {
+            var retval = rterm.send(mineral_type, transfer_amount, this.room.name);
             if (retval == OK) {
+                console.log(this.room.name + ': got ' + transfer_amount + ' of ' + mineral_type + ' from ' + rterm.room.name);
                 return true;
             }
         }
     }
-    console.log(this.room.name + ': requires ' + mineral_amount + ' of ' + mineral_type + ' but cannot find it anywhere...');
+    console.log(this.room.name + ': requires ' + transfer_amount + ' of ' + mineral_type + ' but cannot find it anywhere...');
     return false;
 }    
 

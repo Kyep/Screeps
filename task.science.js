@@ -336,7 +336,7 @@ module.exports = {
             }
             var remote_resource = reaction['remote_resource'];
             if (factory_room_terminal.store[remote_resource] == undefined || factory_room_terminal.store[remote_resource] < 3000) {
-                if (factory_room_terminal.acquireMineralAmount(remote_resource, 3000)) {
+                if (factory_room_terminal.acquireMineralAmount(remote_resource, 3000, 3000)) {
                     console.log('Science: ' + goal + '/' + factory_room_name + ': successfully acquired raw material ' + remote_resource + ' from a remote room');
                     return;
                 } else {
