@@ -3,16 +3,15 @@
 
     global.overlord = 'Phisec';
     global.allies = []; // not including anyone in alliance.
-    global.enemies = ['Asasel', 'ballisto', 'Mar10G', 'FeTiD', 'Eiskalt'];
+    global.enemies = ['Asasel', 'FeTiD', 'Eiskalt'];
     
     global.empire_defaults = {
         'sign': 'Reserved. #overlords',
-
         'priority_roles': ['teller', 'teller-towers'],
         'military_roles': ['scout', 'slasher', 'rogue', 'ninja', 'dragon', 'boss', 'wizard', 'healer', 'siege', 'siegebig', 'drainer', 'drainerbig', 'antikite16', 'antikite8', 'antikite4', 'antikite2'],
         'defense_roles': ['boss', 'dragon', 'ninja', 'rogue', 'slasher', 'scout'], // LIST MOST POWERFUL FIRST.
         'defense_roles_ranged': ['antikite16', 'antikite8', 'antikite4', 'antikite2'], // LIST MOST POWERFUL FIRST.
-        'siege_roles': ['siegebig','siege', 'drainerbig', 'drainer', 'healer', 'wizard'], 
+        'siege_roles': ['siegebig','siege', 'drainerbig', 'drainer', 'healer', 'siegehealer', 'wizard'], 
 
         'MSL_4_types': ['c15harvester', 'c30harvester', 'hauler'],
         'MSL_4_replacement': 'fharvester',
@@ -50,12 +49,12 @@
                 'upgrader': { 'sourcename': 'upgrader', 'x':20, 'y':20, 'assigned': {}, 'expected_income': 40, 'dynamic': 1 },
                 '59bbc3f82052a716c3ce7289': {
                     'sourcename':'1-E', 'x':25, 'y':18,  'dest_x': 24, 'dest_y': 19, 'steps':15, 'spaces':4,
-                    'assigned': {'harvester': 1, 'upclose': 0},
+                    'assigned': {'sharvester': 1, 'upclose': 0},
                     'expected_income': 85
                 },
                 '59bbc3f82052a716c3ce728b': {
                     'sourcename':'1-W', 'x':16, 'y':26, 'dest_x': 16, 'dest_y': 25, 'steps':15, 'spaces':3,
-                    'assigned': {'up8': 1, 'harvester': 0, 'upclose': 0},
+                    'assigned': {'up8': 1, 'bharvester': 0, 'upclose': 0},
                     'expected_income': 75
                 }
             },
@@ -158,6 +157,7 @@
         */
 
         // 3rd base
+        /*
         'W51S14': {
             'roomname' : '3',
             'spawn_room': 'W51S14',
@@ -205,6 +205,7 @@
                 }
             },
         },
+        */
 
         // 4th Base
         /*
@@ -218,7 +219,7 @@
                     'expected_income': 90
                 },
                 '59bbc3f72052a716c3ce7276': {'sourcename': '4-S', 'x':32, 'y':28, 'spaces':1,
-                    'assigned': {'harvester': 1}, // only one slot...
+                    'assigned': {'sharvester': 1}, // only one slot...
                     'expected_income': 80
                 }
             },
@@ -249,7 +250,7 @@
             'spawn_room': 'W53S12',
             'sources': {
                 '59bbc4062052a716c3ce73f5': {'sourcename': '4E', 'x':24, 'y':11, 'dest_x': 23, 'dest_y': 11, 'spaces':4, 'steps':75,
-                    'assigned': {}, // 'harvester': 2
+                    'assigned': {}, 
                     'expected_income': 45
                 }
             }
@@ -305,11 +306,11 @@
             'backup_spawn_room': 'W51S14',
             'sources': {
                 '59bbc4062052a716c3ce7404': {'sourcename': '5-W', 'x':10, 'y':19, 'dest_x': 11, 'dest_y': 18, 'spaces':1, 'steps': 25,
-                    'assigned': {'harvester': 2},
+                    'assigned': {'bharvester': 2},
                     'expected_income': 90
                 },
                 '59bbc4062052a716c3ce7406': {'sourcename': '5-E', 'x':21, 'y':31, 'dest_x': 20, 'dest_y': 30, 'spaces':3, 'steps': 25,
-                    'assigned': {'harvester': 1, 'upclose': 1},
+                    'assigned': {'bharvester': 1, 'upclose': 1},
                     'expected_income': 80
                 }
             },
@@ -356,23 +357,6 @@
             },
         },
 
-        /*
-        'W51S15': {
-            'roomname' : 'X3-NN',
-            'ignoreattacks': 1,
-            'spawn_room': 'W52S17',
-            'sources': {
-                '59bbc4172052a716c3ce7582': {'sourcename': '4S-E', 'x':36, 'y':16,
-                'assigned': {},
-                'expected_income': 1
-                }
-            }
-        },*/
-
-        
-
-
-
         // Base 6
         'W56S18': {
             'roomname' : '6',
@@ -380,11 +364,11 @@
             //'backup_spawn_room': 'W53S18',
             'sources': {
                 '59bbc3c92052a716c3ce6c47': {'sourcename': '6-N', 'x':31, 'y':30, 'spaces':4,
-                    'assigned': {'bharvester': 1, 'up8': 1},  // 'upclose': 2, 'harvester': 2
+                    'assigned': {'bharvester': 1, 'up8': 1}, 
                     'expected_income': 85
                 },
                 '59bbc3c92052a716c3ce6c48': {'sourcename': '6-S', 'x':35, 'y':39, 'spaces':4,
-                    'assigned': {'bharvester': 3}, // 'harvester': 4
+                    'assigned': {'bharvester': 3},
                     'expected_income': 80
                 }
             },
@@ -675,11 +659,11 @@
             'backup_spawn_room': 'W57S11',
             'sources': {
                 '59bbc3bb2052a716c3ce6a2e': {'sourcename': '10-N', 'x':42, 'y':15, 'spaces':2, 'dest_x': 41, 'dest_y': 15, 'steps':30,
-                    'assigned': {'bharvester': 2}, 
+                    'assigned': {'bharvester': 1, 'up8': 1}, 
                     'expected_income': 90
                 },
                 '59bbc3bb2052a716c3ce6a30': {'sourcename': '10-S', 'x':40, 'y':18, 'spaces':1,
-                    'assigned': {'harvester': 1}, 
+                    'assigned': {'sharvester': 1}, 
                     'expected_income': 95
                 }
             },
@@ -1076,7 +1060,7 @@
                     'expected_income': 80
                 },
                 'reserver': {'sourcename':'16E-R', 'x':25, 'y':25,
-                    'assigned': {'reserver': 0},
+                    'assigned': {'reserver': 1},
                     'expected_income': 60, 'dynamic': 1
                 }
             }
@@ -1095,11 +1079,40 @@
                     'expected_income': 80
                 },
                 'reserver': {'sourcename':'16N-R', 'x':25, 'y':25,
-                    'assigned': {'reserver': 0},
+                    'assigned': {'reserver': 1},
                     'expected_income': 60, 'dynamic': 1
                 }
             }
         },
+        
+        
+        // 17 Base
+        'W46S8': {
+            'roomname': '17',
+            'spawn_room': 'W46S8',
+            'backup_spawn_room': 'W54S9',
+            'sources': {
+                '5982fbfeb097071b4adbc8bc': {'sourcename': '17-W', 'x':4, 'y':19, 'spaces':4, 'dest_x': 4, 'dest_y': 20, 'steps':20,
+                    'assigned': {'bharvester': 2}, 
+                    'expected_income': 95
+                },
+                '5982fc21b097071b4adbce17': {'sourcename': '17-E', 'x':13, 'y':26, 'spaces':3, 'dest_x': 12, 'dest_y': 26, 'steps':20,
+                    'assigned': {'bharvester': 2}, 
+                    'expected_income': 90
+                }
+            },
+            'mineralid': '598342abca90777e307b14ab',
+            'mineraltype': RESOURCE_LEMERGIUM,
+        },
+        
+        
+        
+        
+        
+        
+        
+        
+        
     /*
         'W53S7': { /// left in so I can add a L base next to it, and repurpose it.
             'roomname': '13S',

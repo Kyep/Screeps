@@ -15,7 +15,7 @@ module.exports = {
         }
 
 	    if (creep.memory[MEMORY_JOB] == JOB_DISMANTLE) { 
-            var target = creep.getClosestHostileStructure(true);
+	        var target = creep.getClosestDismantableStructure(true);
 	        if (creep.carry.energy == creep.carryCapacity || (!target && creep.carry.energy > 0)) {
 	            creep.memory[MEMORY_JOB] = JOB_RENEW;
 	            return;

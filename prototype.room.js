@@ -362,38 +362,6 @@ Room.prototype.getShouldUpgrade = function() {
     return 1;
 }
 
-Room.prototype.dropRoads = function() {
-    if(empire[this.name] == undefined) {
-        return -1;
-    }
-    var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(this.name, true);
-    var spawner = gsapfr[0];
-    var using_primary = gsapfr[1];
-    if (!using_primary) {
-        return -2;
-    }
-    var spawner_pos = spawner.pos;
-    for (var sid in empire[this.name]['sources']) {
-        if (empire[this.name]['sources']['dynamic'] != undefined && empire[this.name]['sources']['dynamic'] == true) {
-            continue;
-        }
-        var source = Game.getObjectById(sid);
-        if (!source) {
-            continue;
-        }
-        var path = PathFinder.search(spawner.pos, source.pos, {'range': 1, 'swampCost': 1});
-        console.log(this.name + ': dropRoads: ' + sid + ': ' + path.path.length);
-        for (var thispos in path.path) {
-            var roadpos = path.path[thispos];
-            var rname = roadpos.roomName;
-            if (rname == this.name) {
-                Game.rooms[rname].visual.circle(roadpos.x, roadpos.y, rname);
-                Game.rooms[rname].createConstructionSite(roadpos.x, roadpos.y, STRUCTURE_ROAD);
-            }
-        }
-    }
-
-}
 
 Room.prototype.getMyStructuresCount = function() {
     var mystructures = this.find(FIND_MY_STRUCTURES);
@@ -572,17 +540,13 @@ Room.prototype.shouldHaveAlert = function(enemy_details, nuke_details) {
         //console.log(this.name + ': shouldHaveAlert: ' + 'eval');   
         //debug = 1;
     }
-    if (empire[this.name] == undefined) {
+    if (!this.inEmpire()) {
         if (debug) { console.log(this.name + ': shouldHaveAlert: ' + ' not in empire');   }
         return 0; // never create alerts for rooms we do not claim.
     }
     if (this.controller != undefined && this.controller.owner != undefined && this.controller.owner.username != overlord) {
         if (debug) { console.log(this.name + ': shouldHaveAlert: ' + 'not ours');   }
-        return 0; // never create alerts for rooms owned by other players, even if they are defined as part of our empire.
-    }
-    if (empire[this.name]['ignoreattacks'] != undefined) {
-        if (debug) { console.log(this.name + ': shouldHaveAlert: ' + 'ignoreattacks');   }
-        return 0; // never create alerts for rooms specifically marked to never go on alert.
+        return 0; // never create alerts for rooms owned by other players, even if they are defined as part of us.
     }
     
     if (enemy_details['hostileCount'] > 0) {

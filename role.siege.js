@@ -27,6 +27,8 @@ module.exports = {
             var therange = creep.pos.getRangeTo(myhealer);
             if (therange > 2) {
                 creep.moveTo(myhealer);
+                //myhealer.memory[MEMORY_ROLE] = 'siegehealer';
+                //myhealer.memory[MEMORY_TANK] =  creep.name;
                 return;
             }
         }
@@ -57,18 +59,37 @@ module.exports = {
         }
         
         if (work_parts > 0 || melee_parts > 0) {
-            var valid_types = [STRUCTURE_SPAWN, STRUCTURE_TOWER];
-            var valid_types2 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB];
-            var valid_types3 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB, STRUCTURE_LINK, STRUCTURE_NUKER, STRUCTURE_OBSERVER, STRUCTURE_EXTRACTOR, STRUCTURE_RAMPART];
-            if (frustration < 100) {
-                target = creep.getClosestHostileUnRampartedStructureInTypes(valid_types);
-                if (!target) {
-                    target = creep.getClosestHostileStructureInTypes(valid_types);
+            var sflags = creep.room.getFlagsByType(FLAG_SIEGETARGET);
+            if (sflags.length) {
+                var flag = sflags[0];
+                var objects_here = creep.room.lookAt(flag.pos);
+                for (var k = 0; k < objects_here.length; k++) {
+                    var this_obj = objects_here[k]["structure"];
+                    if (this_obj && this_obj.hits) {
+                        target = this_obj;
+                        creep.memory[MEMORY_FRUSTRATION] = 0;
+                        break;
+                    }
+                    //flag.remove();
                 }
-            } else if (frustration < 500) {
-                target = creep.getClosestHostileStructureInTypes(valid_types2);
             } else {
-                target = creep.getClosestHostileStructureInTypes(valid_types3);
+                //var valid_types = [STRUCTURE_SPAWN, STRUCTURE_TOWER];
+                var valid_types = [];
+                var valid_types2 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB];
+                var valid_types3 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB, STRUCTURE_TERMINAL, STRUCTURE_LINK, STRUCTURE_NUKER, STRUCTURE_OBSERVER, STRUCTURE_EXTRACTOR, STRUCTURE_RAMPART];
+                if (frustration < 100) {
+                    target = creep.getClosestHostileUnRampartedStructureInTypes(valid_types);
+                    if (!target) {
+                        target = creep.getClosestHostileStructureInTypes(valid_types);
+                    }
+                } else if (frustration < 500) {
+                    target = creep.getClosestHostileUnRampartedStructureInTypes(valid_types2);
+                    if (!target) {
+                        target = creep.getClosestHostileStructureInTypes(valid_types2);
+                    }
+                } else {
+                    target = creep.getClosestHostileStructureInTypes(valid_types3);
+                }
             }
             if (target) {
                 new RoomVisual(creep.room.name).line(creep.pos, target.pos, {color: 'red'});

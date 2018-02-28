@@ -4,10 +4,14 @@ module.exports = {
     run: function(creep){
         var heal_parts = creep.getActiveBodyparts(HEAL);
         if(creep.hits < creep.hitsMax) {
-            
             if (heal_parts > 0) {
                 creep.heal(creep);
                 //creep.say('heal');
+                if (!creep.room.controller) {
+                    creep.moveToDestination();
+                } else if (!creep.isAtDestinationRoom()) {
+                    creep.avoidEdges();
+                }
                 return 0;
             }
         }
@@ -17,6 +21,7 @@ module.exports = {
             }
             creep.redRally();
             if (heal_parts > 0) {
+                
                 var hurtfriendly = creep.pos.findClosestByPath(_.filter(creep.room.find(FIND_MY_CREEPS), function(creep){ return (creep.hits < creep.hitsMax) }));
                 if (hurtfriendly) {
                     var frange = creep.pos.getRangeTo(hurtfriendly);

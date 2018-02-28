@@ -201,6 +201,7 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units) {
                         console.log(' -> ' + tgt + ' (' + einfo['level'] + '), signer: ' + created);
                     }
                     */
+                    
                     continue;
                 }
                 var ostring = '-';
@@ -325,6 +326,7 @@ global.ESPIONAGE = function() {
                 if (theroom.controller.safeMode) {
                     Memory['espionage']['rooms'][rname]['safemode_until'] = Game.time + theroom.controller.safeMode;
                 }
+                theroom.fullUpdate();
             }
 
             var enemy_structures = theroom.getHostileStructures();

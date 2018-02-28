@@ -29,6 +29,37 @@ Creep.prototype.getClosestHostileStructure = function(include_public_ramparts) {
     });
 }
 
+Creep.prototype.getClosestDismantableStructure = function(include_public_ramparts) {
+    var rmowner = this.room.getOwnerOrReserver();
+    var target = undefined;
+    if (rmowner) {
+        return this.getClosestHostileStructure();
+    }
+    return this.pos.findClosestByPath(FIND_STRUCTURES, {
+        filter: function(s){
+            if(s.isInvincible()) {
+                return false;
+            }
+            if (!include_public_ramparts && s.structureType == STRUCTURE_RAMPART) {
+                if (s.isPublic) {
+                    return false;
+                }
+            }
+            if (s.owner) {
+                if (s.owner.username) {
+                    if (s.owner.username == overlord) {
+                        return false;
+                    }
+                    if (IS_ALLY(s.owner.username)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+    });
+}
+
 
 Creep.prototype.getClosestHostileStructureInTypes = function(valid_types) {
     return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
@@ -57,7 +88,7 @@ Creep.prototype.getClosestHostileUnRampartedStructureInTypes = function(valid_ty
             if (s.isInvincible()) {
                 return false
             }
-            if(!valid_types.includes(s.structureType)) {
+            if(valid_types.length && !valid_types.includes(s.structureType)) {
                 return false; 
             }
             if(s.getRampartHP() > 0) {

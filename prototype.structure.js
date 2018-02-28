@@ -1,4 +1,26 @@
 
+Source.prototype.getSlotPositions = function() {
+    var slots = [];
+    for (var i = this.pos['x'] - 1; i <= this.pos['x'] + 1; i++) {
+        for (var j = this.pos['y'] - 1; j <= this.pos['y'] + 1; j++) {
+            var tpos = new RoomPosition(i, j, this.room.name);
+            var lresults = Game.map.getTerrainAt(tpos);
+            //console.log(JSON.stringify(lresults));
+            if (lresults == "plain" || lresults == "swamp") {
+                slots.push(tpos);
+                //new RoomVisual(this.room.name).circle(tpos, {stroke: 'green'});
+            } else {
+                //new RoomVisual(this.room.name).circle(tpos, {stroke: 'red'});
+            }
+        }
+    }
+    return slots;
+}
+
+StructureTerminal.prototype.acquireNukeFuel = function() {
+    return this.acquireMineralAmount(RESOURCE_GHODIUM, 5000, 5000);
+}
+
 StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, transfer_amount, leave_amount) {
     for (var rname in Game.rooms) {
         var robj = Game.rooms[rname];
@@ -16,7 +38,7 @@ StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, transf
     }
     console.log(this.room.name + ': requires ' + transfer_amount + ' of ' + mineral_type + ' but cannot find it anywhere...');
     return false;
-}    
+}
 
 StructureRoad.prototype.inRoadNetwork = function() {
     var net = this.room.memory[MEMORY_ROAD_NETWORK];

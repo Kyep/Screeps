@@ -13,7 +13,7 @@ module.exports = {
         // If attacked, -> JOB_HIDE, then back to JOB_TRAVEL_OUT.
         if (creep.memory[MEMORY_JOB] == undefined) {
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
-            creep.memory[MEMORY_STEPS_EXPECTED] = empire[creep.memory[MEMORY_DEST]]['sources'][creep.memory[MEMORY_SOURCE]]['steps'];
+            creep.memory[MEMORY_STEPS_EXPECTED] = global.GET_STEPS_TO_SOURCE(creep.memory[MEMORY_DEST], creep.memory[MEMORY_SOURCE]);
             creep.memory[MEMORY_STEPS_ACTUAL] = 0;
         }
         if(Game.time % 5 === 0) {
@@ -44,11 +44,6 @@ module.exports = {
             // If we are there, but >=75% full, go back.
             if (creep.carry.energy > (creep.carryCapacity * 0.75)) {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
-                if(creep.memory[MEMORY_STEPS_EXPECTED] == undefined) {
-                    if (empire[creep.memory[MEMORY_DEST]] && empire[creep.memory[MEMORY_DEST]]['sources'] && empire[creep.memory[MEMORY_DEST]]['sources'][creep.memory[MEMORY_SOURCE]] && empire[creep.memory[MEMORY_DEST]]['sources'][creep.memory[MEMORY_SOURCE]]['steps']) {
-                        creep.memory[MEMORY_STEPS_EXPECTED] = empire[creep.memory[MEMORY_DEST]]['sources'][creep.memory[MEMORY_SOURCE]]['steps'];
-                    }
-                }
                 //console.log(creep.name + ' -> ' + creep.memory[MEMORY_DEST] + ': expected: ' + creep.memory[MEMORY_STEPS_EXPECTED] + ' but actual: ' + creep.memory[MEMORY_STEPS_ACTUAL]);
                 
                 return 0;
@@ -169,14 +164,6 @@ module.exports = {
             creep.moveToRUP(creep.getHomePos());
 
         } else if (creep.memory[MEMORY_JOB] == JOB_USELINK) {
-            if(empire[creep.memory[MEMORY_DEST]] == undefined) {
-                return 0;
-            }
-            if (empire[creep.memory[MEMORY_DEST]].sources[creep.memory[MEMORY_SOURCE]] == undefined) {
-                creep.memory[MEMORY_JOB] = JOB_RETURN; 
-                console.log(creep.name + 'undefined source: ' + creep.memory[MEMORY_DEST] + ' / ' + creep.memory[MEMORY_SOURCE]);
-                return 0;
-            }
             var nearby_structures = creep.getStructuresInDist(5);
             if(nearby_structures.length) {
                 for (var i = 0; i < nearby_structures.length; i++) {

@@ -41,13 +41,12 @@ global.REPORT_WORKERS = function() {
 }
 
 global.RECREATE_ROAD_NETWORKS = function() {
-    var remaining = Object.keys(empire);
     for (var rname in Game.rooms) {
-        if (empire[rname] == undefined) {
+        if (!Game.rooms[rname].inEmpire()) {
             continue;
         }
-        var psr = empire[rname]['spawn_room'];
-        if (Game.rooms[psr] && Game.rooms[psr].getLevel() < 4) {
+        var psr = Game.rooms[rname].getSpawnRoom();
+        if (!psr || !Game.rooms[psr] || Game.rooms[psr].getLevel() < 4) {
             continue;
         }
         
@@ -58,15 +57,10 @@ global.RECREATE_ROAD_NETWORKS = function() {
             for (var a = 0; a < origins.length; a++) {
                 grm.createRoadNetwork(origins[a].pos.x, origins[a].pos.y);
             }
-            var ipos = remaining.indexOf(rname);
-            if (ipos > -1) {
-                remaining.splice(ipos, 1);
-            }
         } else {
             console.log('RECREATE_ROAD_NETWORKS: ' + rname + ': no ORIGIN flag');
         }
     }
-    console.log('RECREATE_ROAD_NETWORKS: remaining after creation: ' + remaining);
     global.SHOW_ROAD_NETWORKS();
 }
 
@@ -111,46 +105,9 @@ global.ENERGY_STATUS = function() {
     
 }
 
-global.REPORT_EARNINGS = function() {
-    for (var cr in Game.creeps) {
-        var earnings = Game.creeps[cr].getEarnings(); 
-        var ept = Math.round(Game.creeps[cr].getEarningsPerTick()); 
-        var tal = Game.creeps[cr].getTicksAlive();
-        if (!Game.creeps[cr].getRenewEnabled()) {
-            var projected_life_cost = global.CREEP_COST(Game.creeps[cr].body) * -1;
-            ept = projected_life_cost / 1500;
-            //console.log('CREEP ' + cr + ' HAS PLC: ' + projected_life_cost + ' and EPT: ' + ept);
-        }
-        if (Game.creeps[cr].memory[MEMORY_SOURCE] == undefined) {
-            console.log('CREEP ' + cr + ' HAS NO SOURCE');
-            continue;
-        }
-        if (Game.creeps[cr].memory[MEMORY_DEST] == undefined) {
-            console.log('CREEP ' + cr + ' HAS NO TARGET');
-            continue;
-        }
-        if (empire[Game.creeps[cr].memory[MEMORY_DEST]] == undefined) {
-            // target not in our empire.
-            continue;
-        }
-        if (Game.creeps[cr].memory[MEMORY_SOURCE] == '') {
-            continue;
-        }
-        if (empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]] == undefined) {
-            console.log(cr + ': SOURCE ' + Game.creeps[cr].memory[MEMORY_SOURCE] + ' IS MISSING FROM EMPIRE DEFINITION.');
-            Game.creeps[cr].disableRenew();
-            continue;
-        }
-        if (empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]]['sourcename'] == undefined) {
-            console.log('CREEP ' + cr + ' HAS NO SOURCENAME FOR SOURCE: ' + creep.memory[MEMORY_SOURCE]);
-            Game.creeps[cr].disableRenew();
-            continue;
-        }
-        console.log('Creep ' + cr + ' working on ' + empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]]['sourcename'] + ' has earned ' + ept + ' energy per tick over its ' + tal + ' tick lifespan, ' + earnings + ' energy in total.'); 
-    }
-}
 
 global.REPORT_EARNINGS_SOURCES = function() {
+    var report = {}
     for (var cr in Game.creeps) {
         var earnings = Game.creeps[cr].getEarnings(); 
         var ept = Math.round(Game.creeps[cr].getEarningsPerTick()); 
@@ -164,20 +121,6 @@ global.REPORT_EARNINGS_SOURCES = function() {
             console.log('CREEP ' + cr + ' HAS NO TARGET');
             continue;
         }
-        if (empire[Game.creeps[cr].memory[MEMORY_DEST]] == undefined) {
-            // target not in our empire.
-            continue;
-        }
-        if (empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]] == undefined) {
-            console.log(cr + ': SOURCE ' + Game.creeps[cr].memory[MEMORY_SOURCE] + ' IS MISSING FROM EMPIRE DEFINITION.');
-            Game.creeps[cr].disableRenew();
-            continue;
-        }
-        if (empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]]['sourcename'] == undefined) {
-            console.log('CREEP ' + cr + ' HAS NO SOURCENAME FOR SOURCE: ' + creep.memory[MEMORY_SOURCE]);
-            Game.creeps[cr].disableRenew();
-            continue;
-        }
 
         if (!Game.creeps[cr].getRenewEnabled()) {
             var projected_life_cost = global.CREEP_COST(Game.creeps[cr].body) * -1;
@@ -185,44 +128,28 @@ global.REPORT_EARNINGS_SOURCES = function() {
             //console.log('CREEP ' + cr + ' HAS PLC: ' + projected_life_cost + ' and EPT: ' + ept);
         }
 
-        if(empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]] != undefined) {
-            if (empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]]['earnings'] == undefined) {
-                empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]]['earnings'] = earnings;
-            } else {
-                empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]]['earnings'] += earnings;
-            }
-            if (empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]]['ticks'] == undefined) {
-                empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]]['ticks'] = tal;
-            } else {
-                empire[Game.creeps[cr].memory[MEMORY_DEST]].sources[Game.creeps[cr].memory[MEMORY_SOURCE]]['ticks'] += tal;
-            }
+        if (report[Game.creeps[cr].memory[MEMORY_DEST]] == undefined) {
+            report[Game.creeps[cr].memory[MEMORY_DEST]] = {}
         }
+        if (report[Game.creeps[cr].memory[MEMORY_DEST]][Game.creeps[cr].memory[MEMORY_SOURCE]] == undefined) {
+            report[Game.creeps[cr].memory[MEMORY_DEST]][Game.creeps[cr].memory[MEMORY_SOURCE]] = {'earnings': 0, 'ticks': 0}
+        }
+        report[Game.creeps[cr].memory[MEMORY_DEST]][Game.creeps[cr].memory[MEMORY_SOURCE]]['earnings'] += earnings
+        report[Game.creeps[cr].memory[MEMORY_DEST]][Game.creeps[cr].memory[MEMORY_SOURCE]]['ticks'] += tal
     }
-    var rt_earnings = 0;
-    var rt_ticks = 0;
-    for(var rname in empire) {
-        var r_earnings = 0;
-        var r_ticks = 0;
-        for (var sname in empire[rname].sources) {
-            var earnings = empire[rname].sources[sname]['earnings'];
-            if(earnings == undefined) {
-                continue;
-            }
-            var ticks = empire[rname].sources[sname]['ticks'];
-            var ept = Math.round(earnings/ticks);
-            console.log('- Source ' + empire[rname].sources[sname]['sourcename'] + ' has earned ' + earnings + ' over ' + ticks + ' or EPT: ' + ept); 
-            rt_earnings += earnings;
-            rt_ticks += ticks;
-            r_earnings += earnings;
-            r_ticks += ticks;
+    for (rname in report) {
+        var r_e = 0;
+        var r_t = 0;
+        for (sname in report[rname]) {
+            report[rname][sname]['ept'] = Math.round(report[rname][sname]['earnings'] / report[rname][sname]['ticks']);
+            console.log(rname + '/' + sname + ': has earned ' + report[rname][sname]['earnings'] + ' over ' + report[rname][sname]['ticks'] + ' or EPT: ' + report[rname][sname]['ept']); 
+            r_e += report[rname][sname]['earnings'];
+            r_t += report[rname][sname]['ticks'];
         }
-        var r_ept = Math.round(r_earnings / r_ticks);
-        if (r_earnings != 0) {
-            console.log(rname +' has earned ' + r_earnings + ' over ' + r_ticks + ' or EPT: ' + r_ept); 
-            console.log(' ');
-        }
+        var r_ept = Math.round(r_e/r_t);
+        report[rname]['ept'] = r_ept;
+        console.log(rname +'/ALL has earned ' + r_e + ' over ' + r_t + ' or EPT: ' + r_ept); 
     }
-    console.log('TOTAL: ' + rt_earnings + ' over ' + rt_ticks + ' ticks, or ' + Math.round(rt_earnings/rt_ticks) + ' earnings/tick.');
 
 }
 

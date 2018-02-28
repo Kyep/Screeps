@@ -3,13 +3,13 @@
 global.empire_workers = { 
     'upclose': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 1, MOVE: 1}) },
 	'upfar': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 1}) },
-	'up8': { 'body': global.CONSTRUCT_BODY({WORK: 8, CARRY: 4, MOVE: 12}), 'noresizing': 1 },
+	'up8': { 'body': global.CONSTRUCT_BODY({WORK: 4, CARRY: 4, MOVE: 8}), 'noresizing': 1 },
 
 	'remoteconstructor': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 4}), 'renew_allowed': 0, 'abbr': 'RC'},
 	'minirc': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 4}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'miniRC'},
 	'dismantler': { 'body': global.CONSTRUCT_BODY({WORK: 10, CARRY: 10, MOVE: 10}), 'renew_allowed': 1, 'abbr': 'DIS'},
 
-	'harvester': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 1}) },
+	'sharvester': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 1}) },
 	'fharvester': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 2}) },
 	'bharvester': { 'body': global.CONSTRUCT_BODY({WORK: 4, CARRY: 4, MOVE: 4}), 'noresizing': 1, 'abbr': 'bHar'}, // 800e. takes 6 WORK units to deplete a c30 vein. These have 4. So you need 2 per base, allowing some refill time.
 	'c15harvester': { 'body': global.CONSTRUCT_BODY({WORK: 3, CARRY: 1, MOVE: 2}), 'noresizing': 1, 'abbr': 'c15'},
@@ -56,10 +56,10 @@ global.empire_workers = {
 	'siege': { 'body':     global.CONSTRUCT_BODY({MOVE: 3, ATTACK: 3}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'S'},
 
 	//'siegehealer': { 'body':     global.CONSTRUCT_BODY({MOVE: 1, HEAL: 1}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'},
-	'siegehealer': { 'body':     global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, HEAL: 20}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'},
+	'siegehealer': { 'body':     global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, HEAL: 20}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'}, //{"cost":6300,"hps":240,
 
 	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, 
-	'drainerbig': { 'body': global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 20, HEAL: 15}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, // {"cost":4800,"hps":180}
+	'drainerbig': { 'body': global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, HEAL: 20}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, // {"cost":4800,"hps":180}
 
 	'healer': { 'body':   global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, HEAL: 20}) }, //{"cost":6300,"hps":240}
 

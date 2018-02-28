@@ -29,5 +29,6 @@
         
         // MOB AI, RED type
         "mobrallymil": [COLOR_RED, COLOR_RED],
+        "siegetarget": [COLOR_RED, COLOR_CYAN],
         
     }

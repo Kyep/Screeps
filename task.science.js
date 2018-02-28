@@ -35,12 +35,24 @@ module.exports = {
                 'local_resource': RESOURCE_UTRIUM_HYDRIDE, 
                 'remote_resource': RESOURCE_HYDROXIDE
             }
-        //product_chains[RESOURCE_GHODIUM_OXIDE] = // -30% DMG TAKEN
-            //{
-            //    'local_room': 'W57S11',
-            //    'local_resource': RESOURCE_OXYGEN,
-            //    'remote_resource': RESOURCE_GHODIUM
-            //}
+        product_chains[RESOURCE_GHODIUM_OXIDE] = // -30% DMG TAKEN (T1)
+            {
+                'local_room': 'W48S18',
+                'remote_resource': RESOURCE_GHODIUM,
+                'local_resource': RESOURCE_OXYGEN
+            }
+        product_chains[RESOURCE_GHODIUM_ALKALIDE] = // -30% DMG TAKEN (T1)
+            {
+                'local_room': 'W48S18',
+                'remote_resource': RESOURCE_GHODIUM_OXIDE,
+                'local_resource': RESOURCE_HYDROXIDE
+            }
+        product_chains[RESOURCE_CATALYZED_GHODIUM_ALKALIDE] = // -30% DMG TAKEN (T1)
+            {
+                'local_room': 'W48S18',
+                'remote_resource': RESOURCE_GHODIUM_ALKALIDE,
+                'local_resource': RESOURCE_CATALYST
+            }
         product_chains[RESOURCE_LEMERGIUM_OXIDE] = // // +100% HEAL
             {
                 'local_room': 'W48S18',
@@ -52,6 +64,12 @@ module.exports = {
                 'local_room': 'W53S18',
                 'local_resource': RESOURCE_HYDROXIDE,
                 'remote_resource': RESOURCE_LEMERGIUM_OXIDE
+            }
+        product_chains[RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE] = // +300% HEAL (T3)
+            {
+                'local_room': 'W53S18',
+                'local_resource': RESOURCE_LEMERGIUM_ALKALIDE,
+                'remote_resource': RESOURCE_CATALYST
             }
         product_chains[RESOURCE_HYDROXIDE] = // REQUIRED FOR T2 BOOSTS
             {
@@ -73,11 +91,17 @@ module.exports = {
                 'local_resource': RESOURCE_ZYNTHIUM,
                 'remote_resource': RESOURCE_HYDROGEN
             }
-        product_chains[RESOURCE_ZYNTHIUM_HYDRIDE] = // T2, +200% dismantle
+        product_chains[RESOURCE_ZYNTHIUM_ACID] = // T2, +200% dismantle
             {
                 'local_room': 'W53S6',
                 'local_resource': RESOURCE_ZYNTHIUM_HYDRIDE,
                 'remote_resource': RESOURCE_HYDROXIDE
+            }
+        product_chains[RESOURCE_CATALYZED_ZYNTHIUM_ACID] = // T3, +300% dismantle
+            {
+                'local_room': 'W53S6',
+                'local_resource': RESOURCE_ZYNTHIUM_ACID,
+                'remote_resource': RESOURCE_CATALYST
             }
         for (var goal in ongoing_reactions) {
             

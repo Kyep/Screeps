@@ -16,6 +16,7 @@ require('prototype.room');
 require('prototype.structures_all');
 require('prototype.structure');
 
+require('class.empireroom');
 require('lib.loanuserlist');
 
 var roleHarvester = require('role.harvester');
@@ -45,7 +46,6 @@ var roleDismantler = require('role.dismantler');
 
 var structureLink = require('structure.link');
 
-var cleaner = require('task.cleanmemory');
 var expansionplanner = require('task.expansion');
 var taskscience = require('task.science');
 
@@ -65,7 +65,11 @@ module.exports.loop = function () {
             divisor = 10;
         }
     }
-    cleaner.process()
+    for(var name in Memory.creeps) {
+        if(!Game.creeps[name]) {
+            delete Memory.creeps[name];
+        }
+    }
     for(var cr in Game.creeps) {
         Game.creeps[cr].setupMemory();
     }
@@ -213,9 +217,6 @@ module.exports.loop = function () {
                                 continue;
                             }
                             if (empire[rname].sources[sname]['spaces'] != undefined && empire[rname].sources[sname]['spaces'] == 1) {
-                                // If source can't handle another miner, do not assign one.
-                                //empire[rname].sources[sname].assigned = {};
-                                //empire[rname].sources[sname].assigned[rctype] = 1;
                                 continue;
                             }
                             empire[rname].sources[sname].assigned[rctype] = 1;
@@ -475,6 +476,9 @@ module.exports.loop = function () {
             }
             var worker_shortfall = 0;
             for (var rname in empire) {
+                
+                // **
+                
                 var r_status = rname 
                 r_status += ': ';
                 for (var skey in empire[rname].sources) {
@@ -836,7 +840,7 @@ module.exports.loop = function () {
             creep.setDefaults();
         } else if (creep.memory[MEMORY_SLEEPFOR] != undefined && creep.memory[MEMORY_SLEEPFOR] > 0) {
             creep.memory[MEMORY_SLEEPFOR]--;
-        } else if(creep.memory[MEMORY_ROLE] == 'harvester' || creep.memory[MEMORY_ROLE] == 'bharvester' || creep.memory[MEMORY_ROLE] == 'fharvester') {
+        } else if(creep.memory[MEMORY_ROLE] == 'sharvester' || creep.memory[MEMORY_ROLE] == 'bharvester' || creep.memory[MEMORY_ROLE] == 'fharvester') {
             roleHarvester.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'c15harvester' || creep.memory[MEMORY_ROLE] == 'c30harvester') {
             roleCHarvester.run(creep);

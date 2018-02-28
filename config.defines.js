@@ -1,4 +1,4 @@
-
+// Creep memory, top-level categories
 global.MEMORY_ROLE = 'role';
 global.MEMORY_SOURCE = 'source';
 global.MEMORY_HOME = 'home';
@@ -35,6 +35,7 @@ global.MEMORY_MINERALID = 'mineralid';
 global.MEMORY_LABID = 'labid';
 global.MEMORY_SIGN = 'sign';
 
+// Creep memory, job types
 global.JOB_HARVEST = 'mine';
 global.JOB_BUILD = 'build';
 global.JOB_GFS = 'gfs';
@@ -53,9 +54,9 @@ global.JOB_USELINK = 'uselink'
 global.JOB_HIDE = 'hide';
 global.JOB_DISMANTLE = 'dismantle';
 
-// Rooms
+// Rooms, top level categories
 global.MEMORY_ROAD_NETWORK = 'road_network';
-
+global.MEMORY_RCONFIG = 'rconfig';
 
 global.COLOR_HARVEST = '#ffffff';
 global.COLOR_UPGRADE = '#0000ff';
@@ -76,3 +77,4 @@ global.FLAG_GROUNDZERO = 'nucleartarget';
 global.FLAG_ROADORIGIN = 'roadorigin';
 global.FLAG_ROADDEST = 'roaddest';
 global.FLAG_RALLYMIL = 'mobrallymil';
+global.FLAG_SIEGETARGET = 'siegetarget';

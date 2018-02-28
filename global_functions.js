@@ -1,3 +1,5 @@
+
+
 global.FLAG_TYPE_TO_COLORS_COLORS = function (sconstant) {
     var result = global.empire_flags[sconstant];
     return result;
@@ -161,32 +163,16 @@ global.CARRY_PARTS = (capacity, steps) => Math.ceil(capacity / ENERGY_REGEN_TIME
 global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid, max_cost) {
     var sourcecapacity = 1500;
     var steps = 100;
-    if (empire[roomid] != undefined) {
-        if (empire[roomid].sources != undefined) {
-            if (empire[roomid].sources[sourceid] != undefined) {
-                if (empire[roomid].sources[sourceid]['capacity'] != undefined) {
-                    sourcecapacity = empire[roomid].sources[sourceid]['capacity'];
-                }
-                if (empire[roomid].sources[sourceid]['steps'] != undefined) {
-                    steps = empire[roomid].sources[sourceid]['steps'];
-                } else {
-                    console.log('Warning: CONSTRUCT_HAULER_BODY is creating a hauler for room ' + roomid + ' using a source that no steps value defined: ' + sourceid);
-                }
-            } else {
-                console.log('Warning: CONSTRUCT_HAULER_BODY is creating a hauler for room ' + roomid + ' using a source that does not exist: ' + sourceid);
-            }
-        } else {
-            console.log('Warning: CONSTRUCT_HAULER_BODY is creating a hauler for a room with no sources in its empire definition: ' + roomid);
-        }
-    } else {
-        console.log('Warning: CONSTRUCT_HAULER_BODY is creating a hauler for a room not defined in empire: ' + roomid);
+    var exactsteps = GET_STEPS_TO_SOURCE(roomid, sourceid);
+    if (exactsteps != undefined) {
+        steps = exactsteps;
     }
     //console.log('S: ' + sourcecapacity + ' Y: ' + steps);
     var carry_parts = global.CARRY_PARTS(sourcecapacity, steps);
     var partlist = [WORK, MOVE];
     for (var i = 0; i < Math.floor(carry_parts / 2); i++) {
         if ((UNIT_COST(partlist) + UNIT_COST([CARRY, CARRY, MOVE])) > max_cost) {
-            console.log(empire[roomid]['roomname'] + ': Trying to build a hauler of ' + ((carry_parts / 2) - i) + ' bigger size than our spawner allows. Capping it.');
+            console.log(roomid + ': Trying to build a hauler of ' + ((carry_parts / 2) - i) + ' bigger size than our spawner allows. Capping it.');
             break;
         }
         partlist.push(CARRY);
@@ -288,8 +274,9 @@ global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, t
 
 
 global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname, force) {
-    if (empire[theroomname] == undefined) {
-        console.log('GET_SPAWNER_FOR_ROOM: undefined empire block for ' + theroomname);
+    var ourconf = global.GET_ROOM_CONFIG(theroomname);
+    if (ourconf == undefined) {
+        console.log('GET_SPAWNER_FOR_ROOM: undefined conf memory for ' + theroomname);
         return [undefined, 1];
     }
     if (force == undefined) {
@@ -297,17 +284,18 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname, force) {
     }
     // Room definitions
     var room_primary = undefined;
-    if (empire[theroomname]['spawn_room'] == undefined) {
+    if (ourconf['spawn_room'] == undefined) {
         console.log('GET_SPAWNER_FOR_ROOM: undefined or no-presence empire spawn_room for ' + theroomname);
+        console.log(JSON.stringify(ourconf));
         return [undefined, 1];
     }
-    if (Game.rooms[empire[theroomname]['spawn_room']] != undefined) {
-        room_primary = Game.rooms[empire[theroomname]['spawn_room']];
+    if (Game.rooms[ourconf['spawn_room']] != undefined) {
+        room_primary = Game.rooms[ourconf['spawn_room']];
     }
 
     var room_secondary = undefined;
-    if (empire[theroomname]['backup_spawn_room'] != undefined && Game.rooms[empire[theroomname]['backup_spawn_room']] != undefined) {
-        room_secondary = Game.rooms[empire[theroomname]['backup_spawn_room']];
+    if (ourconf['backup_spawn_room'] != undefined && Game.rooms[ourconf['backup_spawn_room']] != undefined) {
+        room_secondary = Game.rooms[ourconf['backup_spawn_room']];
     }
 
     // Spawner definitions
@@ -405,12 +393,13 @@ global.UPDATE_MARKET_ORDERS = function(allow_energy_sale) {
         if (Game.rooms[rname].controller.owner.username != overlord) {
             continue;
         }
-        if (empire[rname] == undefined) {
+        var myinfo = GET_ROOM_CONFIG(rname);
+        if (myinfo == undefined) {
             continue;
         }
 
-        if (empire[rname]['mineraltype'] != undefined) {
-            var mtype = empire[rname]['mineraltype'];
+        if (myinfo['mineraltype'] != undefined) {
+            var mtype = myinfo['mineraltype'];
             if(Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] == undefined || Game.rooms[rname].terminal.store[mtype] < 30000) {
                 //console.log('MARKET: ' + rname + ': has <1k of sale mineral: ' + mtype);
             } else {
@@ -550,6 +539,12 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         console.log('HANDLE_ROOM_ALERT: skipping alert as its not been updated with threat data yet: ' + roomname);
         return;
     }
+    
+    var myinfo = GET_ROOM_CONFIG(roomname);
+    if (!myinfo) {
+        return;
+    }
+    
     var baseforce = {};
     var patrolforce = {};
     var room_has_spawn = 0;
@@ -567,7 +562,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
     if(room_has_spawn) {
         var newcount = Game.rooms[roomname].getMyStructuresCount();
         var oldcount = myalert['myStructureCount'];
-        if (newcount < oldcount) {
+        if (newcount < oldcount && !myalert['nukeCount']) {
             try_safemode = 1;
         }
     }
@@ -605,7 +600,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
             }
         }
     }
-    if (empire[roomname]['spawn_room'] == undefined) {
+    if (myinfo['spawn_room'] == undefined) {
         console.log('ATTACK CONFIG WARNING, SECTOR ' + roomname + ' HAS NO spawn_room SET ON ITS ROOM!');
         patrolforce['rogue'] = 1; // the sad default.
     } else if (theirthreat > 0) {
@@ -617,8 +612,8 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
             return;
         }
         var home_room = spawner.room.name;
-        if (!using_primary && empire[roomname]['spawn_room'] != undefined) {
-            home_room = empire[roomname]['spawn_room'];
+        if (!using_primary && myinfo['spawn_room'] != undefined) {
+            home_room = myinfo['spawn_room'];
         }
         if (spawner == undefined) {
             //console.log('XAT: ' + roomname + " has no free 1x-b spawner");
@@ -685,7 +680,11 @@ global.CREATE_GROWERS = function() {
         if (rlvl < 1 || rlvl > 5) {
             continue;
         }
-		var bsr = empire[rname]['backup_spawn_room'];
+        var myinfo = GET_ROOM_CONFIG(rname);
+        if (!myinfo) {
+            continue;
+        }
+		var bsr = myinfo['backup_spawn_room'];
         if (bsr == undefined) {
             console.log('CREATE_GROWERS CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has no bsr');
             continue;
