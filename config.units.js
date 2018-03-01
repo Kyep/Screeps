@@ -53,7 +53,7 @@ global.empire_workers = {
     // Anti-player ATTACK classes
 	//'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, ATTACK: 20}), 'renew_allowed': 0, 'abbr': 'SB'},    // {"cost":2900,"dps":600}
 	'siegebig': { 'body':      global.CONSTRUCT_BODY({MOVE: 25, WORK: 25}), 'renew_allowed': 0, 'abbr': 'SB'},   // {"cost":3750,"dismantle_dps":1500,
-	'siege': { 'body':     global.CONSTRUCT_BODY({MOVE: 3, ATTACK: 3}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'S'},
+	'siege': { 'body':     global.CONSTRUCT_BODY({MOVE: 6, WORK: 6}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'S'},
 
 	//'siegehealer': { 'body':     global.CONSTRUCT_BODY({MOVE: 1, HEAL: 1}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'},
 	'siegehealer': { 'body':     global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, HEAL: 20}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'}, //{"cost":6300,"hps":240,

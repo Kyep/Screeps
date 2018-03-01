@@ -152,7 +152,7 @@ module.exports.loop = function () {
                     continue;
                 }
 
-                // Adjust builders depending on unfinished projects.
+                // Adjust builders depending on unfinished projects.  PORTED TO NEW SYSTEM
                 var projectsList = Game.rooms[rname].find(FIND_MY_CONSTRUCTION_SITES);
                 if(projectsList.length > 0) {
                     if(energy_reserves > empire_defaults['room_energy_min']) {
@@ -474,6 +474,16 @@ module.exports.loop = function () {
             if(Memory['config.reportworkers'] == undefined) {
                 Memory['config.reportworkers'] = 0;
             }
+
+
+
+
+
+
+
+
+
+
             var worker_shortfall = 0;
             for (var rname in empire) {
                 
@@ -641,10 +651,6 @@ module.exports.loop = function () {
                             if(empire[rname].sources[skey]['dest_x'] != undefined) { dest_x = empire[rname].sources[skey]['dest_x']; }
                             if(empire[rname].sources[skey]['dest_y'] != undefined) { dest_y = empire[rname].sources[skey]['dest_y']; }
 
-                            if(!using_primary) {
-                                //console.log('SECONDARY SPAWNING: ' + spawner.name + ' in ' + spawner.room.name + ' created ' + spawnrole + ' for |' + empire[rname].sources[skey]['sourcename'] + 
-                                //'| cost: ' + thecost + '/' + spawner.room.energyAvailable + ' capacity:' + spawner.room.energyCapacityAvailable + ' based out of ' + home_room+ ' with renew: ' + renew_allowed);
-                            }
 
                             spawn_queue[spawner.name] = {
                                 'spawner': spawner.name, 'sname': empire[rname].sources[skey]['sourcename'], 'partlist': partlist, 'spawnrole': spawnrole, 'skey': skey, 'rname': rname, 

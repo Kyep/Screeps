@@ -36,7 +36,7 @@ StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, transf
             }
         }
     }
-    console.log(this.room.name + ': requires ' + transfer_amount + ' of ' + mineral_type + ' but cannot find it anywhere...');
+    //console.log(this.room.name + ': requires ' + transfer_amount + ' of ' + mineral_type + ' but cannot find it anywhere...');
     return false;
 }
 
@@ -58,9 +58,6 @@ StructureRoad.prototype.inRoadNetwork = function() {
         if (this.pos.y != thispos["y"]) {
             continue;
         }
-        /*if (this.pos.roomName != thispos[x]) {
-            continue;
-        }*/
         return true;
     }
     

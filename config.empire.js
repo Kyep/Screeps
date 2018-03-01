@@ -306,7 +306,7 @@
             'backup_spawn_room': 'W51S14',
             'sources': {
                 '59bbc4062052a716c3ce7404': {'sourcename': '5-W', 'x':10, 'y':19, 'dest_x': 11, 'dest_y': 18, 'spaces':1, 'steps': 25,
-                    'assigned': {'bharvester': 2},
+                    'assigned': {'sharvester': 1},
                     'expected_income': 90
                 },
                 '59bbc4062052a716c3ce7406': {'sourcename': '5-E', 'x':21, 'y':31, 'dest_x': 20, 'dest_y': 30, 'spaces':3, 'steps': 25,
@@ -466,7 +466,7 @@
         'W58S17': {
             'roomname' : '7',
             'spawn_room': 'W58S17',
-            'backup_spawn_room': 'W59S17',
+            //'backup_spawn_room': 'W59S17',
             'sources': {
                 '59bbc3ad2052a716c3ce68a6': {'sourcename': '7-W', 'x':8, 'y':27, 'spaces':4,
                     'assigned': {'bharvester': 2}, 
@@ -1096,15 +1096,30 @@
                     'assigned': {'bharvester': 2}, 
                     'expected_income': 95
                 },
-                '5982fc21b097071b4adbce17': {'sourcename': '17-E', 'x':13, 'y':26, 'spaces':3, 'dest_x': 12, 'dest_y': 26, 'steps':20,
+                '5982fbfeb097071b4adbc8be': {'sourcename': '17-E', 'x':13, 'y':26, 'spaces':3, 'dest_x': 12, 'dest_y': 26, 'steps':20,
                     'assigned': {'bharvester': 2}, 
                     'expected_income': 90
                 }
             },
-            'mineralid': '598342abca90777e307b14ab',
-            'mineraltype': RESOURCE_LEMERGIUM,
+            'mineralid': '598342abca90777e307b13dc',
+            'mineraltype': RESOURCE_CATALYST,
         },
-        
+        // 17 Expansions
+        'W47S8': {
+            'roomname': '17W',
+            'spawn_room': 'W46S8',
+            'backup_spawn_room': 'W54S9',
+            'sources': {
+                '5982fbf3b097071b4adbc713': {'sourcename': '17W-W', 'x':21, 'y':19, 'spaces':4, 'dest_x': 21, 'dest_y': 18, 'steps':50,
+                    'assigned': {'fharvester': 2}, 
+                    'expected_income': 85
+                },
+                '5982fbf3b097071b4adbc715': {'sourcename': '17W-E', 'x':42, 'y':38, 'spaces':3, 'dest_x': 41, 'dest_y': 38, 'steps':50,
+                    'assigned': {'fharvester': 2}, 
+                    'expected_income': 80
+                }
+            }
+        },
         
         
         

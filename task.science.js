@@ -122,9 +122,15 @@ module.exports = {
             var local_resource = this_reaction['local_resource'];
             var remote_resource = this_reaction['remote_resource'];
             var rm = Game.rooms[this_reaction['local_room']];
+            var rconf = rm.getConfig();
+            
             if (this_reaction['state'] == 0) {
+                
                 empire[rname].sources['labs'] = {'sourcename': empire[rname]['roomname'] + '-L', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 25, 'dynamic': 1}
                 empire[rname].sources['labs'].assigned['labtech'] = 1;
+                
+                ADD_ROOM_KEY_ASSIGNMENT(rconf, 'labs', {'labtech': 1}, 250);
+                
                 // ASSIGNING LABS
                 var rlabs = rm.find(FIND_MY_STRUCTURES, { filter: function(structure){ if(structure.structureType == STRUCTURE_LAB && structure.isAvailable()) { return 1; } else { return 0; } } });
                 if (rlabs.length < 3) {
@@ -177,6 +183,9 @@ module.exports = {
                 
             } else if (this_reaction['state'] == 1) {
                 // FUELING LABS
+                
+                
+                ADD_ROOM_KEY_ASSIGNMENT(rconf, 'labs', {'labtech': 1}, 250);
                 
                 empire[rname].sources['labs'] = {'sourcename': empire[rname]['roomname'] + '-L', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 25, 'dynamic': 1}
                 empire[rname].sources['labs'].assigned['labtech'] = 1;
@@ -266,6 +275,8 @@ module.exports = {
             } else if (this_reaction['state'] == 3) {
 
                 // CLEARING UP
+                
+                ADD_ROOM_KEY_ASSIGNMENT(rconf, 'labs', {'labtech': 1}, 250);
                 
                 empire[rname].sources['labs'] = {'sourcename': empire[rname]['roomname'] + '-L', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 25, 'dynamic': 1}
                 empire[rname].sources['labs'].assigned['labtech'] = 1;
@@ -364,7 +375,9 @@ module.exports = {
                     console.log('Science: ' + goal + '/' + factory_room_name + ': successfully acquired raw material ' + remote_resource + ' from a remote room');
                     return;
                 } else {
-                    console.log('Science: ' + goal + '/' + factory_room_name + ': cannot acquire 3k ' + remote_resource);
+                    if (Game.time % 500 == 0) {
+                        console.log('Science: ' + goal + '/' + factory_room_name + ': cannot acquire 3k ' + remote_resource);
+                    }
                     continue;
                 }
             }
