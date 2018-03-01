@@ -126,9 +126,6 @@ module.exports = {
             
             if (this_reaction['state'] == 0) {
                 
-                empire[rname].sources['labs'] = {'sourcename': empire[rname]['roomname'] + '-L', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 25, 'dynamic': 1}
-                empire[rname].sources['labs'].assigned['labtech'] = 1;
-                
                 ADD_ROOM_KEY_ASSIGNMENT(rconf, 'labs', {'labtech': 1}, 250);
                 
                 // ASSIGNING LABS
@@ -186,9 +183,6 @@ module.exports = {
                 
                 
                 ADD_ROOM_KEY_ASSIGNMENT(rconf, 'labs', {'labtech': 1}, 250);
-                
-                empire[rname].sources['labs'] = {'sourcename': empire[rname]['roomname'] + '-L', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 25, 'dynamic': 1}
-                empire[rname].sources['labs'].assigned['labtech'] = 1;
                 
                 var lab_input_1 = Game.structures[this_reaction['input_1']];
                 var lab_input_2 = Game.structures[this_reaction['input_2']];
@@ -278,9 +272,6 @@ module.exports = {
                 
                 ADD_ROOM_KEY_ASSIGNMENT(rconf, 'labs', {'labtech': 1}, 250);
                 
-                empire[rname].sources['labs'] = {'sourcename': empire[rname]['roomname'] + '-L', 'x':25, 'y':25, 'assigned': {}, 'expected_income': 25, 'dynamic': 1}
-                empire[rname].sources['labs'].assigned['labtech'] = 1;
-
                 if (this_reaction['input_1']){
                     delete Memory['assigned_labs'][this_reaction['input_1']];
                 }

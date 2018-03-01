@@ -9,6 +9,10 @@ module.exports = {
         }
         for(var rname in empire) {
             if(rooms_to_claim[rname] != undefined) {
+                
+                var rconfig = GET_ROOM_CONFIG(rname);
+                if (!rconfig) { return; }
+                
                 // To claim a room, define it like this:
                 // Memory['rooms_to_claim'] = {'W55S8': {'controllerid': '59bbc3da2052a716c3ce6e4b', 'gcltarget': 13 }}
                 // Memory['rooms_to_claim'] = {'W52S23': {'controllerid': '59bbc4072052a716c3ce7416', 'gcltarget': 10 }}

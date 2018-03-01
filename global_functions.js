@@ -265,7 +265,7 @@ global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, t
     crmemory[MEMORY_RENEW] = renew_allowed;
     crmemory[MEMORY_NEXTDEST] = nextdest;
     var result = spawner.createCreep(partlist, crname, crmemory);
-    //console.log(spawner.name + ': (' + result + ') for ' + crname + ' and ' + partlist + ' and ' + crmemory);
+    console.log(spawner.name + ': (' + result + ') ' + crname + ' -> ' + targettext);
 
     Memory['spawn_count'] += 1;
     return result;
@@ -663,10 +663,10 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
     } else {
         console.log('DEFENSE: Decided that  ' + roomname + ' can handle the incoming threat of ' + theirthreat + ' without any units being spawned');
     }
-    empire[roomname].sources['BASEFORCE'] = {'sourcename': empire[roomname]['roomname'] + '-bforce', 'x':25, 'y':25,
-        'assigned': baseforce, 'expected_income': 95, 'dynamic': 1}
-    empire[roomname].sources['PATROLFORCE'] = {'sourcename': empire[roomname]['roomname'] + '-pforce', 'x':25, 'y':25,
-        'assigned': patrolforce, 'expected_income': 94, 'dynamic': 1}
+    var rconf = GET_ROOM_CONFIG(roomname);
+    ADD_ROOM_KEY_ASSIGNMENT(rconf, 'basemil', baseforce, 0);
+    ADD_ROOM_KEY_ASSIGNMENT(rconf, 'defmil', patrolforce, 50);
+    
 }
 
 

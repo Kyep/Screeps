@@ -165,7 +165,7 @@ global.ESPIONAGE_SHOW_ROOM = function(rname) {
     return JSON.stringify(ESPIONAGE_GET_ROOM(rname));
 }
 
-global.ESPIONAGE_ATTACK_PLANS = function(spawn_units) {
+global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
     
     var attacker_limit = 1;
     var drainer_limit = 1;
@@ -195,12 +195,10 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units) {
                 }
 
                 if (!einfo['enemy_structures']) {
-                    /*
-                    if (spawn_units && einfo['needs_signing'] && ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt, 'signer') == 0) {
+                    if (spawn_signers && einfo['needs_signing'] && ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt, 'signer') == 0) {
                         var created = fbase.createUnit('signer', tgt);
                         console.log(' -> ' + tgt + ' (' + einfo['level'] + '), signer: ' + created);
                     }
-                    */
                     
                     continue;
                 }
@@ -326,7 +324,7 @@ global.ESPIONAGE = function() {
                 if (theroom.controller.safeMode) {
                     Memory['espionage']['rooms'][rname]['safemode_until'] = Game.time + theroom.controller.safeMode;
                 }
-                theroom.fullUpdate();
+                theroom.createConfig();
             }
 
             var enemy_structures = theroom.getHostileStructures();
@@ -357,7 +355,7 @@ global.ESPIONAGE = function() {
                 Memory['espionage']['fob'][sfrom].push(rname);
             }
             if (theroom.controller && !signed_by_me && Memory['espionage']['rooms'][rname]['spawn_dist'] < 3 && Memory['espionage']['rooms'][rname]['enemy_structures'] == 0) {
-                if (!Memory['espionage']['rooms'][rname]['allied']) {
+                if (theroom.isMine() || !Memory['espionage']['rooms'][rname]['allied']) {
                     Memory['espionage']['rooms'][rname]['needs_signing'] = true;
                 }
             }

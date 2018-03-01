@@ -1,5 +1,7 @@
 "use strict";
 
+// New 3/1/2018 code for abstracting the management of empire rooms
+
 global.GET_ROOM_CONFIG = function(rname) {
     if (!Memory.rooms[rname] || !Memory.rooms[rname][MEMORY_RCONFIG]) {
         return undefined;
@@ -42,15 +44,15 @@ global.GET_STEPS_TO_SOURCE = function(rname, sid) {
 }
 
 
-global.BUILD_CRLIST = function() {
+global.GET_SPAWN_QUEUE = function(report_summary) {
     
     var combined = {}
     for (var rname in Memory.rooms) {
-        var rconf = Memory.rooms[rname][MEMORY_RCONFIG];
-        if (!rconf) {
+        var rconfig = Memory.rooms[rname][MEMORY_RCONFIG];
+        if (!rconfig) {
             continue;
         }
-        var assigned = rconf['assignments'];
+        var assigned = rconfig['assignments'];
         if (!assigned) {
             continue;
         }
@@ -61,14 +63,12 @@ global.BUILD_CRLIST = function() {
                 combined[rname][skey] = {}
             }
             for (var srole in assigned[skey]['ass']) {
-                if (under_attack && !empire_defaults['military_roles'].includes(role) && !empire_defaults['priority_roles'].includes(role) ) {
+                if (under_attack && !empire_defaults['military_roles'].includes(srole) && !empire_defaults['priority_roles'].includes(srole) ) {
                     continue;
                 }
                 if (!combined[rname][skey][srole]) { 
-                    combined[rname][skey][srole] = {'int': 0, 'liv': 0, 'need': 0}; 
+                    combined[rname][skey][srole] = {'int': assigned[skey]['ass'][srole], 'liv': 0, 'need': assigned[skey]['ass'][srole]}; 
                 }
-                combined[rname][skey][srole]['int']++;
-                combined[rname][skey][srole]['need']++;
             }
         }
     }
@@ -95,80 +95,108 @@ global.BUILD_CRLIST = function() {
     var advised_spawns = {}
     for (var rname in combined) {
         var r_messages = []
+        var rconfig = Memory.rooms[rname][MEMORY_RCONFIG];
+        var spawn_room = rconfig['spawn_room'];
     	for (var sname in combined[rname]) {
-            for (var role in combined[rname][sname]) {
-                var stext = sname;
-                if (stext.length > 10) {
-                    stext = sname.slice(-3);
-                }
-                var comp = combined[rname][sname][role];
-                var compstring = comp['liv'] + ' / ' + comp['int'];
-                if (comp['liv'] < comp['int']) {
-                    compstring = '<font color="red">' + comp['liv'] + '</font> / ' + comp['int'];
-                } else if (comp['liv'] > comp['int']) {
-                    compstring = '<font color="yellow">' + comp['liv'] + '</font> / ' + comp['int'];
-                }
-                r_messages.push(stext + ': ' + role + ' ' + compstring);
+    	    var s_messages = []
+            var stext = sname;
+            if (stext.length > 20) {
+                stext = sname.slice(-3);
             }
+            for (var role in combined[rname][sname]) {
+
+                var comp = combined[rname][sname][role];
+                var compstring = comp['liv'] + '/' + comp['int'];
+                if (comp['liv'] < comp['int']) {
+                    compstring = '<font color="red">' + comp['liv'] + '</font>/' + comp['int'];
+                    if (spawn_room != undefined) {
+                        if (!advised_spawns[spawn_room]) { advised_spawns[spawn_room] = {} }
+                        if (!advised_spawns[spawn_room][rname]) { advised_spawns[spawn_room][rname] = {} }
+                        if (!advised_spawns[spawn_room][rname][sname]) { advised_spawns[spawn_room][rname][sname] = {} }
+                        if (!advised_spawns[spawn_room][rname][sname][role]) { advised_spawns[spawn_room][rname][sname][role] = 0; }
+                        advised_spawns[spawn_room][rname][sname][role]++;
+                    }
+                } else if (comp['liv'] > comp['int']) {
+                    compstring = '<font color="yellow">' + comp['liv'] + '</font>/' + comp['int'];
+                }
+                var rtext = role;
+                if (empire_defaults['military_roles'].includes(role) || empire_defaults['priority_roles'].includes(role) ) {
+                    rtext = '<font color="purple">' + role + '</font>';
+                }
+                
+                s_messages.push(rtext + ': ' + compstring);
+            }
+            r_messages.push(stext + ': ' + s_messages.join(', '));
     	}
-    	console.log(rname + ': ' + r_messages.join(' '));
+    	if (report_summary) {
+        	console.log(rname + ': ' + r_messages.join(' '));
+    	}
     }
     
 
-    
-    if (false) {    
-    for (var rname in needed) {
-    	var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(rname);
-    	var spawner = gsapfr[0];
-    	var using_primary = gsapfr[1];
-    	if (spawner == undefined) {
-    		continue;
-    	}
-    	var home_room = spawner.room.name;
-        var renew_allowed = 1;
-        var rconfig = Memory.rooms[rname][MEMORY_RCONFIG];
-        var spawn_room = rconfig['spawn_room'];
-        if (!using_primary) {
-    		home_room = spawn_room;
-    		if (Game.rooms[rname] && Game.rooms[rname].getLevel() < 5) {
-    		    renew_allowed = 0;
-    		}
-    	} 
-    	for (var sname in needed[rname]) {
-            for (var role in needed[rname][sname]) {
-                if (empire_workers[role] == undefined) {
-                    console.log(spawner.name + ': UNDEFINED ROLE: ' + role);
-                    continue;
+    var spawner_data = {}
+    //console.log(JSON.stringify(advised_spawns));
+    for (var pname in advised_spawns) {
+        THIS_SPAWN_ROOM:
+        for (var rname in advised_spawns[pname]) {
+        	var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(rname);
+        	var spawner = gsapfr[0];
+        	var using_primary = gsapfr[1];
+        	if (spawner == undefined) {
+        		break;
+        	}
+        	var home_room = spawner.room.name;
+            var renew_allowed = 1;
+            var rconfig = Memory.rooms[rname][MEMORY_RCONFIG];
+            var spawn_room = rconfig['spawn_room'];
+            if (!using_primary) {
+        		home_room = spawn_room;
+        		if (Game.rooms[rname] && Game.rooms[rname].getLevel() < 5) {
+        		    renew_allowed = 0;
+        		}
+        	}
+        	var spawned_something = false;
+        	for (var sname in advised_spawns[pname][rname]) {
+                for (var role in advised_spawns[pname][rname][sname]) {
+                    if (empire_workers[role] == undefined) {
+                        console.log(spawner.name + ': UNDEFINED ROLE: ' + role);
+                        continue;
+                    }
+                    //console.log(rname + '(' + sname + ') short ' + advised_spawns[pname][rname][sname][role] + ' of ' + role);
+                    var rbap = spawner.getRoleBodyAndProperties(role, rname, skey);
+                    var partlist = rbap['body'];
+                    if(rbap['renew_allowed'] == 0) {
+                        renew_allowed = 0;
+                    }
+                    var thecost = global.UNIT_COST(partlist);
+                    if (spawner.room.energyAvailable < thecost) {
+                        continue;
+                    }
+                    var stext = sname;
+                    if (stext.length > 20) {
+                        stext = sname.slice(-3);
+                    }
+                    var dest_x = 25;
+                    var dest_y = 25;
+                    if (rconfig.sources[sname] != undefined) {
+                        if (rconfig.sources[sname]['x'] != undefined) { dest_x = rconfig.sources[sname]['x']; }
+                        if (rconfig.sources[sname]['y'] != undefined) { dest_y = rconfig.sources[sname]['y']; }
+                        if (rconfig.sources[sname]['dest_x'] != undefined) { dest_x = rconfig.sources[sname]['dest_x']; }
+                        if (rconfig.sources[sname]['dest_y'] != undefined) { dest_y = rconfig.sources[sname]['dest_y']; }
+                    }
+                    spawner_data[spawner.name] = {
+                        'spawner': spawner.name, 'sname': stext, 'partlist': partlist, 'spawnrole': role, 'skey': sname, 'rname': rname, 
+                        'thecost': thecost, 'myroomname': home_room, 'dest_x': dest_x, 'dest_y': dest_y,  
+                        'renew_allowed': renew_allowed, 'nextdest': []
+                    }
+                    break THIS_SPAWN_ROOM;
                 }
-                console.log(rname + '(' + sname + ') short ' + needed[rname][sname][role] + ' of ' + role);
-                var rbap = spawner.getRoleBodyAndProperties(role, rname, skey);
-                var partlist = rbap['body'];
-                if(rbap['renew_allowed'] == 0) {
-                    renew_allowed = 0;
-                }
-                var thecost = global.UNIT_COST(partlist);
-                if (spawner.room.energyAvailable < thecost) {
-                    continue;
-                }
-                var dest_x = 25;
-                var dest_y = 25;
-                if (rconfig.sources[skey]['x'] != undefined) { dest_x = rconfig.sources[skey]['x']; }
-                if (rconfig.sources[skey]['y'] != undefined) { dest_y = rconfig.sources[skey]['y']; }
-                if (rconfig.sources[skey]['dest_x'] != undefined) { dest_x = rconfig.sources[skey]['dest_x']; }
-                if (rconfig.sources[skey]['dest_y'] != undefined) { dest_y = rconfig.sources[skey]['dest_y']; }
-                advised_spawns[spawner.name] = {
-                    'spawner': spawner.name, 'sname': rconfig.sources[skey]['sourcename'], 'partlist': partlist, 'spawnrole': role, 'skey': sname, 'rname': rname, 
-                    'thecost': thecost, 'myroomname': home_room, 'dest_x': dest_x, 'dest_y': dest_y,  
-                    'renew_allowed': renew_allowed, 'nextdest': []
-                }
-                break;
             }
         }
     }
     
-    }
-    console.log(JSON.stringify(combined));
-    return [combined, advised_spawns];
+    //console.log(JSON.stringify(spawner_data));
+    return spawner_data;
 }
 
 Room.prototype.inEmpire = function() {
@@ -312,13 +340,19 @@ Room.prototype.makeAssignments = function(myconf) {
         // We are a normal base
         //console.log(this.name + ': makeAssignments assigned normal base units');
         for (var skey in myconf['sources']) {
+            var snum = 1;
             if (myconf['sources'][skey]['spaces'] == 1) {
                 myconf = this.setSourceAssignment(myconf, skey, { 'sharvester': 1}, myconf['sources'][skey]['steps']);
             } else if (rlvl == 8) {
-                myconf = this.setSourceAssignment(myconf, skey, { 'bharvester': 1, 'up8': 1 }, myconf['sources'][skey]['steps']); 
+                if (snum == 1) {
+                    myconf = this.setSourceAssignment(myconf, skey, { 'bharvester': 1, 'up8': 1 }, myconf['sources'][skey]['steps']); 
+                } else {
+                    myconf = this.setSourceAssignment(myconf, skey, { 'sharvester': 1 }, myconf['sources'][skey]['steps']);
+                }
             } else {
                 myconf = this.setSourceAssignment(myconf, skey, { 'bharvester': 2}, myconf['sources'][skey]['steps']); 
             }
+            snum++;
         }
     } else if (rlvl > 0) {
         // We are a low-level base.
@@ -379,9 +413,11 @@ Room.prototype.makeAssignments = function(myconf) {
     var projectsList = this.find(FIND_MY_CONSTRUCTION_SITES);
     if(projectsList.length > 0) {
         var btype = 'builderstorage';
-        if (!this.storage) {
+        if (!this.isMine()) {
+            btype = 'remoteconstructor';
+        } else if (!this.storage) {
             btype = 'minirc';
-        } 
+        }
         var newobj = {}
         newobj[btype] = 1;
         for (var skey in myconf['sources']) {
@@ -397,12 +433,60 @@ Room.prototype.makeAssignments = function(myconf) {
     myconf['energy_class'] = energy_class;
     
     if (rlvl >= 4 && rlvl < 8 && energy_class != ENERGY_EMPTY) {
-        var upcount = 4;
-        if (this.terminal && this.terminal.isActive()) {
+        var upcount = Math.floor(energy_reserved / 50000);
+        if (this.terminal && this.terminal.isActive() && this.terminal.store[RESOURCE_ENERGY] > 50000) {
             upcount = 6;
         }
         var upobj = {'upstorclose': upcount}
         myconf = this.setSourceAssignment(myconf, 'upgrades', upobj, 250);
+    }
+
+    // ENERGY AVAILABILITY MANAGEMENT
+    if(this.energyCapacityAvailable > 0) {
+        if (this.storage != undefined) {
+            var rmem = this.memory;
+            var max_history = empire_defaults['room_history_ticks'];
+            if (rmem['energyhistory'] == undefined) {
+                rmem['energyhistory'] = [];
+            }
+            if (rmem['energyhistory'].length >= max_history) {
+                rmem['energyhistory'].pop();
+            }
+            rmem['energyhistory'].unshift(Game.rooms[rname].energyAvailable);
+            var e_hist_total = 0;
+            for (var i = 0; i < rmem['energyhistory'].length; i++) {
+                e_hist_total += rmem['energyhistory'][i];
+            }
+            var e_hist_avg = Math.round(e_hist_total / rmem['energyhistory'].length);
+            var e_hist_avg_pc = Math.round(e_hist_avg / Game.rooms[rname].energyCapacityAvailable * 100);
+            if (e_hist_avg_pc < empire_defaults['room_minimum_energy_pc']) {
+                var rhid = empire[rname]['roomname'];
+                var mysname = rhid + '-T';
+                if(empire[rname].sources[mysname] == undefined) {
+                    empire[rname].sources[mysname] = { 'sourcename': mysname, 'x':20, 'y':20, 'assigned': {}, 'expected_income': 100 }
+                }
+                if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc']) {
+                    myconf = this.setSourceAssignment(myconf, 'teller', {'teller': 2}, 250);
+                } else {
+                    myconf = this.setSourceAssignment(myconf, 'teller', {'teller': 1}, 250);
+                }
+            }
+            this.memory['energyhistory'] = rmem['energyhistory'];
+        }
+    }
+
+    // SCAVENGER MANAGEMENT
+    if(this.energyCapacityAvailable > 0) {
+        var dropped_resources = this.find(FIND_DROPPED_RESOURCES, {filter: (s) => s.energy > 0});
+        if (dropped_resources.length > 0) {
+            var energy_on_ground = 0;
+            for (var i = 0; i < dropped_resources.length; i++) {
+                energy_on_ground += dropped_resources[i].energy;
+            }
+            if (energy_on_ground > (1.5 * UNIT_COST(empire_workers['scavenger']['body']))) {
+                myconf = this.setSourceAssignment(myconf, 'scavenger', {'scavenger': 1}, 250);
+            }
+        }
     }
 
     this.memory[MEMORY_RCONFIG] = myconf;

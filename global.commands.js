@@ -37,7 +37,12 @@ global.REPORT_TERMINALS = function() {
 }
 
 global.REPORT_WORKERS = function() {
-    Memory['config.reportworkers'] = 1;
+    if (Memory['config.reportworkers']) {
+        Memory['config.reportworkers'] = false;
+    } else {
+        Memory['config.reportworkers'] = true;
+    }
+    return Memory['config.reportworkers'];
 }
 
 global.RECREATE_ROAD_NETWORKS = function() {
