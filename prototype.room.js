@@ -883,6 +883,7 @@ Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, 
     crmemory[MEMORY_HOME] = homeroom;
     crmemory[MEMORY_HOME_X] = spawner.pos.x;
     crmemory[MEMORY_HOME_Y] = spawner.pos.y;
+    crmemory[MEMORY_RENEW] = false;
     
     var result = SPAWN_VALIDATED(spawner, '', partlist, crmemory)
     

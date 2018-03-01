@@ -13,7 +13,7 @@ global.SHOW_ROOM_CONFIG = function(rname) {
     console.log(JSON.stringify(GET_ROOM_CONFIG(rname)));
 }
 
-global.ADD_ROOM_KEY_ASSIGNMENT = function(rconfig, sourceidorkey, ass_object, priority) {
+global.ADD_ROOM_KEY_ASSIGNMENT = function(rconfig, sourceidorkey, ass_object, priority, overwrite) {
     // rconfig = this.setSourceAssignment(rconfig, '1111key1111', { 'sharvester': 1});
     if (!rconfig || !sourceidorkey || !ass_object || !priority) {
         return rconfig;
@@ -22,12 +22,12 @@ global.ADD_ROOM_KEY_ASSIGNMENT = function(rconfig, sourceidorkey, ass_object, pr
         console.log('ADD_ROOM_KEY_ASSIGNMENT warning - called with no rconfig to set: ' + sourceidorkey + '/' + JSON.stringify(ass_object));
         return rconfig;
     }
-    if (rconfig['assignments'][sourceidorkey] == undefined) {
+    if (rconfig['assignments'][sourceidorkey] == undefined || overwrite) {
         rconfig['assignments'][sourceidorkey] = {'ass': {}, 'pri': priority}
     }
     for (var skey in ass_object) {
         rconfig['assignments'][sourceidorkey]['ass'][skey] = ass_object[skey];
-    }
+    }   
     return rconfig;
 }
 
@@ -313,13 +313,12 @@ Room.prototype.makeConfigBase = function(spawn_room, backup_spawn_room) {
     }
     if (shouldupdate) {
         this.memory[MEMORY_RCONFIG] = rconfig;
-        //console.log(this.name + ': makeConfig saved: ' + JSON.stringify(rconfig));
+        console.log(this.name + ': makeConfig saved: ' + JSON.stringify(rconfig));
     }
     return rconfig;
 }
 
 Room.prototype.setSourceAssignment = function(rconfig, sourceid, ass_object, steps) {
-    //global.ADD_ROOM_KEY_ASSIGNMENT = function(rconfig, sourceidorkey, ass_object, priority) {
     if (!rconfig || !sourceid || !ass_object || !steps) {
         return rconfig;
     }
@@ -327,16 +326,25 @@ Room.prototype.setSourceAssignment = function(rconfig, sourceid, ass_object, ste
     return rconfig;
 }
 
+Room.prototype.updateAssignments = function() {
+    var rconf = this.getConfig();
+    if (rconf) {
+        return this.makeAssignments(rconf);
+    }
+    return this.createConfig();
+}
+
 Room.prototype.makeAssignments = function(myconf) {
     if( myconf == undefined) {
         console.log(this.name + ': makeAssignments got asked to assign units to room without a base config');
         return myconf;
     }
+    myconf['assignments'] = {}
     if (empire[this.name] == undefined) {
-        console.log(this.name + ': makeAssignments got asked to assign units to non-empire room');
+        console.log(this.name + ': makeAssignments got asked to assign units to non-empire room. Deleting all assignments.');
+        this.memory[MEMORY_RCONFIG] = myconf;
         return myconf;
     }
-    myconf['assignments'] = {}
     var rlvl = this.getLevel();
     if (rlvl > 3) {
         // We are a normal base
@@ -380,7 +388,7 @@ Room.prototype.makeAssignments = function(myconf) {
                 for (var skey in myconf['sources']) {
                     myconf = this.setSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf['sources'][skey]['steps']); 
                 }  
-            } else if (myconf['scount'] > 1) {
+            } else if (myconf['scount'] > 1 || true) {
                 var snum = 1;
                 for (var skey in myconf['sources']) {
                     if (snum == 1) {

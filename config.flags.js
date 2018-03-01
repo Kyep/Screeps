@@ -14,7 +14,7 @@
         "rampart": [COLOR_ORANGE, COLOR_GREEN],
         "nuker": [COLOR_ORANGE, COLOR_RED],
         "observer": [COLOR_ORANGE, COLOR_CYAN],
-        "powerSpawn": [COLOR_ORANGE, COLOR_GREEN],
+        "powerSpawn": [COLOR_ORANGE, COLOR_BROWN],
 
         // unhandled buildings
         // road, keeper lair, portal, controller, observer, power bank, power spawn, container

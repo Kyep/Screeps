@@ -267,7 +267,7 @@ module.exports.loop = function () {
                 room_parts[Game.creeps[name].memory[MEMORY_SPAWNERROOM]] += pcount;
             }
             if(Game.creeps[name].memory[MEMORY_SOURCE] == undefined) {
-                console.log('WARN: ' + Game.creeps[name] + ' in ' + Game.creeps[name].room.name + ' has no source defined.');
+                //console.log('WARN: ' + Game.creeps[name] + ' in ' + Game.creeps[name].room.name + ' has no source defined.');
             }
 
         }

@@ -230,7 +230,7 @@ global.SPAWN_COUNT = function () {
 global.SPAWN_VALIDATED = function (spawner, crnameprefix, bodylist, memory_object){
     var memvalid = VALIDATE_CREEP_MEMORY_OBJECT(memory_object);
     if (memvalid !== true) {
-        console.log("SPAWN: failed to create: " + sname + " because memory validation failed: " + JSON.stringify(memory_object));
+        console.log("SPAWN: failed to create: " + crnameprefix + " because memory validation failed: " + JSON.stringify(memory_object));
         return false;
     }
     var spawn_count = SPAWN_COUNT();
@@ -640,8 +640,8 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         console.log('DEFENSE: Decided that  ' + roomname + ' can handle the incoming threat of ' + theirthreat + ' without any units being spawned');
     }
     var rconf = GET_ROOM_CONFIG(roomname);
-    ADD_ROOM_KEY_ASSIGNMENT(rconf, 'basemil', baseforce, 0);
-    ADD_ROOM_KEY_ASSIGNMENT(rconf, 'defmil', patrolforce, 50);
+    ADD_ROOM_KEY_ASSIGNMENT(rconf, 'basemil', baseforce, 0, true);
+    ADD_ROOM_KEY_ASSIGNMENT(rconf, 'defmil', patrolforce, 50, true);
     
 }
 

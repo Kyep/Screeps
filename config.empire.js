@@ -52,6 +52,10 @@
             'roomname' : '1E',
             'spawn_room': 'W53S18'
         },
+        'W51S18': {
+            'roomname' : '1EE',
+            'spawn_room': 'W53S18'
+        },
         'W53S17': {
             'roomname' : '1N',
             'spawn_room': 'W53S18',
@@ -134,6 +138,10 @@
             'roomname' : '7E',
             'spawn_room': 'W58S17'
         },
+        'W58S18': {
+            'roomname' : '7S',
+            'spawn_room': 'W58S17'
+        },
 
         // 8 Base
         'W57S11': {
@@ -153,31 +161,6 @@
             'backup_spawn_room': 'W57S14'
         },
 
-        // 9 Base
-        /*
-        'W59S18': {
-            'roomname': '9',
-            'spawn_room': 'W59S18',
-            'backup_spawn_room': 'W58S17'
-        },
-        // 9 Expansions
-        'W59S19': {
-            'roomname' : '9S',
-            'spawn_room': 'W59S18',
-            'backup_spawn_room': 'W58S17'
-        },
-        'W58S18': {
-            'roomname' : '9E',
-            'spawn_room': 'W59S18',
-            'backup_spawn_room': 'W58S17'
-        },
-        'W58S19': {
-            'roomname' : '9SE',
-            'spawn_room': 'W59S18',
-            'backup_spawn_room': 'W58S17'
-        },
-        
-        */
 
         // 10 Base
         'W57S14': {
@@ -232,12 +215,17 @@
         'W47S17': {
             'roomname': '12W',
             'spawn_room': 'W46S17',
-            'backup_spawn_room': 'W53S18'
+            'backup_spawn_room': 'W48S18'
         },
         'W45S17': {
             'roomname': '12E',
             'spawn_room': 'W46S17'
         },
+        'W45S18': {
+            'roomname': '12SE',
+            'spawn_room': 'W46S17'
+        },
+
         // 13 Base
         'W53S6': {
             'roomname': '13',
@@ -254,7 +242,10 @@
             'roomname': '13E',
             'spawn_room': 'W53S6'
         },
-
+        'W52S7': {
+            'roomname': '13SE',
+            'spawn_room': 'W53S6'
+        },
 
 
         // 14 Base
@@ -297,6 +288,10 @@
             'roomname': '15W',
             'spawn_room': 'W55S8'
         },
+        'W55S7': {
+            'roomname': '15N',
+            'spawn_room': 'W55S8'
+        },
 
         // 16 Base
         'W43S18': {
@@ -320,19 +315,16 @@
         // 17 Base
         'W46S8': {
             'roomname': '17',
-            'spawn_room': 'W46S8',
-            'backup_spawn_room': 'W54S9'
+            'spawn_room': 'W46S8'
         },
         // 17 Expansions
         'W47S8': {
             'roomname': '17W',
-            'spawn_room': 'W46S8',
-            'backup_spawn_room': 'W54S9'
+            'spawn_room': 'W46S8'
         },
         'W48S8': {
             'roomname': '17WW',
-            'spawn_room': 'W46S8',
-            'backup_spawn_room': 'W54S9'
+            'spawn_room': 'W46S8'
         },
     }
     
