@@ -83,7 +83,6 @@ module.exports.loop = function () {
     if (lastFour == 9999) {
         observe_energy = 1;
     }
-
     global.UPDATE_OBSERVERS(observe_energy);
 
     if(Game.time % 250 === 0) {
@@ -94,6 +93,8 @@ module.exports.loop = function () {
         //global.PRESET_ATTACK_WAVE();
         global.ESPIONAGE_ATTACK_PLANS(true);
         global.ESPIONAGE_REGEN_TARGETS();
+        
+        global.REPORT_STRUCTURES(false); // auto-builds buildable structures that have appropriate flags
     }
 
     global.ESPIONAGE();
@@ -116,7 +117,7 @@ module.exports.loop = function () {
 
         // EXPANSION CONTROLLER
         var cpu_planner_use = Game.cpu.getUsed();
-        expansionplanner.process()
+        //expansionplanner.process()
         taskscience.process()
         cpu_planner_use = Game.cpu.getUsed() - cpu_planner_use;
         if (cpu_reporting) { console.log('CPU cpu_planner_use: ' +cpu_planner_use); }
@@ -331,12 +332,18 @@ module.exports.loop = function () {
                     console.log(spawnername + ' not defined in game spawns');
                     console.log(JSON.stringify(sobj));
                 } else if (spn.room.energyAvailable >= spawn_queue[spawnername]['thecost']) {
-                    SPAWNCUSTOM(
-                        spn, spawn_queue[spawnername]['sname'], spawn_queue[spawnername]['partlist'], spawn_queue[spawnername]['spawnrole'], 
-                        spawn_queue[spawnername]['skey'], spawn_queue[spawnername]['rname'], spawn_queue[spawnername]['thecost'], 
-                        spawn_queue[spawnername]['myroomname'], spawn_queue[spawnername]['dest_x'], 
-                        spawn_queue[spawnername]['dest_y'], spawn_queue[spawnername]['renew_allowed'], spawn_queue[spawnername]['nextdest']
-                    );
+                    var crmemory = {};
+                    crmemory[MEMORY_ROLE] = spawn_queue[spawnername]['spawnrole'];
+                    crmemory[MEMORY_SOURCE] = spawn_queue[spawnername]['skey'];
+                    crmemory[MEMORY_DEST] = spawn_queue[spawnername]['rname'];
+                    crmemory[MEMORY_DEST_X] = spawn_queue[spawnername]['dest_x'];
+                    crmemory[MEMORY_DEST_Y] = spawn_queue[spawnername]['dest_y'];
+                    crmemory[MEMORY_NEXTDEST] = spawn_queue[spawnername]['nextdest'];
+                    crmemory[MEMORY_HOME] = spawn_queue[spawnername]['myroomname'];
+                    crmemory[MEMORY_HOME_X] = spn.pos.x;
+                    crmemory[MEMORY_HOME_Y] = spn.pos.y;
+                    crmemory[MEMORY_RENEW] = spawn_queue[spawnername]['renew_allowed'];
+                    SPAWN_VALIDATED(spn, spawn_queue[spawnername]['sname'], spawn_queue[spawnername]['partlist'], crmemory);
                     spn.memory['role_spawning'] = spawn_queue[spawnername]['spawnrole'];
                     spn.memory['dest_spawning'] = spawn_queue[spawnername]['rname'];
                 } else {

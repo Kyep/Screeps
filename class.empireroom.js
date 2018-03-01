@@ -206,6 +206,8 @@ Room.prototype.inEmpire = function() {
     return true;
 }
 
+
+
 Room.prototype.getSpawnRoom = function() {
     var myconf = this.getConfig();
     if (!myconf) {
@@ -354,11 +356,17 @@ Room.prototype.makeAssignments = function(myconf) {
             }
             snum++;
         }
-    } else if (rlvl > 0) {
+    } else if (rlvl == 2) {
         // We are a low-level base.
         //console.log(this.name + ': makeAssignments assigned low-level base units');
         for (var skey in myconf['sources']) {
             myconf = this.setSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf['sources'][skey]['steps']); 
+        }
+    } else if (this.isMine()) {
+        // We are a low-level base.
+        //console.log(this.name + ': makeAssignments assigned initial base-building units');
+        for (var skey in myconf['sources']) {
+            myconf = this.setSourceAssignment(myconf, skey, { 'fharvester': 2, 'remoteconstructor': 2}, myconf['sources'][skey]['steps']); 
         }
     } else if (myconf['controller']) {
         // We are a remote mining outpost.
@@ -433,7 +441,7 @@ Room.prototype.makeAssignments = function(myconf) {
     myconf['energy_class'] = energy_class;
     
     if (rlvl >= 4 && rlvl < 8 && energy_class != ENERGY_EMPTY) {
-        var upcount = Math.floor(energy_reserved / 50000);
+        var upcount = Math.floor(energy_reserves / 50000);
         if (this.terminal && this.terminal.isActive() && this.terminal.store[RESOURCE_ENERGY] > 50000) {
             upcount = 6;
         }
@@ -442,7 +450,7 @@ Room.prototype.makeAssignments = function(myconf) {
     }
 
     // ENERGY AVAILABILITY MANAGEMENT
-    if(this.energyCapacityAvailable > 0) {
+    if(this.isMine() && this.energyCapacityAvailable > 0) {
         if (this.storage != undefined) {
             var rmem = this.memory;
             var max_history = empire_defaults['room_history_ticks'];
@@ -452,19 +460,14 @@ Room.prototype.makeAssignments = function(myconf) {
             if (rmem['energyhistory'].length >= max_history) {
                 rmem['energyhistory'].pop();
             }
-            rmem['energyhistory'].unshift(Game.rooms[rname].energyAvailable);
+            rmem['energyhistory'].unshift(this.energyAvailable);
             var e_hist_total = 0;
             for (var i = 0; i < rmem['energyhistory'].length; i++) {
                 e_hist_total += rmem['energyhistory'][i];
             }
             var e_hist_avg = Math.round(e_hist_total / rmem['energyhistory'].length);
-            var e_hist_avg_pc = Math.round(e_hist_avg / Game.rooms[rname].energyCapacityAvailable * 100);
+            var e_hist_avg_pc = Math.round(e_hist_avg / this.energyCapacityAvailable * 100);
             if (e_hist_avg_pc < empire_defaults['room_minimum_energy_pc']) {
-                var rhid = empire[rname]['roomname'];
-                var mysname = rhid + '-T';
-                if(empire[rname].sources[mysname] == undefined) {
-                    empire[rname].sources[mysname] = { 'sourcename': mysname, 'x':20, 'y':20, 'assigned': {}, 'expected_income': 100 }
-                }
                 if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc']) {
                     myconf = this.setSourceAssignment(myconf, 'teller', {'teller': 2}, 250);
                 } else {
@@ -473,6 +476,8 @@ Room.prototype.makeAssignments = function(myconf) {
             }
             this.memory['energyhistory'] = rmem['energyhistory'];
         }
+    } else if (this.memory['energyhistory'] != undefined) {
+        delete this.memory['energyhistory'];
     }
 
     // SCAVENGER MANAGEMENT

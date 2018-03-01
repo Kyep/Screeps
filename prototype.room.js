@@ -76,7 +76,7 @@ Room.prototype.deleteConstructionSites = function() {
     return csites.length;
 }
 
-Room.prototype.checkStructures = function() {
+Room.prototype.checkStructures = function(verbose) {
     var always_blacklist = ['container', 'link', 'lab', 'road'];
     var newly_built = 0;
     if (!this.isMine()) {
@@ -129,7 +129,7 @@ Room.prototype.checkStructures = function() {
         newly_built += this.convertFlagsToStructures(skey, intended - actual, silent);
         
     }
-    if (r_messages.length > 0) {
+    if (verbose && r_messages.length > 0) {
         console.log(this.name + ': ' + r_messages );
     }
     return newly_built;
@@ -800,22 +800,24 @@ Room.prototype.updateAlert = function(enemy_details, nuke_details) {
     return thisalert;
 }
 
-Room.prototype.destroyHostileSpawns = function() {
+Room.prototype.clearHostileStructures = function() {
     var stuff_destroyed = 0;
     var enemy_structures = this.find(FIND_HOSTILE_STRUCTURES); 
+    var types_to_keep = [STRUCTURE_TERMINAL, STRUCTURE_NUKER, STRUCTURE_OBSERVER, STRUCTURE_RAMPART]
     for (var i = 0; i < enemy_structures.length; i++) {
-        if(enemy_structures[i].structureType != undefined && enemy_structures[i].structureType == STRUCTURE_SPAWN) {
+        var stype = enemy_structures[i].structureType;
+        if(!types_to_keep.includes(stype)) {
             enemy_structures[i].destroy();
             stuff_destroyed++;
         }
     }
-    /*
+
     var enemy_csites = this.find(FIND_HOSTILE_CONSTRUCTION_SITES);
     for (var i = 0; i < enemy_csites.length; i++) {
         enemy_csites[i].remove();
         stuff_destroyed++;
     }
-    */
+
     console.log(stuff_destroyed);
 
     return stuff_destroyed;
@@ -872,9 +874,19 @@ Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, 
     var rbap = spawner.getRoleBodyAndProperties(role);
     var partlist = rbap['body'];
     var renew_allowed = rbap['renew_allowed'];
-    var result = SPAWNCUSTOM(spawner, '', partlist, role, 
-                        '', targetroomname, global.UNIT_COST(empire_workers[role]['body']), 
-                        homeroom, dest_x, dest_y, 0, roompath);
+    var crmemory = {};
+    crmemory[MEMORY_ROLE] = role;
+    crmemory[MEMORY_DEST] = targetroomname;
+    crmemory[MEMORY_DEST_X] = dest_x;
+    crmemory[MEMORY_DEST_Y] = dest_y;
+    crmemory[MEMORY_NEXTDEST] = roompath;
+    crmemory[MEMORY_HOME] = homeroom;
+    crmemory[MEMORY_HOME_X] = spawner.pos.x;
+    crmemory[MEMORY_HOME_Y] = spawner.pos.y;
+    
+    var result = SPAWN_VALIDATED(spawner, '', partlist, crmemory)
+    
+    //var result = SPAWNCUSTOM(spawner, '', partlist, role, '', targetroomname, global.UNIT_COST(empire_workers[role]['body']), homeroom, dest_x, dest_y, 0, roompath);
     return result;
 }
 

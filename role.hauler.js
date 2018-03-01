@@ -70,7 +70,7 @@ module.exports = {
                 
                 // And finally, issue a warning if there are multiple containers at a source.
                 if (nearby_containers.length > 1) {
-                    console.log(creep.name + ": warning: multiple containers detected.");
+                    console.log(creep.name + ": warning: multiple containers detected in " + creep.room.name);
                 }
                 return 0;
             }

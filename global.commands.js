@@ -11,10 +11,10 @@ global.REPORT_RES_HAVE = function() {
     }
 }
 
-global.REPORT_STRUCTURES = function() {
+global.REPORT_STRUCTURES = function(verbose) {
     var ns = 0;
     for (var rname in Game.rooms) {
-        ns += Game.rooms[rname].checkStructures();
+        ns += Game.rooms[rname].checkStructures(verbose);
     }
     return ns;
 }
@@ -32,8 +32,15 @@ global.REPORT_CSITES = function() {
 }
 
 
-global.REPORT_TERMINALS = function() {
-    for (var rname in Game.rooms) { if(Game.rooms[rname].terminal) { console.log(rname + ' ' + JSON.stringify(Game.rooms[rname].terminal.store)); } }
+global.REPORT_TERMINALS = function(mintype) {
+    for (var rname in Game.rooms) { 
+        if(Game.rooms[rname].terminal) { 
+            if (mintype && Game.rooms[rname].terminal.store[mintype] == undefined) {
+                continue;
+            }
+            console.log(rname + ' ' + JSON.stringify(Game.rooms[rname].terminal.store));
+        }
+    }
 }
 
 global.REPORT_WORKERS = function() {
@@ -200,26 +207,6 @@ global.SPAWN_EVERYWHERE = function (btype) {
     }
 }
 
-
-global.ATTACK_WAVE = function (spawn_list, unit_type, dest_room, roompath) {
-    if (spawn_list.length < 1) {
-        console.log('arg 1 must be spawn_list');
-        return;
-    }
-    if (unit_type == undefined) {
-        console.log('arg 2 must be unit_type');
-        return;
-    }
-    if (dest_room == undefined) {
-        console.log('arg 3 must be dest_room');
-        return;
-    }
-
-    for (var i = 0; i < spawn_list.length; i++) {
-        var suresult = SPAWN_UNIT(spawn_list[i], unit_type, dest_room, roompath);
-        console.log(spawn_list[i].name + ': ' + suresult);
-    }
-}
 
 global.ROOMLIST_ATTACK_WAVE = function (roomlist, unit_type, dest_room, roompath, dest_x, dest_y) {
     if (roomlist == undefined) {
@@ -449,7 +436,7 @@ global.LAUNCH_NUKE = function(roomname) {
             var using_primary = gsapfr[1];
             
             if (spawner != undefined) {
-                var suresult = SPAWN_UNIT(spawner.name, 'nuketech', thenuker.room.name, []);
+                var suresult = thenuker.room.createUnit('nuketech');
                 console.log('Spawning nuke refiller: ' + suresult);
             } else {
                 console.log('Unable to spawn nuke refiller... all spawns may be busy.');

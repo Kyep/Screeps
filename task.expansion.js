@@ -2,6 +2,19 @@
 
 module.exports = {
     process: function(){
+
+        // 1. add room to config.empire, with primary spawn room (itself) and backup spawn room (where the claimer will come from)
+        // 2. send the claimer: Game.rooms[X].createUnit('claimer',TARGET_ROOM); plus a few siege units to destroy any existing spawns/etc
+        // 3. drop a flag (yellow/red) in the target room to mark where the spawn should be.
+        // 4. 
+
+
+
+
+
+
+
+
         var rooms_to_claim = Memory['rooms_to_claim'];
         if (rooms_to_claim == undefined) {
             Memory['rooms_to_claim'] = {}

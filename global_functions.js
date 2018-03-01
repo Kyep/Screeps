@@ -201,77 +201,53 @@ global.REFRESH_CREEPS = function() {
     return nc;
 }
 
-global.SPAWN_UNIT = function (spawnername, role, targetroomname, roompath, homeroom) {
-    if (Game.spawns[spawnername] == undefined) {
-        console.log('No such spawner.');
-        return 0;
+
+global.VALIDATE_CREEP_MEMORY_OBJECT = function (obj) {
+    if (obj == undefined) {
+        console.log('VALIDATE_CREEP_MEMORY_OBJECT passed empty object');
+        return false;
     }
-    if (homeroom == undefined) {
-        homeroom = Game.spawns[spawnername].room.name;
+    var req_memory = [MEMORY_ROLE, MEMORY_DEST, MEMORY_DEST_X, MEMORY_DEST_Y, MEMORY_HOME, MEMORY_HOME_X, MEMORY_HOME_Y, MEMORY_RENEW];
+    for (var i = 0; i < req_memory.length; i++) {
+        var this_mem = req_memory[i];
+        if (obj[this_mem] == undefined) {
+            console.log('VALIDATE_CREEP_MEMORY_OBJECT passed memory object lacking: ' + this_mem);
+            return false;
+        }
     }
-    if ( empire_workers[role] == undefined) {
-        console.log('Invalid role');
-        return 0;
-    }
-    if ( empire_workers[role]['noresize'] != undefined) {
-        if ( empire_workers[role]['noresize'] == 1) {
-            console.log('That role requires resizing.');
-            return 0;
-        }        
-    }
-    if (roompath == undefined) {
-        roompath = [];
-    }
-    var the_spawner = Game.spawns[spawnername];
-    var rbap = the_spawner.getRoleBodyAndProperties(role);
-    var partlist = rbap['body'];
-    var renew_allowed = rbap['renew_allowed'];
-    var result = SPAWNCUSTOM(Game.spawns[spawnername], '', partlist, role, 
-                        '', targetroomname, global.UNIT_COST(empire_workers[role]['body']), 
-                        homeroom, 25, 
-                        25, 0, roompath);
-    return result;
+    return true;
+    
 }
 
+global.SPAWN_COUNT = function () {
+    var sc = Memory['spawn_count'];
+    if (sc == undefined || sc > 999) { sc = 0; }
+    sc++;
+    Memory['spawn_count'] = sc;
+    return sc;
+}
 
-
-global.SPAWNCUSTOM = function (spawner, sname, partlist, roletext, sourcetext, targettext, thecost, homesector, dest_x, dest_y, renew_allowed, nextdest){
-    if (Memory['spawn_count'] == undefined) {
-        Memory['spawn_count'] = 0;
+global.SPAWN_VALIDATED = function (spawner, crnameprefix, bodylist, memory_object){
+    var memvalid = VALIDATE_CREEP_MEMORY_OBJECT(memory_object);
+    if (memvalid !== true) {
+        console.log("SPAWN: failed to create: " + sname + " because memory validation failed: " + JSON.stringify(memory_object));
+        return false;
     }
-    if (Memory['spawn_count'] > 999) {
-        Memory['spawn_count'] = 0;
-    }
-    var crname = sname + '_' + roletext + '_' + Memory['spawn_count'];
-    if(empire_workers[roletext] != undefined && empire_workers[roletext]['abbr'] != undefined) {
-        crname = sname + '_' + empire_workers[roletext]['abbr'] + '_' + Memory['spawn_count'];
+    var spawn_count = SPAWN_COUNT();
+    var crname = crnameprefix + '_' + memory_object[MEMORY_ROLE] + '_' + spawn_count;
+    if(empire_workers[memory_object[MEMORY_ROLE]] != undefined && empire_workers[memory_object[MEMORY_ROLE]]['abbr'] != undefined) {
+        crname = crnameprefix + '_' + empire_workers[memory_object[MEMORY_ROLE]]['abbr'] + '_' + spawn_count;
     }
     if (Game.creeps[crname] != undefined) {
         console.log("SPAWN: failed to create: " + crname + " as that name is already taken.");
-        Memory['spawn_count'] += 1;
-        return -1;
+        return false;
     }
-    var crmemory = {};
-    crmemory[MEMORY_ROLE] = roletext;
-    crmemory[MEMORY_SOURCE] = sourcetext;
-    crmemory[MEMORY_DEST] = targettext;
-    crmemory[MEMORY_DEST_X] = dest_x;
-    crmemory[MEMORY_DEST_Y] = dest_y;
-    crmemory[MEMORY_HOME] = homesector;
-    crmemory[MEMORY_HOME_X] = spawner.pos.x;
-    crmemory[MEMORY_HOME_Y] = spawner.pos.y;
-    crmemory[MEMORY_SPAWNERNAME] = spawner.name;
-    crmemory[MEMORY_SPAWNERROOM] = spawner.room.name;
-    crmemory[MEMORY_RENEW] = renew_allowed;
-    crmemory[MEMORY_NEXTDEST] = nextdest;
-    var result = spawner.createCreep(partlist, crname, crmemory);
-    console.log(spawner.name + ': (' + result + ') ' + crname + ' -> ' + targettext);
-
-    Memory['spawn_count'] += 1;
+    memory_object[MEMORY_SPAWNERNAME] = spawner.name;
+    memory_object[MEMORY_SPAWNERROOM] = spawner.room.name;
+    var result = spawner.createCreep(bodylist, crname, memory_object);
+    //console.log(spawner.name + ': (' + result + ') ' + crname + ' -> ' + memory_object[MEMORY_DEST]);
     return result;
 }
-
-
 
 global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname, force) {
     var ourconf = global.GET_ROOM_CONFIG(theroomname);

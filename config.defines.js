@@ -54,7 +54,7 @@ global.JOB_USELINK = 'uselink'
 global.JOB_HIDE = 'hide';
 global.JOB_DISMANTLE = 'dismantle';
 
-// Rooms, top level categories
+// Rooms, top level memory categories
 global.MEMORY_ROAD_NETWORK = 'road_network';
 global.MEMORY_RCONFIG = 'rconfig';
 

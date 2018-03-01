@@ -18,11 +18,10 @@ module.exports = {
                                 creep.moveToRUP(creep.room.controller);
                             }
                         } else {
-                            var victims = creep.room.destroyHostileSpawns();
-                            if (victims > 0) {
-                                creep.suicide();
-                            }
-                            creep.sleepFor(25);
+                            var victims = creep.room.clearHostileStructures();
+                            creep.room.fullUpdate();
+                            creep.room.checkStructures();
+                            creep.suicide();
                         }
                     }            
                 } else {
