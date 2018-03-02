@@ -114,7 +114,7 @@ module.exports = {
                             target = creep.getClosestHostileStructureInTypes(valid_types2);
                         }
                     } else {
-                        target = creep.getClosestHostileStructureInTypes(valid_types3);
+                        target = creep.getClosestHostileStructureInTypes([]);
                     }
                 }
             }
@@ -139,7 +139,7 @@ module.exports = {
             }
         }
         
-        
+        creep.avoidEdges();
         return;
         
         

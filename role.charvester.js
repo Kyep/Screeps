@@ -11,9 +11,6 @@ module.exports = {
         //       
         // FLOW: JOB_TRAVEL_OUT -> JOB_HARVEST -> EXPIRES FROM TTL.
         // If attacked, -> JOB_HIDE, then back to JOB_TRAVEL_OUT.
-        if (creep.memory[MEMORY_JOB] == undefined) {
-            creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
-        }
         if(Game.time % 5 === 0) {
             if (creep.getShouldHide()) {
                 creep.memory[MEMORY_JOB] = JOB_HIDE;
@@ -28,22 +25,20 @@ module.exports = {
             } else {
                 creep.moveToDestination();
             }
-        }
-        if (creep.memory[MEMORY_JOB] == JOB_HIDE) {
+        } else if (creep.memory[MEMORY_JOB] == JOB_HIDE) {
             if (creep.getShouldHide()) {
                 jobHide.run(creep);
             } else {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
             }
-        }
-        if (creep.memory[MEMORY_JOB] == JOB_HARVEST) {
+        } else if (creep.memory[MEMORY_JOB] == JOB_HARVEST) {
 
             if (!creep.isAtDestination()) {
                 creep.moveToDestination();
                 return;
             }
             var harvestresult = jobHarvest.run(creep);
-            if (harvestresult == ERR_NOT_ENOUGH_ENERGY && Game.time % 3 == 0) {
+            if (harvestresult == ERR_NOT_ENOUGH_ENERGY && Game.time % 10 == 0) {
                 var energypile = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: (s) => s.energy > 0});
                 if(energypile.length){
                     creep.say('pile!');
@@ -81,6 +76,8 @@ module.exports = {
                 console.log(creep.name + ': out of place from container');
                 creep.moveToRUP(csites[0]);
             }
+        } else {
+            creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
         }
     }
 };

@@ -1,3 +1,37 @@
+global.CHECK_HAULER_BODIES = function() {
+    var combined = {}
+    for (var crname in Game.creeps) {
+        var cr = Game.creeps[crname];
+        if (cr.memory[MEMORY_ROLE] != 'hauler') {
+            continue;
+        }
+        var cps = cr.getActiveBodyparts(CARRY);
+        if (combined[cr.memory[MEMORY_SOURCE]] == undefined) {
+            combined[cr.memory[MEMORY_SOURCE]] = {'needed': 0, 'actual': 0};
+        }
+        combined[cr.memory[MEMORY_SOURCE]]['actual'] += cps;
+    }
+    for (var rname in Game.rooms) {
+        var rconfig = Game.rooms[rname].getConfig();
+        if (!rconfig) { continue; }
+        if (rconfig['spawn_room'] == rname) { continue; }
+        for (var skey in rconfig['sources']) {
+            var ts = rconfig['sources'][skey];
+            var steps = ts['steps'];
+            var intended = CARRY_PARTS(3000, steps);
+            if (combined[skey] == undefined) {
+                combined[skey] = {'needed': 0, 'actual': 0};
+            }
+            combined[skey]['needed'] += intended;
+        }
+    }
+    for (var skey in combined) {
+        var actual = combined[skey]['actual'];
+        var needed = combined[skey]['needed'];
+        console.log(skey + ': ' + actual + ' / ' + needed);   
+    }
+}
+
 global.REPORT_RES_HAVE = function() {
     for (var rname in Game.rooms) {
         var robj = Game.rooms[rname];

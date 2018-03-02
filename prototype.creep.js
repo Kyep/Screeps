@@ -62,12 +62,13 @@ Creep.prototype.getClosestDismantableStructure = function(include_public_rampart
 
 
 Creep.prototype.getClosestHostileStructureInTypes = function(valid_types) {
+    if (valid_types == undefined) { valid_types = []; }
     return this.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
         filter: function(s){
             if (s.isInvincible()) {
                 return false
             }
-            if(!valid_types.includes(s.structureType)) {
+            if(valid_types.length && !valid_types.includes(s.structureType)) {
                 return false; 
             }
             if (s.owner) {
