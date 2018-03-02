@@ -94,9 +94,11 @@ module.exports = {
                         if (this_obj && this_obj.hits) {
                             target = this_obj;
                             creep.memory[MEMORY_FRUSTRATION] = 0;
+                            got_a_target = true;
                             break;
+                        } else {
+                            flag.remove();
                         }
-                        //flag.remove();
                     }
                 } else {
                     var valid_types = [STRUCTURE_SPAWN];

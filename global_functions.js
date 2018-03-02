@@ -62,6 +62,10 @@ global.RESET_ALL_LABS = function() {
 
 global.UNIT_COST = function (thebody) {
     var total_cost = 0;
+    if (!thebody) {
+        console.log('UNIT_COST: called with no body argument!');
+        return total_cost;
+    }
     for(var i = 0; i < thebody.length; i++) {
         var this_part = thebody[i].toLowerCase();
         if (BODYPART_COST[this_part] == undefined) {
@@ -156,13 +160,61 @@ global.TEMPLATE_PROPERTIES = function (template_name) {
         var hps = heal_parts * HEAL_POWER;
         retval['hps'] = hps;
     }
-    retval['parts'] = thebody;
     console.log(JSON.stringify(retval));
+    retval['parts'] = thebody;
+
     return retval;
 }
 
 
-global.CARRY_PARTS = (capacity, steps) => Math.ceil(capacity / ENERGY_REGEN_TIME * 2 * steps / CARRY_CAPACITY);
+global.CARRY_PARTS = function (capacity, steps) {
+    var p = Math.ceil(capacity / ENERGY_REGEN_TIME * 2 * steps / CARRY_CAPACITY);
+    //if (p % 2) { p++; } // makes it even by adding one. We get two CARRYs for the sake of a MOVE, anyway, so no point not having it.
+    return p;
+}
+
+global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid, max_cost) {
+    var sinfo = GET_SOURCE_INFO(roomid, sourceid);
+    if (sinfo) {
+        if (sinfo['carry_per_hauler']) {
+            //console.log('CONSTRUCT_HAULER_BODY: success: GET_SOURCE_INFO(' + roomid + ',' + sourceid +') carryparts:' + sinfo['carry_per_hauler']); 
+            var partlist = [WORK, MOVE];
+            for (var i = 0; i < Math.floor(sinfo['carry_per_hauler'] / 2); i++) {
+                partlist.push(CARRY);
+                partlist.push(CARRY);
+                partlist.push(MOVE);
+            }
+            return partlist;
+        } else {
+            console.log('CONSTRUCT_HAULER_BODY: call returned a sinfo without carry_per_hauler: GET_SOURCE_INFO(' + roomid + ',' + sourceid +')'); 
+        }
+    } else {
+        console.log('CONSTRUCT_HAULER_BODY: call failed: GET_SOURCE_INFO(' + roomid + ',' + sourceid +')');
+    }
+
+    var sourcecapacity = 1500;
+    var steps = 60;
+    
+    /*var exactsteps = GET_STEPS_TO_SOURCE(roomid, sourceid);
+    if (exactsteps != undefined) {
+        steps = exactsteps;
+    }*/
+    //console.log('S: ' + sourcecapacity + ' Y: ' + steps);
+    var carry_parts = global.CARRY_PARTS(sourcecapacity, steps);
+    var partlist = [WORK, MOVE];
+    for (var i = 0; i < Math.floor(carry_parts / 2); i++) {
+        if ((UNIT_COST(partlist) + UNIT_COST([CARRY, CARRY, MOVE])) > max_cost) {
+            console.log(roomid + ': Trying to build a hauler of ' + ((carry_parts / 2) - i) + ' bigger size than our spawner allows. Capping it.');
+            break;
+        }
+        partlist.push(CARRY);
+        partlist.push(CARRY);
+        partlist.push(MOVE);
+    }
+    return partlist;
+}
+
+/*
 global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid, max_cost) {
     var sourcecapacity = 1500;
     var steps = 100;
@@ -184,7 +236,7 @@ global.CONSTRUCT_HAULER_BODY = function (roomid, sourceid, max_cost) {
     }
     return partlist;
 }
-
+*/
 
 global.CONSTRUCT_RESERVER_BODY = function (resticksremaining, maxroomenergy) {
     if (resticksremaining > 2000 || maxroomenergy < 1300) {
@@ -195,15 +247,35 @@ global.CONSTRUCT_RESERVER_BODY = function (resticksremaining, maxroomenergy) {
 }
 
 
-global.REFRESH_CREEPS = function() {
+global.REFRESH_CREEPS = function(role) {
     var nc = 0;
     for (var cr in Game.creeps) {
+        if (role && Game.creeps[cr].memory[MEMORY_ROLE] != role) {
+            continue;
+        }
        Game.creeps[cr].disableRenew(); 
        nc++;
     }
     return nc;
 }
 
+global.SUICIDE_ROLE = function(role, source) {
+    if (!role) {
+        return false;
+    }
+    var nc = 0;
+    for (var cr in Game.creeps) {
+        if (Game.creeps[cr].memory[MEMORY_ROLE] != role) {
+            continue;
+        }
+        if (source && Game.creeps[cr].memory[MEMORY_SOURCE] != source) {
+            continue;
+        }
+       Game.creeps[cr].suicide(); 
+       nc++;
+    }
+    return nc;
+}
 
 global.VALIDATE_CREEP_MEMORY_OBJECT = function (obj) {
     if (obj == undefined) {

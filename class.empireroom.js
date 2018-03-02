@@ -2,7 +2,18 @@
 
 // New 3/1/2018 code for abstracting the management of empire rooms
 
-
+Room.prototype.getMaxCarryPartsPerHauler = function() {
+    if (!this.isMine()) {
+        return 0;
+    }
+	var ebudget = (this.energyCapacityAvailable - 150); // for the work part, and the move part it requires.
+	var num_blocks = Math.floor(ebudget / 150); // each block is 2 CARRY, 1 MOVE, on roads.
+	var carry_parts = num_blocks * 2;
+	if (carry_parts > 32) { 
+	    carry_parts = 32; // plus 16 move parts (48) plus a WORK part (49) plus that work part's move part (50);
+	}
+	return carry_parts;
+}
 
 global.GET_ROOM_CONFIG = function(rname) {
     if (!Memory.rooms[rname] || !Memory.rooms[rname][MEMORY_RCONFIG]) {
@@ -32,14 +43,13 @@ global.ADD_ROOM_KEY_ASSIGNMENT = function(rconfig, sourceidorkey, ass_object, pr
     return rconfig;
 }
 
-global.GET_STEPS_TO_SOURCE = function(rname, sid) {
+global.GET_SOURCE_INFO = function(rname, sid) {
     if (Memory.rooms[rname] 
         && Memory.rooms[rname][MEMORY_RCONFIG]
         && Memory.rooms[rname][MEMORY_RCONFIG]['sources']
         && Memory.rooms[rname][MEMORY_RCONFIG]['sources'][sid]
-        && Memory.rooms[rname][MEMORY_RCONFIG]['sources'][sid]['steps']
     ) {
-        return Memory.rooms[rname][MEMORY_RCONFIG]['sources'][sid]['steps'];
+        return Memory.rooms[rname][MEMORY_RCONFIG]['sources'][sid];
     }
     return undefined;
 }
@@ -166,8 +176,8 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
                         console.log(spawner.name + ': UNDEFINED ROLE: ' + role);
                         continue;
                     }
-                    //console.log(rname + '(' + sname + ') short ' + advised_spawns[pname][rname][sname][role] + ' of ' + role);
-                    var rbap = spawner.getRoleBodyAndProperties(role, rname, skey);
+                    //console.log('GET_SPAWN_QUEUE from ' + pname + '/' + rname + ' is calling ' +  spawner.name + '(' + spawner.room.name +').RBAP(' + role + ', ' + rname + ',' + skey+') maybe should be ' + sname);
+                    var rbap = spawner.getRoleBodyAndProperties(role, rname, sname);
                     var partlist = rbap['body'];
                     var aiscript = rbap['aiscript'];
                     if(rbap['renew_allowed'] == 0) {
@@ -365,6 +375,17 @@ Room.prototype.makeAssignments = function(myconf) {
         this.memory[MEMORY_RCONFIG] = myconf;
         return myconf;
     }
+    
+    var spawn_room = myconf['spawn_room'];
+    if (!spawn_room) {
+        console.log(this.name + ': makeAssignments got asked to assign units here, when we have no idea of which room is our spawn!');
+        return myconf;
+    }
+    if (!Game.rooms[spawn_room]) {
+        console.log(this.name + ': makeAssignments got asked to assign units here, when have no vision of our spawn room: ' + spawn_room);
+        return myconf;
+    }
+
     var rlvl = this.getLevel();
     if (rlvl > 3) {
         // We are a normal base
@@ -404,6 +425,9 @@ Room.prototype.makeAssignments = function(myconf) {
         var sro = Game.rooms[srn];
         if (sro) {
             var srl = sro.getLevel();
+            var max_carry = sro.getMaxCarryPartsPerHauler();
+            //
+            
             if (srl < 4) {
                 for (var skey in myconf['sources']) {
                     myconf = this.setSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf['sources'][skey]['steps']); 
@@ -411,15 +435,33 @@ Room.prototype.makeAssignments = function(myconf) {
             } else if (myconf['scount'] > 1 || true) {
                 var snum = 1;
                 for (var skey in myconf['sources']) {
+
+                    myconf['sources'][skey]['carry_total'] = CARRY_PARTS(3000, myconf['sources'][skey]['steps']);
+                    myconf['sources'][skey]['carry_per_hauler'] = myconf['sources'][skey]['carry_total'];
+                    myconf['sources'][skey]['max_carry'] = max_carry;
+                    var hauler_count = 1;
+                    if (myconf['sources'][skey]['carry_per_hauler'] > max_carry) {
+                        hauler_count = 2;
+                        myconf['sources'][skey]['carry_per_hauler'] = Math.floor(myconf['sources'][skey]['carry_per_hauler'] / 2);
+                    }
+
                     if (snum == 1) {
                         myconf = this.setSourceAssignment(myconf, 'reserver', { 'reserver': 1 }, myconf['sources'][skey]['steps']);
                     }
-                    myconf = this.setSourceAssignment(myconf, skey, { 'c30harvester': 1, 'hauler': 2}, myconf['sources'][skey]['steps']);
+                    myconf = this.setSourceAssignment(myconf, skey, { 'c30harvester': 1, 'hauler': hauler_count}, myconf['sources'][skey]['steps']);
                     snum++;
                 }
             } else {
                 for (var skey in myconf['sources']) {
-                    myconf = this.setSourceAssignment(myconf, skey, { 'c15harvester': 1, 'hauler': 1}, myconf['sources'][skey]['steps']);  
+                    myconf['sources'][skey]['carry_total'] = CARRY_PARTS(1500, myconf['sources'][skey]['steps']);
+                    myconf['sources'][skey]['carry_per_hauler'] = myconf['sources'][skey]['carry_total'];
+                    myconf['sources'][skey]['max_carry'] = max_carry;
+                    var hauler_count = 1;
+                    if (myconf['sources'][skey]['carry_per_hauler'] > max_carry) {
+                        hauler_count = 2;
+                        myconf['sources'][skey]['carry_per_hauler'] = Math.floor(myconf['sources'][skey]['carry_per_hauler'] / 2);
+                    }
+                    myconf = this.setSourceAssignment(myconf, skey, { 'c15harvester': 1, 'hauler': hauler_count}, myconf['sources'][skey]['steps']);  
                 }
             }
         } else {

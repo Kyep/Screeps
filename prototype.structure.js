@@ -112,6 +112,7 @@ StructureSpawn.prototype.getRoleBodyAndProperties = function(roletext, tgtroom, 
         }
         partlist = CONSTRUCT_RESERVER_BODY(ticksrem, this.room.energyCapacityAvailable);
     } else if(roletext == 'hauler') {
+        //console.log('getRoleBodyAndProperties: ' + this.name + ' in ' + this.room.name + ' is evaluating: ' + tgtroom + ' / ' + tgtsource);
         partlist = CONSTRUCT_HAULER_BODY(tgtroom, tgtsource, this.room.energyCapacityAvailable);
     } else if (empire_workers[roletext]['noresizing'] == undefined) {
         for (var k = 0; k < part_template.length; k++) {

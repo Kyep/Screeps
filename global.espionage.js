@@ -324,7 +324,8 @@ global.ESPIONAGE = function() {
                 if (theroom.controller.safeMode) {
                     Memory['espionage']['rooms'][rname]['safemode_until'] = Game.time + theroom.controller.safeMode;
                 }
-                theroom.updateAssignments();
+                //theroom.updateAssignments();
+                theroom.fullUpdate();
             }
 
             var enemy_structures = theroom.getHostileStructures();

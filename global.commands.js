@@ -1,4 +1,4 @@
-global.CHECK_HAULER_BODIES = function() {
+global.CHECK_HAULER_BODIES = function(sid) {
     var combined = {}
     for (var crname in Game.creeps) {
         var cr = Game.creeps[crname];
@@ -6,10 +6,17 @@ global.CHECK_HAULER_BODIES = function() {
             continue;
         }
         var cps = cr.getActiveBodyparts(CARRY);
-        if (combined[cr.memory[MEMORY_SOURCE]] == undefined) {
-            combined[cr.memory[MEMORY_SOURCE]] = {'needed': 0, 'actual': 0};
+        if (combined[cr.memory[MEMORY_DEST]] == undefined) {
+            combined[cr.memory[MEMORY_DEST]] = {}
         }
-        combined[cr.memory[MEMORY_SOURCE]]['actual'] += cps;
+        if (combined[cr.memory[MEMORY_DEST]][cr.memory[MEMORY_SOURCE]] == undefined) {
+            combined[cr.memory[MEMORY_DEST]][cr.memory[MEMORY_SOURCE]] = {'needed': 0, 'actual': 0, 'cr': 0};
+        }
+        if (sid && sid == cr.memory[MEMORY_SOURCE]) {
+            console.log(crname + ' has ' + cps + ' carry parts');
+        }
+        combined[cr.memory[MEMORY_DEST]][cr.memory[MEMORY_SOURCE]]['actual'] += cps;
+        combined[cr.memory[MEMORY_DEST]][cr.memory[MEMORY_SOURCE]]['cr'] += 1;
     }
     for (var rname in Game.rooms) {
         var rconfig = Game.rooms[rname].getConfig();
@@ -18,18 +25,51 @@ global.CHECK_HAULER_BODIES = function() {
         for (var skey in rconfig['sources']) {
             var ts = rconfig['sources'][skey];
             var steps = ts['steps'];
-            var intended = CARRY_PARTS(3000, steps);
-            if (combined[skey] == undefined) {
-                combined[skey] = {'needed': 0, 'actual': 0};
+            var intended = ts['carry_total'];
+            if (!intended) {
+                console.log(JSON.stringify(ts));
             }
-            combined[skey]['needed'] += intended;
+            //CARRY_PARTS(3000, steps);
+            if (combined[rname] == undefined) {
+                combined[rname] = {};
+            }
+            if (combined[rname][skey] == undefined) {
+                combined[rname][skey] = {'needed': 0, 'actual': 0, 'cr': 0};
+            }
+            combined[rname][skey]['needed'] += intended;
         }
     }
-    for (var skey in combined) {
-        var actual = combined[skey]['actual'];
-        var needed = combined[skey]['needed'];
-        console.log(skey + ': ' + actual + ' / ' + needed);   
+    var num_green = 0;
+    var num_yellow = 0;
+    var num_red = 0;
+    for (var rname in combined) {
+        var s_msgs = []
+        for (var skey in combined[rname]) {
+            var actual = combined[rname][skey]['actual'];
+            var needed = combined[rname][skey]['needed'];
+            var cr = combined[rname][skey]['cr'];
+            if (sid && skey != sid) {
+                continue;
+            }
+            if (actual == needed) {
+                actual = '<font color="green">' + actual + '</font>';
+                num_green++;
+            } else if (actual > needed) {
+                actual = '<font color="yellow">' + actual + '</font>';
+                num_yellow++;
+            } else {
+                actual =  '<font color="red">' + actual + '</font>';
+                num_red++;
+            }
+            var crtext = '';
+            if (cr != undefined && cr > 1) {
+                crtext = '(' + cr + ')';
+            }
+            s_msgs.push(skey + ': ' + actual + crtext + ' / ' + needed);   
+        }
+        console.log(rname + ': ' + s_msgs.join(', '));
     }
+    console.log('<font color="green">' + num_green + '</font>, <font color="yellow">' + num_yellow + '</font>,  <font color="red">' + num_red + '</font>');
 }
 
 global.REPORT_RES_HAVE = function() {

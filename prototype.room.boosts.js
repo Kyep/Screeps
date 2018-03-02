@@ -122,6 +122,9 @@ Room.prototype.getLabsForBooster = function(btype) {
 }
 
 Room.prototype.ensureLabTech = function() {
+    if (!this.terminal) {
+        return false;
+    }
     var num_techs = this.countCreepsWithRole('labtech');
     if (!num_techs) {
         this.createUnit('labtech', this.name, [], this.name, 25, 25, true);

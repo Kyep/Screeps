@@ -889,6 +889,7 @@ Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, 
             return 0;
         }        
     }
+    //console.log('createunit is calling RBAP with role: ' + role + ' from spawner' + spawner.name);
     var rbap = spawner.getRoleBodyAndProperties(role);
     var partlist = rbap['body'];
     var renew_allowed = rbap['renew_allowed'];
