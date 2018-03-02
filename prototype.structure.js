@@ -70,10 +70,10 @@ StructureSpawn.prototype.getRoleBodyAndProperties = function(roletext, tgtroom, 
         console.log('getBodyForRole error: ' + roletext + ' has no defined body in empire.');
         return undefined;
     }
-    if (empire_workers[roletext]['aiscript'] == undefined) {
+    /*if (empire_workers[roletext]['aiscript'] == undefined) {
         console.log('getBodyForRole error: ' + roletext + ' has no defined aiscript in empire.');
         return undefined;
-    }
+    }*/
     var part_template = empire_workers[roletext]['body'];
     retval['aiscript'] = empire_workers[roletext]['aiscript'];
     var partlist = [];

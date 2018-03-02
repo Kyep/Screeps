@@ -210,7 +210,7 @@ global.VALIDATE_CREEP_MEMORY_OBJECT = function (obj) {
         console.log('VALIDATE_CREEP_MEMORY_OBJECT passed empty object');
         return false;
     }
-    var req_memory = [MEMORY_ROLE, MEMORY_AISCRIPT, MEMORY_DEST, MEMORY_DEST_X, MEMORY_DEST_Y, MEMORY_HOME, MEMORY_HOME_X, MEMORY_HOME_Y, MEMORY_RENEW];
+    var req_memory = [MEMORY_ROLE, MEMORY_DEST, MEMORY_DEST_X, MEMORY_DEST_Y, MEMORY_HOME, MEMORY_HOME_X, MEMORY_HOME_Y, MEMORY_RENEW];
     for (var i = 0; i < req_memory.length; i++) {
         var this_mem = req_memory[i];
         if (obj[this_mem] == undefined) {
