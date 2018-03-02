@@ -43,6 +43,51 @@ global.REPORT_TERMINALS = function(mintype) {
     }
 }
 
+global.MINERAL_INVENTORY = function() {
+    var minobj = {}
+    for (var rname in Game.rooms) { 
+        if(Game.rooms[rname].isMine() && Game.rooms[rname].terminal) { 
+            for (var mtype in Game.rooms[rname].terminal.store) {
+                var mcount = Game.rooms[rname].terminal.store[mtype];
+                if (!minobj[mtype]) {
+                    minobj[mtype] = 0;
+                }
+                minobj[mtype] += mcount;
+            }
+        }
+    }
+    return minobj;
+}
+
+global.MINERAL_REACTION_COUNT = function(mname) {
+    var reobj = REACTIONS[mname];
+    if (!reobj) {
+        return 0;
+    }
+    return Object.keys(reobj).length;
+}
+
+global.SHOW_MINERALS = function(mintype) {
+    var minobj = global.MINERAL_INVENTORY();
+    for (var mt in minobj) {
+        console.log(mt + ': ' + minobj[mt]);
+    }
+
+    for (var method in BOOSTS) {
+        console.log(method);
+        for (var chem in BOOSTS[method]) {
+            var bprops = BOOSTS[method][chem];
+            var bpropstr = Object.keys(bprops).join(', ');
+            var amt = 0;
+            if (minobj[chem]) {
+                amt = minobj[chem];
+            }
+            console.log(' - ' + chem + ': (' + bpropstr + '): ' + amt);
+        }
+    }
+
+}
+
 global.REPORT_WORKERS = function() {
     if (Memory['config.reportworkers']) {
         Memory['config.reportworkers'] = false;
@@ -118,7 +163,7 @@ global.ENERGY_STATUS = function() {
 }
 
 
-global.REPORT_EARNINGS_SOURCES = function() {
+global.REPORT_EARNINGS_SOURCES = function(filtervalue) {
     var report = {}
     for (var cr in Game.creeps) {
         var earnings = Game.creeps[cr].getEarnings(); 
@@ -154,13 +199,17 @@ global.REPORT_EARNINGS_SOURCES = function() {
         var r_t = 0;
         for (sname in report[rname]) {
             report[rname][sname]['ept'] = Math.round(report[rname][sname]['earnings'] / report[rname][sname]['ticks']);
-            console.log(rname + '/' + sname + ': has earned ' + report[rname][sname]['earnings'] + ' over ' + report[rname][sname]['ticks'] + ' or EPT: ' + report[rname][sname]['ept']); 
+            if (filtervalue == undefined || report[rname][sname]['ept'] < filtervalue) {
+                console.log(rname + '/' + sname + ': has earned ' + report[rname][sname]['earnings'] + ' over ' + report[rname][sname]['ticks'] + ' or EPT: ' + report[rname][sname]['ept']); 
+            }
             r_e += report[rname][sname]['earnings'];
             r_t += report[rname][sname]['ticks'];
         }
         var r_ept = Math.round(r_e/r_t);
         report[rname]['ept'] = r_ept;
-        console.log(rname +'/ALL has earned ' + r_e + ' over ' + r_t + ' or EPT: ' + r_ept); 
+        if (filtervalue == undefined || r_ept < filtervalue) {
+            console.log(rname +'/ALL has earned ' + r_e + ' over ' + r_t + ' or EPT: ' + ROUND_NUMBER_TO_PLACES(r_ept, 2)); 
+        }
     }
 
 }
@@ -429,18 +478,6 @@ global.LAUNCH_NUKE = function(roomname) {
             // Delete the target flag
             target_flag.remove();
             
-            // Spawn a refiller.
-            
-            var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(thenuker.room.name, true);
-            var spawner = gsapfr[0];
-            var using_primary = gsapfr[1];
-            
-            if (spawner != undefined) {
-                var suresult = thenuker.room.createUnit('nuketech');
-                console.log('Spawning nuke refiller: ' + suresult);
-            } else {
-                console.log('Unable to spawn nuke refiller... all spawns may be busy.');
-            }
             return 1;
             
         } else {

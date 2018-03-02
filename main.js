@@ -13,8 +13,10 @@ require('config.flags');
 
 require('prototype.creep');
 require('prototype.room');
+require('prototype.room.boosts');
 require('prototype.structures_all');
 require('prototype.structure');
+require('prototype.source');
 
 require('class.empireroom');
 require('lib.loanuserlist');
@@ -58,11 +60,11 @@ module.exports.loop = function () {
     var cpu_setup_use = Game.cpu.getUsed();
 
     var divisor = 3;
-    if (Game.cpu.bucket < 1000) {
-        console.log('Account: ' + Game.cpu.limit + ', Cycle: ' + Game.cpu.tickLimit + ', Bucket: ' + Game.cpu.bucket);
+    if (Game.cpu.bucket < 8000) {
         divisor = 5;
-        if (Game.cpu.bucket < 8000) {
-            divisor = 10;
+        if (Game.cpu.bucket < 1000) {
+            console.log('Account: ' + Game.cpu.limit + ', Cycle: ' + Game.cpu.tickLimit + ', Bucket: ' + Game.cpu.bucket);
+            divisor = 30;
         }
     }
     for(var name in Memory.creeps) {
@@ -334,6 +336,7 @@ module.exports.loop = function () {
                 } else if (spn.room.energyAvailable >= spawn_queue[spawnername]['thecost']) {
                     var crmemory = {};
                     crmemory[MEMORY_ROLE] = spawn_queue[spawnername]['spawnrole'];
+                    crmemory[MEMORY_AISCRIPT] = spawn_queue[spawnername]['aiscript'];
                     crmemory[MEMORY_SOURCE] = spawn_queue[spawnername]['skey'];
                     crmemory[MEMORY_DEST] = spawn_queue[spawnername]['rname'];
                     crmemory[MEMORY_DEST_X] = spawn_queue[spawnername]['dest_x'];
@@ -344,8 +347,6 @@ module.exports.loop = function () {
                     crmemory[MEMORY_HOME_Y] = spn.pos.y;
                     crmemory[MEMORY_RENEW] = spawn_queue[spawnername]['renew_allowed'];
                     SPAWN_VALIDATED(spn, spawn_queue[spawnername]['sname'], spawn_queue[spawnername]['partlist'], crmemory);
-                    spn.memory['role_spawning'] = spawn_queue[spawnername]['spawnrole'];
-                    spn.memory['dest_spawning'] = spawn_queue[spawnername]['rname'];
                 } else {
                     console.log(spawn_queue[spawnername]['sname'] + ': ' + spawn_queue[spawnername]['spawnrole'] + ' too expensive (' + spawn_queue[spawnername]['thecost'] + '/' + thespawner.room.energyAvailable + '), saving up.');
                 }
@@ -511,7 +512,7 @@ module.exports.loop = function () {
             roleBuilder.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'builderstorage') {
             roleBuilderStorage.run(creep);
-        } else if(creep.memory[MEMORY_ROLE] == 'teller') {
+        } else if(creep.memory[MEMORY_ROLE] == 'teller' || creep.memory[MEMORY_ROLE] == 'miniteller') {
             roleTeller.run(creep, 0);
         } else if(creep.memory[MEMORY_ROLE] == 'teller-towers') {
             roleTeller.run(creep, 1);
@@ -562,17 +563,17 @@ module.exports.loop = function () {
             for (var i = 0; i < creep_cpu_map[pname].length; i++){
                 this_total += creep_cpu_map[pname][i];
             }
-            console.log(pname + ': ' + creep_cpu_map[pname].length + ' creeps taking ' + this_total + ' cpu, avg: ' + this_total / creep_cpu_map[pname].length);
+            console.log(pname + ': ' + creep_cpu_map[pname].length + ' creeps taking ' + ROUND_NUMBER_TO_PLACES(this_total, 2) + ' cpu, avg: ' + ROUND_NUMBER_TO_PLACES(this_total / creep_cpu_map[pname].length, 2));
             if (this_total > highest_cpu_usage) {
                 highest_cpu_usage = this_total;
                 highest_cpu_class = pname;
             }
         }
-        console.log('Best class to optimize: ' + highest_cpu_class + ' with ' + highest_cpu_usage);
+        console.log('Best class to optimize: ' + highest_cpu_class + ' with ' + ROUND_NUMBER_TO_PLACES(highest_cpu_usage, 2));
     }
     
     cpu_creep_use = Game.cpu.getUsed() - cpu_creep_use;
-    if (cpu_reporting) { console.log('CPU cpu_creep_use: ' + cpu_creep_use); }
+    if (cpu_reporting) { console.log('CPU cpu_creep_use: ' + ROUND_NUMBER_TO_PLACES(cpu_creep_use, 2)); }
 
     var total_cpu_used_this_tick = Math.round(Game.cpu.getUsed());
     var cpu_history_max = 100;

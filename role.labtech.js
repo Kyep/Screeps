@@ -36,7 +36,12 @@ module.exports = {
                 }
             } else {
                 if (Game.time % 25 === 0) {
-                    console.log(creep.name + ': short on ' + mymineral + ' in ' + creep.room.name);
+                    if (creep.room.terminal && creep.room.terminal.acquireMineralAmount(mymineral, 3000, 6000)) {
+                        console.log(creep.name + ': short on ' + mymineral + ' in ' + creep.room.name + ' pulled in extra from another room!');
+                    } else {
+                        console.log(creep.name + ': short on ' + mymineral + ' in ' + creep.room.name + ' no others found anywhere!');
+                    }
+                    
                     creep.say('short ' + mymineral); 
                 }
             }

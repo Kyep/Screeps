@@ -5,24 +5,29 @@ module.exports = {
         var assigned_labs = Memory['assigned_labs'];
     
         var product_chains = {}
+        // ZK made in a KEANIUM room - verified
         product_chains[RESOURCE_ZYNTHIUM_KEANITE] = // 1st pre-req for GHODIUM
             {
                 'local_room': 'W58S17',
                 'local_resource': RESOURCE_KEANIUM,
                 'remote_resource': RESOURCE_ZYNTHIUM
             }
+        // UL made in a KEANIUM room
         product_chains[RESOURCE_UTRIUM_LEMERGITE] = // 2nd pre-req for GHODIUM 
             {
-                'local_room': 'W48S18',
+                'local_room': 'W58S17',
                 'local_resource': RESOURCE_LEMERGIUM, 
                 'remote_resource': RESOURCE_UTRIUM
             }
+        // G made in a KEANIUM room
         product_chains[RESOURCE_GHODIUM] = 
             {
-                'local_room': 'W48S18',
+                'local_room': 'W58S17',
                 'local_resource': RESOURCE_UTRIUM_LEMERGITE, 
                 'remote_resource': RESOURCE_ZYNTHIUM_KEANITE
             }
+
+        // ATTACK boosts made in UTRIUM room - VERIFIED
         product_chains[RESOURCE_UTRIUM_HYDRIDE] =  // +100% ATTACK (T1)
             {
                 'local_room': 'W57S14',
@@ -35,24 +40,34 @@ module.exports = {
                 'local_resource': RESOURCE_UTRIUM_HYDRIDE, 
                 'remote_resource': RESOURCE_HYDROXIDE
             }
+        product_chains[RESOURCE_CATALYZED_UTRIUM_ACID] = // +300% ATTACK (T3)
+            {
+                'local_room': 'W57S14',
+                'local_resource': RESOURCE_UTRIUM_ACID, 
+                'remote_resource': RESOURCE_CATALYST
+            }
+
+        // TOUGH boosts made in an OXYGEN room - verified
         product_chains[RESOURCE_GHODIUM_OXIDE] = // -30% DMG TAKEN (T1)
             {
-                'local_room': 'W48S18',
+                'local_room': 'W56S18',
                 'remote_resource': RESOURCE_GHODIUM,
                 'local_resource': RESOURCE_OXYGEN
             }
-        product_chains[RESOURCE_GHODIUM_ALKALIDE] = // -30% DMG TAKEN (T1)
+        product_chains[RESOURCE_GHODIUM_ALKALIDE] = // -50% DMG TAKEN (T2)
             {
-                'local_room': 'W48S18',
+                'local_room': 'W56S18',
                 'remote_resource': RESOURCE_GHODIUM_OXIDE,
                 'local_resource': RESOURCE_HYDROXIDE
             }
-        product_chains[RESOURCE_CATALYZED_GHODIUM_ALKALIDE] = // -30% DMG TAKEN (T1)
+        product_chains[RESOURCE_CATALYZED_GHODIUM_ALKALIDE] = // -70% DMG TAKEN (T3)
             {
-                'local_room': 'W48S18',
+                'local_room': 'W56S18',
                 'remote_resource': RESOURCE_GHODIUM_ALKALIDE,
                 'local_resource': RESOURCE_CATALYST
             }
+
+        // HEAL boosts made in a LEMERGIUM room - verified
         product_chains[RESOURCE_LEMERGIUM_OXIDE] = // // +100% HEAL
             {
                 'local_room': 'W48S18',
@@ -67,24 +82,20 @@ module.exports = {
             }
         product_chains[RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE] = // +300% HEAL (T3)
             {
-                'local_room': 'W53S18',
+                'local_room': 'W48S18',
                 'local_resource': RESOURCE_LEMERGIUM_ALKALIDE,
                 'remote_resource': RESOURCE_CATALYST
             }
+
+        // HYDROXIDE made in a HYDROGEN room
         product_chains[RESOURCE_HYDROXIDE] = // REQUIRED FOR T2 BOOSTS
             {
                 'local_room': 'W53S18',
                 'local_resource': RESOURCE_HYDROGEN,
                 'remote_resource': RESOURCE_OXYGEN
             }
-        /*
-        product_chains[RESOURCE_HYDROXIDE] = // REQUIRED FOR T2 BOOSTS, 2ND COPY
-            {
-                'local_room': 'W46S17',
-                'local_resource': RESOURCE_HYDROGEN,
-                'remote_resource': RESOURCE_OXYGEN
-            }
-        */
+
+        // DISMANTLE made in a ZYNTHIUM room
         product_chains[RESOURCE_ZYNTHIUM_HYDRIDE] = // T1, +100% dismantle
             {
                 'local_room': 'W53S6',
@@ -103,6 +114,8 @@ module.exports = {
                 'local_resource': RESOURCE_ZYNTHIUM_ACID,
                 'remote_resource': RESOURCE_CATALYST
             }
+
+
         for (var goal in ongoing_reactions) {
             
             var this_reaction = ongoing_reactions[goal];
@@ -341,15 +354,33 @@ module.exports = {
             var local_component = reaction['local_resource'];
             var mined_mineral_amount = factory_room_terminal.store[local_component];
             if (mined_mineral_amount == undefined || mined_mineral_amount < 3000) {
-                //console.log('Science: skipping ' + goal + '/' + factory_room_name + ' because local_room room terminal lacks 3000 ' + local_component);
+                if (factory_room_terminal.acquireMineralAmount(local_component, 3000, 3000)) {
+                    console.log('Science: ' + goal + '/' + factory_room_name + ': successfully acquired SUPPOSEDLY LOCAL raw material ' + local_component + ' from a remote room');
+                    return;
+                } else {
+                    /*if (Game.time % 500 == 0) {
+                        console.log('Science: ' + goal + '/' + factory_room_name + ': cannot acquire 3k ' + remote_resource);
+                    }
+                    continue;
+                    */
+                }
                 continue;
             }
+
+
+
+
             var product_amount = 0;
             if (factory_room_terminal.store[goal] != undefined) {
                 product_amount = factory_room_terminal.store[goal];
             }
-            if (product_amount >= 20000) {
-                //console.log('Science: skipping ' + goal + '/' + factory_room_name + ' because we already have ' + product_amount + ' of our 20k target for ' + goal);
+            var desired_amount = 10000; // by default, assume T1 or T2. have a little bit, but don't build up masses of it - the higher tier boosts matter more.
+            if (MINERAL_REACTION_COUNT(goal) == 0) {
+                desired_amount = 40000; // this is T3... it is not used in any further reactions
+            }
+            
+            if (product_amount >= desired_amount) {
+                //console.log('Science: skipping ' + goal + '/' + factory_room_name + ' because we already have ' + product_amount + ' of our ' + desired_amount + ' target for ' + goal);
                 continue;
             } else {
                 //console.log('Science: for ' + goal + '/' + factory_room_name + ' has ' + factory_room_terminal.store[goal] + ' of goal :::' + goal);

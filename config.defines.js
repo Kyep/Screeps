@@ -1,5 +1,6 @@
 // Creep memory, top-level categories
 global.MEMORY_ROLE = 'role';
+global.MEMORY_AISCRIPT = 'aiscript';
 global.MEMORY_SOURCE = 'source';
 global.MEMORY_HOME = 'home';
 global.MEMORY_HOME_X = 'home_x';
@@ -34,6 +35,39 @@ global.MEMORY_FRUSTRATION = 'frustration';
 global.MEMORY_MINERALID = 'mineralid';
 global.MEMORY_LABID = 'labid';
 global.MEMORY_SIGN = 'sign';
+global.MEMORY_TARGETID = 'targetid';
+global.MEMORY_BOOSTSALLOWED = 'boostsallowed';
+global.MEMORY_BOOSTSWANTED = 'boostswanted';
+global.MEMORY_BOOSTSGOT = 'boostsgot';
+global.MEMORY_BOOSTSMISSING = 'boostsmissing';
+global.MEMORY_HAULERSLEEP = 'haulersleep';
+
+// Creep memory, roles
+global.ROLE_HARVESTER = 'harvester';
+global.ROLE_CHARVESTER = 'charvester';
+global.ROLE_HAULER = 'hauler';
+global.ROLE_EXTRACTOR = 'extractor';
+global.ROLE_UPGRADER = 'upgrader';
+global.ROLE_UPGRADERSTORAGE = 'upgraderstorage';
+global.ROLE_GROWER = 'grower';
+global.ROLE_BUILDER = 'builder';
+global.ROLE_BUILDERSTORAGE = 'builderstorage';
+global.ROLE_TELLER = 'teller';
+global.ROLE_TELLERTOWERS = 'tellertowers';
+global.ROLE_DRAINER = 'drainer';
+global.ROLE_SIEGE = 'siege';
+global.ROLE_SIEGEHEALER = 'siegehealer';
+global.ROLE_DEFENSE = 'defense';
+global.ROLE_SCAVENGER = 'scavenger';
+global.ROLE_CLAIMER = 'claimer';
+global.ROLE_RESERVER = 'reserver';
+global.ROLE_RECYCLER = 'recycler';
+global.ROLE_SIGNER = 'signer';
+global.ROLE_REMOTECONSTRUCTOR = 'remoteconstructor';
+global.ROLE_LABTECH = 'labtech';
+global.ROLE_NUKETECH = 'nuketech';
+global.ROLE_DISMANTLER = 'dismantler';
+
 
 // Creep memory, job types
 global.JOB_HARVEST = 'mine';

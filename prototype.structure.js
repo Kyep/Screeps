@@ -1,21 +1,4 @@
 
-Source.prototype.getSlotPositions = function() {
-    var slots = [];
-    for (var i = this.pos['x'] - 1; i <= this.pos['x'] + 1; i++) {
-        for (var j = this.pos['y'] - 1; j <= this.pos['y'] + 1; j++) {
-            var tpos = new RoomPosition(i, j, this.room.name);
-            var lresults = Game.map.getTerrainAt(tpos);
-            //console.log(JSON.stringify(lresults));
-            if (lresults == "plain" || lresults == "swamp") {
-                slots.push(tpos);
-                //new RoomVisual(this.room.name).circle(tpos, {stroke: 'green'});
-            } else {
-                //new RoomVisual(this.room.name).circle(tpos, {stroke: 'red'});
-            }
-        }
-    }
-    return slots;
-}
 
 StructureTerminal.prototype.acquireNukeFuel = function() {
     return this.acquireMineralAmount(RESOURCE_GHODIUM, 5000, 5000);
@@ -87,7 +70,12 @@ StructureSpawn.prototype.getRoleBodyAndProperties = function(roletext, tgtroom, 
         console.log('getBodyForRole error: ' + roletext + ' has no defined body in empire.');
         return undefined;
     }
+    if (empire_workers[roletext]['aiscript'] == undefined) {
+        console.log('getBodyForRole error: ' + roletext + ' has no defined aiscript in empire.');
+        return undefined;
+    }
     var part_template = empire_workers[roletext]['body'];
+    retval['aiscript'] = empire_workers[roletext]['aiscript'];
     var partlist = [];
     var energy_cap = this.room.energyCapacityAvailable;
     if (energy_cap > 4500) {
@@ -105,20 +93,6 @@ StructureSpawn.prototype.getRoleBodyAndProperties = function(roletext, tgtroom, 
     }
     //console.log(work_units + ' based on ' + global.UNIT_COST(part_template) + ' in ' + this.room.energyCapacityAvailable);
     var renew_allowed = 1;
-    
-    /*
-    if (spawner_mobs[spawner.name] == undefined ) {
-        work_units = 1;
-        renew_allowed = 0;
-        console.log(spawner.name + ': ALLOWING ONLY ONE WORK UNIT, AS MY MOB LIST IS UNDEFINED. ');
-    } else  {
-        if (spawner_mobs[spawner.name].length < 4) {
-            work_units = 1;
-            renew_allowed = 0;
-            console.log(spawner.name + ': ALLOWING ONLY ONE WORK UNIT, AS MY MOB LIST (' + spawner_mobs[spawner.name].length + ') HAS LESS THAN 4 MOBS. ');
-        }
-    }
-    */
     
     if (empire_workers[roletext]['renew_allowed'] != undefined) {
         if (empire_workers[roletext]['renew_allowed'] == 0) {

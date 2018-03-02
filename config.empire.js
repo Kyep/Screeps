@@ -76,7 +76,7 @@
         'W52S17': {
             'roomname' : '5',
             'spawn_room': 'W52S17',
-            'backup_spawn_room': 'W51S14'
+            'backup_spawn_room': 'W53S18'
         },
 
         // 5th base expansions
@@ -302,8 +302,7 @@
         // 16 Base expansions
         'W42S18': {
             'roomname': '16E',
-            'spawn_room': 'W43S18',
-            'backup_spawn_room': 'W46S17'
+            'spawn_room': 'W43S18'
         },
         'W43S17': {
             'roomname': '16N',

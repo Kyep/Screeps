@@ -129,30 +129,44 @@ module.exports = {
 
             // While en route, look for roads to repair - if we can.
             if(creep.carry.energy > 0) {
-                var nearby = creep.getStructuresInDist(2);
-                //console.log(creep.name + ': nearby: ' + nearby.length);
-                if (nearby.length) {
-                    for (var i = 0; i < nearby.length; i++) {
-                        var thetarget = nearby[i];
-                        //console.log(creep.name + ': nearby: ' + JSON.stringify(thetarget.structure));
-                        if (thetarget.structure.structureType != STRUCTURE_ROAD) {
-                            //console.log(creep.name + ' skip non-road');
-                            continue;
+                if (creep.memory[MEMORY_HAULERSLEEP] != undefined && creep.memory[MEMORY_HAULERSLEEP] > 0) {
+                    creep.memory[MEMORY_HAULERSLEEP]--;
+                } else {
+    
+                    var nearby = creep.getStructuresInDist(2);
+                    //console.log(creep.name + ': nearby: ' + nearby.length);
+                    var repaired_something = false;
+                    if (nearby.length) {
+                        var r
+                        for (var i = 0; i < nearby.length; i++) {
+                            var thetarget = nearby[i];
+                            //console.log(creep.name + ': nearby: ' + JSON.stringify(thetarget.structure));
+                            if (thetarget.structure.structureType != STRUCTURE_ROAD) {
+                                //console.log(creep.name + ' skip non-road');
+                                continue;
+                            }
+                            if (thetarget.structure.hits == thetarget.structure.hitsMax) {
+                                //console.log(creep.name + ' skip full-health');
+                                continue;
+                            }
+                            var irn = thetarget.structure.inRoadNetwork();
+                            if (irn) {
+                                //new RoomVisual(creep.room.name).line(creep.pos, thetarget.structure.pos, {color: 'green'});
+                            } else {
+                                //new RoomVisual(creep.room.name).line(creep.pos, thetarget.structure.pos, {color: 'red'});
+                                continue;
+                            }
+                            var retval = creep.repair(thetarget.structure);
+                            repaired_something = true;
+                            //console.log(creep.name + ' repairing ROAD: ' + retval);
+                            break;
                         }
-                        if (thetarget.structure.hits == thetarget.structure.hitsMax) {
-                            //console.log(creep.name + ' skip full-health');
-                            continue;
+                    }
+                    if (!repaired_something) {
+                        if(creep.memory[MEMORY_HAULERSLEEP] == undefined) {
+                            creep.memory[MEMORY_HAULERSLEEP] = 0;
                         }
-                        var irn = thetarget.structure.inRoadNetwork();
-                        if (irn) {
-                            //new RoomVisual(creep.room.name).line(creep.pos, thetarget.structure.pos, {color: 'green'});
-                        } else {
-                            //new RoomVisual(creep.room.name).line(creep.pos, thetarget.structure.pos, {color: 'red'});
-                            continue;
-                        }
-                        var retval = creep.repair(thetarget.structure);
-                        //console.log(creep.name + ' repairing ROAD: ' + retval);
-                        break;
+                        creep.memory[MEMORY_HAULERSLEEP]++;
                     }
                 }
             }

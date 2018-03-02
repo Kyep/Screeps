@@ -4,6 +4,9 @@ module.exports = {
     
     run: function(creep) {
         
+        // Flow:
+        // undefined (setup phase) -> JOB_TRAVEL_OUT -> death
+        
         var melee_parts = creep.getActiveBodyparts(ATTACK);
         var work_parts = creep.getActiveBodyparts(WORK);
         var frustration = 0;
@@ -13,19 +16,27 @@ module.exports = {
         var frustration = creep.memory[MEMORY_FRUSTRATION];
 
         var myhealer = creep.getHealer();
-        if (creep.isAtHomeRoom()) {
+
+        if (creep.memory[MEMORY_JOB] == undefined) {
+            if (creep.gettingBoosts()) {
+                return;
+            }
             if(!myhealer) {
                 var tickspassed = (Game.time - creep.memory[MEMORY_INIT]);
                 if (tickspassed < 30) { // give them 30 T to find a healer.
                     creep.say('HLR? ' + tickspassed);
-                    //creep.sleepFor(5);
+                    creep.sleepFor(2);
                     return;
                 }
             }
+            creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
         }
+        
         if (myhealer && myhealer.room.name == creep.room.name) {
             var therange = creep.pos.getRangeTo(myhealer);
-            if (therange > 2) {
+            if (therange == 2 && Game.time % 25 == 0) {
+                return;
+            } else if (therange > 2) {
                 creep.moveTo(myhealer);
                 //myhealer.memory[MEMORY_ROLE] = 'siegehealer';
                 //myhealer.memory[MEMORY_TANK] =  creep.name;
@@ -38,10 +49,25 @@ module.exports = {
             return;
         } else if (creep.updateDestination()) {
             return;
+        } else if (creep.redRally()) {
+            return; // Siege creeps rallying to a flag won't do anything else!
         }
+        var live_enemy_towers = creep.room.getLiveHostileTowers();
+        if (live_enemy_towers.length) {
+            creep.say('dodge:' + live_enemy_towers.length);
+            creep.avoidEdges();
+            return;
+        }   
         
         var target = undefined;
-        
+
+        if (creep.memory[MEMORY_TARGETID] && Game.time % 5 != 0) {
+            target = Game.getObjectById(creep.memory[MEMORY_TARGETID]);
+            if (!target) {
+                creep.memory[MEMORY_TARGETID] = undefined;
+                target = undefined;
+            }
+        }
         if (melee_parts) {
             target = creep.getClosestHostileCreep();
             if (target) {
@@ -51,48 +77,49 @@ module.exports = {
                     return;
                 } else if (trange <= 3) {
                     if(creep.attack(target) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(target);
+                        creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_PATROL}});
                     }
                     return;
                 }
             }
         }
-        
         if (work_parts > 0 || melee_parts > 0) {
-            var sflags = creep.room.getFlagsByType(FLAG_SIEGETARGET);
-            if (sflags.length) {
-                var flag = sflags[0];
-                var objects_here = creep.room.lookAt(flag.pos);
-                for (var k = 0; k < objects_here.length; k++) {
-                    var this_obj = objects_here[k]["structure"];
-                    if (this_obj && this_obj.hits) {
-                        target = this_obj;
-                        creep.memory[MEMORY_FRUSTRATION] = 0;
-                        break;
-                    }
-                    //flag.remove();
-                }
-            } else {
-                //var valid_types = [STRUCTURE_SPAWN, STRUCTURE_TOWER];
-                var valid_types = [];
-                var valid_types2 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB];
-                var valid_types3 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB, STRUCTURE_TERMINAL, STRUCTURE_LINK, STRUCTURE_NUKER, STRUCTURE_OBSERVER, STRUCTURE_EXTRACTOR, STRUCTURE_RAMPART];
-                if (frustration < 100) {
-                    target = creep.getClosestHostileUnRampartedStructureInTypes(valid_types);
-                    if (!target) {
-                        target = creep.getClosestHostileStructureInTypes(valid_types);
-                    }
-                } else if (frustration < 500) {
-                    target = creep.getClosestHostileUnRampartedStructureInTypes(valid_types2);
-                    if (!target) {
-                        target = creep.getClosestHostileStructureInTypes(valid_types2);
+            if (!target) {
+                var sflags = creep.room.getFlagsByType(FLAG_SIEGETARGET);
+                if (sflags.length) {
+                    var flag = sflags[0];
+                    var objects_here = creep.room.lookAt(flag.pos);
+                    for (var k = 0; k < objects_here.length; k++) {
+                        var this_obj = objects_here[k]["structure"];
+                        if (this_obj && this_obj.hits) {
+                            target = this_obj;
+                            creep.memory[MEMORY_FRUSTRATION] = 0;
+                            break;
+                        }
+                        //flag.remove();
                     }
                 } else {
-                    target = creep.getClosestHostileStructureInTypes(valid_types3);
+                    var valid_types = [STRUCTURE_SPAWN];
+                    //var valid_types = [];
+                    var valid_types2 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB];
+                    var valid_types3 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB, STRUCTURE_TERMINAL, STRUCTURE_LINK, STRUCTURE_NUKER, STRUCTURE_OBSERVER, STRUCTURE_EXTRACTOR, STRUCTURE_RAMPART];
+                    if (frustration < 100) {
+                        target = creep.getClosestHostileUnRampartedStructureInTypes(valid_types);
+                        if (!target) {
+                            target = creep.getClosestHostileStructureInTypes(valid_types);
+                        }
+                    } else if (frustration < 500) {
+                        target = creep.getClosestHostileUnRampartedStructureInTypes(valid_types2);
+                        if (!target) {
+                            target = creep.getClosestHostileStructureInTypes(valid_types2);
+                        }
+                    } else {
+                        target = creep.getClosestHostileStructureInTypes(valid_types3);
+                    }
                 }
             }
             if (target) {
-                new RoomVisual(creep.room.name).line(creep.pos, target.pos, {color: 'red'});
+                creep.memory[MEMORY_TARGETID] = target.id;
                 var atkresult = ERR_NO_BODYPART;
                 if (work_parts) {
                     atkresult = creep.dismantle(target);
@@ -100,7 +127,7 @@ module.exports = {
                     atkresult = creep.attack(target);
                 }
                 if (atkresult == ERR_NOT_IN_RANGE) {
-                    var movresult = creep.moveTo(target);
+                    var movresult = creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_PATROL}});
                     frustration++;
                     creep.memory[MEMORY_FRUSTRATION] = frustration;
                 }
@@ -108,11 +135,11 @@ module.exports = {
             } else {
                 frustration += 100;
                 creep.memory[MEMORY_FRUSTRATION] = frustration;
+                creep.sleepFor(5);
             }
         }
         
-        creep.redRally();
-        creep.avoidEdges();
+        
         return;
         
         

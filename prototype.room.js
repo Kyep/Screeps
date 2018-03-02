@@ -347,6 +347,24 @@ Room.prototype.getHostileStructures = function(include_public_ramparts) {
     } });
 }
 
+Room.prototype.getLiveHostileTowers = function() {
+    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ 
+        if (s.structureType != STRUCTURE_TOWER) {
+            return false;
+        }
+        if (IS_ALLY(s.owner.username) || s.isInvincible()) { 
+            return false;
+        }
+        if (s.energy < 10) {
+            return false;
+        }
+        if (!s.isActive()) {
+            return false;
+        }
+        return true;
+    } });
+}
+
 Room.prototype.getShouldUpgrade = function() {
     //  Memory['gcl_farm'] = ['W59S18', 'W58S17', 'W57S14', 'W56S18', 'W53S18']
     var gcl_farm_rooms = Memory['gcl_farm'];
@@ -885,9 +903,8 @@ Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, 
     crmemory[MEMORY_HOME_Y] = spawner.pos.y;
     crmemory[MEMORY_RENEW] = false;
     
-    var result = SPAWN_VALIDATED(spawner, '', partlist, crmemory)
+    var result = SPAWN_VALIDATED(spawner, '', partlist, crmemory);
     
-    //var result = SPAWNCUSTOM(spawner, '', partlist, role, '', targetroomname, global.UNIT_COST(empire_workers[role]['body']), homeroom, dest_x, dest_y, 0, roompath);
     return result;
 }
 
@@ -911,8 +928,26 @@ Room.prototype.createSiegeTeam = function (targetroomname, roompath, dest_x, des
         console.log('createSiegeTeam('+this.name+'): total energy cost ' + total_cost + ' exceeds current room energy level: ' + room_free_energy);
         return false;
     }
-    var thetank = SPAWNCUSTOM(free_spawns[0], '', tank_body, tank_design, '', targetroomname, tank_cost, this.name, dest_x, dest_y, 0, roompath);
-    var thehealer = SPAWNCUSTOM(free_spawns[1], '', healer_body, healer_design, '', targetroomname, healer_cost, this.name, dest_x, dest_y, 0, roompath);
+    var shared_memory = {};
+    shared_memory[MEMORY_DEST] = targetroomname;
+    shared_memory[MEMORY_DEST_X] = dest_x;
+    shared_memory[MEMORY_DEST_Y] = dest_y;
+    shared_memory[MEMORY_NEXTDEST] = roompath;
+    shared_memory[MEMORY_HOME] = free_spawns[0].room.name;
+    shared_memory[MEMORY_HOME_X] = free_spawns[0].pos.x;
+    shared_memory[MEMORY_HOME_Y] = free_spawns[0].pos.y;
+    shared_memory[MEMORY_RENEW] = false;
+    
+    shared_memory[MEMORY_BOOSTSALLOWED] = true;
+
+    var tank_memory = Object.assign({}, shared_memory);
+    tank_memory[MEMORY_ROLE] = tank_design;
+    var healer_memory = Object.assign({}, shared_memory);
+    healer_memory[MEMORY_ROLE] = healer_design;
+    
+    var thetank = SPAWN_VALIDATED(free_spawns[0], '', tank_body, tank_memory);
+    var thehealer = SPAWN_VALIDATED(free_spawns[1], '', healer_body, healer_memory);
+    
     console.log('tank: ' + thetank);
     console.log('healer: ' + thehealer);
     return true;

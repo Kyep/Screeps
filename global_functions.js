@@ -1,4 +1,7 @@
 
+global.ROUND_NUMBER_TO_PLACES = function (value, decimals) {
+  return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
 
 global.FLAG_TYPE_TO_COLORS_COLORS = function (sconstant) {
     var result = global.empire_flags[sconstant];
@@ -207,7 +210,7 @@ global.VALIDATE_CREEP_MEMORY_OBJECT = function (obj) {
         console.log('VALIDATE_CREEP_MEMORY_OBJECT passed empty object');
         return false;
     }
-    var req_memory = [MEMORY_ROLE, MEMORY_DEST, MEMORY_DEST_X, MEMORY_DEST_Y, MEMORY_HOME, MEMORY_HOME_X, MEMORY_HOME_Y, MEMORY_RENEW];
+    var req_memory = [MEMORY_ROLE, MEMORY_AISCRIPT, MEMORY_DEST, MEMORY_DEST_X, MEMORY_DEST_Y, MEMORY_HOME, MEMORY_HOME_X, MEMORY_HOME_Y, MEMORY_RENEW];
     for (var i = 0; i < req_memory.length; i++) {
         var this_mem = req_memory[i];
         if (obj[this_mem] == undefined) {
@@ -245,7 +248,13 @@ global.SPAWN_VALIDATED = function (spawner, crnameprefix, bodylist, memory_objec
     memory_object[MEMORY_SPAWNERNAME] = spawner.name;
     memory_object[MEMORY_SPAWNERROOM] = spawner.room.name;
     var result = spawner.createCreep(bodylist, crname, memory_object);
-    //console.log(spawner.name + ': (' + result + ') ' + crname + ' -> ' + memory_object[MEMORY_DEST]);
+    if (result) {
+        spawner.memory['role_spawning'] = memory_object[MEMORY_ROLE];
+        spawner.memory['dest_spawning'] = memory_object[MEMORY_DEST];
+        //console.log(spawner.room.name + '(' + spawner.name + '): created: ' + crname + ' -> ' + memory_object[MEMORY_DEST]);
+    } else {
+        console.log(spawner.room.name + '(' + spawner.name + '): (' + result + ') ' + crname + ' -> ' + memory_object[MEMORY_DEST]);
+    }
     return result;
 }
 

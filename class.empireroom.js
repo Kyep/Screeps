@@ -2,6 +2,8 @@
 
 // New 3/1/2018 code for abstracting the management of empire rooms
 
+
+
 global.GET_ROOM_CONFIG = function(rname) {
     if (!Memory.rooms[rname] || !Memory.rooms[rname][MEMORY_RCONFIG]) {
         return undefined;
@@ -14,7 +16,6 @@ global.SHOW_ROOM_CONFIG = function(rname) {
 }
 
 global.ADD_ROOM_KEY_ASSIGNMENT = function(rconfig, sourceidorkey, ass_object, priority, overwrite) {
-    // rconfig = this.setSourceAssignment(rconfig, '1111key1111', { 'sharvester': 1});
     if (!rconfig || !sourceidorkey || !ass_object || !priority) {
         return rconfig;
     }
@@ -55,7 +56,7 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
         var assigned = rconfig['assignments'];
         if (!assigned) {
             continue;
-        }
+        } 
         combined[rname] = {}
         var under_attack = ROOM_UNDER_ATTACK(rname);
         for (var skey in assigned) {
@@ -96,6 +97,9 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
     for (var rname in combined) {
         var r_messages = []
         var rconfig = Memory.rooms[rname][MEMORY_RCONFIG];
+        if (!rconfig) {
+            continue;
+        }
         var spawn_room = rconfig['spawn_room'];
     	for (var sname in combined[rname]) {
     	    var s_messages = []
@@ -165,6 +169,7 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
                     //console.log(rname + '(' + sname + ') short ' + advised_spawns[pname][rname][sname][role] + ' of ' + role);
                     var rbap = spawner.getRoleBodyAndProperties(role, rname, skey);
                     var partlist = rbap['body'];
+                    var aiscript = rbap['aiscript'];
                     if(rbap['renew_allowed'] == 0) {
                         renew_allowed = 0;
                     }
@@ -184,12 +189,25 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
                         if (rconfig.sources[sname]['dest_x'] != undefined) { dest_x = rconfig.sources[sname]['dest_x']; }
                         if (rconfig.sources[sname]['dest_y'] != undefined) { dest_y = rconfig.sources[sname]['dest_y']; }
                     }
+                    var this_pri = 2500; // max.
+                    if (rconfig && rconfig['assignments'] && rconfig['assignments'][sname] && rconfig['assignments'][sname]['pri']) {
+                        this_pri = rconfig['assignments'][sname]['pri'];
+                    } else {
+                        console.log('No PRI: ' + JSON.stringify(rconfig['assignments'][sname]));
+                    }
+                    if (spawner_data[spawner.name] != undefined) {
+                        if (spawner_data[spawner.name]['priority'] < this_pri) {
+                            //console.log(rname + '(' + stext + '/' + role + ') (p=' + this_pri + ') blocked by ' + spawner_data[spawner.name]['spawnrole'] + ' for ' + spawner_data[spawner.name]['rname'] 
+                            //    + '(p=' + spawner_data[spawner.name]['priority'] + ')');
+                            continue;
+                        }
+                    }
                     spawner_data[spawner.name] = {
-                        'spawner': spawner.name, 'sname': stext, 'partlist': partlist, 'spawnrole': role, 'skey': sname, 'rname': rname, 
-                        'thecost': thecost, 'myroomname': home_room, 'dest_x': dest_x, 'dest_y': dest_y,  
+                        'spawner': spawner.name, 'sname': stext, 'partlist': partlist, 'spawnrole': role, 'aiscript': aiscript, 'skey': sname, 'rname': rname, 
+                        'thecost': thecost, 'myroomname': home_room, 'dest_x': dest_x, 'dest_y': dest_y, 'priority': this_pri,
                         'renew_allowed': renew_allowed, 'nextdest': []
                     }
-                    break THIS_SPAWN_ROOM;
+                    //console.log(JSON.stringify(spawner_data));
                 }
             }
         }
@@ -269,6 +287,7 @@ Room.prototype.makeConfigBase = function(spawn_room, backup_spawn_room) {
     var rconfig = {}
     rconfig['spawn_room'] = spawn_room;
     rconfig['backup_spawn_room'] = backup_spawn_room;
+    rconfig['shortname'] = this.name.replace(/\D+/g, '');;
     var slist = this.find(FIND_SOURCES);
     rconfig['sources'] = {}
     rconfig['assignments'] = {}
@@ -276,7 +295,8 @@ Room.prototype.makeConfigBase = function(spawn_room, backup_spawn_room) {
     for (var i = 0; i < slist.length; i++) {
         var ts = slist[i];
         rconfig['sources'][ts.id] = {}
-        rconfig['sources'][ts.id]['sourcename'] = i;
+        rconfig['sources'][ts.id]['shortname'] = String.fromCharCode(97+i); // a, b, c, etc.
+        rconfig['sources'][ts.id]['longname'] = rconfig['shortname'] + '-' + String.fromCharCode(97+i); // a, b, c, etc.
         rconfig['sources'][ts.id]['x'] = ts['pos']['x'];
         rconfig['sources'][ts.id]['y'] = ts['pos']['y'];
         rconfig['sources'][ts.id]['spaces'] = ts.getSlotPositions().length;
@@ -322,7 +342,7 @@ Room.prototype.setSourceAssignment = function(rconfig, sourceid, ass_object, ste
     if (!rconfig || !sourceid || !ass_object || !steps) {
         return rconfig;
     }
-    rconfig = global.ADD_ROOM_KEY_ASSIGNMENT(rconfig, sourceid, ass_object, 500 - steps);
+    rconfig = global.ADD_ROOM_KEY_ASSIGNMENT(rconfig, sourceid, ass_object, 1000 + steps);
     return rconfig;
 }
 
@@ -426,7 +446,7 @@ Room.prototype.makeAssignments = function(myconf) {
     }
 
     // Adjust builders depending on unfinished projects.
-    var projectsList = this.find(FIND_MY_CONSTRUCTION_SITES);
+    var projectsList = this.find(FIND_MY_CONSTRUCTION_SITES, { filter: (csite) => { return (csite.structureType != STRUCTURE_CONTAINER); } });
     if(projectsList.length > 0) {
         var btype = 'builderstorage';
         if (!this.isMine()) {
@@ -476,10 +496,12 @@ Room.prototype.makeAssignments = function(myconf) {
             var e_hist_avg = Math.round(e_hist_total / rmem['energyhistory'].length);
             var e_hist_avg_pc = Math.round(e_hist_avg / this.energyCapacityAvailable * 100);
             if (e_hist_avg_pc < empire_defaults['room_minimum_energy_pc']) {
-                if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc']) {
-                    myconf = this.setSourceAssignment(myconf, 'teller', {'teller': 2}, 250);
+                if (this.energyAvailable == 300) {
+                    myconf = this.setSourceAssignment(myconf, 'teller', {'teller-mini': 2}, -1000);
+                } else if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc']) {
+                    myconf = this.setSourceAssignment(myconf, 'teller', {'teller': 2}, -1000);
                 } else {
-                    myconf = this.setSourceAssignment(myconf, 'teller', {'teller': 1}, 250);
+                    myconf = this.setSourceAssignment(myconf, 'teller', {'teller': 1}, -1000);
                 }
             }
             this.memory['energyhistory'] = rmem['energyhistory'];
@@ -498,6 +520,16 @@ Room.prototype.makeAssignments = function(myconf) {
             }
             if (energy_on_ground > (1.5 * UNIT_COST(empire_workers['scavenger']['body']))) {
                 myconf = this.setSourceAssignment(myconf, 'scavenger', {'scavenger': 1}, 250);
+            }
+        }
+    }
+    
+    // Nuke refilling
+    if (this.isMine() && this.getLevel() == 8) {
+        if (this.terminal && this.terminal.store[RESOURCE_GHODIUM] && this.terminal.store[RESOURCE_GHODIUM] >= 5000) {
+            var empty_silos = this.find(FIND_MY_STRUCTURES, { filter: (structure) => { return ((structure.structureType == STRUCTURE_NUKER && structure.ghodium != structure.ghodiumCapacity));}});
+            if (empty_silos.length) {
+                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'nuke', {'nuketech': 1}, 500);
             }
         }
     }

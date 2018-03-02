@@ -265,7 +265,9 @@ Creep.prototype.redRally = function() {
     var redflags = this.room.getFlagsByType(FLAG_RALLYMIL);
     if(redflags.length) {
         this.moveTo(redflags[0], {visualizePathStyle: {stroke: COLOR_PATROL}});
+        return true;
     }
+    return false;
 }
 
 Creep.prototype.isMilitary = function() {
