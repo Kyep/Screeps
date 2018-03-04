@@ -1,6 +1,5 @@
 
 global.RUN_STRUCTURES = function() {
-    var structureLink = require('structure.link');
     var rtowers = {};
     for(var id in Game.structures){
         if(Game.structures[id].structureType == STRUCTURE_TOWER){
@@ -12,7 +11,7 @@ global.RUN_STRUCTURES = function() {
             rtowers[rname].push(thistower);
         }
         if(Game.structures[id].structureType == STRUCTURE_LINK){
-            structureLink.run(Game.structures[id]);
+            Game.structures[id].runLink();
         }
     }
 
@@ -120,3 +119,4 @@ global.RUN_STRUCTURES = function() {
         }
     }
 }
+

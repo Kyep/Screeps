@@ -240,3 +240,61 @@ StructureNuker.prototype.getReadiness = function(tgtroomname) {
     }
     return OK;
 }
+
+
+StructureLink.prototype.setDest = function(therole) {
+    Memory[MEMORY_GLOBAL_LINKS][this.id] = therole;
+}
+
+StructureLink.prototype.runLink = function() {
+    if (Memory[MEMORY_GLOBAL_LINKS] == undefined) {
+        Memory[MEMORY_GLOBAL_LINKS] = {}
+    }
+    var ldest = Memory[MEMORY_GLOBAL_LINKS][this.id];
+    if (ldest == undefined) {
+        this.setDest('passive'); // we will override this later IF we find a destination link to send to.
+        
+        // figure out our role.
+        var spawners = this.room.find(FIND_STRUCTURES, 10, {
+            filter: function(structure){
+                return (structure.structureType == STRUCTURE_SPAWN)
+            }
+        });
+        if (!spawners.length) {
+            console.log('LINK: no spawner in: ' + this.room.name);
+            return 0;
+        }
+        var thespawn = spawners[0];
+        if (this.pos.getRangeTo(thespawn) < 10) {
+            //console('LINK at ' + this.room.name + ':' + this.pos.x + ',' + this.pos.y + ' decided it was receive-only');
+            return 0;
+        }
+        var links_in_room = thespawn.pos.findInRange(FIND_STRUCTURES, 10, {
+            filter: function(structure){
+                return (structure.structureType == STRUCTURE_LINK && structure.id != this.id) 
+            }
+        });
+        if (links_in_room.length == 0) {
+            return 0;
+        }
+        this.setDest(links_in_room[0].id);
+        console.log('LINK at ' + this.room.name + ':' + this.pos.x + ',' + this.pos.y + ' assigned ' + links_in_room[0].id  + ' as its send target.');
+        return 0;
+    } else if (ldest == 'passive') {
+        return 0; // we are a recieve-only link. Do nothing.
+    }
+    if (this.cooldown > 0) {
+        return 0;
+    }
+    if (this.energy == 0) {
+        return 0;
+    }
+    var destlink = Game.getObjectById(ldest);
+    if (destlink == undefined) {
+        console.log('LINK: erasing transmit destination, as it does not exist!');
+        this.setDest('passive');
+        return 0;
+    }
+    var result = this.transferEnergy(destlink);
+    //console.log('LINK at ' + this.room.name + ':' + this.pos.x + ',' + this.pos.y + ' sent energy to ' + Memory[memaddr] + ' with result: ' + result);
+};

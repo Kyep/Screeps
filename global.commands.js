@@ -173,13 +173,14 @@ global.SHOW_MINERALS = function(mintype) {
 
 }
 
-global.REPORT_WORKERS = function() {
-    if (Memory['config.reportworkers']) {
-        Memory['config.reportworkers'] = false;
+global.REPORT_WORKERS = function(onoff) {
+    if (onoff) {
+        SET_GLOBAL_CONFIG_KEY('report_workers', true);
+        return true;
     } else {
-        Memory['config.reportworkers'] = true;
+        SET_GLOBAL_CONFIG_KEY('report_workers', false);
+        return false;
     }
-    return Memory['config.reportworkers'];
 }
 
 global.RECREATE_ROAD_NETWORKS = function() {

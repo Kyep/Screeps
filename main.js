@@ -9,6 +9,7 @@ require('global.commands');
 require('global.espionage');
 require('global.creep');
 require('global.structure');
+require('global.spawning');
 
 require('config.empire');
 require('config.units');
@@ -70,7 +71,7 @@ module.exports.loop = function () {
     // ----------------------------------------------------------------------------------
     // SECTION: Global actions that are done once per set number of ticks, regardless of current CPU bucket
 
-    if(Game.time % 2000 === 0) {
+    if(Game.time % 1900 === 0) {
         //global.PRESET_ATTACK_WAVE();
         global.ESPIONAGE_ATTACK_PLANS(true);
         CPU_SECTION('espionage-attackplans', true);
@@ -85,7 +86,7 @@ module.exports.loop = function () {
         CPU_SECTION('market-order-update', true);
     }
 
-    if(Game.time % 2500 === 0) {
+    if(Game.time % 2400 === 0) {
         RECREATE_ROAD_NETWORKS();
         CPU_SECTION('recreate-road-networks', true);
     }
@@ -95,7 +96,7 @@ module.exports.loop = function () {
         CPU_SECTION('science', true);
     }
 
-    if(Game.time % 250 === 0) {
+    if(Game.time % 300 === 0) {
         CHECK_FOR_OVERBURDENED_SPAWNERS();
         CPU_SECTION('rooms-partsalert', true);
     }
@@ -148,6 +149,7 @@ module.exports.loop = function () {
                 }
             }
         }
+        CPU_SECTION('terminal-transfer', true);
 
         // DEFCON MANAGEMENT
         for(var rname in Game.rooms) {
@@ -175,83 +177,10 @@ module.exports.loop = function () {
         }
         CPU_SECTION('defcon-update', true);
 
-        global.HANDLE_ALL_ROOM_ALERTS();
+        HANDLE_ALL_ROOM_ALERTS();
         CPU_SECTION('defcon-process', true);
         
-
-
-
-        EmpireSpawning: {
-            var spawner_mobs = {};
-            var spawnerless_mobs = [];
-            for (var mname in Game.creeps) {
-                if (Game.creeps[mname].memory[MEMORY_SPAWNERNAME] != undefined) {
-                    var theirsname = Game.creeps[mname].memory[MEMORY_SPAWNERNAME];
-                    if(spawner_mobs[theirsname] == undefined) {
-                        spawner_mobs[theirsname] = [];
-                    }
-                    spawner_mobs[theirsname].push(mname);
-                } else {
-                    spawnerless_mobs.push(mname);
-                }
-            }
-
-
-            var spawn_queue = GET_SPAWN_QUEUE(Memory['config.reportworkers']);
-            //console.log(JSON.stringify(spawn_queue));
-            //console.log(typeof(spawn_queue));
-            //console.log(JSON.stringify(Game.spawns));
-            var count_spawning = 0;
-            var count_waking = 0;
-            var count_idle = 0;
-            
-            for(var spawnername in Game.spawns) {
-                var spn = Game.spawns[spawnername];
-                //console.log('eval ' + spawnername +': ' + JSON.stringify(spn));
-                if (spn.memory[MEMORY_SPAWNINGROLE] != undefined) {
-                    if (spn.spawning == undefined) {
-                        spn.memory[MEMORY_SPAWNINGROLE] = undefined;
-                        spn.memory[MEMORY_SPAWNINGDEST] = undefined;
-                    } else if (empire_defaults['military_roles'].includes(spn.memory[MEMORY_SPAWNINGROLE])) {
-                        spn.room.visual.text(spn.spawning.remainingTime + ': ' + spn.spawning.name, spn.pos.x, spn.pos.y +1.5, {color: 'red', backgroundColor: 'white', font: 0.8});
-                    } else if (spn.memory[MEMORY_SPAWNINGDEST] != undefined && spn.memory[MEMORY_SPAWNINGDEST] == spn.room.name) {
-                        spn.room.visual.text(spn.spawning.remainingTime + ': ' + spn.spawning.name, spn.pos.x, spn.pos.y +1.5, {color: 'green', backgroundColor: 'white', font: 0.8});
-                    } else {
-                        spn.room.visual.text(spn.spawning.remainingTime + ': ' + spn.spawning.name, spn.pos.x, spn.pos.y +1.5, {color: 'blue', backgroundColor: 'white', font: 0.8});
-                    }
-                    count_spawning++;
-                } else {
-                    count_idle++;
-                }
-            }
-            for (var spawnername in spawn_queue) {
-                var sobj = spawn_queue[spawnername];
-                var spn = Game.spawns[spawnername];
-                if (spn == undefined) {
-                    console.log(spawnername + ' not defined in game spawns');
-                    console.log(JSON.stringify(sobj));
-                } else if (spn.room.energyAvailable >= spawn_queue[spawnername]['thecost']) {
-                    var crmemory = {};
-                    crmemory[MEMORY_ROLE] = spawn_queue[spawnername]['spawnrole'];
-                    crmemory[MEMORY_AISCRIPT] = spawn_queue[spawnername]['aiscript'];
-                    crmemory[MEMORY_SOURCE] = spawn_queue[spawnername]['skey'];
-                    crmemory[MEMORY_DEST] = spawn_queue[spawnername]['rname'];
-                    crmemory[MEMORY_DEST_X] = spawn_queue[spawnername]['dest_x'];
-                    crmemory[MEMORY_DEST_Y] = spawn_queue[spawnername]['dest_y'];
-                    crmemory[MEMORY_NEXTDEST] = spawn_queue[spawnername]['nextdest'];
-                    crmemory[MEMORY_HOME] = spawn_queue[spawnername]['myroomname'];
-                    crmemory[MEMORY_HOME_X] = spn.pos.x;
-                    crmemory[MEMORY_HOME_Y] = spn.pos.y;
-                    crmemory[MEMORY_RENEW] = spawn_queue[spawnername]['renew_allowed'];
-                    SPAWN_VALIDATED(spn, spawn_queue[spawnername]['sname'], spawn_queue[spawnername]['partlist'], crmemory);
-                } else {
-                    console.log(spawn_queue[spawnername]['sname'] + ': ' + spawn_queue[spawnername]['spawnrole'] + ' too expensive (' + spawn_queue[spawnername]['thecost'] + '/' + thespawner.room.energyAvailable + '), saving up.');
-                }
-                count_waking++;
-            }
-            //console.log( count_spawning + ' / ' + count_spawning + ' / ' + count_idle);
-        }
-        
+        HANDLE_SPAWNING();
         CPU_SECTION('creep-spawning', true);
     
     }

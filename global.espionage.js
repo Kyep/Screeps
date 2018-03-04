@@ -49,14 +49,11 @@ global.ASSIGN_OBSERVERS = function(available_observers, target_rooms) {
     return spy_count;
 }
 
-global.UPDATE_OBSERVERS = function(observe_energy) {
+global.UPDATE_OBSERVERS = function() {
 
     var available_observers = _.shuffle(global.LIST_OBSERVERS());
     var espionage_targets = _.shuffle(global.ESPIONAGE_LIST_TARGETS());
     var rooms_to_observe = [];
-    if (Memory[MEMORY_GLOBAL_ENERGYSHAREDESTS] != undefined && observe_energy) {
-        rooms_to_observe = rooms_to_observe.concat(Memory[MEMORY_GLOBAL_ENERGYSHAREDESTS]);
-    }
     rooms_to_observe = rooms_to_observe.concat(Object.keys(Memory[MEMORY_GLOBAL_ROOMSTOCLAIM]));
     if (espionage_targets.length) {
         var retval = global.ASSIGN_OBSERVERS(available_observers, espionage_targets);

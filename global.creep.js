@@ -98,7 +98,7 @@ global.RUN_CREEPS = function() {
         } else if(creep.memory[MEMORY_ROLE] == 'dismantler') {
             roleDismantler.run(creep);
         } else {
-            console.log('ALERT: ' + creep.name + ' in room' + creep.room.name + ' has role ' + creep.memory[MEMORY_ROLE] + ' which I do not know how to handle!')
+            console.log('ALERT: ' + creep.name + ' in room' + creep.room.name + ' has role ' + creep.memory[MEMORY_ROLE] + ' which I do not know how to handle: ' + JSON.stringify(creep.memory));
             //creep.suicide();
         }
         

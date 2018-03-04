@@ -35,10 +35,10 @@ Room.prototype.getAlertObject = function() {
 
 Room.prototype.shouldHaveAlert = function(enemy_details, nuke_details) {
     var debug = 0;
-    if (enemy_details['hostileCount'] > 0) { 
-        //console.log(this.name + ': shouldHaveAlert: ' + 'eval');   
-        //debug = 1;
-    }
+    /*if (enemy_details['hostileCount'] > 0) { 
+        console.log(this.name + ': shouldHaveAlert: ' + 'eval');   
+        debug = 1;
+    }*/
     if (!this.inEmpire()) {
         if (debug) { console.log(this.name + ': shouldHaveAlert: ' + ' not in empire');   }
         return 0; // never create alerts for rooms we do not claim.
