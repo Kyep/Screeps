@@ -108,6 +108,7 @@ global.CPU_SECTION = function(cputype, rare, override_value) {
     } else {
         cpu_thistick[cputype] = ROUND_NUMBER_TO_PLACES(used_sofar - last_value, 2);
     }
+    Memory[MEMORY_GLOBAL_CPUSTATS]['lastsection'] = cputype;
     cpu_thistick['total'] = ROUND_NUMBER_TO_PLACES(used_sofar, 2);
     return true;
 }

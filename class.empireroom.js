@@ -368,7 +368,7 @@ Room.prototype.makeAssignments = function(myconf) {
         return myconf;
     }
     myconf['assignments'] = {}
-    if (empire[this.name] == undefined) {
+    if (!this.inEmpire()) {
         console.log(this.name + ': makeAssignments got asked to assign units to non-empire room. Deleting all assignments.');
         this.memory[MEMORY_RCONFIG] = myconf;
         return myconf;
@@ -487,7 +487,7 @@ Room.prototype.makeAssignments = function(myconf) {
 
     // Adjust builders depending on unfinished projects.
     var projectsList = this.find(FIND_MY_CONSTRUCTION_SITES, { filter: (csite) => { return (csite.structureType != STRUCTURE_CONTAINER); } });
-    if(projectsList.length > 0) {
+    if (projectsList.length > 0) {
         var btype = 'builderstorage';
         if (!this.isMine()) {
             btype = 'remoteconstructor';
@@ -503,16 +503,9 @@ Room.prototype.makeAssignments = function(myconf) {
         }
     }
     
-    var energy_reserves = this.getStoredEnergy();
-    var energy_class = this.classifyStoredEnergy(energy_reserves);
-    myconf['energy_reserves'] = energy_reserves;
-    myconf['energy_class'] = energy_class;
     
-    if (rlvl >= 4 && rlvl < 8 && energy_class != ENERGY_EMPTY) {
-        var upcount = Math.floor(energy_reserves / 50000);
-        if (this.terminal && this.terminal.isActive() && this.terminal.store[RESOURCE_ENERGY] > 50000) {
-            upcount = 6;
-        }
+    if (rlvl >= 4 && rlvl < 8 && this.storage && this.storage[RESOURCE_ENERGY] > 100000) {
+        var upcount = Math.floor(this.storage[RESOURCE_ENERGY] / 50000);
         var upobj = {'upstorclose': upcount}
         myconf = this.setSourceAssignment(myconf, 'upgrades', upobj, 250);
     }

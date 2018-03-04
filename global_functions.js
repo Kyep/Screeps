@@ -448,7 +448,7 @@ global.DELETE_OLD_ORDERS = function() {
     }
 }
 
-global.UPDATE_MARKET_ORDERS = function(allow_energy_sale) {
+global.UPDATE_MARKET_ORDERS = function() {
     
     global.DELETE_OLD_ORDERS();
     
@@ -488,7 +488,9 @@ global.UPDATE_MARKET_ORDERS = function(allow_energy_sale) {
             }
         }
         
-        if (allow_energy_sale) {
+        // Right now, disable all selling of energy.
+        /*
+        if (false) {
             var rlvl = Game.rooms[rname].getLevel();
             var stored_e = Game.rooms[rname].terminal.store[RESOURCE_ENERGY];
             if (rlvl < 8) {
@@ -499,6 +501,7 @@ global.UPDATE_MARKET_ORDERS = function(allow_energy_sale) {
                 Game.rooms[rname].sellResource(RESOURCE_ENERGY);
             }
         }
+        */
     }
     return 'OK';
 }
@@ -750,73 +753,6 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
     
 }
 
-
-global.CREATE_GROWERS = function() {
-    for (var rname in empire) {
-        var droom = Game.rooms[rname];
-        if (droom == undefined) {
-            continue;
-        }
-        var rlvl = droom.getLevel();
-        if (rlvl < 1 || rlvl > 5) {
-            continue;
-        }
-        var myinfo = GET_ROOM_CONFIG(rname);
-        if (!myinfo) {
-            continue;
-        }
-		var bsr = myinfo['backup_spawn_room'];
-        if (bsr == undefined) {
-            console.log('CREATE_GROWERS CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has no bsr');
-            continue;
-        }
-        var oroom = Game.rooms[bsr];
-        if (oroom == undefined) {
-            console.log('CREATE_GROWERS CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has undefined BSR');
-            continue;
-        }
-        var energy_reserves = oroom.getStoredEnergy();
-        var energy_class = oroom.classifyStoredEnergy(energy_reserves);
-        if (energy_class == ENERGY_EMPTY || energy_class == ENERGY_OK) {
-            //console.log('CANDIDATE FAIL: ' + rname + ' (level: ' + rlvl + ') has BSR ' + oroom.name + ' with only E = ' + energy_reserves + ' => ' + energy_class);
-            continue;
-        }
-
-        var grower_names = [];
-        for (var crname in Game.creeps) {
-            if (Game.creeps[crname].memory[MEMORY_ROLE] != 'grower') {
-                continue;
-            }
-            if (Game.creeps[crname].memory[MEMORY_HOME] != bsr) {
-                continue;
-            }
-            if (Game.creeps[crname].memory[MEMORY_DEST] != rname) {
-                continue;
-            }
-            grower_names.push(crname);
-        }
-        if (grower_names.length >= 6) {
-            console.log('CREATE_GROWERS CANDIDATE FAIL: ' + bsr + ' => ' + rname + ' (level: ' + rlvl + ') has ' + grower_names.length + ' existing grower(s) : ' + grower_names);
-            continue;
-        }
-        var storages = droom.find(FIND_STRUCTURES, {
-                        filter: (structure) => {
-                            return (
-                                    structure.structureType == STRUCTURE_STORAGE
-                            );
-                        } } );
-        if (!storages.length) {
-            console.log('CREATE_GROWERS CANDIDATE FAIL: ' + rname + ' has no storage');
-            continue;
-        }
-        var st_unit = storages[0];
-        var d_x = st_unit.pos.x;
-        var d_y = st_unit.pos.y;
-        var result = oroom.createUnit('grower', rname, [], oroom.name, d_x, d_y);
-        console.log('CREATE_GROWERS CANDIDATE: ' + bsr + ' => ' + rname + ' (level: ' + rlvl + ') storage: ' + d_x + ', ' + d_y + ' result: ' + result);
-            
-    }
-}
 
 
 

@@ -36,6 +36,14 @@ module.exports.loop = function () {
     
     // ----------------------------------------------------------------------------------
     // SECTION: CPU tracking (must come first)
+
+    var tick_done = Memory[MEMORY_GLOBAL_TICKCOMPLETED];
+    var tick_expected = Game.time - 1;
+    if (tick_done != tick_expected) {
+        var crashmsg = 'MISSING TICK: possible crash on ' + tick_expected + ' last section: ' + Memory[MEMORY_GLOBAL_CPUSTATS]['lastsection'];
+        console.log(crashmsg);
+    }
+
     global.cpu_thistick = {}
     CPU_SECTION('requirefiles');
     
@@ -57,12 +65,11 @@ module.exports.loop = function () {
     CPU_SECTION('setup');
     
 
+
     // ----------------------------------------------------------------------------------
     // SECTION: Global actions that are done once per set number of ticks, regardless of current CPU bucket
 
     if(Game.time % 250 === 0) {
-        global.CREATE_GROWERS();
-        CPU_SECTION('growers', true);
         //global.SHARE_SPARE_ENERGY(); 
     }
     if(Game.time % 2000 === 0) {
@@ -76,13 +83,7 @@ module.exports.loop = function () {
     }
 
     if(Game.time % 500 === 0) {
-        var saved_energy_network = Memory[MEMORY_GLOBAL_ENERGYNET];
-        var sene = saved_energy_network[ENERGY_EMPTY];
-        var allow_e_sale = false;
-        if (sene != undefined && sene.length == 0) {
-            allow_e_sale = true;
-        }
-        global.UPDATE_MARKET_ORDERS(allow_e_sale);
+        UPDATE_MARKET_ORDERS();
         CPU_SECTION('market-order-update', true);
     }
 
@@ -110,10 +111,10 @@ module.exports.loop = function () {
     if (lastFour == 9999) {
         observe_energy = 1;
     }
-    global.UPDATE_OBSERVERS(observe_energy);
+    UPDATE_OBSERVERS(observe_energy);
     CPU_SECTION('update-observers');
 
-    global.ESPIONAGE();
+    ESPIONAGE();
     CPU_SECTION('espionage-main');
 
     RUN_CREEPS();
@@ -136,52 +137,28 @@ module.exports.loop = function () {
         var energy_network = { }
 
         for(var rname in Game.rooms) {
-            // ENERGY MANAGEMENT - PER ROOM
-            var energy_reserves = Game.rooms[rname].getStoredEnergy();
-            var energy_class = Game.rooms[rname].classifyStoredEnergy(energy_reserves);
-            if (empire[rname] != undefined) {
-                empire[rname]['energy_reserves'] = energy_reserves;
-                empire[rname]['energy_class'] = energy_class;
+            if(Game.rooms[rname].isMine()) {
+                if (Game.rooms[rname].terminal && Game.rooms[rname].terminal.isActive()) {
+                    var lterm = Game.rooms[rname].terminal;
+                    if (lterm.shouldPull()) {
+                        lterm.acquireMineralAmount(RESOURCE_ENERGY, 5000, empire_defaults['terminal_energy_min']);
+                        break;
+                    } else if (lterm.shouldPush()) {
+                        
+                        //lterm.pushMineralAmount(RESOURCE_ENERGY, 5000, empire_defaults['terminal_energy_min']);
+                        break;
+                    } 
+                }
             }
-            if(Game.rooms[rname].hasTerminalNetwork()) {
-                if (energy_network[energy_class] == undefined) {
-                    energy_network[energy_class] = [];
-                }
-                energy_network[energy_class].push(rname);
-            }/* else if (Game.rooms[rname].isMine()) {
-                console.log(rname +': ' + energy_reserves + ' => ' + energy_class + ' | ' + Game.rooms[rname].getLevel());
-            }*/
-            
-            if(energy_class != ENERGY_EMPTY) {
-                // In case we know of an enemy room with storage.
-                if(empire[rname] == undefined) {
-                    continue;
-                }
+        }
 
+        for(var rname in Game.rooms) {
 
-                if(Game.rooms[rname].controller == undefined) {
-                    //console.log(rname + 'undef');
-                    continue;
-                } else if(Game.rooms[rname].controller.level == undefined) {
-                    //console.log(rname + ' L undef');
-                    continue;
-                } else if(Game.rooms[rname].controller.level < 3) {
-                    //console.log(rname + ' L <3');
-                    continue;
-                } else if(Game.rooms[rname].controller.owner == undefined) {
-                    //console.log(rname + 'owner undef');
-                    continue;
-                } else if(Game.rooms[rname].controller.owner.username != overlord) {
-                    //console.log(rname + 'owner <3 ' + Game.rooms[rname].controller.owner.username);
-                    continue;
-                }
-            } else if (Game.rooms[rname].hasAlert()) {
-                // do nothing
-            } else if (Game.rooms[rname].controller != undefined && Game.rooms[rname].controller.level != undefined && Game.rooms[rname].controller.level >= 1) {
-                // Do not send RCs to base rooms. They use builderstorages instead.
-            }
-            
             // DEFCON MANAGEMENT
+            
+            if (!Game.rooms[rname].inEmpire()) {
+                continue;
+            }
             
             var enemy_details = Game.rooms[rname].detailEnemies();
             var nuke_details = Game.rooms[rname].detailNukes();
@@ -206,58 +183,6 @@ module.exports.loop = function () {
         global.HANDLE_ALL_ROOM_ALERTS();
         CPU_SECTION('rooms-alerts', true);
         
-        Memory[MEMORY_GLOBAL_ENERGYNET] = energy_network;
-        if (energy_network[ENERGY_EMPTY] != undefined) {
-            if(energy_network[ENERGY_EMPTY].length > 0) {
-                var dest_room = energy_network[ENERGY_EMPTY][0];
-                var potential_senders = [];
-                if(energy_network[ENERGY_FULL] != undefined && energy_network[ENERGY_FULL].length > 0) {
-                    potential_senders = potential_senders.concat(energy_network[ENERGY_FULL]);
-                } else if(energy_network[ENERGY_SPARE] != undefined && energy_network[ENERGY_SPARE].length > 0) {
-                    potential_senders = potential_senders.concat(energy_network[ENERGY_SPARE]);
-                }
-                for (var i = 0; i < potential_senders.length; i++) {
-                    var source_room = potential_senders[i];
-                    var source_terminal = Game.rooms[source_room].terminal;
-                    if (source_terminal.store.energy < 25000) {
-                        continue;
-                    }
-                    var send_result = source_terminal.send(RESOURCE_ENERGY, 20000, dest_room, 'empty room pulls energy from full');
-                    console.log('ENERGYNET: ' + source_room + '(' + source_terminal.store.energy + ') sends energy to (starving) room: ' + dest_room + ', result:' + send_result);
-                    if (send_result == OK) {
-                        break;
-                    }
-                }
-            }
-        }
-        CPU_SECTION('energynet-setup', true);
-        
-        if (energy_network[ENERGY_FULL] != undefined) {
-            if(energy_network[ENERGY_FULL].length > 0) {
-                if(energy_network[ENERGY_SPARE] != undefined && energy_network[ENERGY_SPARE].length > 0) {
-                    var source_room = _.sample(energy_network[ENERGY_FULL]);
-                    var source_terminal = Game.rooms[source_room].terminal;
-                    var terminal_energy_min = empire_defaults['terminal_energy_min'];
-                    if (source_terminal.store.energy > terminal_energy_min) {
-                        var dest_room = _.sample(energy_network[ENERGY_SPARE]);
-                        if (Game.rooms[dest_room]) {
-                            var dest_new_energy = Game.rooms[dest_room].terminal.store.energy;
-                            var space_in_dest = Game.rooms[dest_room].terminal.storeCapacity - _.sum(Game.rooms[dest_room].terminal.store);
-                            if (space_in_dest > 25000) {
-                                var send_result = Game.rooms[source_room].terminal.send(RESOURCE_ENERGY, 25000, dest_room, 'full room pushes energy to ok');
-                                var text_message = 'ENERGYNET: ' + source_room + ' (FULL) pushes 25k energy to (OK) room: ' + dest_room + ', result:' + send_result + ', new total in dest: ' + dest_new_energy;
-                                console.log(text_message);
-                                //Game.notify(text_message);
-                            }
-                       }
-                   } else {
-                       //console.log('ENERGYNET: ' + source_room + ' (FULL) lacks enough energy in terminal to push.');
-                   }
-               }
-            }
-        }
-
-        CPU_SECTION('energynet-pushpull', true);
 
 
 
@@ -336,8 +261,6 @@ module.exports.loop = function () {
     
     }
     
-    
-
     CPU_SECTION_FINAL();
-    
+    Memory[MEMORY_GLOBAL_TICKCOMPLETED] = Game.time;    
 }

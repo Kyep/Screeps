@@ -227,7 +227,6 @@ global.SHOW_INCOMING_NUKES = function() {
 }
 
 global.ENERGY_STATUS = function() {
-    console.log(JSON.stringify(Memory['energy_network']));
     for (var rname in Game.rooms) {
         var rm = Game.rooms[rname];
         if (!rm.isMine()) {

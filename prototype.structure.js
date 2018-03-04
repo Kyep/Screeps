@@ -1,4 +1,11 @@
 
+StructureTerminal.prototype.shouldPull = function() {
+    return this.store[RESOURCE_ENERGY] < empire_defaults['terminal_energy_min'];
+}
+
+StructureTerminal.prototype.shouldPush = function() {
+    return this.store[RESOURCE_ENERGY] > empire_defaults['terminal_energy_max'];
+}
 
 StructureTerminal.prototype.acquireNukeFuel = function() {
     return this.acquireMineralAmount(RESOURCE_GHODIUM, 5000, 5000);

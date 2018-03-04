@@ -2,9 +2,9 @@
 global.MEMORY_GLOBAL_ROOMSTOCLAIM = 'rooms_to_claim';
 global.MEMORY_GLOBAL_ENERGYSHAREDESTS = 'energy_share_dests';
 global.MEMORY_GLOBAL_ESPIONAGE = 'espionage';
-global.MEMORY_GLOBAL_ENERGYNET = 'energy_network';
 global.MEMORY_GLOBAL_CPUSTATS = 'cpustats';
 global.MEMORY_GLOBAL_GCONFIG = 'gconfig';
+global.MEMORY_GLOBAL_TICKCOMPLETED = 'tickcompleted';
 
 global.GLOBALCONFIG = global.GET_ALL_GLOBAL_CONFIG();
 
