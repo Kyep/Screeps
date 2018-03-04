@@ -22,9 +22,13 @@ module.exports = {
 
         var target = undefined;
         if (creep.memory[MEMORY_RENEWALSP]) {
-            var spobj = Game.getObjectById(creep.memory[MEMORY_RENEWALSP]);
-            if (spobj && spobj.isActive() && spobj.spawning == undefined) {
-                target = spobj;
+            if (creep.memory[MEMORY_RENEWALTICK] && creep.memory[MEMORY_RENEWALTICK] < (Game.time - 100)) {
+                delete creep.memory[MEMORY_RENEWALSP];
+            } else {
+                var spobj = Game.getObjectById(creep.memory[MEMORY_RENEWALSP]);
+                if (spobj && spobj.isActive() && spobj.spawning == undefined) {
+                    target = spobj;
+                }
             }
         }
         if (!target) {
@@ -38,6 +42,19 @@ module.exports = {
             } else if (targets.length > 1) {
                 var sorted = targets.sort(function(a, b) { return a.ticksToAvailability() - b.ticksToAvailability() });
                 target = sorted[0];
+            } else {
+                targets = creep.room.find(FIND_STRUCTURES, {
+                    filter: (structure) => {
+                        return (structure.structureType == STRUCTURE_SPAWN && structure.isActive());
+                    }
+                });
+                var sorted = targets.sort(function(a, b) { return a.ticksToAvailability() - b.ticksToAvailability() });
+                var s_dist = creep.pos.getRangeTo(sorted[0]);
+                var s_tta = sorted[0].ticksToAvailability();
+                if (s_tta < s_dist) {
+                    creep.moveToRUP(sorted[0]);
+                }
+                return OK;
             }
         }
         if (target) {
@@ -53,6 +70,7 @@ module.exports = {
                 } else {
                     creep.memory[MEMORY_RENEWALS]++;
                 }
+                creep.memory[MEMORY_RENEWALTICK] = Game.time;
             } else if(result == ERR_NOT_IN_RANGE) {
                 creep.moveToRUP(target);
             } else if (result == ERR_NOT_ENOUGH_ENERGY) {

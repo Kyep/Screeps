@@ -339,12 +339,19 @@ Room.prototype.makeAssignments = function(myconf) {
         }
         
         // Upgraders
-        if (this.storage && this.storage.store[RESOURCE_ENERGY] > 100000) {
+        var total_e = 0;
+        if (this.storage && this.storage.store[RESOURCE_ENERGY] && this.storage.isActive()) {
+            total_e += this.storage.store[RESOURCE_ENERGY];
+        }
+        if (this.terminal && this.terminal.store[RESOURCE_ENERGY] && this.terminal.isActive()) {
+            total_e += this.terminal.store[RESOURCE_ENERGY]
+        }
+        if (total_e > 50000) {
             if (rlvl == 8) {
                 var upobj = {'upstor8': 1}
                 myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'upstor8', upobj, 999);
             } else {
-                var upcount = Math.floor(this.storage.store[RESOURCE_ENERGY] / 50000);
+                var upcount = Math.floor(total_e / 40000);
                 var upobj = {'upstorclose': upcount}
                 myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'upgrades', upobj, 999);
             }
