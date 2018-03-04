@@ -469,22 +469,6 @@ Room.prototype.makeAssignments = function(myconf) {
         console.log(this.name + ': makeAssignments assigned nothing because room lacks controller.');
     }
 
-    // Minerals
-    if (myconf['mineralid'] && rlvl >= 6) {
-        var mineralpatch = Game.getObjectById(myconf['mineralid']);
-        if (mineralpatch) {
-            var term = this.terminal;
-            if (term) {
-                var got_minerals = term.store[myconf['mineralid']];
-                if (got_minerals >= empire_defaults['mineralcap']) {
-                    //console.log(rname + ' is capped on minerals with ' + got_minerals + ' > ' + empire_defaults['mineralcap']);
-                } else if (mineralpatch.mineralAmount > 0) {
-                    myconf = this.setSourceAssignment(myconf, 'extractor', { 'extractor': 1}, 30);
-                }
-            }
-        }
-    }
-
     // Adjust builders depending on unfinished projects.
     var projectsList = this.find(FIND_MY_CONSTRUCTION_SITES, { filter: (csite) => { return (csite.structureType != STRUCTURE_CONTAINER); } });
     if (projectsList.length > 0) {
@@ -503,22 +487,40 @@ Room.prototype.makeAssignments = function(myconf) {
         }
     }
     
-    
-    if (rlvl >= 4 && rlvl < 8 && this.storage && this.storage[RESOURCE_ENERGY] > 100000) {
-        var upcount = Math.floor(this.storage[RESOURCE_ENERGY] / 50000);
-        var upobj = {'upstorclose': upcount}
-        myconf = this.setSourceAssignment(myconf, 'upgrades', upobj, 250);
-    }
-
-    // ENERGY AVAILABILITY MANAGEMENT
-    var teller_obj = this.getEnergyHistoryAdvisedSpawns();
-    if (typeof teller_obj === "object" ) {
-        console.log('this.name HAS TELLER OBJ: ' + JSON.stringify(teller_obj));
-        myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'teller', teller_obj, -1000);
-    }
-
-    // SCAVENGER MANAGEMENT
+    // Base-only spawns
     if(this.isMine()) {
+        
+        // Mineral mining
+        if (myconf['mineralid'] && rlvl >= 6) {
+            var mineralpatch = Game.getObjectById(myconf['mineralid']);
+            if (mineralpatch) {
+                var term = this.terminal;
+                if (term) {
+                    var got_minerals = term.store[myconf['mineralid']];
+                    if (got_minerals >= empire_defaults['mineralcap']) {
+                        //console.log(rname + ' is capped on minerals with ' + got_minerals + ' > ' + empire_defaults['mineralcap']);
+                    } else if (mineralpatch.mineralAmount > 0) {
+                        myconf = this.setSourceAssignment(myconf, 'extractor', { 'extractor': 1}, 30);
+                    }
+                }
+            }
+        }
+        
+        // Upgraderstorage
+        if (rlvl >= 4 && rlvl < 8 && this.storage && this.storage[RESOURCE_ENERGY] > 100000) {
+            var upcount = Math.floor(this.storage[RESOURCE_ENERGY] / 50000);
+            var upobj = {'upstorclose': upcount}
+            myconf = this.setSourceAssignment(myconf, 'upgrades', upobj, 250);
+        }
+
+        // Tellers
+        var teller_obj = this.getEnergyHistoryAdvisedSpawns();
+        if (typeof teller_obj === "object" ) {
+            console.log('this.name HAS TELLER OBJ: ' + JSON.stringify(teller_obj));
+            myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'teller', teller_obj, -1000);
+        }
+
+        // Scavengers
         var dropped_resources = this.find(FIND_DROPPED_RESOURCES, {filter: (s) => s.energy > 0});
         if (dropped_resources.length > 0) {
             var energy_on_ground = 0;
@@ -529,14 +531,14 @@ Room.prototype.makeAssignments = function(myconf) {
                 myconf = this.setSourceAssignment(myconf, 'scavenger', {'scavenger': 1}, 250);
             }
         }
-    }
     
-    // Nuke refilling
-    if (this.isMine() && this.getLevel() == 8) {
-        if (this.terminal && this.terminal.store[RESOURCE_GHODIUM] && this.terminal.store[RESOURCE_GHODIUM] >= 5000) {
-            var empty_silos = this.find(FIND_MY_STRUCTURES, { filter: (structure) => { return ((structure.structureType == STRUCTURE_NUKER && structure.ghodium != structure.ghodiumCapacity));}});
-            if (empty_silos.length) {
-                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'nuke', {'nuketech': 1}, 500);
+        // Nuke refilling
+        if (this.getLevel() == 8) {
+            if (this.terminal && this.terminal.store[RESOURCE_GHODIUM] && this.terminal.store[RESOURCE_GHODIUM] >= 5000) {
+                var empty_silos = this.find(FIND_MY_STRUCTURES, { filter: (structure) => { return ((structure.structureType == STRUCTURE_NUKER && structure.ghodium != structure.ghodiumCapacity));}});
+                if (empty_silos.length) {
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'nuke', {'nuketech': 1}, 500);
+                }
             }
         }
     }
@@ -571,6 +573,9 @@ Room.prototype.getAndUpdateSpawnEnergyHistory = function() {
 }
 
 Room.prototype.getEnergyHistoryAdvisedSpawns = function() {
+    if(!this.isMine()) {
+        return false;
+    }
     var ehistarr = this.getAndUpdateSpawnEnergyHistory();
     if (!ehistarr || ehistarr.length == 0) {
         console.log(this.name + ': getEnergyHistoryAdvisedSpawns got zero-length ehistarr');

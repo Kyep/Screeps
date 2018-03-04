@@ -20,8 +20,14 @@ StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, transf
         var rterm = robj.terminal;
         if (rterm.store[mineral_type] && rterm.store[mineral_type] > (transfer_amount + leave_amount)) {
             var retval = rterm.send(mineral_type, transfer_amount, this.room.name);
+            var local_before = 0;
+            if (this.store[mineral_type]) {
+                local_before = this.store[mineral_type];
+            }
+            var local_after = 0; 
             if (retval == OK) {
-                console.log(this.room.name + ': got ' + transfer_amount + ' of ' + mineral_type + ' from ' + rterm.room.name);
+ 
+                console.log('Network: ' + mineral_type + ': ' + rterm.room.name + '(with: ' + rterm.store[mineral_type] + ') sent '+ transfer_amount + ' to: ' + this.room.name + '(previously with: ' + local_before +')');
                 return true;
             }
         }

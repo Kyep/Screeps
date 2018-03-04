@@ -118,6 +118,7 @@ global.CPU_SECTION_FINAL = function() {
         console.log('CPU_SECTION: called without cpu_thistick defined as a global var.');
         return false;
     }
+    Memory[MEMORY_GLOBAL_CPUSTATS]['lastsection'] = 'finished';
     delete cpu_thistick['rare']
     return UPDATE_CPU_USAGE_HISTORY(cpu_thistick);
 }

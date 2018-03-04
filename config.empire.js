@@ -22,8 +22,6 @@
         'repairmax_towers' : 150000,
 
         'terminal_energy_min' : 50000, // below this, don't withdraw any energy from terminal
-        'terminal_energy_sell' : 60000, // above this, try to sell energy for credits
-        'terminal_energy_share' : 90000, // above this, give away energy
         'terminal_energy_max' : 100000, // above this, refuse to allow any more energy to be deposited in the terminal
 
         'mineralcap' : 500000, // once terminal has this many minerals, no more will be mined in a room.

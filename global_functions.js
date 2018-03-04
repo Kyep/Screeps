@@ -443,7 +443,7 @@ global.DELETE_OLD_ORDERS = function() {
         if (my_orders[thisorder]['amount'] != 0) {
             continue;
         }
-        console.log('DELETE OLD ORDER: Room ' + my_orders[thisorder]['roomName'] + ', id ' + my_orders[thisorder]['id'] + ', rA ' + my_orders[thisorder]['remainingAmount']);
+        console.log('DELETE OLD ORDER: Room ' + my_orders[thisorder]['roomName'] + ', id ' + my_orders[thisorder]['id'] + ', for ' + my_orders[thisorder]['resourceType'] + ', with remainingAmount ' + my_orders[thisorder]['remainingAmount']);
         Game.market.cancelOrder(my_orders[thisorder]['id']);
     }
 }
@@ -657,8 +657,8 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         console.log('DEFENSE: Decided that  ' + roomname + ' can handle the incoming threat of ' + theirthreat + ' without any units being spawned');
     }
     var rconf = GET_ROOM_CONFIG(roomname);
-    ADD_ROOM_KEY_ASSIGNMENT(rconf, 'basemil', baseforce, 0, true);
-    ADD_ROOM_KEY_ASSIGNMENT(rconf, 'defmil', patrolforce, 50, true);
+    rconf = ADD_ROOM_KEY_ASSIGNMENT(rconf, 'basemil', baseforce, 0, true);
+    rconf = ADD_ROOM_KEY_ASSIGNMENT(rconf, 'defmil', patrolforce, 50, true);
     
 }
 

@@ -17,6 +17,7 @@ require('config.flags');
 
 require('prototype.creep');
 require('prototype.room');
+require('prototype.room.defense');
 require('prototype.room.boosts');
 require('prototype.structures_all');
 require('prototype.structure');
@@ -40,7 +41,7 @@ module.exports.loop = function () {
     var tick_done = Memory[MEMORY_GLOBAL_TICKCOMPLETED];
     var tick_expected = Game.time - 1;
     if (tick_done != tick_expected) {
-        var crashmsg = 'MISSING TICK: possible crash on ' + tick_expected + ' last section: ' + Memory[MEMORY_GLOBAL_CPUSTATS]['lastsection'];
+        var crashmsg = 'MISSING TICK: possible crash AFTER ' + tick_expected + ' last section: ' + Memory[MEMORY_GLOBAL_CPUSTATS]['lastsection'];
         console.log(crashmsg);
     }
 
@@ -137,7 +138,7 @@ module.exports.loop = function () {
                 if (Game.rooms[rname].terminal && Game.rooms[rname].terminal.isActive()) {
                     var lterm = Game.rooms[rname].terminal;
                     if (lterm.shouldPull()) {
-                        lterm.acquireMineralAmount(RESOURCE_ENERGY, 5000, empire_defaults['terminal_energy_min']);
+                        lterm.acquireMineralAmount(RESOURCE_ENERGY, 5000, empire_defaults['terminal_energy_min'] + 10000);
                         break;
                     } else if (lterm.shouldPush()) {
                         
@@ -148,10 +149,8 @@ module.exports.loop = function () {
             }
         }
 
+        // DEFCON MANAGEMENT
         for(var rname in Game.rooms) {
-
-            // DEFCON MANAGEMENT
-            
             if (!Game.rooms[rname].inEmpire()) {
                 continue;
             }
@@ -162,7 +161,7 @@ module.exports.loop = function () {
             var should_have_alert = Game.rooms[rname].shouldHaveAlert(enemy_details, nuke_details);
             if (enemy_details['hostileCount'] > 0) {
                 //console.log(rname + ': ' + has_alert + ', ' + should_have_alert + JSON.stringify(enemy_details) + ', ' + JSON.stringify(nuke_details));
-            }        
+            }
             if (has_alert) {
                 if (should_have_alert) {
                     Game.rooms[rname].updateAlert(enemy_details, nuke_details);
@@ -174,10 +173,10 @@ module.exports.loop = function () {
                 Game.rooms[rname].updateAlert(enemy_details, nuke_details);
             }
         }
-        CPU_SECTION('rooms-general', true);
+        CPU_SECTION('defcon-update', true);
 
         global.HANDLE_ALL_ROOM_ALERTS();
-        CPU_SECTION('rooms-alerts', true);
+        CPU_SECTION('defcon-process', true);
         
 
 
