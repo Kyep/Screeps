@@ -1,3 +1,27 @@
+global.CHECK_FOR_OVERBURDENED_SPAWNERS = function () {
+    // 'ROOM IS MANAGING TOO MANY PARTS' ALERT
+    var max_parts_per_spawner = 400;
+    var room_parts = {}
+    for (var crname in Game.creeps) {
+        var cr = Game.creeps[crname];
+        var sroom = cr.memory[MEMORY_SPAWNERROOM]
+        if (!sroom) {
+            continue;
+        }
+        var pcount = cr.body.length;
+        if (room_parts[sroom] == undefined) {
+            room_parts[sroom] = 0;
+        }
+        room_parts[sroom] += pcount;
+    }
+    for (var rmname in room_parts) {
+        var rmspawns = Game.rooms[rmname].find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_SPAWN } } );
+        var num_spawns = rmspawns.length;
+        if (room_parts[rmname] > (max_parts_per_spawner * num_spawns)) {
+            console.log('CHECK_FOR_OVERBURDENED_SPAWNERS: room ' + rmname + ' is maintaining ' + room_parts[rmname] + ' with ' + num_spawns + ' spawner(s). This is > ' + max_parts_per_spawner + ' parts per spawner');
+        }
+    }
+}
 
 global.ROUND_NUMBER_TO_PLACES = function (value, decimals) {
   return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
@@ -321,8 +345,8 @@ global.SPAWN_VALIDATED = function (spawner, crnameprefix, bodylist, memory_objec
     memory_object[MEMORY_SPAWNERROOM] = spawner.room.name;
     var result = spawner.createCreep(bodylist, crname, memory_object);
     if (result) {
-        spawner.memory['role_spawning'] = memory_object[MEMORY_ROLE];
-        spawner.memory['dest_spawning'] = memory_object[MEMORY_DEST];
+        spawner.memory[MEMORY_SPAWNINGROLE] = memory_object[MEMORY_ROLE];
+        spawner.memory[MEMORY_SPAWNINGDEST] = memory_object[MEMORY_DEST];
         //console.log(spawner.room.name + '(' + spawner.name + '): created: ' + crname + ' -> ' + memory_object[MEMORY_DEST]);
     } else {
         console.log(spawner.room.name + '(' + spawner.name + '): (' + result + ') ' + crname + ' -> ' + memory_object[MEMORY_DEST]);
@@ -484,7 +508,7 @@ global.SHARE_SPARE_ENERGY = function() {
     
     var terminal_energy_share = empire_defaults['terminal_energy_share'];
     
-    if (Memory['energy_share_dests'] == undefined) {
+    if (Memory[MEMORY_GLOBAL_ENERGYSHAREDESTS] == undefined) {
         console.log('SHARE_SPARE_ENERGY: energy_share_dests is undefined');
         return;
     }
@@ -493,7 +517,7 @@ global.SHARE_SPARE_ENERGY = function() {
         console.log('SHARE_SPARE_ENERGY: energy_share_dest_index is undefined');
         return;
     }
-    var send_targets = Memory['energy_share_dests'];
+    var send_targets = Memory[MEMORY_GLOBAL_ENERGYSHAREDESTS];
     if (send_targets.length == 0) {
         console.log('SHARE_SPARE_ENERGY: energy_share_dests is 0-length');
         return;

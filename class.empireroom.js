@@ -149,7 +149,7 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
     
 
     var spawner_data = {}
-    //console.log(JSON.stringify(advised_spawns));
+    
     for (var pname in advised_spawns) {
         THIS_SPAWN_ROOM:
         for (var rname in advised_spawns[pname]) {
@@ -222,8 +222,6 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
             }
         }
     }
-    
-    //console.log(JSON.stringify(spawner_data));
     return spawner_data;
 }
 
@@ -520,40 +518,14 @@ Room.prototype.makeAssignments = function(myconf) {
     }
 
     // ENERGY AVAILABILITY MANAGEMENT
-    if(this.isMine() && this.energyCapacityAvailable > 0) {
-        if (this.storage != undefined) {
-            var rmem = this.memory;
-            var max_history = empire_defaults['room_history_ticks'];
-            if (rmem['energyhistory'] == undefined) {
-                rmem['energyhistory'] = [];
-            }
-            if (rmem['energyhistory'].length >= max_history) {
-                rmem['energyhistory'].pop();
-            }
-            rmem['energyhistory'].unshift(this.energyAvailable);
-            var e_hist_total = 0;
-            for (var i = 0; i < rmem['energyhistory'].length; i++) {
-                e_hist_total += rmem['energyhistory'][i];
-            }
-            var e_hist_avg = Math.round(e_hist_total / rmem['energyhistory'].length);
-            var e_hist_avg_pc = Math.round(e_hist_avg / this.energyCapacityAvailable * 100);
-            if (e_hist_avg_pc < empire_defaults['room_minimum_energy_pc']) {
-                if (this.energyAvailable == 300) {
-                    myconf = this.setSourceAssignment(myconf, 'teller', {'teller-mini': 2}, -1000);
-                } else if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc']) {
-                    myconf = this.setSourceAssignment(myconf, 'teller', {'teller': 2}, -1000);
-                } else {
-                    myconf = this.setSourceAssignment(myconf, 'teller', {'teller': 1}, -1000);
-                }
-            }
-            this.memory['energyhistory'] = rmem['energyhistory'];
-        }
-    } else if (this.memory['energyhistory'] != undefined) {
-        delete this.memory['energyhistory'];
+    var teller_obj = this.getEnergyHistoryAdvisedSpawns();
+    if (typeof teller_obj === "object" ) {
+        console.log('this.name HAS TELLER OBJ: ' + JSON.stringify(teller_obj));
+        myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'teller', teller_obj, -1000);
     }
 
     // SCAVENGER MANAGEMENT
-    if(this.energyCapacityAvailable > 0) {
+    if(this.isMine()) {
         var dropped_resources = this.find(FIND_DROPPED_RESOURCES, {filter: (s) => s.energy > 0});
         if (dropped_resources.length > 0) {
             var energy_on_ground = 0;
@@ -578,4 +550,53 @@ Room.prototype.makeAssignments = function(myconf) {
 
     this.memory[MEMORY_RCONFIG] = myconf;
     return myconf;
+}
+
+Room.prototype.getAndUpdateSpawnEnergyHistory = function() {
+    if(!this.isMine()) {
+        return [];
+    }
+    if (!this.memory[MEMORY_EHISTORY]) {
+        this.memory[MEMORY_EHISTORY] = [];
+    }
+    var ehmem = this.memory[MEMORY_EHISTORY];
+    var max_history = empire_defaults['room_history_ticks'];
+    if (ehmem.length >= max_history) {
+        ehmem = ehmem.slice(0, max_history); // returns the first max_history elements, IE: cuts off elements beyond the maximum
+    }
+    ehmem.unshift(this.energyAvailable); // adds element to start of array, returns length of array.
+    var e_hist_total = 0;
+    for (var i = 0; i < ehmem.length; i++) {
+        e_hist_total += ehmem[i];
+    }
+    var e_hist_avg = Math.round(e_hist_total / ehmem.length);
+    var e_hist_avg_pc = Math.round(e_hist_avg / this.energyCapacityAvailable * 100);
+    
+    this.memory[MEMORY_EHISTORY] = ehmem;
+    
+    return [e_hist_avg, e_hist_avg_pc];
+}
+
+Room.prototype.getEnergyHistoryAdvisedSpawns = function() {
+    var ehistarr = this.getAndUpdateSpawnEnergyHistory();
+    if (!ehistarr || ehistarr.length == 0) {
+        console.log(this.name + ': getEnergyHistoryAdvisedSpawns got zero-length ehistarr');
+        return false;
+    }
+    var rlvl = this.getLevel();
+    var e_hist_avg = ehistarr[0];
+    var e_hist_avg_pc = ehistarr[1];
+    
+    console.log(this.name + '(' + rlvl +'): average energy: '+ e_hist_avg + ', ' + e_hist_avg_pc + '% of ' + this.energyCapacityAvailable);
+    if (e_hist_avg == 300) {
+        console.log(this.name + ': emergency energy condition 1, energy == 300');
+        return {'teller-mini': 2};
+    } else if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc']) {
+        console.log(this.name + ': emergency energy condition 2, energy pc < critlcal energy pc');
+        return {'teller': 2};
+    } else if (e_hist_avg_pc < empire_defaults['room_minimum_energy_pc']) {
+        console.log(this.name + ': emergency energy condition 3, energy pc < minimum energy pc');
+        return {'teller': 1};
+    }
+    return false;
 }

@@ -1,6 +1,4 @@
 
-    global.cpu_reporting = 0;
-
     global.overlord = 'Phisec';
     global.allies = []; // not including anyone in alliance.
     global.enemies = [];
@@ -34,7 +32,7 @@
 
         'room_energy_min' : 100000, // 50k in terminal, 50k in storage
         'room_energy_max' : 300000, // 50k in termal, 250k in storage
-        'room_history_ticks': 50,
+        'room_history_ticks': 10,
         'room_minimum_energy_pc': 60, // what % of max stored energy (spawn/extensions) should rooms maintain? If we're below this avg % for room_history_ticks then we will spawn a teller
         'room_crit_energy_pc': 40, // if below this, spawn 2 tellers
 
@@ -302,7 +300,8 @@
         // 16 Base expansions
         'W42S18': {
             'roomname': '16E',
-            'spawn_room': 'W43S18'
+            'spawn_room': 'W43S18',
+            'backup_spawn_room': 'W46S17'
         },
         'W43S17': {
             'roomname': '16N',

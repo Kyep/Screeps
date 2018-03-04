@@ -31,8 +31,19 @@ module.exports = {
                 if (amount_to_withdraw > creep.carryCapacity) {
                     amount_to_withdraw = creep.carryCapacity;
                 }
-                if (creep.withdraw(myterminal, mymineral, amount_to_withdraw) == ERR_NOT_IN_RANGE) {
+                //creep.say(amount_to_withdraw);
+
+                var res_withdraw = creep.withdraw(myterminal, mymineral, amount_to_withdraw);
+                if (res_withdraw == ERR_NOT_IN_RANGE) {
                     creep.moveToRUP(myterminal);
+                } else if (res_withdraw == ERR_NOT_ENOUGH_RESOURCES) {
+                    if (myterminal.acquireMineralAmount(mymineral, 3000, 3000)) {
+                        creep.say('ACQUIRED!');
+                    } else {
+                        console.log(creep.name + ' in ' + creep.room.name + ' is attempting to acquire ' + mymineral + ' to fill a lab, but it is not in the terminal network!');
+                        creep.sleepFor(5);
+                    }
+
                 }
             } else {
                 if (Game.time % 25 === 0) {

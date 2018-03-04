@@ -24,7 +24,7 @@ global.empire_workers = {
 	'builderstorage': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'renew_allowed': 0, 'abbr': 'BS' }, // full speed on roads
 	'upstorclose': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 1, MOVE: 1}), 'renew_allowed': 0, 'abbr': 'USc' },  // halfspeed on roads, quarter speed offroad
 	'upstorfar': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'renew_allowed': 0, 'abbr': 'USf' },  // halfspeed on roads, quarter speed offroad
-	'labtech': { 'body': global.CONSTRUCT_BODY({CARRY: 6, MOVE: 3}), 'abbr': 'LTec' },
+	'labtech': { 'body': global.CONSTRUCT_BODY({CARRY: 18, MOVE: 6}), 'noresizing': 1, 'abbr': 'LTec' },
 	'nuketech': { 'body': global.CONSTRUCT_BODY({CARRY: 12, MOVE: 6}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'NUKE', 'rup': 3 },
 
     // MILITARY CREEP DESIGN RULES:
@@ -51,21 +51,22 @@ global.empire_workers = {
 	'wizard': { 'body':   [MOVE, RANGED_ATTACK], 'renew_allowed': 0}, // horrificly expensive anti-crowd unit
 
     // Anti-player ATTACK classes
-	//'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, ATTACK: 20}), 'renew_allowed': 0, 'abbr': 'SB'},    // {"cost":2900,"dps":600}
-	'siegebig': { 'body':      global.CONSTRUCT_BODY({MOVE: 25, WORK: 25}), 'renew_allowed': 0, 'abbr': 'SB'},   // {"cost":3750,"dismantle_dps":1500,
+    //'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 10, MOVE: 10, ATTACK: 30}), 'renew_allowed': 0, 'abbr': 'SB'},   // {"cost":3000,"dps":900} <--- 3.6k DPS with boosts
+	//'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 15, MOVE: 10, WORK: 25}), 'renew_allowed': 0, 'abbr': 'SB'},   // {"cost":3150,"dismantle_dps":1250} <--- 5k DPS with boosts
+	'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 10, MOVE: 10, WORK: 30}), 'renew_allowed': 0, 'abbr': 'SB'},   // {"cost":3600,"dismantle_dps":1500} <--- 6k DPS with boosts
 	'siege': { 'body':     global.CONSTRUCT_BODY({MOVE: 6, WORK: 6}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'S'},
 
 	//'siegehealer': { 'body':     global.CONSTRUCT_BODY({MOVE: 1, HEAL: 1}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'},
-	'siegehealer': { 'body':     global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, HEAL: 20}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'}, //{"cost":6300,"hps":240,
+	'siegehealer': { 'body':     global.CONSTRUCT_BODY({TOUGH: 20, MOVE: 10, HEAL: 20}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'}, //{"cost":6300,"hps":240,
 
 	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, 
 	'drainerbig': { 'body': global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, HEAL: 20}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, // {"cost":4800,"hps":180}
 
-	'healer': { 'body':   global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, HEAL: 20}) }, //{"cost":6300,"hps":240}
+	'healer': { 'body':   global.CONSTRUCT_BODY({TOUGH: 15, MOVE: 10, HEAL: 25}) }, //{"cost":6300,"hps":240}
 
 
     // Territory control classes
-	'reserver' : { 'body': global.CONSTRUCT_BODY({CLAIM: 2, MOVE: 2}), 'noresizing': 1, 'renew_allowed': 0 },
+	'reserver' : { 'body': global.CONSTRUCT_BODY({CLAIM: 2, MOVE: 2}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 10 },
 	'sreserver' : { 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 	'claimer': { 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 	'bclaimer': { 'body': global.CONSTRUCT_BODY({CLAIM: 14, MOVE: 14}), 'renew_allowed': 0 },
@@ -73,5 +74,6 @@ global.empire_workers = {
 
     // Base maint/defense classes.
 	'teller': { 'body': global.CONSTRUCT_BODY({CARRY: 10, MOVE: 5}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 5},
+	'teller-mini': { 'body': global.CONSTRUCT_BODY({CARRY: 4, MOVE: 2}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 3}, // teller for tiny rooms that are out of energy.
 	'teller-towers': { 'body': global.CONSTRUCT_BODY({CARRY: 10, MOVE: 5}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 5 }
 }

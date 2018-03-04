@@ -4,10 +4,17 @@ Creep.prototype.getBoostsWanted = function() {
     if (!this.memory[MEMORY_BOOSTSALLOWED]) {
         return boosts_desired;
     }
+    
+    // ideal: from W46S17 -> W37S18 (shard1) 
+    // SIEGEBIG: {TOUGH: 10, MOVE: 20, WORK: 20} + SIEGEHEALER {TOUGH: 10, MOVE: 25, HEAL: 15} -- with XZH2O (T3 dismantle boost), XLHO2 (T3 heal boost), and XGHO2 (T3 TOUGH boost)
+    
     var melee_parts = this.getActiveBodyparts(ATTACK);
     var work_parts = this.getActiveBodyparts(WORK);
     var heal_parts = this.getActiveBodyparts(HEAL);
     var tough_parts = this.getActiveBodyparts(TOUGH);
+
+    boosts_desired.push('XZHO2'); // MOVE speed
+
     if (work_parts) {
         boosts_desired.push('XZH2O');
     }
@@ -15,11 +22,12 @@ Creep.prototype.getBoostsWanted = function() {
         boosts_desired.push('XUH2O');// have UH2O, no XUH2O
     }
     if (heal_parts) {
-        boosts_desired.push('LHO2'); // T1: T2: T3:XLHO2
+        boosts_desired.push('XLHO2'); // T1: T2: T3:XLHO2
     }
     if (tough_parts) {
-        boosts_desired.push('GO');
+        boosts_desired.push('XGHO2');
     }
+
     this.memory[MEMORY_BOOSTSWANTED] = boosts_desired;
     return boosts_desired;
 }
@@ -132,7 +140,7 @@ Room.prototype.ensureLabTech = function() {
     return num_techs;
 }
 
-Room.prototype.assignBooster = function(btype) {
+Room.prototype.assignBoost = function(btype) {
     if (!btype) {
         console.log(this.name + ': assignBooster: null booster type');
         return false;

@@ -117,6 +117,17 @@ global.REPORT_TERMINALS = function(mintype) {
     }
 }
 
+global.SHOW_BOOSTERS = function() {
+    var assigned_labs = Memory['assigned_labs'];
+    for (var labid in assigned_labs) {
+        var labobj = assigned_labs[labid];
+        if (labobj['purpose'] != 'boost') {
+            continue;
+        }
+        console.log(labid + ': ' + JSON.stringify(labobj));
+    }
+}
+
 global.MINERAL_INVENTORY = function() {
     var minobj = {}
     for (var rname in Game.rooms) { 

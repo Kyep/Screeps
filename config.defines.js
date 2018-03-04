@@ -1,3 +1,14 @@
+// GLOBAL memory keys, IE: Memory['this_key']
+global.MEMORY_GLOBAL_ROOMSTOCLAIM = 'rooms_to_claim';
+global.MEMORY_GLOBAL_ENERGYSHAREDESTS = 'energy_share_dests';
+global.MEMORY_GLOBAL_ESPIONAGE = 'espionage';
+global.MEMORY_GLOBAL_ENERGYNET = 'energy_network';
+global.MEMORY_GLOBAL_CPUSTATS = 'cpustats';
+global.MEMORY_GLOBAL_GCONFIG = 'gconfig';
+
+global.GLOBALCONFIG = global.GET_ALL_GLOBAL_CONFIG();
+
+
 // Creep memory, top-level categories
 global.MEMORY_ROLE = 'role';
 global.MEMORY_AISCRIPT = 'aiscript';
@@ -91,6 +102,12 @@ global.JOB_DISMANTLE = 'dismantle';
 // Rooms, top level memory categories
 global.MEMORY_ROAD_NETWORK = 'road_network';
 global.MEMORY_RCONFIG = 'rconfig';
+global.MEMORY_EHISTORY = 'ehistory';
+
+// Spawns, top level memory categories
+global.MEMORY_SPAWNINGROLE = 'role_spawning';
+global.MEMORY_SPAWNINGDEST = 'dest_spawning';
+
 
 global.COLOR_HARVEST = '#ffffff';
 global.COLOR_UPGRADE = '#0000ff';

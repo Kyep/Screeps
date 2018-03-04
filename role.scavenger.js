@@ -7,7 +7,12 @@ module.exports =  {
 
      run: function(creep) {
         if(creep.memory[MEMORY_JOB] != JOB_SCAVENGE && creep.carry.energy == 0) {
+            if (!creep.isAtDestinationRoom()) {
+                creep.moveToDestination();
+                return;
+            }
             creep.memory[MEMORY_JOB] = JOB_SCAVENGE;
+            return;
         } else if(creep.memory[MEMORY_JOB] == JOB_SCAVENGE && creep.carry.energy == creep.carryCapacity) {
             creep.memory[MEMORY_JOB] = JOB_RETURN;
             creep.memory[MEMORY_CONTAINER] = undefined;
