@@ -42,8 +42,8 @@ module.exports = {
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_BACK) {
             if (creep.isAtHomeRoom()) {
-                var home_ec = creep.room.classifyStoredEnergy();
-                if (home_ec == ENERGY_EMPTY) {
+                var reserves = creep.room.storage.store[RESOURCE_ENERGY];
+                if (!reserves || reserves < 50000) {
                     creep.disableRenew();
                     //creep.memory[MEMORY_ROLE] = 'recycler';
                     console.log(creep.name + ' has run out of energy to transfer from ' + creep.memory[MEMORY_HOME] + ' to ' + creep.memory[MEMORY_DEST]);

@@ -423,29 +423,6 @@ Room.prototype.getStoredEnergy = function() {
     return total_energy;
 }
 
-Room.prototype.classifyStoredEnergy = function(energyamount) {
-    if (!arguments.length) {
-        energyamount = this.getStoredEnergy();
-    }
-    var energy_minimum = empire_defaults['room_energy_min'];
-    var energy_maximum = empire_defaults['room_energy_max']; // 1,000,000 units in storage.
-    if (energyamount < energy_minimum) {
-        return ENERGY_EMPTY;
-    } else if (energyamount > energy_maximum) {
-        return ENERGY_FULL; 
-    } else {
-        if(energyamount >= (energy_minimum + 50000)) {
-            if (this.controller && this.controller.level && this.controller.level == 8) {
-                // Level 8 rooms actively try to get rid of their energy, in favor of pushing it to other rooms that can better use it.
-                return ENERGY_FULL;
-            } else {
-                return ENERGY_SPARE;
-            }
-        }
-        return ENERGY_OK;
-    }
-}
-
 Room.prototype.hasTerminalNetwork = function() {
     if (this.controller == undefined) {
         return 0;

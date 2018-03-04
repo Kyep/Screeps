@@ -119,10 +119,6 @@ global.COLOR_GFS = '#ffff00';
 global.COLOR_RENEW = '#ff00ff';
 global.COLOR_SCAVAGE = '#000000';
 
-global.ENERGY_OK = 'ok';
-global.ENERGY_FULL = 'full';
-global.ENERGY_EMPTY = 'empty';
-global.ENERGY_SPARE = 'spare';
 
 global.FLAG_GROUNDZERO = 'nucleartarget';
 global.FLAG_ROADORIGIN = 'roadorigin';

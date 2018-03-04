@@ -69,9 +69,6 @@ module.exports.loop = function () {
     // ----------------------------------------------------------------------------------
     // SECTION: Global actions that are done once per set number of ticks, regardless of current CPU bucket
 
-    if(Game.time % 250 === 0) {
-        //global.SHARE_SPARE_ENERGY(); 
-    }
     if(Game.time % 2000 === 0) {
         //global.PRESET_ATTACK_WAVE();
         global.ESPIONAGE_ATTACK_PLANS(true);
@@ -134,7 +131,6 @@ module.exports.loop = function () {
 
 
         // ROOM MANAGER
-        var energy_network = { }
 
         for(var rname in Game.rooms) {
             if(Game.rooms[rname].isMine()) {
