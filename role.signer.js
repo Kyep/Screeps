@@ -6,8 +6,7 @@ module.exports = {
             creep.moveToDestination();
         } else if (creep.updateDestination()) {
             return;
-        } else if (creep.pos.x < 1 || creep.pos.x > 48 || creep.pos.y < 1 || creep.pos.y > 48) {
-            creep.moveTo(25, 25, creep.room);
+        } else if (creep.avoidEdges()) {
             return;
         } else {
             if (creep.memory[MEMORY_SIGN] == undefined) {

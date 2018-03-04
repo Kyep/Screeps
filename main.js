@@ -139,7 +139,7 @@ module.exports.loop = function () {
                 if (Game.rooms[rname].terminal && Game.rooms[rname].terminal.isActive()) {
                     var lterm = Game.rooms[rname].terminal;
                     if (lterm.shouldPull()) {
-                        lterm.acquireMineralAmount(RESOURCE_ENERGY, 5000, empire_defaults['terminal_energy_min'] + 10000);
+                        lterm.acquireMineralAmount(RESOURCE_ENERGY, 5000, empire_defaults['terminal_energy_min'] + 10000, true);
                         break;
                     } else if (lterm.shouldPush()) {
                         

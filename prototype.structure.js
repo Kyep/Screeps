@@ -11,7 +11,7 @@ StructureTerminal.prototype.acquireNukeFuel = function() {
     return this.acquireMineralAmount(RESOURCE_GHODIUM, 5000, 5000);
 }
 
-StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, transfer_amount, leave_amount) {
+StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, transfer_amount, leave_amount, ignore_unmaxed_rooms) {
     var best_terminal = undefined;
     var best_distance = 9999;
     for (var rname in Game.rooms) {
@@ -24,6 +24,9 @@ StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, transf
             continue;
         }
         if (rterm.cooldown) {
+            continue;
+        }
+        if (ignore_unmaxed_rooms && robj.getLevel() != 8) {
             continue;
         }
         if (rterm.store[mineral_type] && rterm.store[mineral_type] > (transfer_amount + leave_amount)) {
@@ -156,6 +159,20 @@ StructureSpawn.prototype.getRoleBodyAndProperties = function(roletext, tgtroom, 
     retval['body'] = partlist;
     retval['renew_allowed'] = renew_allowed;
     return retval;
+}
+
+StructureSpawn.prototype.ticksToAvailability = function() {
+    if (this.spawning && this.spawning.remainingTime) {
+        return this.spawning.remainingTime;
+    }
+    var crlist = this.pos.findInRange(FIND_MY_CREEPS, 3, {filter: function(c) { if (c.memory[MEMORY_JOB] == JOB_RENEW && c.getRenewEnabled()) { return true; } else { return false; } } } );
+    var time_to_renew = 0;
+    //console.log(crlist.length);
+    for (var i = 0; i < crlist.length; i++) {
+        var gap = crlist[i].ticksToLive;
+        time_to_renew += Math.floor(gap / Math.floor(600/crlist[i].body.length));
+    }
+    return time_to_renew;
 }
 
 StructureSpawn.prototype.isAvailable = function(force) {

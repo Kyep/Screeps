@@ -243,7 +243,7 @@ Room.prototype.detailEnemies = function() {
         for(var i = 0; i < enemiesList.length; i++) {
             var this_enemy_cost = global.CREEP_COST(enemiesList[i].body);
             if(enemiesList[i].isBoosted()) {
-                this_enemy_cost *= 2; // This treats boosted creeps as twice as dangerous. They can be up to 4x... but this is a simple method of treating these creeps more seriously.
+                this_enemy_cost *= 5; // This treats boosted creeps as 5x as dangerous.
             }
             details['hostileCost'] += this_enemy_cost;
             if (enemiesList[i].owner != undefined) {
@@ -359,23 +359,23 @@ Room.prototype.deleteAlert = function() {
     // Reassign or recycle mobs created because of the alert.
     if(empire_defaults['alerts_recycle'] == 1) {
         for(var name in Game.creeps) {
-            if(Game.creeps[name].memory[MEMORY_DEST] == this.name && (empire_defaults['military_roles'].includes(Game.creeps[name].memory[MEMORY_ROLE]))) {
+            if(Game.creeps[name].memory[MEMORY_DEST] == this.name && Game.creeps[name].isMilitary()) {
                 Game.creeps[name].memory[MEMORY_ROLE] = 'recycler';
                 Game.creeps[name].say('🔄 recycle');
                 console.log('RECYCLE: ' + name + ' due to it being part of sector defense forces for a sector that is no longer under attack.');
             }
         }
-    } else if (empire_defaults['alerts_reassign'] != undefined) {
+    } else if (empire_defaults['alerts_reassign']) {
         for(var crname in Game.creeps) {
 
-            if(Game.creeps[crname].memory[MEMORY_DEST] == this.name && empire_defaults['military_roles'].includes(Game.creeps[crname].memory[MEMORY_ROLE])) {
+            if(Game.creeps[crname].memory[MEMORY_DEST] == this.name && Game.creeps[crname].isMilitary()) {
                 if (Game.creeps[crname].memory[MEMORY_SPAWNERNAME] == undefined) {
                     continue;
                 }
                 var spname = Game.creeps[crname].memory[MEMORY_SPAWNERNAME];
             }
 
-            if (empire_defaults['alerts_reassign'][spname] != undefined) {
+            if (empire_defaults['alerts_reassign'][spname]) {
                 Game.creeps[crname].memory[MEMORY_DEST] = empire_defaults['alerts_reassign'][spname];
                 console.log('HARASS: sent ' + crname + ' to harass' + empire_defaults['alerts_reassign'][spname]);
                 Game.notify('HARASS: sent ' + crname + ' to harass' + empire_defaults['alerts_reassign'][spname]);

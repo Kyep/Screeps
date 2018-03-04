@@ -581,7 +581,7 @@ Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, 
     crmemory[MEMORY_HOME_Y] = spawner.pos.y;
     crmemory[MEMORY_RENEW] = false;
     
-    var result = SPAWN_VALIDATED(spawner, '', partlist, crmemory);
+    var result = SPAWN_VALIDATED(spawner, partlist, crmemory);
     
     return result;
 }
@@ -623,8 +623,8 @@ Room.prototype.createSiegeTeam = function (targetroomname, roompath, dest_x, des
     var healer_memory = Object.assign({}, shared_memory);
     healer_memory[MEMORY_ROLE] = healer_design;
     
-    var thetank = SPAWN_VALIDATED(free_spawns[0], '', tank_body, tank_memory);
-    var thehealer = SPAWN_VALIDATED(free_spawns[1], '', healer_body, healer_memory);
+    var thetank = SPAWN_VALIDATED(free_spawns[0], tank_body, tank_memory);
+    var thehealer = SPAWN_VALIDATED(free_spawns[1], healer_body, healer_memory);
     
     console.log('tank: ' + thetank);
     console.log('healer: ' + thehealer);

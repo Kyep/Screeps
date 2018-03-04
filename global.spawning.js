@@ -45,7 +45,7 @@ global.HANDLE_SPAWNING = function() {
             crmemory[MEMORY_HOME_X] = spn.pos.x;
             crmemory[MEMORY_HOME_Y] = spn.pos.y;
             crmemory[MEMORY_RENEW] = spawn_queue[spawnername]['renew_allowed'];
-            SPAWN_VALIDATED(spn, spawn_queue[spawnername]['sname'], spawn_queue[spawnername]['partlist'], crmemory);
+            SPAWN_VALIDATED(spn, spawn_queue[spawnername]['partlist'], crmemory);
         } else {
             console.log(spawn_queue[spawnername]['sname'] + ': ' + spawn_queue[spawnername]['spawnrole'] + ' too expensive (' + spawn_queue[spawnername]['thecost'] + '/' + thespawner.room.energyAvailable + '), saving up.');
         }
@@ -251,16 +251,14 @@ global.SPAWN_COUNT = function () {
     return sc;
 }
 
-global.SPAWN_VALIDATED = function (spawner, crnameprefix, bodylist, memory_object){
+global.SPAWN_VALIDATED = function (spawner, bodylist, memory_object){
     var memvalid = VALIDATE_CREEP_MEMORY_OBJECT(memory_object);
     if (memvalid !== true) {
         console.log("SPAWN: failed to create: " + crnameprefix + " because memory validation failed: " + JSON.stringify(memory_object));
         return false;
     }
     var spawn_count = SPAWN_COUNT();
-    if (memory_object[MEMORY_SOURCE] == undefined || memory_object[MEMORY_SOURCE] == memory_object[MEMORY_ROLE]) {
-        crnameprefix = memory_object[MEMORY_DEST];
-    }
+    var crnameprefix = memory_object[MEMORY_DEST].replace(/\D/g,'');
     var crname = crnameprefix + '_' + memory_object[MEMORY_ROLE] + '_' + spawn_count;
     if (empire_workers[memory_object[MEMORY_ROLE]] != undefined && empire_workers[memory_object[MEMORY_ROLE]]['abbr'] != undefined) {
         crname = crnameprefix + '_' + empire_workers[memory_object[MEMORY_ROLE]]['abbr'] + '_' + spawn_count;
@@ -275,7 +273,7 @@ global.SPAWN_VALIDATED = function (spawner, crnameprefix, bodylist, memory_objec
     if (result) {
         spawner.memory[MEMORY_SPAWNINGROLE] = memory_object[MEMORY_ROLE];
         spawner.memory[MEMORY_SPAWNINGDEST] = memory_object[MEMORY_DEST];
-        console.log(spawner.room.name + '(' + spawner.name + '): created: ' + crname + ' -> ' + memory_object[MEMORY_DEST]);
+        //console.log(spawner.room.name + '(' + spawner.name + '): created: ' + crname + ' -> ' + memory_object[MEMORY_DEST]);
     } else {
         console.log(spawner.room.name + '(' + spawner.name + '): (' + result + ') ' + crname + ' -> ' + memory_object[MEMORY_DEST]);
     }

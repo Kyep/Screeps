@@ -24,6 +24,7 @@ global.MEMORY_SPAWNERNAME = 'spawnername';
 global.MEMORY_SPAWNERROOM = 'spawnerroom';
 global.MEMORY_RENEW = 'renew_allowed';
 global.MEMORY_RENEWALS = 'renewals';
+global.MEMORY_RENEWALSP = 'renewalsp';
 global.MEMORY_CREATED_AT = 'created_at';
 global.MEMORY_NEEDED = 'needed';
 global.MEMORY_JOB = 'job';

@@ -20,19 +20,28 @@ module.exports = {
 
         creep.say(creep.ticksToLive);
 
-        var targets = creep.room.find(FIND_STRUCTURES, {
-                filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_SPAWN && structure.spawning == undefined && structure.isActive());
-                }
-        });
-        if(targets.length > 0) {
-            var target = creep.pos.findClosestByRange(targets)
-            if(target.spawning != null) {
-                if(creep.pos.getRangeTo(target) > 3) {
-                    creep.moveToRUP(target);
-                }
-                return 0;
+        var target = undefined;
+        if (creep.memory[MEMORY_RENEWALSP]) {
+            var spobj = Game.getObjectById(creep.memory[MEMORY_RENEWALSP]);
+            if (spobj && spobj.isActive() && spobj.spawning == undefined) {
+                target = spobj;
             }
+        }
+        if (!target) {
+            var targets = creep.room.find(FIND_STRUCTURES, {
+                    filter: (structure) => {
+                        return (structure.structureType == STRUCTURE_SPAWN && structure.spawning == undefined && structure.isActive());
+                    }
+            });
+            if (targets.length == 1) {
+                target = targets[0];
+            } else if (targets.length > 1) {
+                var sorted = targets.sort(function(a, b) { return a.ticksToAvailability() - b.ticksToAvailability() });
+                target = sorted[0];
+            }
+        }
+        if (target) {
+            creep.memory[MEMORY_RENEWALSP] = target.id;
             var result = target.renewCreep(creep);
             if(result == OK) {
                 var creep_cost = CREEP_COST(creep.body);

@@ -6,13 +6,10 @@
     global.empire_defaults = {
         'sign': 'Reserved. #overlords',
         'priority_roles': ['teller', 'teller-towers'],
-        'military_roles': ['scout', 'slasher', 'rogue', 'ninja', 'dragon', 'boss', 'wizard', 'healer', 'siege', 'siegebig', 'drainer', 'drainerbig', 'antikite16', 'antikite8', 'antikite4', 'antikite2'],
-        'defense_roles': ['boss', 'dragon', 'ninja', 'rogue', 'slasher', 'scout'], // LIST MOST POWERFUL FIRST.
+        'military_roles': ['scout', 'slasher', 'rogue', 'ninja', 'dragon', 'boss', 'uberboss', 'wizard', 'healer', 'siege', 'siegebig', 'drainer', 'drainerbig', 'antikite16', 'antikite8', 'antikite4', 'antikite2'],
+        'defense_roles': ['uberboss', 'boss', 'dragon', 'ninja', 'rogue', 'slasher', 'scout'], // LIST MOST POWERFUL FIRST.
         'defense_roles_ranged': ['antikite16', 'antikite8', 'antikite4', 'antikite2'], // LIST MOST POWERFUL FIRST.
         'siege_roles': ['siegebig','siege', 'drainerbig', 'drainer', 'healer', 'siegehealer', 'wizard'], 
-
-        'MSL_4_types': ['c15harvester', 'c30harvester', 'hauler'],
-        'MSL_4_replacement': 'fharvester',
 
         'alerts_duration' : 34560, // alerts last ~24h, or until we've verified that whatever caused them is dead.
         'alerts_recycle' : 0,
