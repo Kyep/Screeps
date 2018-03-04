@@ -406,34 +406,6 @@ Room.prototype.getStoredEnergy = function() {
     return total_energy;
 }
 
-Room.prototype.hasTerminalNetwork = function() {
-    
-    if (this.controller == undefined) {
-        return 0;
-    }
-    if (this.controller.owner == undefined) {
-        return 0;
-    }
-    if (this.controller.owner.username == undefined) {
-        return 0;
-    }
-    if (this.controller.owner.username != overlord) {
-        return 0;
-    }
-    if (this.controller.level == undefined) {
-        return 0;
-    }
-    if (this.controller.level < 6) {
-        return 0;
-    }
-    if (this.terminal == undefined) {
-        return 0;
-    }
-    if (!this.terminal.isActive()) {
-        return 0;
-    }
-    return 1;
-}
 
 Room.prototype.getLevel = function() {
     if (this.controller == undefined) {

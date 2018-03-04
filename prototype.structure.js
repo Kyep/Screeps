@@ -12,27 +12,44 @@ StructureTerminal.prototype.acquireNukeFuel = function() {
 }
 
 StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, transfer_amount, leave_amount) {
+    var best_terminal = undefined;
+    var best_distance = 9999;
     for (var rname in Game.rooms) {
         var robj = Game.rooms[rname];
-        if (!robj.hasTerminalNetwork()) {
+        if (!robj.isMine()) {
             continue;
         }
         var rterm = robj.terminal;
+        if (!rterm || !rterm.isActive()) {
+            continue;
+        }
+        if (rterm.cooldown) {
+            continue;
+        }
         if (rterm.store[mineral_type] && rterm.store[mineral_type] > (transfer_amount + leave_amount)) {
-            var retval = rterm.send(mineral_type, transfer_amount, this.room.name);
-            var local_before = 0;
-            if (this.store[mineral_type]) {
-                local_before = this.store[mineral_type];
-            }
-            var local_after = 0; 
-            if (retval == OK) {
- 
-                console.log('Network: ' + mineral_type + ': ' + rterm.room.name + '(with: ' + rterm.store[mineral_type] + ') sent '+ transfer_amount + ' to: ' + this.room.name + '(previously with: ' + local_before +')');
-                return true;
+            var this_distance = Game.map.getRoomLinearDistance(this.room.name, rname, true);
+            if (this_distance < best_distance) {
+                best_terminal = rterm;
+                best_distance = this_distance;
             }
         }
     }
-    //console.log(this.room.name + ': requires ' + transfer_amount + ' of ' + mineral_type + ' but cannot find it anywhere...');
+    if (best_terminal != undefined) {
+        var retval = best_terminal.send(mineral_type, transfer_amount, this.room.name);
+        var local_before = 0;
+        if (this.store[mineral_type]) {
+            local_before = this.store[mineral_type];
+        }
+        var local_after = 0; 
+        if (retval == OK) {
+            console.log('Network: ' + mineral_type + ': ' + best_terminal.room.name + '(with: ' + best_terminal.store[mineral_type] + ') sent '+ transfer_amount + ' to: ' + this.room.name + '(previously with: ' + local_before +')');
+            return true;
+        } else {
+            console.log('RES NETWORK ERR: ' +retval + ' on: ' + mineral_type + ': ' + best_terminal.room.name + '(with: ' + best_terminal.store[mineral_type] + ') sent '+ transfer_amount + ' to: ' + this.room.name + '(previously with: ' + local_before +')');
+        }
+    } else {
+        //console.log(this.room.name + ': requires ' + transfer_amount + ' of ' + mineral_type + ' but cannot find anywhere with at least ' + (transfer_amount + leave_amount) + ' of it...');
+    }
     return false;
 }
 

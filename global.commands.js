@@ -241,7 +241,7 @@ global.ENERGY_STATUS = function() {
            terminal_energy = rm.terminal.store[RESOURCE_ENERGY];
         }
         var total_energy = storage_energy + terminal_energy;
-        console.log(rname + ': E:' + total_energy + ' (term:' + terminal_energy + ') L:' + rm.getLevel() + ' T:' + rm.hasTerminalNetwork());
+        console.log(rname + ': E:' + total_energy + ' (term:' + terminal_energy + ') L:' + rm.getLevel());
     }
     
 }

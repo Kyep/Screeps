@@ -28,9 +28,10 @@ module.exports = {
             return;
         } else if (mytank.room.name != creep.room.name) {
             creep.moveTo(mytank);
-        } else if (!creep.avoidEdges()) {
+        }/* else if (!creep.avoidEdges()) {
             creep.moveTo(mytank);
-        }
+        }*/
+        creep.moveTo(mytank);
         var delta_tank = mytank.hitsMax - mytank.hits;
         var delta_me = creep.hitsMax - creep.hits;
         if (delta_me > delta_tank) {

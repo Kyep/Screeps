@@ -52,16 +52,19 @@ module.exports = {
         } else if (creep.redRally()) {
             return; // Siege creeps rallying to a flag won't do anything else!
         }
+        /*
         var live_enemy_towers = creep.room.getLiveHostileTowers();
         if (live_enemy_towers.length) {
             creep.say('dodge:' + live_enemy_towers.length);
             creep.avoidEdges();
             return;
-        }   
+        }
+        */
         
         var target = undefined;
 
-        if (creep.memory[MEMORY_TARGETID] && Game.time % 5 != 0) {
+
+        if (creep.memory[MEMORY_TARGETID] && Game.time % 3 != 0) {
             target = Game.getObjectById(creep.memory[MEMORY_TARGETID]);
             if (!target) {
                 creep.memory[MEMORY_TARGETID] = undefined;
@@ -83,22 +86,27 @@ module.exports = {
                 }
             }
         }
+
         if (work_parts > 0 || melee_parts > 0) {
             if (!target) {
+
+                
                 var sflags = creep.room.getFlagsByType(FLAG_SIEGETARGET);
                 if (sflags.length) {
                     var flag = sflags[0];
                     var objects_here = creep.room.lookAt(flag.pos);
+                    var found_any_target = false;
                     for (var k = 0; k < objects_here.length; k++) {
                         var this_obj = objects_here[k]["structure"];
                         if (this_obj && this_obj.hits) {
                             target = this_obj;
                             creep.memory[MEMORY_FRUSTRATION] = 0;
-                            got_a_target = true;
+                            found_any_target = true;
                             break;
-                        } else {
-                            flag.remove();
                         }
+                    }
+                    if (!found_any_target) {
+                        flag.remove();
                     }
                 } else {
                     var valid_types = [STRUCTURE_SPAWN];
@@ -106,17 +114,17 @@ module.exports = {
                     var valid_types2 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB];
                     var valid_types3 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB, STRUCTURE_TERMINAL, STRUCTURE_LINK, STRUCTURE_NUKER, STRUCTURE_OBSERVER, STRUCTURE_EXTRACTOR, STRUCTURE_RAMPART];
                     if (frustration < 100) {
-                        target = creep.getClosestHostileUnRampartedStructureInTypes(valid_types);
+                        target = creep.getClosestHostileStructureInTypes(valid_types);
                         if (!target) {
                             target = creep.getClosestHostileStructureInTypes(valid_types);
                         }
                     } else if (frustration < 500) {
-                        target = creep.getClosestHostileUnRampartedStructureInTypes(valid_types2);
+                        target = creep.getClosestHostileStructureInTypes(valid_types2);
                         if (!target) {
                             target = creep.getClosestHostileStructureInTypes(valid_types2);
                         }
                     } else {
-                        target = creep.getClosestHostileStructureInTypes([]);
+                        target = creep.getClosestHostileStructure();
                     }
                 }
             }
@@ -141,7 +149,7 @@ module.exports = {
             }
         }
         
-        creep.avoidEdges();
+        //creep.avoidEdges();
         return;
         
         
