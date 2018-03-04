@@ -59,7 +59,7 @@ global.RUN_CREEPS = function() {
             roleExtractor.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'upclose' || creep.memory[MEMORY_ROLE] == 'upfar' || creep.memory[MEMORY_ROLE] == 'up8') {
             roleUpgrader.run(creep);
-        } else if(creep.memory[MEMORY_ROLE] == 'upstorclose' || creep.memory[MEMORY_ROLE] == 'upstorfar') {
+        } else if(creep.memory[MEMORY_ROLE] == 'upstorclose' || creep.memory[MEMORY_ROLE] == 'upstorfar' || creep.memory[MEMORY_ROLE] == 'upstor8') {
             roleUpgraderStorage.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'grower') {
             roleGrower.run(creep);

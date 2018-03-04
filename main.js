@@ -73,8 +73,8 @@ module.exports.loop = function () {
 
     if(Game.time % 1900 === 0) {
         //global.PRESET_ATTACK_WAVE();
-        global.ESPIONAGE_ATTACK_PLANS(true);
-        CPU_SECTION('espionage-attackplans', true);
+        //global.ESPIONAGE_ATTACK_PLANS(true);
+        //CPU_SECTION('espionage-attackplans', true);
         global.ESPIONAGE_REGEN_TARGETS();
         CPU_SECTION('espionage-regen', true);
         global.REPORT_STRUCTURES(false); // auto-builds buildable structures that have appropriate flags
@@ -151,6 +151,14 @@ module.exports.loop = function () {
         }
         CPU_SECTION('terminal-transfer', true);
 
+        for(var rname in Game.rooms) {
+            if(Game.rooms[rname].inEmpire()) {
+                Game.rooms[rname].updateConfig();
+            }
+        }
+        CPU_SECTION('assignment-updates', true);
+        
+        
         // DEFCON MANAGEMENT
         for(var rname in Game.rooms) {
             if (!Game.rooms[rname].inEmpire()) {
@@ -161,9 +169,6 @@ module.exports.loop = function () {
             var nuke_details = Game.rooms[rname].detailNukes();
             var has_alert = Game.rooms[rname].hasAlert();
             var should_have_alert = Game.rooms[rname].shouldHaveAlert(enemy_details, nuke_details);
-            if (enemy_details['hostileCount'] > 0) {
-                //console.log(rname + ': ' + has_alert + ', ' + should_have_alert + JSON.stringify(enemy_details) + ', ' + JSON.stringify(nuke_details));
-            }
             if (has_alert) {
                 if (should_have_alert) {
                     Game.rooms[rname].updateAlert(enemy_details, nuke_details);

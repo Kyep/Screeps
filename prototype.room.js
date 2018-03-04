@@ -1,3 +1,27 @@
+Room.prototype.buyEnergy = function(buyAmount = 5000) {
+    var myRoomName = this.name;
+    let maxPrice = 0.05;
+    if (Game.market.credits > (maxPrice*buyAmount)) {
+        let matchedOrders = Game.market.getAllOrders(order => order.resourceType == RESOURCE_ENERGY && order.type == ORDER_SELL && order.amount >= buyAmount && order.price <= maxPrice && Game.market.calcTransactionCost(buyAmount, myRoomName, order.roomName) <= (buyAmount*0.75));
+        if (matchedOrders.length > 0) {
+            matchedOrders.sort(function(a, b){return ((a.price * buyAmount) / (buyAmount - Game.market.calcTransactionCost(buyAmount, myRoomName, a.roomName))) - ((b.price * buyAmount) / (buyAmount - Game.market.calcTransactionCost(buyAmount, myRoomName, b.roomName)))});
+            if (Game.market.deal(matchedOrders[0].id, buyAmount, myRoomName) == OK) {
+                let logEntry = "".concat(myRoomName, " Bought ", buyAmount, " Energy from ", matchedOrders[0].roomName, " for ", matchedOrders[0].price, "/ea using ", Game.market.calcTransactionCost(buyAmount, myRoomName, matchedOrders[0].roomName), " energy.");
+                console.log(logEntry);
+                Game.notify(logEntry,180);
+                return true;
+            } else {
+                console.log(myRoomName, "Market buy failed!");
+            }
+        } else {
+            console.log(myRoomName, "No optimal market orders found to buy.");
+        }
+    }
+    return false;
+}
+
+
+
 Room.prototype.getFlagsByType = function(structuretype) {
     var color_list = FLAG_TYPE_TO_COLORS_COLORS(structuretype);
     if (color_list == undefined || !color_list.length) {

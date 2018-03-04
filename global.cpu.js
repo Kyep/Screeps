@@ -2,7 +2,7 @@
 // SET_GLOBAL_CONFIG_KEY('save_cpu_creeps', true);  SET_GLOBAL_CONFIG_KEY('report_cpu_creeps', true);
 // SET_GLOBAL_CONFIG_KEY('save_cpu_creeps', false); SET_GLOBAL_CONFIG_KEY('report_cpu_creeps', false);  
 
-// Commands
+// Commands 
 
 global.RESET_CPU_USAGE_HISTORY = function() {
     Memory[MEMORY_GLOBAL_CPUSTATS] = { 'data': [] }

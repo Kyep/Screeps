@@ -368,6 +368,19 @@ Creep.prototype.assignTank = function() {
     return false;
 }
 
+Creep.prototype.isOnEdge = function() {
+    if (this.pos.x == 0) {
+        return true;
+    } else if (this.pos.x == 49) {
+        return true;
+    } else if (this.pos.y == 0) {
+        return true;
+    } else if (this.pos.y == 49) {
+        return true;
+    }
+    return false;
+}
+
 Creep.prototype.avoidEdges = function() {
     if (this.pos.x == 0) {
         this.move(_.sample([TOP_RIGHT, RIGHT, BOTTOM_RIGHT]));

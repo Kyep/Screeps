@@ -224,3 +224,138 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
     }
     return spawner_data;
 }
+
+
+global.VALIDATE_CREEP_MEMORY_OBJECT = function (obj) {
+    if (obj == undefined) {
+        console.log('VALIDATE_CREEP_MEMORY_OBJECT passed empty object');
+        return false;
+    }
+    var req_memory = [MEMORY_ROLE, MEMORY_DEST, MEMORY_DEST_X, MEMORY_DEST_Y, MEMORY_HOME, MEMORY_HOME_X, MEMORY_HOME_Y, MEMORY_RENEW];
+    for (var i = 0; i < req_memory.length; i++) {
+        var this_mem = req_memory[i];
+        if (obj[this_mem] == undefined) {
+            console.log('VALIDATE_CREEP_MEMORY_OBJECT passed memory object lacking: ' + this_mem);
+            return false;
+        }
+    }
+    return true;
+    
+}
+
+global.SPAWN_COUNT = function () {
+    var sc = Memory['spawn_count'];
+    if (sc == undefined || sc > 999) { sc = 0; }
+    sc++;
+    Memory['spawn_count'] = sc;
+    return sc;
+}
+
+global.SPAWN_VALIDATED = function (spawner, crnameprefix, bodylist, memory_object){
+    var memvalid = VALIDATE_CREEP_MEMORY_OBJECT(memory_object);
+    if (memvalid !== true) {
+        console.log("SPAWN: failed to create: " + crnameprefix + " because memory validation failed: " + JSON.stringify(memory_object));
+        return false;
+    }
+    var spawn_count = SPAWN_COUNT();
+    if (memory_object[MEMORY_SOURCE] == undefined || memory_object[MEMORY_SOURCE] == memory_object[MEMORY_ROLE]) {
+        crnameprefix = memory_object[MEMORY_DEST];
+    }
+    var crname = crnameprefix + '_' + memory_object[MEMORY_ROLE] + '_' + spawn_count;
+    if (empire_workers[memory_object[MEMORY_ROLE]] != undefined && empire_workers[memory_object[MEMORY_ROLE]]['abbr'] != undefined) {
+        crname = crnameprefix + '_' + empire_workers[memory_object[MEMORY_ROLE]]['abbr'] + '_' + spawn_count;
+    }
+    if (Game.creeps[crname] != undefined) {
+        console.log("SPAWN: failed to create: " + crname + " as that name is already taken.");
+        return false;
+    }
+    memory_object[MEMORY_SPAWNERNAME] = spawner.name;
+    memory_object[MEMORY_SPAWNERROOM] = spawner.room.name;
+    var result = spawner.createCreep(bodylist, crname, memory_object);
+    if (result) {
+        spawner.memory[MEMORY_SPAWNINGROLE] = memory_object[MEMORY_ROLE];
+        spawner.memory[MEMORY_SPAWNINGDEST] = memory_object[MEMORY_DEST];
+        console.log(spawner.room.name + '(' + spawner.name + '): created: ' + crname + ' -> ' + memory_object[MEMORY_DEST]);
+    } else {
+        console.log(spawner.room.name + '(' + spawner.name + '): (' + result + ') ' + crname + ' -> ' + memory_object[MEMORY_DEST]);
+    }
+    return result;
+}
+
+global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname, force) {
+    var ourconf = global.GET_ROOM_CONFIG(theroomname);
+    if (ourconf == undefined) {
+        console.log('GET_SPAWNER_FOR_ROOM: undefined conf memory for ' + theroomname);
+        return [undefined, 1];
+    }
+    if (force == undefined) {
+        force = false;
+    }
+    // Room definitions
+    var room_primary = undefined;
+    if (ourconf['spawn_room'] == undefined) {
+        console.log('GET_SPAWNER_FOR_ROOM: undefined or no-presence empire spawn_room for ' + theroomname);
+        console.log(JSON.stringify(ourconf));
+        return [undefined, 1];
+    }
+    if (Game.rooms[ourconf['spawn_room']] != undefined) {
+        room_primary = Game.rooms[ourconf['spawn_room']];
+    }
+
+    var room_secondary = undefined;
+    if (ourconf['backup_spawn_room'] != undefined && Game.rooms[ourconf['backup_spawn_room']] != undefined) {
+        room_secondary = Game.rooms[ourconf['backup_spawn_room']];
+    }
+
+    // Spawner definitions
+    var spawners_primary = []
+    var spawners_primary_unavailable = []
+    if (room_primary != undefined) {
+        spawners_primary = room_primary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable(force)); } });
+        spawners_primary_unavailable = room_primary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && !structure.isAvailable(force)); } });
+    }
+
+    var spawners_secondary = []
+    if (room_secondary != undefined) {
+        spawners_secondary = room_secondary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable(force)); } });
+    }
+    
+    var room_primary_level = 0;
+    if (spawners_primary.length > 0 && spawners_primary[0].room != undefined) {
+        if (spawners_primary[0].room.controller != undefined) {
+            if (spawners_primary[0].room.controller.level != undefined) {
+                room_primary_level = spawners_primary[0].room.controller.level;
+            }
+        }
+    }
+    var spawners_secondary_preferred = 0;
+    var spawners_secondary_allowed = 1;
+    if (room_primary_level > 0 && room_primary_level < 5) {
+        spawners_secondary_preferred = 1;
+    } else if (room_primary_level > 5) {
+        //spawners_secondary_allowed = 0;
+    }
+    //console.log('GET_SPAWNER_FOR_ROOM: ' + theroomname + ': ' + spawners_primary.length + '/' + (spawners_primary.length + spawners_primary_unavailable.length) + ' primary, ' + spawners_secondary.length + ' secondary. Secondary pref: ' + spawners_secondary_preferred);
+    if (spawners_primary.length && (!spawners_secondary_preferred || global.ROOM_UNDER_ATTACK(theroomname))) {
+        // If we have a primary available, and we have no specific reason to use a secondary, use the primary.
+        //console.log('GET_SPAWNER_FOR_ROOM: (A) primary available, no backup preference: ' + theroomname);
+        return [spawners_primary[0], 1];
+    }
+    
+    if (spawners_secondary.length && spawners_secondary_allowed) {
+        // If we have a primary available, and we have no specific reason to use a secondary, use the primary.
+        //console.log('GET_SPAWNER_FOR_ROOM: (B) primary unavailable, or preference for backup: ' + theroomname);
+        return [spawners_secondary[0], 0];
+    }
+    
+    if (spawners_primary.length) {
+        // If we have a primary available, and we have no specific reason to use a secondary, use the primary.
+        //console.log('GET_SPAWNER_FOR_ROOM: (C) primary available, preference for backup ignored as none available: ' + theroomname);
+        return [spawners_primary[0], 1];
+    }
+    
+    //console.log('GET_SPAWNER_FOR_ROOM: (D) no primary or backups available: ' + theroomname);
+    return [undefined, 1];
+
+}
+

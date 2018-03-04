@@ -15,7 +15,7 @@ global.RUN_STRUCTURES = function() {
         }
     }
 
-    // TOWER MANAGEMENT
+    // TOWER MANAGEMENT, room-by-room basis
     for(var rname in rtowers) {
         
         var theroom = Game.rooms[rname];
@@ -26,18 +26,23 @@ global.RUN_STRUCTURES = function() {
             var highest_threat = -1;
             var best_target = undefined;
             for (var i = 0; i < enemiesList.length; i++) {
+                if (enemiesList[i].isOnEdge()) {
+                    // Never fire on enemies flickering in/out of the room - it makes tower draining too easy.
+                    continue;
+                }
                 var this_pri = enemiesList[i].getTargetPriority();
                 if (this_pri > highest_threat) {
                     highest_threat = this_pri;
                     best_target = enemiesList[i];
                 }
             }
-
-            for (var tnum in rtowers[rname]) {
-                var thistower = rtowers[rname][tnum];
-                thistower.attack(best_target);
+            if (best_target) {
+                for (var tnum in rtowers[rname]) {
+                    var thistower = rtowers[rname][tnum];
+                    thistower.attack(best_target);
+                }
             }
-            continue;
+            continue; // stops towers attempting to repair anything or heal anyone while there are enemies present.
         }
 
         // If no hostiles in room, repair.

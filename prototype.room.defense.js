@@ -1,4 +1,165 @@
 
+global.ROOM_UNDER_ATTACK = function(roomname) {
+    var myalert = Memory['sectors_under_attack'][roomname];
+    if (myalert == undefined) {
+        return 0;
+    }
+    return 1;
+}
+
+global.HANDLE_ALL_ROOM_ALERTS = function() {
+    for (var thisname in Memory['sectors_under_attack']) {
+        global.HANDLE_ROOM_ALERT(thisname);
+    }
+}
+
+global.HANDLE_ROOM_ALERT = function(roomname) {
+    var myalert = Memory['sectors_under_attack'][roomname];
+
+    if (myalert == undefined) {
+        console.log('ERROR: TRYING TO HANDLE NON-EXISTENT ALERT FOR ' + roomname);
+        return;
+    }
+    if (myalert['updateCount'] == undefined || myalert['updateCount'] < 1) {
+        console.log('HANDLE_ROOM_ALERT: skipping alert as its not been updated with threat data yet: ' + roomname);
+        return;
+    }
+    
+    var myinfo = GET_ROOM_CONFIG(roomname);
+    if (!myinfo) {
+        return;
+    }
+    
+    var baseforce = {};
+    var patrolforce = {};
+    var room_has_spawn = 0;
+    for (var thisspawn in Game.spawns) {
+        if (Game.spawns[thisspawn].room.name == roomname) {
+            room_has_spawn = 1;
+        }
+    }
+    var towercount = 0;
+    if (Game.rooms[roomname] != undefined) {
+        var towerlist = Game.rooms[roomname].find(FIND_MY_STRUCTURES, {
+                    filter: (structure) => {
+                        return (
+                                structure.structureType == STRUCTURE_TOWER && structure.energy > 0 && structure.isActive()
+                        );
+                    }
+        });
+        towercount = towerlist.length;
+    }
+    var try_safemode = 0;
+    if(room_has_spawn) {
+        var newcount = Game.rooms[roomname].getMyStructuresCount();
+        var oldcount = myalert['myStructureCount'];
+        if (newcount < oldcount && !myalert['nukeCount']) {
+            try_safemode = 1;
+        }
+    }
+
+    if (try_safemode) {
+        var cc = Game.rooms[roomname].controller;
+        var is_in_safemode = 0;
+        if (cc.safeMode != undefined && cc.safeMode > 0) {
+            is_in_safemode = cc.safeMode;
+        }
+        if (is_in_safemode > 0) {
+            // nothing.
+        } else if (cc.safeModeAvailable) {
+            cc.activateSafeMode();
+            Game.notify('!!!!! WOULD SAFEMODE ACTIVATION: ' + roomname);
+            console.log('SAFE MODE ACTIVATED: ATTACK: ' + roomname);
+        } else {
+            Game.notify('!!!!! CANNOT ACTIVATE SAFEMODE: ' + roomname);
+            console.log('SAFE MODE UNAVAILABLE: ATTACK: ' + roomname);
+        }
+    }
+    var theirthreat = myalert['hostileCost'];
+    var alert_age = Game.time - myalert['attackStart'];
+    if (towercount > 0) {
+        if (myalert['hostileUsername'] == 'Invader' && alert_age < 120) {
+            theirthreat -= (1000 * towercount);
+        }
+        if (Game.rooms[roomname] != undefined && Game.rooms[roomname].storage != undefined) {
+            baseforce['teller-towers'] = 1;
+            if (theirthreat > 15000) {
+                baseforce['teller-towers'] = 2;
+                baseforce['teller'] = 2;
+            } else if (theirthreat > 8000) {
+                baseforce['teller'] = 1;
+            }
+        }
+    }
+    if (myinfo['spawn_room'] == undefined) {
+        console.log('ATTACK CONFIG WARNING, SECTOR ' + roomname + ' HAS NO spawn_room SET ON ITS ROOM!');
+        patrolforce['rogue'] = 1; // the sad default.
+    } else if (theirthreat > 0) {
+        var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(roomname, true);
+        var spawner = gsapfr[0];
+        var using_primary = gsapfr[1];
+        if (spawner == undefined) {
+            //console.log('XAT: ' + roomname + " has no free 1x spawner");
+            return;
+        }
+        var home_room = spawner.room.name;
+        if (!using_primary && myinfo['spawn_room'] != undefined) {
+            home_room = myinfo['spawn_room'];
+        }
+        if (spawner == undefined) {
+            //console.log('XAT: ' + roomname + " has no free 1x-b spawner");
+            return;
+        } else {
+            //console.log('XAT: Deciding what to spawn for the ' + theirthreat + ' attack on ' + roomname + ' defended by ' + spawner.name);
+        }
+        var enow = spawner.room.energyAvailable;
+        var emax = spawner.room.energyCapacityAvailable;
+        var defense_roles = empire_defaults['defense_roles'];
+        if (myalert['hostileCount'] == 1 && myalert['hostileRanged'] == 1) {
+            // there is one guy, he's ranged, and he cannot heal. This is probably a kiting attack.
+            defense_roles = empire_defaults['defense_roles_ranged'];
+            //console.log('KITING DETECTED: ' + roomname);
+        }
+        for (var i = 0; i < defense_roles.length; i++) {
+            var oname = defense_roles[i];
+            //console.log('checking cost for' + oname);
+            var obody = empire_workers[oname]['body'];
+            var outfit_cost = global.UNIT_COST(obody);
+            if (outfit_cost > emax) {
+                //console.log('XAT: No point using ' + oname + ' as it exceeds our spawn power ' + emax);
+                // no point using this... we can't possibly afford it.
+                continue;
+            }
+            if ((i + 1) != defense_roles.length) {
+                if (outfit_cost > (theirthreat * 1.2)) { 
+                    //console.log('XAT: No point using ' + oname + ' as its cost ' + outfit_cost + ' is > 1.2*their_threat ' + theirthreat + ' (i: ' + i +  ', DRL:' + defense_roles.length + ')');
+                    continue; // overkill...
+                }
+            }
+            if (patrolforce[oname] == undefined) {
+                if (i == defense_roles.length && theirthreat > (outfit_cost * 2)) {
+                    patrolforce[oname] = 2;
+                } else {
+                    patrolforce[oname] = 1;
+                }
+            } else {
+                patrolforce[oname] += 1;
+            }
+            theirthreat -= outfit_cost;
+            //console.log('XAT: Defending ' + roomname + ' with ' + patrolforce[oname] + ' ' + oname + ' (cost: ' + outfit_cost + ' ea) against threat. ' + theirthreat + '/' + myalert['hostileCost'] + ' threat remaining.');
+            if (theirthreat < 0) {
+                break;
+            }
+        }
+    } else {
+        console.log('DEFENSE: Decided that  ' + roomname + ' can handle the incoming threat of ' + theirthreat + ' without any units being spawned');
+    }
+    var rconf = GET_ROOM_CONFIG(roomname);
+    rconf = ADD_ROOM_KEY_ASSIGNMENT(rconf, 'basemil', baseforce, 25, true);
+    rconf = ADD_ROOM_KEY_ASSIGNMENT(rconf, 'defmil', patrolforce, 50, true);
+    
+}
+
 Room.prototype.getHostileCreeps = function() {
     return this.find(FIND_HOSTILE_CREEPS, {filter: function(c){ if (IS_ALLY(c.owner.username)) { return false } else { return true } } });
 }
@@ -243,7 +404,7 @@ Room.prototype.deleteAlert = function() {
 }
 
 Room.prototype.updateAlert = function(enemy_details, nuke_details) {
-    //console.log('Updatealert enemy_details' + JSON.stringify(enemy_details));
+    
     var thisalert = {};
     if(this.hasAlert) {
         thisalert = this.getAlertObject();
@@ -253,6 +414,12 @@ Room.prototype.updateAlert = function(enemy_details, nuke_details) {
         Game.notify(tmsg);
         return {};
     }
+    
+    /*
+    var sanitized = Object.assign({}, thisalert);
+    delete sanitized['myStructureData'];
+    console.log('Updatealert: ' + JSON.stringify(sanitized));
+    */
 
     if (thisalert['updateCount'] == undefined) {
         thisalert['updateCount'] = 0;

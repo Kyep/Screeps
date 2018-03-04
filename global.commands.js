@@ -303,7 +303,7 @@ global.REPORT_CREEPS = function(prune) {
     var roleslist = {};
     for (var cr in Game.creeps) {
         if(Game.creeps[cr].memory[MEMORY_NEEDED] == 0) {
-            console.log(cr + ', doing ' + Game.creeps[cr].memory[MEMORY_JOB] + ', is not needed. Renewal: ' + Game.creeps[cr].memory[MEMORY_RENEW] + '. Expires in: ' + Game.creeps[cr].ticksToLive);
+            console.log(Game.creeps[cr].room.name + ': ' + cr + ' is not needed. Renewal: ' + Game.creeps[cr].memory[MEMORY_RENEW] + '. Expires in: ' + Game.creeps[cr].ticksToLive);
             if (prune == undefined) {
                 // do nothing.
             } else if (prune == 1) {

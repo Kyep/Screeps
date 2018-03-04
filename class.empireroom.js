@@ -224,11 +224,12 @@ Room.prototype.makeAssignments = function(myconf) {
             if (myconf['sources'][skey]['spaces'] == 1) {
                 myconf = this.setSourceAssignment(myconf, skey, { 'sharvester': 1}, myconf['sources'][skey]['steps']);
             } else if (rlvl == 8) {
-                if (snum == 1) {
-                    myconf = this.setSourceAssignment(myconf, skey, { 'bharvester': 1, 'up8': 1 }, myconf['sources'][skey]['steps']); 
-                } else {
-                    myconf = this.setSourceAssignment(myconf, skey, { 'sharvester': 1 }, myconf['sources'][skey]['steps']);
-                }
+                myconf = this.setSourceAssignment(myconf, skey, { 'bharvester': 2 }, myconf['sources'][skey]['steps']);
+                //if (snum == 1) {
+                //    myconf = this.setSourceAssignment(myconf, skey, { 'bharvester': 1, 'up8': 1 }, myconf['sources'][skey]['steps']); 
+                //} else {
+                //    myconf = this.setSourceAssignment(myconf, skey, { 'sharvester': 1 }, myconf['sources'][skey]['steps']);
+                //}
             } else {
                 myconf = this.setSourceAssignment(myconf, skey, { 'bharvester': 2}, myconf['sources'][skey]['steps']); 
             }
@@ -337,17 +338,23 @@ Room.prototype.makeAssignments = function(myconf) {
             }
         }
         
-        // Upgraderstorage
-        if (rlvl >= 4 && rlvl < 8 && this.storage && this.storage[RESOURCE_ENERGY] > 100000) {
-            var upcount = Math.floor(this.storage[RESOURCE_ENERGY] / 50000);
-            var upobj = {'upstorclose': upcount}
-            myconf = this.setSourceAssignment(myconf, 'upgrades', upobj, 250);
+        // Upgraders
+        if (this.storage && this.storage.store[RESOURCE_ENERGY] > 100000) {
+            if (rlvl == 8) {
+                var upobj = {'upstor8': 1}
+                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'upstor8', upobj, 999);
+            } else {
+                var upcount = Math.floor(this.storage.store[RESOURCE_ENERGY] / 50000);
+                var upobj = {'upstorclose': upcount}
+                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'upgrades', upobj, 999);
+            }
         }
+        
 
         // Tellers
         var teller_obj = this.getEnergyHistoryAdvisedSpawns();
         if (typeof teller_obj === "object" ) {
-            console.log('this.name HAS TELLER OBJ: ' + JSON.stringify(teller_obj));
+            //console.log('this.name HAS TELLER OBJ: ' + JSON.stringify(teller_obj));
             myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'teller', teller_obj, -1000);
         }
 
@@ -359,7 +366,7 @@ Room.prototype.makeAssignments = function(myconf) {
                 energy_on_ground += dropped_resources[i].energy;
             }
             if (energy_on_ground > (1.5 * UNIT_COST(empire_workers['scavenger']['body']))) {
-                myconf = this.setSourceAssignment(myconf, 'scavenger', {'scavenger': 1}, 250);
+                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'scavenger', {'scavenger': 1}, 250);
             }
         }
     
@@ -416,15 +423,15 @@ Room.prototype.getEnergyHistoryAdvisedSpawns = function() {
     var e_hist_avg = ehistarr[0];
     var e_hist_avg_pc = ehistarr[1];
     
-    console.log(this.name + '(' + rlvl +'): average energy: '+ e_hist_avg + ', ' + e_hist_avg_pc + '% of ' + this.energyCapacityAvailable);
+    //console.log(this.name + '(' + rlvl +'): average energy: '+ e_hist_avg + ', ' + e_hist_avg_pc + '% of ' + this.energyCapacityAvailable);
     if (e_hist_avg == 300) {
-        console.log(this.name + ': emergency energy condition 1, energy == 300');
+        //console.log(this.name + ': emergency energy condition 1, energy == 300');
         return {'teller-mini': 2};
     } else if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc']) {
-        console.log(this.name + ': emergency energy condition 2, energy pc < critlcal energy pc');
+        //console.log(this.name + ': emergency energy condition 2, energy pc < critlcal energy pc');
         return {'teller': 2};
     } else if (e_hist_avg_pc < empire_defaults['room_minimum_energy_pc']) {
-        console.log(this.name + ': emergency energy condition 3, energy pc < minimum energy pc');
+        //console.log(this.name + ': emergency energy condition 3, energy pc < minimum energy pc');
         return {'teller': 1};
     }
     return false;

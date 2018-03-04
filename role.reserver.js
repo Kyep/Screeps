@@ -1,8 +1,12 @@
 "use strict";
 
+var jobHide = require('job.hide');
+
 module.exports = {
     run: function(creep){
-        if(!creep.isAtDestinationRoom()){
+        if (creep.getShouldHide()) {
+            jobHide.run(creep);
+        } else if(!creep.isAtDestinationRoom()){
             creep.moveToDestination();
         } else {
             if(creep.room.controller) {

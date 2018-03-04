@@ -10,7 +10,7 @@ module.exports = {
         
         if(creep.memory[MEMORY_RENEW] != undefined) {
             if(creep.memory[MEMORY_RENEW] == 0) {
-                creep.memory['role'] = 'recycler';
+                creep.memory[MEMORY_ROLE] = 'recycler';
                 return -1;
             }
         }
