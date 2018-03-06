@@ -319,5 +319,11 @@
             'roomname': '17WW',
             'spawn_room': 'W46S8'
         },
+        
+        // 18 Base
+        'W45S13': {
+            'roomname': '18',
+            'spawn_room': 'W48S8'
+        },
     }
     

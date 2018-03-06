@@ -44,8 +44,9 @@ module.exports.loop = function () {
     var tick_done = Memory[MEMORY_GLOBAL_TICKCOMPLETED];
     var tick_expected = Game.time - 1;
     if (tick_done != tick_expected) {
-        var crashmsg = 'MISSING TICK: possible crash AFTER ' + tick_expected + ' last section: ' + Memory[MEMORY_GLOBAL_CPUSTATS]['lastsection'];
+        var crashmsg = 'MISSING TICK: possible crash during tick ' + tick_expected + ',  after section: ' + Memory[MEMORY_GLOBAL_CPUSTATS]['lastsection'];
         console.log(crashmsg);
+        Game.notify(crashmsg);
     }
 
     global.cpu_thistick = {}
@@ -93,7 +94,7 @@ module.exports.loop = function () {
         CPU_SECTION('recreate-road-networks', true);
     }
 
-    if(Game.time % 5 === 0) {
+    if(Game.time % 2 === 0) {
         SCIENCE_PROCESS();
         CPU_SECTION('science', true);
     }
@@ -137,7 +138,7 @@ module.exports.loop = function () {
         // ROOM MANAGER
 
         for(var rname in Game.rooms) {
-            if(Game.rooms[rname].isMine()) {
+            if(Game.rooms[rname].isMine() && Game.rooms[rname].getLevel() != 8) {
                 if (Game.rooms[rname].terminal && Game.rooms[rname].terminal.isActive()) {
                     var lterm = Game.rooms[rname].terminal;
                     if (lterm.shouldPull()) {

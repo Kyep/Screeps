@@ -4,53 +4,49 @@ module.exports = {
     process: function(){
 
         // 1. add room to config.empire, with primary spawn room (itself) and backup spawn room (where the claimer will come from)
-        // 2. send the claimer: Game.rooms[X].createUnit('claimer',TARGET_ROOM); plus a few siege units to destroy any existing spawns/etc
+        // 2. Memory['rooms_to_claim'] = {'W55S8': {'gcltarget': 13 }}
         // 3. drop a flag (yellow/red) in the target room to mark where the spawn should be.
         // 4. 
 
-
-
-
-
-
-
+        var count_rooms_owned = 0;
+        for (var rname in Game.rooms) {
+            if (Game.rooms[rname].isMine()) {
+                count_rooms_owned++;
+            }
+        }
+        if (count_rooms_owned >= Game.gcl.level) {
+            // we own as many rooms as we can, nothing to do.
+            return false;
+        }
 
         var rooms_to_claim = Memory['rooms_to_claim'];
         if (rooms_to_claim == undefined) {
             Memory['rooms_to_claim'] = {}
             rooms_to_claim = Memory['rooms_to_claim'];
         }
-        for(var rname in empire) {
-            if(rooms_to_claim[rname] != undefined) {
+        for (var rname in empire) {
+            if (rooms_to_claim[rname] != undefined) {
+                
+                var robj = Game.rooms[rname];
+                var gcltarget = rooms_to_claim[rname]['gcltarget'];
                 
                 var rconfig = GET_ROOM_CONFIG(rname);
-                if (!rconfig) { return; }
-                
-                // To claim a room, define it like this:
-                // Memory['rooms_to_claim'] = {'W55S8': {'controllerid': '59bbc3da2052a716c3ce6e4b', 'gcltarget': 13 }}
-                // Memory['rooms_to_claim'] = {'W52S23': {'controllerid': '59bbc4072052a716c3ce7416', 'gcltarget': 10 }}
-                var expansiontarget = Game.rooms[rname];
-                var controllertarget = Game.getObjectById(rooms_to_claim[rname]['controllerid']);
-                var gcltarget = rooms_to_claim[rname]['gcltarget'];
-    
+                if (!rconfig) { return false; }
     
                 // CASE 1: My GCL is too low.
                 if (Game.gcl.level < gcltarget) {
                     // don't do anything, reservers are pointless.
-                    for(var sid in global.empire[rname].sources) {
-                        global.empire[rname].sources[sid].assigned = {}
-                    }
                     continue;
                 // CASE 2a: I have no vision of the room, I assume I don't own it.
-                } else if (controllertarget == undefined) {
-                    console.log(rname + ': EXPANSION: CONTROLLER TARGET UNDEFINED - CHECK YOU HAVE UNITS THERE.');
-                    //global.empire[rname].sources['CLAIM'] = { 'sourcename':'CLAIM', 'x':25, 'y':25, 'target_x': 25, 'target_y': 25, 'expected_income': 75, 'assigned': { 'remoteconstructor': 1, 'claimer': 1, 'rogue': 1 } } 
+                } else if (robj == undefined) {
+                    console.log(rname + ': EXPANSION: ROOM TARGET UNDEFINED - CHECK YOU HAVE UNITS THERE.');
+                    
                     for(var sid in global.empire[rname].sources) {
                         global.empire[rname].sources[sid].assigned = {'remoteconstructor': 1, 'claimer': 1, 'rogue': 1}
                     }
                     continue;
                 // CASE 2b: I don't own the room.
-                } else if (controllertarget.owner == undefined || controllertarget.owner['username'] != overlord) {
+                } else if (!robj.isMine()) {
                     console.log(rname + ': EXPANSION: TRYING TO CLAIM CONTROLLER ');
                     //global.empire[rname].sources['CLAIM'] = { 'sourcename':'CLAIM', 'x':25, 'y':25, 'target_x': 25, 'target_y': 25, 'expected_income': 75, 'assigned': { 'remoteconstructor': 1, 'claimer': 1, 'rogue': 1 } } 
                     for(var sid in global.empire[rname].sources) {
@@ -70,21 +66,21 @@ module.exports = {
                         spawner_name = Game.spawns[key].name;
                     }
                 }
-                var controller_level = controllertarget.level;
+                var controller_level = robj.getLevel();
                 if (spawner_name == '') {
                     // CASE 5: I own the room, the controller is level 1 (can have spawn) but there is no spawn
                     for(var sid in global.empire[rname].sources) {
                         global.empire[rname].sources[sid].assigned = {'remoteconstructor': 2, 'claimer': 1, 'rogue': 1}
                     }
-                    var csites = expansiontarget.find(FIND_MY_CONSTRUCTION_SITES);
+                    var csites = robj.find(FIND_MY_CONSTRUCTION_SITES);
                     if(csites.length) {
                         var csite = csites[0];
-                        console.log('EXPAND: ' + expansiontarget + ': WAIT FOR SPAWNER TO BE BUILT, PROGRESS: ' + csite.progress + '/' + csite.progressTotal);
+                        console.log('EXPAND: ' + robj.name + ': WAIT FOR SPAWNER TO BE BUILT, PROGRESS: ' + csite.progress + '/' + csite.progressTotal);
                     } else {
-                        console.log('EXPAND: ' + expansiontarget + ': CREATE SPAWNER');
-                        var enemyspawns = expansiontarget.find(FIND_HOSTILE_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_SPAWN});
+                        console.log('EXPAND: ' + robj.name + ': CREATE SPAWNER');
+                        var enemyspawns = robj.find(FIND_HOSTILE_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_SPAWN});
                         if(enemyspawns.length > 0) {
-                            console.log('***** ' + ' EXPAND: ' + expansiontarget + ': WAIT FOR ENEMY SPAWNS TO DIE: ' + enemyspawns.length );
+                            console.log('***** ' + ' EXPAND: ' + robj.name + ': WAIT FOR ENEMY SPAWNS TO DIE: ' + enemyspawns.length );
                             if (Game.rooms[rname] != undefined) {
                                 Game.rooms[rname].destroyHostileSpawns();
                             }
@@ -94,6 +90,9 @@ module.exports = {
                     }
                 } else { 
                     var claimstring = '***** ' + rname + ' EXPANSION: ROOM HAS BEEN SUCCESSFULLY CLAIMED, AND A SPAWN BUILT! DELETING ROOM FROM ROOMS_TO_CLAIM';
+                    creep.room.fullUpdate();
+                    creep.room.checkStructures();
+                            
                     console.log(claimstring);
                     Game.notify(claimstring);
                     delete rooms_to_claim[rname];

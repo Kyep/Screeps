@@ -111,6 +111,7 @@ global.RESET_SCIENCE = function() {
         'resource_2': RESOURCE_OXYGEN
         });
 
+
     // DISMANTLE made in a ZYNTHIUM room
     chains.push( // T1, +100% dismantle
         {

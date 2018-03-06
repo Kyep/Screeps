@@ -18,10 +18,13 @@ global.empire_workers = {
 	'grower': { 'body': global.CONSTRUCT_BODY({CARRY: 25, MOVE: 25}), 'noresizing': 1, 'abbr': 'grow'},
 
 	'extractor': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'abbr': 'Ext' },
+	
 	'scavenger': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 5, MOVE: 3}), 'noresizing': 1, 'renew_allowed': 0 },
 	'bigscavenger': { 'body': global.CONSTRUCT_BODY({CARRY: 1, MOVE: 1}) },
+	
 	'builder': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 1}) },
 	'builderstorage': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'renew_allowed': 0, 'abbr': 'BS' }, // full speed on roads
+	
 	'upstorclose': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 1, MOVE: 1}), 'abbr': 'USc' },  // halfspeed on roads, quarter speed offroad
 	'upstorfar': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'abbr': 'USf' },  // halfspeed on roads, quarter speed offroad
 	'upstor8': { 'body': global.CONSTRUCT_BODY({WORK: 15, CARRY: 15, MOVE: 15}), 'noresizing': 1, 'abbr': 'US8' },  // halfspeed on roads, quarter speed offroad
@@ -76,6 +79,7 @@ global.empire_workers = {
 	'signer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, 
 
     // Base maint/defense classes.
+    'banker': { 'body': global.CONSTRUCT_BODY({CARRY: 10, MOVE: 5}), 'noresizing': 1},
 	'teller': { 'body': global.CONSTRUCT_BODY({CARRY: 10, MOVE: 5}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 5},
 	'teller-mini': { 'body': global.CONSTRUCT_BODY({CARRY: 4, MOVE: 2}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 3}, // teller for tiny rooms that are out of energy.
 	'teller-towers': { 'body': global.CONSTRUCT_BODY({CARRY: 10, MOVE: 5}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 5 }

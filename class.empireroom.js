@@ -119,8 +119,7 @@ Room.prototype.makeConfigBase = function(spawn_room, backup_spawn_room) {
     if (!spawn_room || !sproom) {
         return undefined;
     }
-    var sps = sproom.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN); } });
-    var sppri = sps[0];
+    var pspawns = sproom.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN); } });
 
     var shouldupdate = true;
     var rconfig = {}
@@ -138,27 +137,35 @@ Room.prototype.makeConfigBase = function(spawn_room, backup_spawn_room) {
         rconfig['sources'][ts.id]['longname'] = rconfig['shortname'] + '-' + String.fromCharCode(97+i); // a, b, c, etc.
         rconfig['sources'][ts.id]['x'] = ts['pos']['x'];
         rconfig['sources'][ts.id]['y'] = ts['pos']['y'];
-        rconfig['sources'][ts.id]['spaces'] = ts.getSlotPositions().length;
-        var pfobj = PathFinder.search(sppri.pos, {'pos': ts.pos, 'range': 1}, {'swampCost': 1.1});
-        var pfpath = pfobj['path'];
-        var pflength = pfpath.length;
-        for (var j = 0; j < pfpath.length; j++) {
-            var thispos = pfpath[j];
-            new RoomVisual(thispos['roomName']).circle(thispos, {stroke: 'yellow'});
+        var open_slots = ts.getSlotPositions();
+        rconfig['sources'][ts.id]['spaces'] = open_slots.length;
+        if (pspawns.length) {
+            var pfobj = PathFinder.search(pspawns[0].pos, {'pos': ts.pos, 'range': 1}, {'swampCost': 1.1});
+            var pfpath = pfobj['path'];
+            var pflength = pfpath.length;
+            for (var j = 0; j < pfpath.length; j++) {
+                var thispos = pfpath[j];
+                new RoomVisual(thispos['roomName']).circle(thispos, {stroke: 'yellow'});
+            }
+            if (pfobj['incomplete']) {
+                console.log(this.name + ': WARNING, makeConfig generated an incomplete path to source ' + ts.id);
+                shouldupdate = false;
+                continue;
+            }
+            rconfig['sources'][ts.id]['steps'] = 50;
+            if (pflength > 0) {
+                rconfig['sources'][ts.id]['steps'] = pflength;
+            }
+            var lastpos = pfpath.slice(-1)[0];
+            rconfig['sources'][ts.id]['dest_x'] = lastpos['x'];
+            rconfig['sources'][ts.id]['dest_y'] = lastpos['y'];
+            new RoomVisual(thispos['roomName']).circle(lastpos, {radius: 0.5, stroke: 'red'});
+        } else {
+            rconfig['sources'][ts.id]['steps'] = 50;
+            var random_slot = _.sample(open_slots);
+            rconfig['sources'][ts.id]['dest_x'] = random_slot.x;
+            rconfig['sources'][ts.id]['dest_y'] = random_slot.y;
         }
-        if (pfobj['incomplete']) {
-            console.log(this.name + ': WARNING, makeConfig generated an incomplete path to source ' + ts.id);
-            shouldupdate = false;
-            continue;
-        }
-        rconfig['sources'][ts.id]['steps'] = 50;
-        if (pflength > 0) {
-            rconfig['sources'][ts.id]['steps'] = pflength;
-        }
-        var lastpos = pfpath.slice(-1)[0];
-        rconfig['sources'][ts.id]['dest_x'] = lastpos['x'];
-        rconfig['sources'][ts.id]['dest_y'] = lastpos['y'];
-        new RoomVisual(thispos['roomName']).circle(lastpos, {radius: 0.5, stroke: 'red'});
     }
     if (this.controller) {
         rconfig['controller'] = {'x': this.controller.pos['x'], 'y': this.controller.pos['y'] }
@@ -387,6 +394,12 @@ Room.prototype.makeAssignments = function(myconf) {
             }
         }
         
+        // Energy push to level < 8 rooms
+        if (this.getLevel() < 8 && this.storage && this.storage.store[RESOURCE_ENERGY] < 500000 && this.terminal && this.terminal.store[RESOURCE_ENERGY] > 40000) {
+            myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 2}, 700);
+        }
+        
+        // Science
         var science_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
         for (var labid in science_labs) {
             if (science_labs[labid]['roomname'] != this.name) {

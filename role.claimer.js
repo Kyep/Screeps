@@ -21,7 +21,7 @@ module.exports = {
                             var victims = creep.room.clearHostileStructures();
                             creep.room.fullUpdate();
                             creep.room.checkStructures();
-                            creep.suicide();
+                            creep.sleepFor(100);
                         }
                     }            
                 } else {
