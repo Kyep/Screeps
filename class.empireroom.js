@@ -386,6 +386,21 @@ Room.prototype.makeAssignments = function(myconf) {
                 }
             }
         }
+        
+        var science_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
+        for (var labid in science_labs) {
+            if (science_labs[labid]['roomname'] != this.name) {
+                continue;
+            }
+            var labobj = Game.structures[labid];
+            if (science_labs[labid]['action'] == 'fill' && labobj.mineralAmount != labobj.mineralCapacity) {
+                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'labtech', {'labtech': 1}, 500);
+                break;
+            } else if (science_labs[labid]['action'] == 'empty' && labobj.mineralAmount > 0) {
+                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'labtech', {'labtech': 1}, 500);
+                break;
+            }
+        }
     }
 
     this.memory[MEMORY_RCONFIG] = myconf;

@@ -22,43 +22,35 @@ module.exports = {
 
         var target = undefined;
         if (creep.memory[MEMORY_RENEWALSP]) {
-            if (creep.memory[MEMORY_RENEWALTICK] && creep.memory[MEMORY_RENEWALTICK] < (Game.time - 100)) {
+            var spobj = Game.getObjectById(creep.memory[MEMORY_RENEWALSP]);
+            if (!spobj || !spobj.isActive() || spobj.spawning != undefined) {
+                delete creep.memory[MEMORY_RENEWALSP];
+            } else if (creep.memory[MEMORY_RENEWALTICK] && creep.memory[MEMORY_RENEWALTICK] < (Game.time - 100)) {
                 delete creep.memory[MEMORY_RENEWALSP];
             } else {
-                var spobj = Game.getObjectById(creep.memory[MEMORY_RENEWALSP]);
-                if (spobj && spobj.isActive() && spobj.spawning == undefined) {
-                    target = spobj;
-                }
+                target = spobj;
             }
         }
         if (!target) {
             var targets = creep.room.find(FIND_STRUCTURES, {
                     filter: (structure) => {
-                        return (structure.structureType == STRUCTURE_SPAWN && structure.spawning == undefined && structure.isActive());
+                        return (structure.structureType == STRUCTURE_SPAWN && structure.spawning == undefined && structure.isActive() && structure.ticksToAvailability() == 0);
                     }
             });
-            if (targets.length == 1) {
-                target = targets[0];
-            } else if (targets.length > 1) {
-                var sorted = targets.sort(function(a, b) { return a.ticksToAvailability() - b.ticksToAvailability() });
-                target = sorted[0];
-            } else {
+            if (targets.length == 0) {
                 targets = creep.room.find(FIND_STRUCTURES, {
                     filter: (structure) => {
-                        return (structure.structureType == STRUCTURE_SPAWN && structure.isActive());
+                        return (structure.structureType == STRUCTURE_SPAWN && structure.spawning == undefined && structure.isActive());
                     }
                 });
-                var sorted = targets.sort(function(a, b) { return a.ticksToAvailability() - b.ticksToAvailability() });
-                var s_dist = creep.pos.getRangeTo(sorted[0]);
-                var s_tta = sorted[0].ticksToAvailability();
-                if (s_tta < s_dist) {
-                    creep.moveToRUP(sorted[0]);
-                }
-                return OK;
+            }
+            if (targets.length > 0) {
+                target = _.sample(targets);
+                creep.memory[MEMORY_RENEWALSP] = target.id;
+                creep.memory[MEMORY_RENEWALTICK] = Game.time;
             }
         }
         if (target) {
-            creep.memory[MEMORY_RENEWALSP] = target.id;
             var result = target.renewCreep(creep);
             if(result == OK) {
                 var creep_cost = CREEP_COST(creep.body);

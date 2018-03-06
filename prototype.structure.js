@@ -20,7 +20,7 @@ StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, transf
             continue;
         }
         var rterm = robj.terminal;
-        if (!rterm || !rterm.isActive()) {
+        if (!rterm || !rterm.isActive() || rterm.id == this.id) {
             continue;
         }
         if (rterm.cooldown) {
@@ -51,7 +51,7 @@ StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, transf
             console.log('RES NETWORK ERR: ' +retval + ' on: ' + mineral_type + ': ' + best_terminal.room.name + '(with: ' + best_terminal.store[mineral_type] + ') sent '+ transfer_amount + ' to: ' + this.room.name + '(previously with: ' + local_before +')');
         }
     } else {
-        //console.log(this.room.name + ': requires ' + transfer_amount + ' of ' + mineral_type + ' but cannot find anywhere with at least ' + (transfer_amount + leave_amount) + ' of it...');
+        //console.log(this.room.name + ' acquireMineralAmount: requires ' + transfer_amount + ' of ' + mineral_type + ' but cannot find anywhere with at least ' + (transfer_amount + leave_amount) + ' of it...');
     }
     return false;
 }
@@ -216,20 +216,29 @@ StructureSpawn.prototype.isAvailable = function(force) {
 }
 
 StructureLab.prototype.isUnassigned = function() {
-    var assigned_labs = Memory['assigned_labs'];
+    var assigned_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
     if (assigned_labs[this.id] != undefined) {
         return false;
     }
     return true;
 }
 
-StructureLab.prototype.isAvailable = function() {
-    if (this.mineralAmount > 0) {
+StructureLab.prototype.isAvailable = function(flash) {
+    var assigned_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
+    if (assigned_labs[this.id] != undefined) {
+        if (flash) {
+            new RoomVisual(this.room.name).text('!Av: ass', this.pos.x, this.pos.y + 1.5, {color: 'red', backgroundColor: 'white', font: 0.8});
+        }
         return false;
     }
-    var assigned_labs = Memory['assigned_labs'];
-    if (assigned_labs[this.id] != undefined) {
+    if (this.mineralAmount > 0) {
+        if (flash) {
+            new RoomVisual(this.room.name).text('!Av: full', this.pos.x, this.pos.y + 1.5, {color: 'red', backgroundColor: 'white', font: 0.8});
+        }
         return false;
+    }
+    if (flash) {
+        new RoomVisual(this.room.name).text('Av', this.pos.x, this.pos.y + 1.5, {color: 'green', backgroundColor: 'white', font: 0.8});
     }
     return true;
 }

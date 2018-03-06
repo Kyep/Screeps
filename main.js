@@ -10,6 +10,7 @@ require('global.espionage');
 require('global.creep');
 require('global.structure');
 require('global.spawning');
+require('global.science');
 
 require('config.empire');
 require('config.units');
@@ -28,7 +29,6 @@ require('class.empireroom');
 require('lib.loanuserlist');
 
 var expansionplanner = require('task.expansion');
-var taskscience = require('task.science');
 
 // ---------------------------
 // BEGIN MAIN LOOP 
@@ -38,6 +38,8 @@ module.exports.loop = function () {
     
     // ----------------------------------------------------------------------------------
     // SECTION: CPU tracking (must come first)
+    
+    global.GLOBALCONFIG = global.GET_ALL_GLOBAL_CONFIG();
 
     var tick_done = Memory[MEMORY_GLOBAL_TICKCOMPLETED];
     var tick_expected = Game.time - 1;
@@ -92,7 +94,7 @@ module.exports.loop = function () {
     }
 
     if(Game.time % 5 === 0) {
-        taskscience.process();
+        SCIENCE_PROCESS();
         CPU_SECTION('science', true);
     }
 

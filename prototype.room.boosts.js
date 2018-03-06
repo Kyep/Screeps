@@ -113,7 +113,7 @@ Room.prototype.getLabsForBooster = function(btype) {
     if (!btype) {
         return undefined;
     }
-    var assigned_labs = Memory['assigned_labs'];
+    var assigned_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
     var booster_labs = [];
     for (var labid in assigned_labs) {
         var labdata = assigned_labs[labid];
@@ -165,6 +165,6 @@ Room.prototype.assignBoost = function(btype) {
              return false;
         }
     }
-    Memory['assigned_labs'][lab_to_assign.id] = {'mineralid': btype, 'purpose': 'boost', 'action': 'fill'};
+    Memory[MEMORY_GLOBAL_SCIENCELABS][lab_to_assign.id] = {'mineralid': btype, 'purpose': 'boost', 'action': 'fill'};
     return true;
 }

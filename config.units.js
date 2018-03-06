@@ -25,7 +25,8 @@ global.empire_workers = {
 	'upstorclose': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 1, MOVE: 1}), 'abbr': 'USc' },  // halfspeed on roads, quarter speed offroad
 	'upstorfar': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'abbr': 'USf' },  // halfspeed on roads, quarter speed offroad
 	'upstor8': { 'body': global.CONSTRUCT_BODY({WORK: 15, CARRY: 15, MOVE: 15}), 'noresizing': 1, 'abbr': 'US8' },  // halfspeed on roads, quarter speed offroad
-	'labtech': { 'body': global.CONSTRUCT_BODY({CARRY: 18, MOVE: 6}), 'noresizing': 1, 'abbr': 'LTec' },
+	
+	'labtech': { 'body': global.CONSTRUCT_BODY({CARRY: 20, MOVE: 10}), 'noresizing': 1, 'abbr': 'LTec' },
 	'nuketech': { 'body': global.CONSTRUCT_BODY({CARRY: 12, MOVE: 6}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'NUKE', 'rup': 3 },
 
     // MILITARY CREEP DESIGN RULES:

@@ -37,24 +37,16 @@ module.exports = {
                 if (res_withdraw == ERR_NOT_IN_RANGE) {
                     creep.moveToRUP(myterminal);
                 } else if (res_withdraw == ERR_NOT_ENOUGH_RESOURCES) {
-                    if (myterminal.acquireMineralAmount(mymineral, 3000, 3000)) {
+                    if (myterminal.acquireMineralAmount(mymineral, 3000, 6000)) {
                         creep.say('ACQUIRED!');
                     } else {
-                        console.log(creep.name + ' in ' + creep.room.name + ' is attempting to acquire ' + mymineral + ' to fill a lab, but it is not in the terminal network!');
+                        console.log(creep.name + ' in ' + creep.room.name + ' is attempting to acquire ' + mymineral + ' to fill a lab, but those resources are not in the terminal network!');
                         creep.sleepFor(5);
                     }
 
                 }
             } else {
-                if (Game.time % 25 === 0) {
-                    if (creep.room.terminal && creep.room.terminal.acquireMineralAmount(mymineral, 3000, 6000)) {
-                        console.log(creep.name + ': short on ' + mymineral + ' in ' + creep.room.name + ' pulled in extra from another room!');
-                    } else {
-                        console.log(creep.name + ': short on ' + mymineral + ' in ' + creep.room.name + ' no others found anywhere!');
-                    }
-                    
-                    creep.say('short ' + mymineral); 
-                }
+                creep.memory[MEMORY_JOB] = 'idle';
             }
             return;
         } else if (myjob == 'empty_lab') {
@@ -78,8 +70,11 @@ module.exports = {
         if (Game.time % 2 !== 0) {
             return;   
         }
+        if (creep.ticksToLive && creep.ticksToLive < 50) {
+            creep.suicide();
+        }
         
-        var assigned_labs = Memory['assigned_labs'];
+        var assigned_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
         // example: {'mineralid': goal, 'purpose': 'reaction', 'action': 'fill'}
         var rlabs = creep.room.find(FIND_MY_STRUCTURES, { filter: function(structure){ if(structure.structureType == STRUCTURE_LAB) { return 1; } else { return 0; } } });
         for (var key in rlabs) {
@@ -107,6 +102,18 @@ module.exports = {
                 }
                 var amount_needed = thislab.mineralCapacity - thislab.mineralAmount;
                 if (amount_needed == 0) {
+                    continue;
+                }
+                if (creep.room.terminal.store[rock] == undefined || creep.room.terminal.store[rock] < 3000) {
+                    if (Game.time % 5 === 0) {
+                        if (creep.room.terminal.acquireMineralAmount(rock, 3000, 6000)) {
+                            console.log(creep.name + ': short on ' + rock + ' in ' + creep.room.name + ' for assignment! Pulled in extra from another room!');
+                            return;
+                        } else {
+                            //console.log(creep.name + ': short on ' + rock + ' in ' + creep.room.name + ' no others found anywhere!');
+                        }
+                        creep.say('short ' + rock); 
+                    }
                     continue;
                 }
                 creep.memory[MEMORY_JOB] = 'fill_lab';

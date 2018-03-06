@@ -5,9 +5,8 @@ global.MEMORY_GLOBAL_CPUSTATS = 'cpustats';
 global.MEMORY_GLOBAL_GCONFIG = 'gconfig';
 global.MEMORY_GLOBAL_TICKCOMPLETED = 'tickcompleted';
 global.MEMORY_GLOBAL_LINKS = 'links';
-
-global.GLOBALCONFIG = global.GET_ALL_GLOBAL_CONFIG();
-
+global.MEMORY_GLOBAL_SCIENCEREACTIONS = 'science_reactions';
+global.MEMORY_GLOBAL_SCIENCELABS = 'science_labs';
 
 // Creep memory, top-level categories
 global.MEMORY_ROLE = 'role';

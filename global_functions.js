@@ -71,19 +71,6 @@ global.LAB_STATUS = function() {
     console.log(JSON.stringify(Memory['assigned_labs']));
 }
 
-global.RESET_ALL_LABS = function() {
-    Memory['ongoing_reactions'] = {}
-    Memory['assigned_labs'] = {}
-    for (var crname in Game.creeps) {
-        var crmem = Game.creeps[crname].memory
-        if (crmem[MEMORY_ROLE] == "labtech") {
-            if (crmem[MEMORY_JOB] == "fill_lab") {
-                crmem[MEMORY_JOB] = "idle";
-            }
-        }
-    }
-}
-
 global.UNIT_COST = function (thebody) {
     var total_cost = 0;
     if (!thebody) {

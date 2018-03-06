@@ -118,7 +118,7 @@ global.REPORT_TERMINALS = function(mintype) {
 }
 
 global.SHOW_BOOSTERS = function() {
-    var assigned_labs = Memory['assigned_labs'];
+    var assigned_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
     for (var labid in assigned_labs) {
         var labobj = assigned_labs[labid];
         if (labobj['purpose'] != 'boost') {
@@ -152,10 +152,25 @@ global.MINERAL_REACTION_COUNT = function(mname) {
     return Object.keys(reobj).length;
 }
 
+global.FIND_MINERAL = function(mintype) {
+    for (var rname in Game.rooms) {
+        if (!Game.rooms[rname].isMine() || !Game.rooms[rname].terminal) {
+            continue;
+        }
+        var t = Game.rooms[rname].terminal;
+        var a = t.store[mintype];
+        if (!a) {
+            continue;
+        }
+        console.log(rname + ': ' + a);
+    }
+}
+        
+
 global.SHOW_MINERALS = function(mintype) {
     var minobj = global.MINERAL_INVENTORY();
     for (var mt in minobj) {
-        console.log(mt + ': ' + minobj[mt]);
+        console.log(mt + ': ' + minobj[mt].toLocaleString('en'));
     }
 
     for (var method in BOOSTS) {
@@ -167,7 +182,7 @@ global.SHOW_MINERALS = function(mintype) {
             if (minobj[chem]) {
                 amt = minobj[chem];
             }
-            console.log(' - ' + chem + ': (' + bpropstr + '): ' + amt);
+            console.log(' - ' + chem + ': (' + bpropstr + '): ' + amt.toLocaleString('en'));
         }
     }
 
