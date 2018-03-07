@@ -131,11 +131,13 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
                         advised_spawns[spawn_room][rname][sname][role]++;
                     }
                 } else if (comp['liv'] > comp['int']) {
-                    compstring = '<font color="yellow">' + comp['liv'] + '</font>/' + comp['int'];
+                    compstring = '<font color="orange">' + comp['liv'] + '</font>/' + comp['int'];
                 }
                 var rtext = role;
                 if (empire_defaults['military_roles'].includes(role) || empire_defaults['priority_roles'].includes(role) ) {
                     rtext = '<font color="purple">' + role + '</font>';
+                } else if (role == 'banker') {
+                    rtext = '<font color="yellow">' + role + '</font>';
                 }
                 
                 s_messages.push(rtext + ': ' + compstring);
@@ -143,7 +145,11 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
             r_messages.push(stext + ': ' + s_messages.join(', '));
     	}
     	if (report_summary) {
-        	console.log(rname + ': ' + r_messages.join(' '));
+    	    var lvl = 'R';
+    	    if (Game.rooms[rname] && Game.rooms[rname].getLevel() > 0) {
+    	        lvl = Game.rooms[rname].getLevel();
+    	    }
+        	console.log(rname + '(' + lvl + '): ' + r_messages.join(' '));
     	}
     }
     

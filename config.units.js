@@ -75,7 +75,7 @@ global.empire_workers = {
 	'reserver' : { 'body': global.CONSTRUCT_BODY({CLAIM: 2, MOVE: 2}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 10 },
 	'sreserver' : { 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 	'claimer': { 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
-	'bclaimer': { 'body': global.CONSTRUCT_BODY({CLAIM: 14, MOVE: 14}), 'renew_allowed': 0 },
+	'bclaimer': { 'body': global.CONSTRUCT_BODY({CLAIM: 7, MOVE: 7}), 'renew_allowed': 0 },
 	'signer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, 
 
     // Base maint/defense classes.

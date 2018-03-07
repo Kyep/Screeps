@@ -140,6 +140,21 @@ Room.prototype.ensureLabTech = function() {
     return num_techs;
 }
 
+Room.prototype.removeBoosts = function() {
+    var rlabs = this.find(FIND_MY_STRUCTURES, { filter: function(structure){ if(structure.structureType == STRUCTURE_LAB) { return 1; } else { return 0; } } });
+    for (var i = 0; i < rlabs.length; i++) {
+        if (Memory[MEMORY_GLOBAL_SCIENCELABS][rlabs[i].id] && Memory[MEMORY_GLOBAL_SCIENCELABS][rlabs[i].id]['purpose'] == 'boost') {
+            var labcontents = '(empty)';
+            if (rlabs[i].mineralType) {
+                labcontents = rlabs[i].mineralType;
+            }
+            console.log(this.name + ': removing boost for lab: ' + rlabs[i].id + ' contents: ' + labcontents);
+            delete Memory[MEMORY_GLOBAL_SCIENCELABS][rlabs[i].id];
+        }
+    }
+    return true;
+}
+
 Room.prototype.assignBoost = function(btype) {
     if (!btype) {
         console.log(this.name + ': assignBooster: null booster type');

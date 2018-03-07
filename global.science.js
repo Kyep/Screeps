@@ -1,4 +1,3 @@
-
 global.RESET_SCIENCE = function() {
     var chains = [];
     // ZK made in a KEANIUM room - verified
@@ -149,6 +148,9 @@ global.RESET_SCIENCE = function() {
 }
 
 global.SCIENCE_PROCESS = function () {
+    
+    var max_fueling_time = 500;
+    
     var science_reactions = Memory[MEMORY_GLOBAL_SCIENCEREACTIONS];
     var science_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
 
@@ -271,18 +273,18 @@ global.SCIENCE_PROCESS = function () {
                     remaining_minerals.push(ald['mineralid']);
                 }
                 var pc_text = ald['mineralid'] + ' ' + pc_full + '%';
-                new RoomVisual(rmobj.name).text(pc_text, labs_to_fill[l].pos.x, labs_to_fill[l].pos.y + 1.5, {color: text_color, backgroundColor: 'white', font: 0.8});
+                new RoomVisual(rmobj.name).text(pc_text, labs_to_fill[l].pos.x, labs_to_fill[l].pos.y + 1.5, {color: text_color, backgroundColor: 'white', font: 0.3});
             }
             var overall_pc = ROUND_NUMBER_TO_PLACES((progress_tally / labs_to_fill.length), 0);
             if (count_filled != labs_to_fill.length) {
                 var reaction_age = Game.time - reaction['creation_time'];
                 //console.log('SCI: reaction for ' + reaction['goal'] + ' in room ' + reaction['roomname'] +' is fueling, overall progress: ' + overall_pc + '% in ' + reaction_age + ' ticks. Remain: ' + remaining_minerals.join(', '));
-                if (reaction_age > 500) {
+                if (reaction_age > max_fueling_time) {
                     science_labs[lab_1.id]['action'] = 'empty';
                     science_labs[lab_2.id]['action'] = 'empty';
                     science_labs[lab_3.id]['action'] = 'empty';
                     reaction['state'] = 'cleanup';
-                    console.log('SCI: ' + reaction['roomname'] + '/' + reaction['goal'] + ' has been fueling for >500 ticks, assuming it will never fuel up and ending it: ' + JSON.stringify(reaction));
+                    console.log('SCI: ' + reaction['roomname'] + '/' + reaction['goal'] + ' has been fueling for > ' + max_fueling_time + ' ticks, assuming it will never fuel up and ending it: ' + JSON.stringify(reaction));
                     science_reactions[i] = reaction; // Save to parent object.
                 }
                 continue;
@@ -298,6 +300,8 @@ global.SCIENCE_PROCESS = function () {
             science_reactions[i] = reaction; // Save to parent object.
             
         } else { // reaction not started.
+        
+            
             var desired_amount = 10000; // by default, assume T1 or T2. have a little bit, but don't build up masses of it - the higher tier boosts matter more.
             if (MINERAL_REACTION_COUNT(reaction['goal']) == 0) {
                 desired_amount = 40000; // this is T3... it is not used in any further reactions
