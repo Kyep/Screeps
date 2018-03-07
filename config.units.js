@@ -23,7 +23,7 @@ global.empire_workers = {
 	'bigscavenger': { 'body': global.CONSTRUCT_BODY({CARRY: 1, MOVE: 1}) },
 	
 	'builder': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 1}) },
-	'builderstorage': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'renew_allowed': 0, 'abbr': 'BS' }, // full speed on roads
+	'builderstorage': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'abbr': 'BS' }, // full speed on roads
 	
 	'upstorclose': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 1, MOVE: 1}), 'abbr': 'USc' },  // halfspeed on roads, quarter speed offroad
 	'upstorfar': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'abbr': 'USf' },  // halfspeed on roads, quarter speed offroad
