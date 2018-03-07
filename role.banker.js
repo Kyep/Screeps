@@ -9,13 +9,29 @@ module.exports = {
         if(!creep.isAtDestinationRoom()){
             creep.moveToDestination();
             return;
-        } else if(creep.memory[MEMORY_JOB] == JOB_GFS) {
+        }
+        var pullfrom = creep.room.terminal;
+        var depositto = creep.room.storage;
+        var pullmin = 10000;
+        var pushmax = 900000;
+        
+        if (creep.room.getLevel() == 8) {
+            pullfrom = creep.room.storage;
+            depositto = creep.room.terminal;
+            pullmin = 10000;
+            pushmax = 900000;
+        }
+        if (!pullfrom || !depositto) {
+            return;
+        }
+        
+        if(creep.memory[MEMORY_JOB] == JOB_GFS) {
             if (creep.carry.energy > 0) {
                 creep.memory[MEMORY_JOB] = JOB_RETURN;
             } else {
-                var result = creep.withdraw(creep.room.terminal, RESOURCE_ENERGY, creep.carryCapacity);
+                var result = creep.withdraw(pullfrom, RESOURCE_ENERGY, creep.carryCapacity);
                 if(result == ERR_NOT_IN_RANGE) {
-                    creep.moveToRUP(creep.room.terminal);
+                    creep.moveToRUP(pullfrom);
                 }
             }
         } else if(creep.memory[MEMORY_JOB] == JOB_RETURN) {
@@ -26,13 +42,13 @@ module.exports = {
                     creep.memory[MEMORY_JOB] = JOB_RENEW;
                 }
             } else {
-                var result = creep.transfer(creep.room.storage, RESOURCE_ENERGY, creep.carry[RESOURCE_ENERGY]);
+                var result = creep.transfer(depositto, RESOURCE_ENERGY, creep.carry[RESOURCE_ENERGY]);
                 if(result == ERR_NOT_IN_RANGE) {
-                    creep.moveToRUP(creep.room.storage);
+                    creep.moveToRUP(depositto);
                 }
             }
         } else if(creep.memory[MEMORY_JOB] == JOB_RENEW) {
-            if (!creep.getRenewEnabled() || !creep.room.storage || !creep.room.terminal || creep.room.storage.store[RESOURCE_ENERGY] > 900000 || creep.room.terminal.store[RESOURCE_ENERGY] < 10000) {
+            if (!creep.getRenewEnabled() || depositto.store[pushmax] > 900000 || pullfrom.store[pullmin] < 10000 || !creep.memory[MEMORY_NEEDED]) {
                 if (creep.ticksToLive > 100 ) {
                     creep.memory[MEMORY_JOB] = JOB_GFS;
                 }

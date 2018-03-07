@@ -395,25 +395,7 @@ Room.prototype.getMyStructuresCount = function() {
 }
 
 
-Room.prototype.getTowerRepairMax = function() {
-    var lvl = this.controller.level;
-    if (lvl < 3) {
-        return 0; // no towers at this level anyway
-    } else if (lvl == 3) {
-        return 1000;
-    } else if (lvl == 4) {
-        return 5000;
-    } else if (lvl == 5) {
-        return 10000;
-    } else if (lvl == 6) {
-        return 20000;
-    } else if (lvl == 7) {
-        return 500000;
-    } else if (lvl == 8) {
-        return 1000000; 
-    }
-    return 50000 * lvl;
-}
+
 
 Room.prototype.getStoredEnergy = function() {
     var total_energy = 0;

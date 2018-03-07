@@ -244,24 +244,6 @@ Creep.prototype.getHomePos = function() {
 }
 
 
-Creep.prototype.getRepairMax = function() {
-    if (this.room.controller == undefined) {
-        return 0;
-    }
-    var lvl = this.room.controller.level;
-    if (lvl < 3) {
-        return 1000;
-    } else if (lvl == 3) {
-        return 10000;
-    } else if (lvl == 4) {
-        return 25000;
-    } else if (lvl == 8) {
-        return 2000000;
-    } else {
-        return 40000 * lvl;
-    }
-}
-
 Creep.prototype.redRally = function() {
     var redflags = this.room.getFlagsByType(FLAG_RALLYMIL);
     if(redflags.length) {

@@ -1,11 +1,54 @@
 
-StructureTerminal.prototype.shouldPull = function() {
-    return this.store[RESOURCE_ENERGY] < empire_defaults['terminal_energy_min'];
+StructureTerminal.prototype.acquireSpareEnergy = function() {
+    var tamt = 5000;
+    return this.acquireMineralAmount(RESOURCE_ENERGY, tamt, this.getEnergyMin() + tamt, true);
 }
 
-StructureTerminal.prototype.shouldPush = function() {
-    return this.store[RESOURCE_ENERGY] > empire_defaults['terminal_energy_max'];
+StructureTerminal.prototype.canDepositEnergy = function() {
+    if (!this.isActive()) {
+        return false;
+    }
+    if (this.metEnergyMax()) {
+        return false;
+    }
+    if (_.sum(this.store) >= (this.storeCapacity * 0.9)) {
+        return false;
+    }
+    return true;
 }
+
+StructureTerminal.prototype.canWithdrawEnergy = function() {
+    if (!this.isActive()) {
+        return false;
+    }
+    if (!this.metEnergyMin()) {
+        return false;
+    }
+    return true;
+}
+
+StructureTerminal.prototype.getEnergyAboveMinimum = function() {
+    return this.store[RESOURCE_ENERGY] - this.getEnergyMin();
+}
+
+StructureTerminal.prototype.metEnergyMax = function() {
+    return this.store[RESOURCE_ENERGY] >= this.getEnergyMax();
+}
+
+StructureTerminal.prototype.metEnergyMin = function() {
+    return this.store[RESOURCE_ENERGY] >= this.getEnergyMin();
+}
+
+StructureTerminal.prototype.getEnergyMax = function() {
+    return 50000;
+}
+
+StructureTerminal.prototype.getEnergyMin = function() {
+    return 25000;
+}
+
+
+
 
 StructureTerminal.prototype.acquireNukeFuel = function() {
     return this.acquireMineralAmount(RESOURCE_GHODIUM, 5000, 5000);

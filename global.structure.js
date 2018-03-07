@@ -1,4 +1,42 @@
 
+/* 
+global.CONVERT_BODY_TO_HPT = function(tbody2) {
+    var tbody = [{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
+    {"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},
+    {"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},
+    {"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},
+    {"type":"move","hits":0},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
+    {"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
+    {"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
+    {"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
+    {"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
+    {"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
+    {"type":"heal","hits":36,"boost":"LO"},{"type":"heal","hits":100,"boost":"LO"},{"type":"move","hits":100}];
+    
+    var hpt = 0;
+    console.log(tbody.length);
+    for (var p = 0; p < tbody.length; p++) {
+        var thispartobj = tbody[p];
+        console.log(JSON.stringify(thispartobj));
+        if (thispartobj['type'] != 'heal') {
+            continue;
+        }
+        var thishps = HEAL_POWER;
+        var boost_mineral = thispartobj['boost'];
+        if (boost_mineral) {
+            thishps *= multiplier = BOOSTS['heal'][boost_mineral]['heal'];
+        }
+        hpt += thishps;
+    }
+    return hpt;
+}
+
+Creep.prototype.getHPT = function() {
+    return CONVERT_BODY_TO_HPT(this.body);
+}
+
+*/
+
 global.RUN_STRUCTURES = function() {
     var rtowers = {};
     for(var id in Game.structures){
@@ -23,6 +61,7 @@ global.RUN_STRUCTURES = function() {
         // If hostiles in room, focus fire.        
         var enemiesList = theroom.getHostileCreeps();
         if (enemiesList.length) {
+            //console.log(JSON.stringify(enemiesList[0].body));
             var highest_threat = -1;
             var best_target = undefined;
             for (var i = 0; i < enemiesList.length; i++) {
@@ -46,37 +85,9 @@ global.RUN_STRUCTURES = function() {
         }
 
         // If no hostiles in room, repair.
-        var repairMax = theroom.getTowerRepairMax();
-        var repairTargets = theroom.find(FIND_STRUCTURES, {
-                filter: function(structure){
-                    if(structure.structureType == STRUCTURE_RAMPART){
-                        return (structure.hits < repairMax)
-                    } else {
-                        return 0
-                    }
-                }
-        });
+        var repairTargets = theroom.getRepairable([STRUCTURE_WALL, STRUCTURE_RAMPART], TOWER_POWER_REPAIR);
         if (!repairTargets.length) {
-            repairTargets = theroom.find(FIND_STRUCTURES, {
-                filter: function(structure){
-                    if(structure.structureType == STRUCTURE_ROAD){
-                        return (structure.hits < structure.hitsMax)
-                    } else {
-                        return 0
-                    }
-                }
-            });
-        }
-        if (!repairTargets.length) {
-            repairTargets = theroom.find(FIND_STRUCTURES, {
-                filter: function(structure){
-                    if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
-                        return (structure.hits < repairMax)
-                    }else{
-                        return (structure.hits < (structure.hitsMax - TOWER_POWER_REPAIR))
-                    }
-                }
-            });
+            repairTargets = theroom.getRepairable([], TOWER_POWER_REPAIR);
         }
         if (!repairTargets.length) {
             continue;

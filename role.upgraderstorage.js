@@ -8,7 +8,11 @@ module.exports = {
 
     run: function(creep) {
         if (creep.carry.energy == 0 && creep.memory[MEMORY_JOB] != JOB_GFS && creep.memory[MEMORY_JOB] != JOB_RENEW) {
-            creep.memory[MEMORY_JOB] = JOB_RENEW;
+            if (creep.ticksToLive > 400) {
+                creep.memory[MEMORY_JOB] = JOB_GFS;
+            } else {
+                creep.memory[MEMORY_JOB] = JOB_RENEW;
+            }
         } else if(creep.memory[MEMORY_JOB] == JOB_GFS && creep.carry.energy == creep.carryCapacity) {
             creep.memory[MEMORY_JOB] = JOB_UPGRADE;
         }
@@ -25,7 +29,7 @@ module.exports = {
                 jobUpgrade.run(creep);
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_RENEW) {
-            if (creep.ticksToLive > 200) {
+            if (creep.ticksToLive > 400) {
                 creep.memory[MEMORY_JOB] = JOB_GFS;
             } else if (!creep.getRenewEnabled() || !creep.room.storage || creep.room.storage.store[RESOURCE_ENERGY] < 25000) {
                 creep.memory[MEMORY_ROLE] = 'recycler';

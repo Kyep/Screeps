@@ -46,7 +46,9 @@ module.exports.loop = function () {
     if (tick_done != tick_expected) {
         var crashmsg = 'MISSING TICK: possible crash during tick ' + tick_expected + ',  after section: ' + Memory[MEMORY_GLOBAL_CPUSTATS]['lastsection'];
         console.log(crashmsg);
-        Game.notify(crashmsg);
+        if ( Memory[MEMORY_GLOBAL_CPUSTATS]['lastsection'] != 'finished') {
+            Game.notify(crashmsg);
+        }
     }
 
     global.cpu_thistick = {}
@@ -65,7 +67,9 @@ module.exports.loop = function () {
     for(var cr in Game.creeps) {
         Game.creeps[cr].setupMemory();
     }
+
     global.populateLOANlist();
+    //global.LOANlist = [];
 
     CPU_SECTION('setup');
     
@@ -104,6 +108,9 @@ module.exports.loop = function () {
         CPU_SECTION('rooms-partsalert', true);
     }
 
+    if(Game.time % 100 === 0) {
+        HEAP_TEST();
+    }
 
     // ----------------------------------------------------------------------------------
     // SECTION: Global actions that are done every tick
@@ -137,22 +144,20 @@ module.exports.loop = function () {
 
         // ROOM MANAGER
 
-        for(var rname in Game.rooms) {
-            if(Game.rooms[rname].isMine() && Game.rooms[rname].getLevel() != 8) {
-                if (Game.rooms[rname].terminal && Game.rooms[rname].terminal.isActive()) {
+        
+        for (var rname in Game.rooms) {
+            if (Game.rooms[rname].isMine() && Game.rooms[rname].getLevel() != 8) {
+                if (Game.rooms[rname].terminal && Game.rooms[rname].terminal.isActive() && Game.rooms[rname].storage && Game.rooms[rname].storage.isActive() && Game.rooms[rname].storage[RESOURCE_ENERGY] < 250000) {
                     var lterm = Game.rooms[rname].terminal;
-                    if (lterm.shouldPull()) {
-                        lterm.acquireMineralAmount(RESOURCE_ENERGY, 5000, empire_defaults['terminal_energy_min'] + 10000, true);
+                    if (lterm.canDepositEnergy()) {
+                        lterm.acquireSpareEnergy();
                         break;
-                    } else if (lterm.shouldPush()) {
-                        
-                        //lterm.pushMineralAmount(RESOURCE_ENERGY, 5000, empire_defaults['terminal_energy_min']);
-                        break;
-                    } 
+                    }
                 }
             }
         }
         CPU_SECTION('terminal-transfer', true);
+        
 
         for(var rname in Game.rooms) {
             if(Game.rooms[rname].inEmpire()) {

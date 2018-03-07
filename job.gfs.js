@@ -21,15 +21,11 @@ module.exports =  {
             });
         }
         */
-        var terminal_energy_trigger = empire_defaults['terminal_energy_sell'];
-        if (creep.room.getLevel() != 8) {
-            terminal_energy_trigger = 5000;
-        }
         if (targets.length == 0) {
             targets = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
                      return (structure.structureType == STRUCTURE_STORAGE && structure.store.energy > 0)
-                     || (structure.structureType == STRUCTURE_TERMINAL && structure.store.energy > terminal_energy_trigger);
+                     || (structure.structureType == STRUCTURE_TERMINAL && structure.canWithdrawEnergy());
                 }
             });
         }

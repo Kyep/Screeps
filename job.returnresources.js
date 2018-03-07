@@ -49,7 +49,6 @@ module.exports =  {
                     }
                 });
             }
-            var terminal_energy_max = empire_defaults['terminal_energy_max'];
             var storage_energy_max = empire_defaults['storage_energy_max'];
             if(!targets.length) {
                 targets = creep.room.find(FIND_STRUCTURES, {
@@ -69,8 +68,8 @@ module.exports =  {
                         filter: (structure) => {
                             return (
                                     (
-                                       (structure.structureType == STRUCTURE_TERMINAL && structure.store.energy < terminal_energy_max && _.sum(structure.store) < (structure.storeCapacity * 0.9))
-                                       || (structure.structureType == STRUCTURE_LAB && structure.energy < 2000)
+                                       (structure.structureType == STRUCTURE_TERMINAL && structure.canDepositEnergy())
+                                       || (structure.structureType == STRUCTURE_LAB && structure.energy < structure.energyCapacity)
                                     ) && structure.isActive()
                             );
                         }

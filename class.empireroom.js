@@ -1,6 +1,71 @@
 "use strict";
 
-// New 3/1/2018 code for abstracting the management of empire rooms
+
+Room.prototype.getRepairableHP = function(blacklist, mindmg) {
+    if (blacklist == undefined) {
+        blacklist = [];
+    }
+    if (mindmg == undefined) {
+        mindmg = 0;
+    }
+    var rlist = this.getRepairable(blacklist, mindmg);
+    var total_hp = 0;
+    var repairMax = this.getRepairMax();
+    for (var i = 0; i < rlist.length; i++) {
+        if (blacklist && blacklist.length && blacklist.includes(rlist[i].structureType)) {
+            return false;
+        } else if (rlist[i].structureType == STRUCTURE_WALL || rlist[i].structureType == STRUCTURE_RAMPART){
+            total_hp += ((repairMax - mindmg) - rlist[i].hits);
+        } else {
+            total_hp += ((rlist[i].hitsMax - mindmg) - rlist[i].hits);
+        }
+    }
+    return total_hp;
+}
+
+Room.prototype.getRepairable = function(blacklist, mindmg) {
+    if (blacklist == undefined) {
+        blacklist = [];
+    }
+    if (mindmg == undefined) {
+        mindmg = 0;
+    }
+    var repairMax = this.getRepairMax();
+    return this.find(FIND_STRUCTURES, {
+        filter: function(structure){
+            if (blacklist && blacklist.length && blacklist.includes(structure.structureType)) {
+                return false;
+            } else if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
+                return (structure.hits < (repairMax - mindmg))
+            } else{
+                return (structure.hits < (structure.hitsMax - mindmg))
+            }
+        }
+    });
+}
+
+Room.prototype.getRepairMax = function() {
+    if (!this.isMine()) {
+        return 0;
+    }
+    var lvl = this.getLevel();
+    if (lvl < 3) {
+        return 0; // no towers at this level anyway
+    } else if (lvl == 3) {
+        return 1000;
+    } else if (lvl == 4) {
+        return 5000;
+    } else if (lvl == 5) {
+        return 10000;
+    } else if (lvl == 6) {
+        return 20000;
+    } else if (lvl == 7) {
+        return 1000000;
+    } else if (lvl == 8) {
+        return 1000000; 
+    }
+    return 50000 * lvl;
+}
 
 Room.prototype.getMaxCarryPartsPerHauler = function() {
     if (!this.isMine()) {
@@ -308,9 +373,16 @@ Room.prototype.makeAssignments = function(myconf) {
         console.log(this.name + ': makeAssignments assigned nothing because room lacks controller.');
     }
 
+    var spawned_builders = false;
+
     // Adjust builders depending on unfinished projects.
+
     var projectsList = this.find(FIND_MY_CONSTRUCTION_SITES, { filter: (csite) => { return (csite.structureType != STRUCTURE_CONTAINER); } });
-    if (projectsList.length > 0) {
+    var repairablehp = 0;
+    if (this.isMine() && this.storage && this.storage.store[RESOURCE_ENERGY] > 100000) {
+        repairablehp = this.getRepairableHP([], 0); 
+    }
+    if (projectsList.length > 0 || repairablehp > 50000) {
         var btype = 'builderstorage';
         if (!this.isMine()) {
             btype = 'remoteconstructor';
@@ -319,11 +391,17 @@ Room.prototype.makeAssignments = function(myconf) {
         }
         var newobj = {}
         newobj[btype] = 1;
+        if (repairablehp > 2000000) {
+            newobj[btype] = 3;
+        } else if (repairablehp > 500000) {
+            newobj[btype] = 2;
+        }
         for (var skey in myconf['sources']) {
             if (myconf['sources'][skey]['spaces'] != 1) {
                 myconf = this.setSourceAssignment(myconf, skey, newobj, 250);
             }
         }
+        spawned_builders = true;
     }
     
     // Base-only spawns
@@ -346,24 +424,25 @@ Room.prototype.makeAssignments = function(myconf) {
         }
         
         // Upgraders
-        var total_e = 0;
-        if (this.storage && this.storage.store[RESOURCE_ENERGY] && this.storage.isActive()) {
-            total_e += this.storage.store[RESOURCE_ENERGY];
-        }
-        if (this.terminal && this.terminal.store[RESOURCE_ENERGY] && this.terminal.isActive()) {
-            total_e += this.terminal.store[RESOURCE_ENERGY]
-        }
-        if (total_e > 50000) {
-            if (rlvl == 8) {
-                var upobj = {'upstor8': 1}
-                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'upstor8', upobj, 999);
-            } else {
-                var upcount = Math.floor(total_e / 40000);
-                var upobj = {'upstorclose': upcount}
-                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'upgrades', upobj, 999);
+        if (!spawned_builders) {
+            var total_e = 0;
+            if (this.storage && this.storage.store[RESOURCE_ENERGY] && this.storage.isActive()) {
+                total_e += this.storage.store[RESOURCE_ENERGY];
+            }
+            if (this.terminal && this.terminal.store[RESOURCE_ENERGY] && this.terminal.isActive()) {
+                total_e += this.terminal.store[RESOURCE_ENERGY]
+            }
+            if (total_e > 50000) {
+                if (rlvl == 8) {
+                    var upobj = {'upstor8': 1}
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'upstor8', upobj, 999);
+                } else {
+                    var upcount = Math.floor(total_e / 40000);
+                    var upobj = {'upstorclose': upcount}
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'upgrades', upobj, 999);
+                }
             }
         }
-        
 
         // Tellers
         var teller_obj = this.getEnergyHistoryAdvisedSpawns();
@@ -395,8 +474,12 @@ Room.prototype.makeAssignments = function(myconf) {
         }
         
         // Energy push to level < 8 rooms
-        if (this.getLevel() < 8 && this.storage && this.storage.store[RESOURCE_ENERGY] < 500000 && this.terminal && this.terminal.store[RESOURCE_ENERGY] > 40000) {
-            myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 2}, 700);
+        if (this.storage && this.storage.isActive() && this.terminal && this.terminal.isActive()) {
+            if (rlvl < 8 && this.storage.store[RESOURCE_ENERGY] < 200000 && this.terminal.getEnergyAboveMinimum() >= 20000) {
+                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 1}, 700);
+            } else if (rlvl == 8 && this.storage.store[RESOURCE_ENERGY] > 800000 && !this.terminal.metEnergyMax()) {
+                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 1}, 700);
+            }
         }
         
         // Science

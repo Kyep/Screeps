@@ -3,6 +3,13 @@
 // SET_GLOBAL_CONFIG_KEY('save_cpu_creeps', false); SET_GLOBAL_CONFIG_KEY('report_cpu_creeps', false);  
 
 // Commands 
+global.HEAP_TEST = function() {
+    if (typeof Game.cpu.getHeapStatistics === "function") {
+    	let heapStats = Game.cpu.getHeapStatistics();
+    	let heapPercent = Math.round(((heapStats.total_heap_size + heapStats.externally_allocated_size) / heapStats.heap_size_limit) * 100);
+    	console.log("heap usage:",Math.round((heapStats.total_heap_size)/1048576),"MB +",Math.round((heapStats.externally_allocated_size)/1048576),"MB of",Math.round(heapStats.heap_size_limit/1048576),"MB (",heapPercent,"% )");
+    }
+}
 
 global.RESET_CPU_USAGE_HISTORY = function() {
     Memory[MEMORY_GLOBAL_CPUSTATS] = { 'data': [] }
