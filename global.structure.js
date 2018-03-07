@@ -87,7 +87,7 @@ global.RUN_STRUCTURES = function() {
         // If no hostiles in room, repair.
         var repairTargets = theroom.getRepairable([STRUCTURE_WALL, STRUCTURE_RAMPART], TOWER_POWER_REPAIR);
         if (!repairTargets.length) {
-            repairTargets = theroom.getRepairable([], TOWER_POWER_REPAIR);
+            repairTargets = theroom.getRepairable([STRUCTURE_WALL], TOWER_POWER_REPAIR);
         }
         if (!repairTargets.length) {
             continue;

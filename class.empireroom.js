@@ -249,7 +249,7 @@ Room.prototype.makeConfigBase = function(spawn_room, backup_spawn_room) {
     return rconfig;
 }
 
-Room.prototype.setSourceAssignment = function(rconfig, sourceid, ass_object, steps) {
+Room.prototype.addSourceAssignment = function(rconfig, sourceid, ass_object, steps) {
     if (!rconfig || !sourceid || !ass_object || !steps) {
         return rconfig;
     }
@@ -294,16 +294,16 @@ Room.prototype.makeAssignments = function(myconf) {
         for (var skey in myconf['sources']) {
             var snum = 1;
             if (myconf['sources'][skey]['spaces'] == 1) {
-                myconf = this.setSourceAssignment(myconf, skey, { 'sharvester': 1}, myconf['sources'][skey]['steps']);
+                myconf = this.addSourceAssignment(myconf, skey, { 'sharvester': 1}, myconf['sources'][skey]['steps']);
             } else if (rlvl == 8) {
-                myconf = this.setSourceAssignment(myconf, skey, { 'bharvester': 2 }, myconf['sources'][skey]['steps']);
+                myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 2 }, myconf['sources'][skey]['steps']);
                 //if (snum == 1) {
-                //    myconf = this.setSourceAssignment(myconf, skey, { 'bharvester': 1, 'up8': 1 }, myconf['sources'][skey]['steps']); 
+                //    myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 1, 'up8': 1 }, myconf['sources'][skey]['steps']); 
                 //} else {
-                //    myconf = this.setSourceAssignment(myconf, skey, { 'sharvester': 1 }, myconf['sources'][skey]['steps']);
+                //    myconf = this.addSourceAssignment(myconf, skey, { 'sharvester': 1 }, myconf['sources'][skey]['steps']);
                 //}
             } else {
-                myconf = this.setSourceAssignment(myconf, skey, { 'bharvester': 2}, myconf['sources'][skey]['steps']); 
+                myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 2}, myconf['sources'][skey]['steps']); 
             }
             snum++;
         }
@@ -311,13 +311,13 @@ Room.prototype.makeAssignments = function(myconf) {
         // We are a low-level base.
         //console.log(this.name + ': makeAssignments assigned low-level base units');
         for (var skey in myconf['sources']) {
-            myconf = this.setSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf['sources'][skey]['steps']); 
+            myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf['sources'][skey]['steps']); 
         }
     } else if (this.isMine()) {
         // We are a low-level base.
         //console.log(this.name + ': makeAssignments assigned initial base-building units');
         for (var skey in myconf['sources']) {
-            myconf = this.setSourceAssignment(myconf, skey, { 'fharvester': 2, 'remoteconstructor': 2}, myconf['sources'][skey]['steps']); 
+            myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 2, 'remoteconstructor': 2}, myconf['sources'][skey]['steps']); 
         }
     } else if (myconf['controller']) {
         // We are a remote mining outpost.
@@ -332,7 +332,7 @@ Room.prototype.makeAssignments = function(myconf) {
             
             if (srl < 4) {
                 for (var skey in myconf['sources']) {
-                    myconf = this.setSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf['sources'][skey]['steps']); 
+                    myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf['sources'][skey]['steps']); 
                 }  
             } else if (myconf['scount'] > 1 || true) {
                 var snum = 1;
@@ -348,9 +348,9 @@ Room.prototype.makeAssignments = function(myconf) {
                     }
 
                     if (snum == 1) {
-                        myconf = this.setSourceAssignment(myconf, 'reserver', { 'reserver': 1 }, myconf['sources'][skey]['steps']);
+                        myconf = this.addSourceAssignment(myconf, 'reserver', { 'reserver': 1 }, myconf['sources'][skey]['steps']);
                     }
-                    myconf = this.setSourceAssignment(myconf, skey, { 'c30harvester': 1, 'hauler': hauler_count}, myconf['sources'][skey]['steps']);
+                    myconf = this.addSourceAssignment(myconf, skey, { 'c30harvester': 1, 'hauler': hauler_count}, myconf['sources'][skey]['steps']);
                     snum++;
                 }
             } else {
@@ -363,7 +363,7 @@ Room.prototype.makeAssignments = function(myconf) {
                         hauler_count = 2;
                         myconf['sources'][skey]['carry_per_hauler'] = Math.floor(myconf['sources'][skey]['carry_per_hauler'] / 2);
                     }
-                    myconf = this.setSourceAssignment(myconf, skey, { 'c15harvester': 1, 'hauler': hauler_count}, myconf['sources'][skey]['steps']);  
+                    myconf = this.addSourceAssignment(myconf, skey, { 'c15harvester': 1, 'hauler': hauler_count}, myconf['sources'][skey]['steps']);  
                 }
             }
         } else {
@@ -396,9 +396,13 @@ Room.prototype.makeAssignments = function(myconf) {
         } else if (repairablehp > 500000) {
             newobj[btype] = 2;
         }
-        for (var skey in myconf['sources']) {
-            if (myconf['sources'][skey]['spaces'] != 1) {
-                myconf = this.setSourceAssignment(myconf, skey, newobj, 250);
+        if (this.isMine()) {
+            myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'BS', newobj, 1200);
+        } else {
+            for (var skey in myconf['sources']) {
+                if (myconf['sources'][skey]['spaces'] != 1) {
+                    myconf = this.addSourceAssignment(myconf, skey, newobj, 1400);
+                }
             }
         }
         spawned_builders = true;
@@ -417,7 +421,7 @@ Room.prototype.makeAssignments = function(myconf) {
                     if (got_minerals >= empire_defaults['mineralcap']) {
                         //console.log(rname + ' is capped on minerals with ' + got_minerals + ' > ' + empire_defaults['mineralcap']);
                     } else if (mineralpatch.mineralAmount > 0) {
-                        myconf = this.setSourceAssignment(myconf, 'extractor', { 'extractor': 1}, 30);
+                        myconf = this.addSourceAssignment(myconf, 'extractor', { 'extractor': 1}, 30);
                     }
                 }
             }
