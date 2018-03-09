@@ -12,9 +12,12 @@ global.empire_workers = {
 	'sharvester': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 1}) },
 	'fharvester': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 2}) },
 	'bharvester': { 'body': global.CONSTRUCT_BODY({WORK: 4, CARRY: 4, MOVE: 4}), 'noresizing': 1, 'abbr': 'bHar'}, // 800e. takes 6 WORK units to deplete a c30 vein. These have 4. So you need 2 per base, allowing some refill time.
+
 	'c15harvester': { 'body': global.CONSTRUCT_BODY({WORK: 3, CARRY: 1, MOVE: 2}), 'noresizing': 1, 'abbr': 'c15'},
 	'c30harvester': { 'body': global.CONSTRUCT_BODY({WORK: 6, CARRY: 1, MOVE: 3}), 'noresizing': 1, 'abbr': 'c30' },
+
 	'hauler': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 3, MOVE: 3}), 'noresizing': 1, 'abbr': 'haul', 'rup': 10},
+
 	'grower': { 'body': global.CONSTRUCT_BODY({CARRY: 25, MOVE: 25}), 'noresizing': 1, 'abbr': 'grow'},
 
 	'extractor': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'abbr': 'Ext' },

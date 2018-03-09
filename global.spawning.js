@@ -89,6 +89,11 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
         var crsource = cr.memory[MEMORY_SOURCE];
         var crrole = cr.memory[MEMORY_ROLE];
         if (!crdest || !crsource || !crrole) {
+            cr.memory[MEMORY_NEEDED] = false;
+            continue;
+        }
+        if (!cr.getRenewEnabled() && cr.memory[MEMORY_STEPS_EXPECTED] && cr.ticksToLive < (cr.memory[MEMORY_STEPS_EXPECTED] + 20)) {
+            cr.memory[MEMORY_NEEDED] = false;
             continue;
         }
         if (!combined[crdest]) { combined[crdest] = {} }
@@ -152,7 +157,7 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
         	console.log(rname + '(' + lvl + '): ' + r_messages.join(' '));
     	}
     }
-    
+    //console.log(JSON.stringify(advised_spawns));
 
     var spawner_data = {}
     
@@ -228,6 +233,7 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
             }
         }
     }
+    //console.log(JSON.stringify(spawner_data));
     return spawner_data;
 }
 
@@ -272,6 +278,12 @@ global.SPAWN_VALIDATED = function (spawner, bodylist, memory_object){
     if (Game.creeps[crname] != undefined) {
         console.log("SPAWN: failed to create: " + crname + " as that name is already taken.");
         return false;
+    }
+    if (memory_object[MEMORY_DEST] && memory_object[MEMORY_SOURCE]) {
+        var sinfo = GET_SOURCE_INFO(memory_object[MEMORY_DEST], memory_object[MEMORY_SOURCE]);
+        if (sinfo && sinfo['steps']) {
+            memory_object[MEMORY_STEPS_EXPECTED] = sinfo['steps'];
+        }
     }
     memory_object[MEMORY_SPAWNERNAME] = spawner.name;
     memory_object[MEMORY_SPAWNERROOM] = spawner.room.name;
@@ -334,7 +346,7 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname, force) {
     }
     var spawners_secondary_preferred = 0;
     var spawners_secondary_allowed = 1;
-    if (room_primary_level > 0 && room_primary_level < 5) {
+    if (room_primary_level > 4 && room_primary_level < 4) {
         spawners_secondary_preferred = 1;
     } else if (room_primary_level > 5) {
         //spawners_secondary_allowed = 0;

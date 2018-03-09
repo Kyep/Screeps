@@ -36,12 +36,8 @@ module.exports =  {
         if (follow_target != undefined && follow_target != creep) {
             creep.say('follow');
             creep.moveTo(follow_target);
-        } else if (creep.pos.x < 1 || creep.pos.x > 48 || creep.pos.y < 1 || creep.pos.y > 48) {
-            if (creep.memory[MEMORY_DEST] == undefined) {
-                creep.moveTo(25, 25);
-            } else {
-                creep.moveToDestination();
-            }
+        } else if (creep.avoidEdges()) {
+            
         // if we are a dedicated healer, keep the wounded in range. 
         } else if (heal_parts > (ranged_parts + melee_parts) && hurtfriendly != undefined && rangetohurtfriendly > 1) {
             creep.moveTo(hurtfriendly);

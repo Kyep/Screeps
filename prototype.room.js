@@ -108,6 +108,10 @@ Room.prototype.checkStructures = function(verbose) {
     }
     var r_messages = [];
     var rlvl = this.getLevel();
+    if (rlvl < 3) {
+        always_blacklist.push("constructedWall");
+        always_blacklist.push("rampart");
+    }
     var s_actual = {}
     var my_structures = this.find(FIND_STRUCTURES);
     for (var i = 0; i < my_structures.length; i++) {

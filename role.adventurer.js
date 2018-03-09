@@ -16,7 +16,6 @@ module.exports = {
         }
         
         if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_OUT) {
-            creep.moveToDestination();
             var checktargets = 1;
             if (creep.room.controller) {
                 if (creep.room.controller.safeMode) {
@@ -27,11 +26,13 @@ module.exports = {
             }
             if (checktargets) {
                 var target = creep.getClosestHostileCreep();
-                if(target) {
+                if (target) {
                     creep.memory[MEMORY_JOB] = JOB_PATROL;
+                    creep.avoidEdges();
                     return;
                 }
             }
+            creep.moveToDestination();
             if (creep.room.name == creep.memory[MEMORY_DEST]) {
                 if (creep.updateDestination()) {
                     return;

@@ -75,7 +75,7 @@ global.RESET_SCIENCE = function() {
     chains.push( // // +100% HEAL
         {
             'goal': RESOURCE_LEMERGIUM_OXIDE,
-            'roomname': 'W48S18',
+            'roomname': 'W43S18',
             'resource_1': RESOURCE_LEMERGIUM,
             'resource_2': RESOURCE_OXYGEN
         });
@@ -89,7 +89,7 @@ global.RESET_SCIENCE = function() {
     chains.push( // +300% HEAL (T3)
         {
             'goal': RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE,
-            'roomname': 'W48S18',
+            'roomname': 'W43S18',
             'resource_1': RESOURCE_LEMERGIUM_ALKALIDE,
             'resource_2': RESOURCE_CATALYST
         });
@@ -336,7 +336,7 @@ global.SCIENCE_PROCESS = function () {
             } });
             var input_lab_2 = _.sample(rlabs2);
             if (input_lab_2 == undefined || input_lab_2.id == undefined) {
-                console.log('SCI: ' + reaction['roomname'] + '/' + reaction['goal'] + ' could not verify a second lab.');
+                //console.log('SCI: ' + reaction['roomname'] + '/' + reaction['goal'] + ' could not verify a second lab.');
                 continue;
             }
             var rlabs3 = rmobj.find(FIND_MY_STRUCTURES, { filter: function(structure){ 
@@ -345,7 +345,7 @@ global.SCIENCE_PROCESS = function () {
             } });
             var output_lab = _.sample(rlabs3);
             if (output_lab == undefined || output_lab.id == undefined) {
-                console.log('SCI: ' + reaction['roomname'] + '/' + reaction['goal'] + ' could not verify a third lab.');
+                //console.log('SCI: ' + reaction['roomname'] + '/' + reaction['goal'] + ' could not verify a third lab.');
                 continue;
             }
             reaction['lab_1'] = input_lab_1.id;

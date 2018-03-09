@@ -54,7 +54,10 @@ global.UPDATE_OBSERVERS = function() {
     var available_observers = _.shuffle(global.LIST_OBSERVERS());
     var espionage_targets = _.shuffle(global.ESPIONAGE_LIST_TARGETS());
     var rooms_to_observe = [];
-    rooms_to_observe = rooms_to_observe.concat(Object.keys(Memory[MEMORY_GLOBAL_ROOMSTOCLAIM]));
+    var rtc = EXPANSION_GETROOM();
+    if (rtc) {
+        rooms_to_observe.push(rtc);
+    }
     if (espionage_targets.length) {
         var retval = global.ASSIGN_OBSERVERS(available_observers, espionage_targets);
         return retval;
@@ -64,7 +67,7 @@ global.UPDATE_OBSERVERS = function() {
 }
 
 global.ESPIONAGE_CREATE_TARGETS = function() {
-	var start_x = 41;
+	var start_x = 31;
 	var end_x = 59;
 	var start_y = 1;
 	var end_y = 29;
@@ -105,9 +108,6 @@ global.ESPIONAGE_ADD_TARGET = function(thetarget) {
         ESPIONAGE_SET_TARGETS(all_targets);
         return true;
     }
-    /*if(Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][thetarget] != undefined) {
-        delete Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][thetarget];
-    }*/
     return false;
 }
 
@@ -181,80 +181,77 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
         for (var i = 0; i < fobs[fobname].length; i++) {
             var tgt = fobs[fobname][i];
             var einfo = Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][tgt];
-            if (einfo) {
-                if (einfo['spawn_dist'] >= range_limit) {
-                    continue;
-                }
-
-                var fbase = undefined;
-                if (spawn_units && Game.rooms[fobname] != undefined) {
-                    fbase = Game.rooms[fobname];
-                }
-
-                if (!einfo['enemy_structures']) {
-                    if (spawn_signers && einfo['needs_signing'] && ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt, 'signer') == 0) {
-                        var created = fbase.createUnit('signer', tgt);
-                        console.log(' -> ' + tgt + ' (' + einfo['level'] + '), signer: ' + created);
-                    }
-                    
-                    continue;
-                }
-                var ostring = '-';
-                if (einfo['owner']) {
-                    ostring = einfo['owner'];
-                }
-
-                var count_my_creeps = ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt);
-                var groundzero_flag = GET_NUKE_FLAG_IN_ROOM(tgt);
-                var gz_flag_info = '';
-                if (groundzero_flag) {
-                    gz_flag_info = 'Nuclear target flag: ' + groundzero_flag.pos;
-                    if(IS_NUKABLE(tgt, true)) {
-                        gz_flag_info += ' (NUKABLE)';
-                    }
-                }
-
-                if (einfo['allied']) { 
-                    // do nothing, ally room.
-                } else if (einfo['safemode_until'] && einfo['safemode_until'] > Game.time) {
-                    // do nothing, its invincible.
-                } else if (einfo['missiles'] != undefined && einfo['missiles'].length > 0) {
-                    var nuke_locs = []
-                    for (var m = 0; m < einfo['missiles'].length; m++) {
-                        nuke_locs.push(einfo['missiles'][m][0] + '/' + einfo['missiles'][m][1]);
-                    }
-                    var nuke_locs_string = nuke_locs.join(', ');
-                    console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
-                        einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners, ' + nuke_locs.length + ' incoming nukes at: ' + nuke_locs_string);
-                } else if (einfo['enemy_spawns'] && einfo['level'] >= 1) {
-                    console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
-                        einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners. '  + gz_flag_info );// + count_my_creeps + '/' + attacker_limit + ' assigned. ' + gz_flag_info );
-                } else if (einfo['enemy_towers']) {
-                    console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
-                        + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Spawn drainers as it has towers only. '  + count_my_creeps + '/' + drainer_limit + ' assigned.');
-                    if(fbase && count_my_creeps < drainer_limit) {
-                        var created = fbase.createUnit('drainerbig', tgt);
-                        console.log('SPAWNED: ' + created);
-                    }
-                } else if (einfo['reserved']) {
-                    // Ignore... not worth our time to fuss over.
-                } else {
-                    console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
-                        + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Cleanup junk room. '  + count_my_creeps + '/' + cleaner_limit + ' assigned.');
-                    if(fbase && count_my_creeps < cleaner_limit) {
-                        var stype = 'siege';
-                        if (einfo['enemy_creeps'] > 0) {
-                            stype = 'boss';
-                        } else if (einfo['enemy_structures'] > 10) {
-                            stype = 'siegebig';
-                        }
-                        var created = fbase.createUnit(stype, tgt);
-                        console.log('SPAWNED: ' + created);
-                    }
-                }
-                //ESPIONAGE_ADD_TARGET(tgt);
-            } else {
+            if (!einfo) {
                 console.log('- ATTACK PLAN: ' + fobname + ' -> ' + tgt + ': could not find einfo for the latter');
+                continue;
+            }
+            if (einfo['spawn_dist'] >= range_limit) {
+                continue;
+            }
+
+            var fbase = undefined;
+            if ((spawn_units || spawn_signers) && Game.rooms[fobname] != undefined) {
+                fbase = Game.rooms[fobname];
+            }
+
+            if (!einfo['enemy_structures']) {
+                if (fbase && spawn_signers && einfo['needs_signing'] && ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt, 'signer') == 0) {
+                    var created = fbase.createUnit('signer', tgt);
+                    console.log(' -> ' + tgt + ' (' + einfo['level'] + '), signer: ' + created);
+                }
+                
+                continue;
+            }
+            var ostring = '-';
+            if (einfo['owner']) {
+                ostring = einfo['owner'];
+            }
+
+            var count_my_creeps = ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt);
+            var groundzero_flag = GET_NUKE_FLAG_IN_ROOM(tgt);
+            var gz_flag_info = '';
+            if (groundzero_flag) {
+                gz_flag_info = 'Nuclear target flag: ' + groundzero_flag.pos;
+                if(IS_NUKABLE(tgt, true)) {
+                    gz_flag_info += ' (NUKABLE)';
+                }
+            }
+
+            if (einfo['allied']) { 
+                // do nothing, ally room.
+            } else if (einfo['safemode_until'] && einfo['safemode_until'] > Game.time) {
+                // do nothing, its invincible.
+            } else if (einfo['missiles'] != undefined && einfo['missiles'].length > 0) {
+                var nuke_locs = []
+                for (var m = 0; m < einfo['missiles'].length; m++) {
+                    nuke_locs.push(einfo['missiles'][m][0] + '/' + einfo['missiles'][m][1]);
+                }
+                var nuke_locs_string = nuke_locs.join(', ');
+                console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
+                    einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners, ' + nuke_locs.length + ' incoming nukes at: ' + nuke_locs_string);
+            } else if (einfo['enemy_spawns'] && einfo['level'] >= 1) {
+                console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
+                    einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners. '  + gz_flag_info );// + count_my_creeps + '/' + attacker_limit + ' assigned. ' + gz_flag_info );
+            } else if (einfo['enemy_towers']) {
+                console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
+                    + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Spawn drainers as it has towers only. '  + count_my_creeps + '/' + drainer_limit + ' assigned.');
+                if(fbase && count_my_creeps < drainer_limit) {
+                    var created = fbase.createUnit('drainerbig', tgt);
+                    console.log('SPAWNED: ' + created);
+                }
+            } else if (einfo['reserved']) {
+                // Ignore... not worth our time to fuss over.
+            } else if (spawn_units && fbase && count_my_creeps < cleaner_limit) {
+                console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
+                + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Cleanup junk room. '  + count_my_creeps + '/' + cleaner_limit + ' assigned.');
+                var stype = 'siege';
+                if (einfo['enemy_creeps'] > 0) {
+                    stype = 'boss';
+                } else if (einfo['enemy_structures'] > 10) {
+                    stype = 'siegebig';
+                }
+                var created = fbase.createUnit(stype, tgt);
+                console.log('SPAWNED: ' + created);
             }
         }
     }
@@ -388,6 +385,13 @@ global.ESPIONAGE = function() {
             if(!theroom.isMine() && enemy_structures.length) {
                 //console.log('ESPIONAGE: saved room ' + rname + ' (' + num_processed + '/' + target_list.length + '): ' + JSON.stringify(Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]));
             }
+            if (theroom.inEmpire()) {
+                var rconf = theroom.getConfig();
+                if (!rconf) {
+                    theroom.fullUpdate();
+                }
+            }
+
             ESPIONAGE_REMOVE_TARGET(rname);
             num_processed++;
         }

@@ -12,21 +12,20 @@ module.exports = {
         if(!creep.isAtDestinationRoom()){
             creep.moveToDestination();
             return;
-        }
-
-	    if (creep.memory[MEMORY_JOB] == JOB_DISMANTLE) { 
+        } else if (creep.memory[MEMORY_JOB] == JOB_DISMANTLE) { 
 	        var target = creep.getClosestDismantableStructure(true);
-	        if (creep.carry.energy == creep.carryCapacity || (!target && creep.carry.energy > 0)) {
+            if (creep.carry.energy == creep.carryCapacity || (!target && creep.carry.energy > 0)) {
 	            creep.memory[MEMORY_JOB] = JOB_RENEW;
 	            return;
 	        }
+	        
             if(target) {
                 if(creep.dismantle(target) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(target);
                 }
                 return;
             }
-            creep.sleepFor(20);
+            creep.sleepFor(5);
 	    } else if (creep.memory[MEMORY_JOB] == JOB_RENEW) {
             if (creep.ticksToLive > 500 || !creep.getRenewEnabled()) {
                 creep.memory[MEMORY_JOB] = JOB_BUILD;

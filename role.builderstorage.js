@@ -10,7 +10,7 @@ module.exports =  {
 
     run: function(creep) {
         if(creep.memory[MEMORY_JOB] != JOB_GFS && creep.memory[MEMORY_JOB] != JOB_RENEW && creep.carry.energy == 0) {
-            if(creep.ticksToLive < 200 && creep.memory[MEMORY_NEEDED]) {
+            if(creep.ticksToLive < 200 && creep.getRenewEnabled() ) {
                 creep.memory[MEMORY_JOB] = JOB_RENEW;
                 creep.announceJob();
             } else {
@@ -35,13 +35,19 @@ module.exports =  {
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_REPAIR) {
             if (jobRepair.run(creep) == -1) {
-                creep.memory[MEMORY_JOB] = BUILD;
+                creep.memory[MEMORY_JOB] = JOB_RENEW;
                 creep.announceJob();
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_RENEW) {
-            if (creep.ticksToLive > 1000 || !creep.memory[MEMORY_NEEDED]) {
+            if (creep.ticksToLive > 200) {
 	            creep.memory[MEMORY_JOB] = JOB_BUILD;
                 creep.announceJob();
+            } else if (!creep.getRenewEnabled()) {
+                if (creep.carry.energy == 0) {
+                    creep.suicide();
+                } else {
+                    jobReturnresources.run(creep, 1, 1, 0.6, 1, 1, 1);
+                }
             } else {
                 if (jobRenew.run(creep) == -1){
                     creep.memory[MEMORY_JOB] = JOB_GFS;

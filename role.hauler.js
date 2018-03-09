@@ -13,8 +13,6 @@ module.exports = {
         // If attacked, -> JOB_HIDE, then back to JOB_TRAVEL_OUT.
         if (creep.memory[MEMORY_JOB] == undefined) {
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
-            var sinfo = GET_SOURCE_INFO(creep.memory[MEMORY_DEST], creep.memory[MEMORY_SOURCE]);
-            creep.memory[MEMORY_STEPS_EXPECTED] = sinfo['steps'];
             creep.memory[MEMORY_STEPS_ACTUAL] = 0;
         }
         if(Game.time % 5 === 0) {

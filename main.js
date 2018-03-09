@@ -7,6 +7,7 @@ require('global.config');
 require('global_functions');
 require('global.commands');
 require('global.espionage');
+require('global.expansion');
 require('global.creep');
 require('global.structure');
 require('global.spawning');
@@ -28,7 +29,6 @@ require('prototype.source');
 require('class.empireroom');
 require('lib.loanuserlist');
 
-var expansionplanner = require('task.expansion');
 
 // ---------------------------
 // BEGIN MAIN LOOP 
@@ -138,20 +138,31 @@ module.exports.loop = function () {
     if(Game.time % divisor === 0) {
 
         // EXPANSION CONTROLLER -- TODO MUST REWRITE THIS
-        //expansionplanner.process()
-        //CPU_SECTION('expansionplanner', true);
+        EXPANSION_PROCESS();
+        CPU_SECTION('expansionplanner', true);
 
 
         // ROOM MANAGER
 
         
         for (var rname in Game.rooms) {
-            if (Game.rooms[rname].isMine() && Game.rooms[rname].getLevel() != 8) {
-                if (Game.rooms[rname].terminal && Game.rooms[rname].terminal.isActive() && Game.rooms[rname].storage && Game.rooms[rname].storage.isActive() && Game.rooms[rname].storage[RESOURCE_ENERGY] < 250000) {
-                    var lterm = Game.rooms[rname].terminal;
-                    if (lterm.canDepositEnergy()) {
-                        lterm.acquireSpareEnergy();
-                        break;
+            if (Game.rooms[rname].isMine()) {
+                var known_level = Game.rooms[rname].memory[MEMORY_RLVL];
+                var rlvl = Game.rooms[rname].getLevel();
+                if (known_level == undefined || known_level != rlvl) {
+                        Game.rooms[rname].memory[MEMORY_RLVL] = rlvl;
+                        Game.rooms[rname].recycleObsolete();
+                        Game.rooms[rname].generateFlags();
+                        Game.rooms[rname].checkStructures();
+                        console.log(rname + ': updated room level.');
+                }
+                if (rlvl == 6 || rlvl == 7) {
+                    if (Game.rooms[rname].terminal && Game.rooms[rname].terminal.isActive() && Game.rooms[rname].storage && Game.rooms[rname].storage.isActive() && Game.rooms[rname].storage[RESOURCE_ENERGY] < 250000) {
+                        var lterm = Game.rooms[rname].terminal;
+                        if (lterm.canDepositEnergy()) {
+                            lterm.acquireSpareEnergy();
+                            break;
+                        }
                     }
                 }
             }

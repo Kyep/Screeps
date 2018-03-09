@@ -30,14 +30,12 @@ Creep.prototype.getClosestHostileStructure = function(include_public_ramparts) {
 }
 
 Creep.prototype.getClosestDismantableStructure = function(include_public_ramparts) {
-    var rmowner = this.room.getOwnerOrReserver();
-    var target = undefined;
-    if (rmowner) {
-        return this.getClosestHostileStructure();
-    }
     return this.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: function(s){
             if(s.isInvincible()) {
+                return false;
+            }
+            if (s.structureType == STRUCTURE_WALL) {
                 return false;
             }
             if (!include_public_ramparts && s.structureType == STRUCTURE_RAMPART) {
@@ -194,21 +192,16 @@ Creep.prototype.disableRenew = function() {
 }
 
 Creep.prototype.getRenewEnabled = function() {
-    if (this.memory[MEMORY_RENEW] == 0) {
-        return 0;
+    if (!this.memory[MEMORY_RENEW]) {
+        return false;
     }
-    return 1;
+    if (!this.memory[MEMORY_NEEDED]) {
+        return false;
+    }
+    return true;
 }
 
-Creep.prototype.getNeeded = function() {
-    if (this.memory[MEMORY_NEEDED] == undefined) {
-        return 1;
-    }
-    if (this.memory[MEMORY_NEEDED] == 0) {
-        return 0;
-    }
-    return 1;
-}
+
 
 Creep.prototype.getShouldHide = function() {
     if (this.memory[MEMORY_HOME] == this.memory[MEMORY_DEST]) {

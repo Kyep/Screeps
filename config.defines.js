@@ -1,5 +1,5 @@
 // GLOBAL memory keys, IE: Memory['this_key']
-global.MEMORY_GLOBAL_ROOMSTOCLAIM = 'rooms_to_claim';
+global.MEMORY_GLOBAL_EXPANSION = 'expansion';
 global.MEMORY_GLOBAL_ESPIONAGE = 'espionage';
 global.MEMORY_GLOBAL_CPUSTATS = 'cpustats';
 global.MEMORY_GLOBAL_GCONFIG = 'gconfig';
@@ -104,6 +104,8 @@ global.JOB_DISMANTLE = 'dismantle';
 global.MEMORY_ROAD_NETWORK = 'road_network';
 global.MEMORY_RCONFIG = 'rconfig';
 global.MEMORY_EHISTORY = 'ehistory';
+global.MEMORY_RLVL = 'rlvl';
+
 
 // Spawns, top level memory categories
 global.MEMORY_SPAWNINGROLE = 'role_spawning';

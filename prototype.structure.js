@@ -245,9 +245,6 @@ StructureSpawn.prototype.isAvailable = function(force) {
             if (!crlist[i].getRenewEnabled()) {
                 continue;
             }
-            if (!crlist[i].getNeeded()) {
-                continue;
-            }
             creeps_renewing++;
         }
         if (creeps_renewing > 0) {
