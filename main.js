@@ -157,9 +157,13 @@ module.exports.loop = function () {
                         console.log(rname + ': updated room level.');
                 }
                 if (rlvl == 6 || rlvl == 7) {
-                    if (Game.rooms[rname].terminal && Game.rooms[rname].terminal.isActive() && Game.rooms[rname].storage && Game.rooms[rname].storage.isActive() && Game.rooms[rname].storage[RESOURCE_ENERGY] < 250000) {
+                    //console.log(rname + ' x1');
+                    if (Game.rooms[rname].terminal && Game.rooms[rname].terminal.isActive() && Game.rooms[rname].storage && Game.rooms[rname].storage.isActive() && Game.rooms[rname].storage.store[RESOURCE_ENERGY] < 250000) {
+                        //console.log(rname + ' x2');
                         var lterm = Game.rooms[rname].terminal;
                         if (lterm.canDepositEnergy()) {
+                            //console.log(rname + ' x3');
+
                             lterm.acquireSpareEnergy();
                             break;
                         }

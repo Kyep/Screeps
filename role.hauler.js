@@ -1,6 +1,7 @@
 "use strict";
 
 var jobReturnresources = require('job.returnresources');
+var jobBuild = require('job.build');
 var jobRenew = require('job.renew');
 var jobHide = require('job.hide');
 var jobUpgrade = require('job.upgrade');
@@ -61,6 +62,7 @@ module.exports = {
                     // If there is no container built within 1 tile of our target source, sleep for 20T, then check again.
                     creep.sleepFor(20);
                     creep.say('zzz 20');
+                    creep.avoidEdges();
                     return 0;
                 }
                 // Otherwise, store that container in memory as our container.
@@ -210,8 +212,7 @@ module.exports = {
             if (creep.room.storage == undefined || !creep.room.storage.isActive()) {
                 var try_return = jobReturnresources.run(creep, 1, 1, 1, 1, 1, 0);
                 if (try_return == -1) { // if it is not possible to return resources, upgrade instead.
-                    creep.memory[MEMORY_JOB] = JOB_UPGRADE;
-                    creep.say('UPGRADE');
+                    creep.memory[MEMORY_JOB] = JOB_BUILD;
                     return;
                 }
             } else if (jobReturnresources.run(creep, 1, 1, 0.5, 1, 1, 1) == -1) {
@@ -221,6 +222,14 @@ module.exports = {
             }
             if(creep.carry.energy == 0) {
                 creep.memory[MEMORY_JOB] = JOB_RENEW;                
+            }
+        } else if (creep.memory[MEMORY_JOB] == JOB_BUILD) {
+            if(creep.carry.energy == 0) {
+                creep.memory[MEMORY_JOB] = JOB_RENEW;
+                return;
+            }
+            if (jobBuild.run(creep) == -1) {
+                creep.memory[MEMORY_JOB] = JOB_UPGRADE;
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_RENEW) {
             if (creep.ticksToLive > 500 || !creep.getRenewEnabled()) {

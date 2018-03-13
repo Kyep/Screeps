@@ -25,8 +25,8 @@
         'room_energy_min' : 100000, // 50k in terminal, 50k in storage
         'room_energy_max' : 300000, // 50k in termal, 250k in storage
         'room_history_ticks': 10,
-        'room_minimum_energy_pc': 60, // what % of max stored energy (spawn/extensions) should rooms maintain? If we're below this avg % for room_history_ticks then we will spawn a teller
-        'room_crit_energy_pc': 40, // if below this, spawn 2 tellers
+        'room_minimum_energy_pc': 50, // what % of max stored energy (spawn/extensions) should rooms maintain? If we're below this avg % for room_history_ticks then we will spawn a teller
+        'room_crit_energy_pc': 25, // if below this, spawn 2 tellers
 
         }
     

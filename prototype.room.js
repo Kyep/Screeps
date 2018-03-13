@@ -305,6 +305,9 @@ Room.prototype.createRoadNetwork = function(origin_x, origin_y) {
         if (cs.structureType != STRUCTURE_ROAD) {
             continue;
         }
+        if (cs.progress != 0) {
+            continue;
+        }
         cs.remove();
     }
     
@@ -323,7 +326,7 @@ Room.prototype.createRoadNetwork = function(origin_x, origin_y) {
     var rnum = 1;
     for (var i = 0; i < all_dests.length; i++) {
         var this_dest = all_dests[i];
-        var path_to_dest = origin.findPathTo(this_dest, {'ignoreCreeps': true, 'maxRooms': 1});
+        var path_to_dest = origin.findPathTo(this_dest, {'ignoreCreeps': true, 'swampCost': 1, 'maxRooms': 1});
         for (var j = 0; j < path_to_dest.length; j++) {
             rnum++;
             var pos_x = path_to_dest[j]['x'];

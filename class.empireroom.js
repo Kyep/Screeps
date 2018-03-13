@@ -407,7 +407,7 @@ Room.prototype.makeAssignments = function(myconf) {
 
     // Adjust builders depending on unfinished projects.
 
-    if (Game.rooms[spawn_room] && Game.rooms[spawn_room].storage) {
+    if (Game.rooms[spawn_room] && Game.rooms[spawn_room].storage) { //  
         var projectsList = this.find(FIND_MY_CONSTRUCTION_SITES, { filter: (csite) => { return (csite.structureType != STRUCTURE_CONTAINER); } });
         var repairablehp = 0;
         if (this.isMine() && this.storage && this.storage.store[RESOURCE_ENERGY] > 100000) {
@@ -517,11 +517,17 @@ Room.prototype.makeAssignments = function(myconf) {
         }
         
         // Energy push to level < 8 rooms
-        if (this.storage && this.storage.isActive() && this.terminal && this.terminal.isActive()) {
-            if (rlvl < 8 && this.storage.store[RESOURCE_ENERGY] < 200000 && this.terminal.getEnergyAboveMinimum() >= 20000) {
-                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 1}, 700);
-            } else if (rlvl == 8 && this.storage.store[RESOURCE_ENERGY] > 800000 && !this.terminal.metEnergyMax()) {
-                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 1}, 700);
+        if (this.storage && this.storage.isActive()) {
+            if (this.terminal && this.terminal.isActive()) {
+                if (rlvl < 8 && this.storage.store[RESOURCE_ENERGY] < 200000 && this.terminal.getEnergyAboveMinimum() >= -5000) {
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 2}, 700);
+                } else if (rlvl == 8 && this.storage.store[RESOURCE_ENERGY] > 800000 && !this.terminal.metEnergyMax()) {
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 1}, 700);
+                }
+            } else if (rlvl == 4 || rlvl == 5) {
+                if (myconf['backup_spawn_room']) {
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'grower', {'grower': 3}, 700);
+                }
             }
         }
         

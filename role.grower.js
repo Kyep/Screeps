@@ -8,7 +8,13 @@ module.exports = {
 
     run: function(creep) {
         if(creep.memory[MEMORY_JOB] == undefined) {
-            creep.memory[MEMORY_JOB] = JOB_GFS;
+            var rconf = GET_ROOM_CONFIG(creep.memory[MEMORY_DEST]);
+            if (rconf['backup_spawn_room']) {
+                creep.memory[MEMORY_HOME] = rconf['backup_spawn_room'];
+                creep.memory[MEMORY_JOB] = JOB_GFS;
+            } else {
+                console.log(creep.memory[MEMORY_DEST] + ': LACKS BSR FOR GROWER!!!!');
+            }
         } else if(creep.memory[MEMORY_JOB] == JOB_GFS) {
             if (creep.carry.energy == creep.carryCapacity) {
                 creep.memory[MEMORY_JOB] = JOB_RENEW;
@@ -33,21 +39,12 @@ module.exports = {
             if (!creep.isAtDestinationRoom()) {
                 creep.moveToDestination();
             } else if (creep.carry.energy == 0) {
-                if (creep.isAtDestinationRoom() && creep.room.getLevel() > 5) {
-                    creep.disableRenew();
-                }
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
             } else {
                 jobReturnresources.run(creep, 1, 1, 0.5, 1, 1);
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_BACK) {
             if (creep.isAtHomeRoom()) {
-                var reserves = creep.room.storage.store[RESOURCE_ENERGY];
-                if (!reserves || reserves < 50000) {
-                    creep.disableRenew();
-                    //creep.memory[MEMORY_ROLE] = 'recycler';
-                    console.log(creep.name + ' has run out of energy to transfer from ' + creep.memory[MEMORY_HOME] + ' to ' + creep.memory[MEMORY_DEST]);
-                }
                 creep.memory[MEMORY_JOB] = JOB_GFS;
             } else {
                 creep.moveToHome();

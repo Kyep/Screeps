@@ -141,7 +141,7 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
                 var rtext = role;
                 if (empire_defaults['military_roles'].includes(role) || empire_defaults['priority_roles'].includes(role) ) {
                     rtext = '<font color="purple">' + role + '</font>';
-                } else if (role == 'banker') {
+                } else if (role == 'banker' || role == 'grower') {
                     rtext = '<font color="yellow">' + role + '</font>';
                 }
                 

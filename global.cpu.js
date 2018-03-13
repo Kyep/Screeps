@@ -8,6 +8,9 @@ global.HEAP_TEST = function() {
     	let heapStats = Game.cpu.getHeapStatistics();
     	let heapPercent = Math.round(((heapStats.total_heap_size + heapStats.externally_allocated_size) / heapStats.heap_size_limit) * 100);
     	console.log("heap usage:",Math.round((heapStats.total_heap_size)/1048576),"MB +",Math.round((heapStats.externally_allocated_size)/1048576),"MB of",Math.round(heapStats.heap_size_limit/1048576),"MB (",heapPercent,"% )");
+    	if (heapPercent > 80) {
+    	    gc();
+    	}
     }
 }
 

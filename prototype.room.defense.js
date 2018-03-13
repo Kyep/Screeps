@@ -53,7 +53,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
     if(room_has_spawn) {
         var newcount = Game.rooms[roomname].getMyStructuresCount();
         var oldcount = myalert['myStructureCount'];
-        if (newcount < oldcount && !myalert['nukeCount']) {
+        if (newcount < oldcount && !myalert['nukeCount'] && myalert['hostileUsername'] != 'Invader') {
             try_safemode = 1;
         }
     }
@@ -234,16 +234,21 @@ Room.prototype.detailEnemies = function() {
 
     details['hostileCost'] = 0;
 
-    var enemiesList = this.find(FIND_HOSTILE_CREEPS);
+    var enemiesList = this.getHostileCreeps();
     details['hostileCount'] = enemiesList.length;
     details['hostileRanged'] = 0;
     details['hostileUsername'] = 'Invader';
+    details['hostileExpires'] = 0;
 
     if(enemiesList.length) {
         for(var i = 0; i < enemiesList.length; i++) {
             var this_enemy_cost = global.CREEP_COST(enemiesList[i].body);
             if(enemiesList[i].isBoosted()) {
                 this_enemy_cost *= 5; // This treats boosted creeps as 5x as dangerous.
+            }
+            var thisexp = Game.time + enemiesList[i].ticksToLive;
+            if (thisexp > details['hostileExpires']) {
+                details['hostileExpires'] = thisexp;
             }
             details['hostileCost'] += this_enemy_cost;
             if (enemiesList[i].owner != undefined) {
@@ -301,7 +306,7 @@ Room.prototype.createAlert = function(enemy_details, nuke_details) {
         if (Game.creeps[tc].isSiege()) {
             continue;
         }
-        var theirEnemies = Game.creeps[tc].room.find(FIND_HOSTILE_CREEPS);
+        var theirEnemies = Game.creeps[tc].room.getHostileCreeps();
         if (theirEnemies.length) {
             continue;
         }
