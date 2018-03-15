@@ -567,6 +567,7 @@ Creep.prototype.isKiter = function() {
 }
 */
 
+/*
 Creep.prototype.getTargetPriority = function() {
     var heal_parts = this.getActiveBodyparts(HEAL);
     var attack_parts = this.getActiveBodyparts(ATTACK);
@@ -577,6 +578,7 @@ Creep.prototype.getTargetPriority = function() {
     var threat = dps + hps;
     return threat / hp;
 }
+*/
 
 Creep.prototype.isBoosted = function() {
     var boosted_parts = 0;

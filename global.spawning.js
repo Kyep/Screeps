@@ -111,6 +111,9 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
     var advised_spawns = {}
     for (var rname in combined) {
         var r_messages = []
+        if (!Memory.rooms[rname]) {
+            continue;
+        }
         var rconfig = Memory.rooms[rname][MEMORY_RCONFIG];
         if (!rconfig) {
             continue;

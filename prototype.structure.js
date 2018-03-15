@@ -263,6 +263,33 @@ StructureLab.prototype.isUnassigned = function() {
     return true;
 }
 
+StructureLab.prototype.needsLabTech = function() {
+    var assigned_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
+    if (assigned_labs[this.id] == undefined) {
+        if (this.mineralAmount > 0) {
+            return true;
+        }
+        return false;
+    }
+    var myassignment = assigned_labs[this.id];
+    if (myassignment['action'] == 'fill') {
+        if (this.mineralAmount != this.mineralCapacity) {
+            return true;
+        }
+        return false;
+    } else if (myassignment['action'] == 'empty') {
+        if (this.mineralAmount > 0) {
+            return true;
+        }
+        return false;
+    } else if (myassignment['action'] == 'ignore') {
+        return false;
+    } else {
+        console.log('Warning: lab ' + this.id + ' has unknown action assignment: ' + myassignment['action']);
+    }
+    return false;
+}
+
 StructureLab.prototype.isAvailable = function(flash) {
     var assigned_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
     if (assigned_labs[this.id] != undefined) {

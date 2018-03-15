@@ -1,6 +1,7 @@
 
-/* 
-global.CONVERT_BODY_TO_HPT = function(tbody2) {
+ 
+global.CONVERT_BODY_TO_HPT = function(tbody) {
+    /*
     var tbody = [{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
     {"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},
     {"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},
@@ -12,13 +13,17 @@ global.CONVERT_BODY_TO_HPT = function(tbody2) {
     {"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
     {"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
     {"type":"heal","hits":36,"boost":"LO"},{"type":"heal","hits":100,"boost":"LO"},{"type":"move","hits":100}];
+    */
     
     var hpt = 0;
     console.log(tbody.length);
     for (var p = 0; p < tbody.length; p++) {
         var thispartobj = tbody[p];
-        console.log(JSON.stringify(thispartobj));
+        //console.log(JSON.stringify(thispartobj));
         if (thispartobj['type'] != 'heal') {
+            continue;
+        }
+        if (thispartobj['hits'] == 0) {
             continue;
         }
         var thishps = HEAL_POWER;
@@ -35,7 +40,6 @@ Creep.prototype.getHPT = function() {
     return CONVERT_BODY_TO_HPT(this.body);
 }
 
-*/
 
 global.RUN_STRUCTURES = function() {
     var rtowers = {};
@@ -58,23 +62,9 @@ global.RUN_STRUCTURES = function() {
         
         var theroom = Game.rooms[rname];
         
-        // If hostiles in room, focus fire.        
-        var enemiesList = theroom.getHostileCreeps();
-        if (enemiesList.length) {
-            //console.log(JSON.stringify(enemiesList[0].body));
-            var highest_threat = -1;
-            var best_target = undefined;
-            for (var i = 0; i < enemiesList.length; i++) {
-                if (enemiesList[i].isOnEdge()) {
-                    // Never fire on enemies flickering in/out of the room - it makes tower draining too easy.
-                    continue;
-                }
-                var this_pri = enemiesList[i].getTargetPriority();
-                if (this_pri > highest_threat) {
-                    highest_threat = this_pri;
-                    best_target = enemiesList[i];
-                }
-            }
+        if(ROOM_UNDER_ATTACK(rname)) {
+            var best_target = theroom.getBestTowerTarget(rtowers[rname]);
+            
             if (best_target) {
                 for (var tnum in rtowers[rname]) {
                     var thistower = rtowers[rname][tnum];
@@ -83,7 +73,7 @@ global.RUN_STRUCTURES = function() {
             }
             continue; // stops towers attempting to repair anything or heal anyone while there are enemies present.
         }
-
+        
         // If no hostiles in room, repair.
         var repairTargets = theroom.getRepairable([STRUCTURE_WALL, STRUCTURE_RAMPART], TOWER_POWER_REPAIR);
         if (!repairTargets.length) {

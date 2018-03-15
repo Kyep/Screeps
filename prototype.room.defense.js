@@ -179,6 +179,103 @@ Room.prototype.getHostileStructures = function(include_public_ramparts) {
 }
 
 
+Room.prototype.getBestTowerTarget = function(rts) {
+    
+    var paint = false;
+    
+    var enemiesList = this.getHostileCreeps();
+    var eobj = {}
+    for (var i = 0; i < enemiesList.length; i++) {
+        if (enemiesList[i].isOnEdge() && (!enemiesList[i].owner || !enemiesList[i].owner.username || enemiesList[i].owner.username != "Invader")) {
+            continue;
+        }
+        if (eobj[enemiesList[i].id] == undefined) {
+            eobj[enemiesList[i].id] = {}
+        }
+        eobj[enemiesList[i].id]['link'] = enemiesList[i];
+        if (eobj[enemiesList[i].id]['hpt'] == undefined) {
+            eobj[enemiesList[i].id]['hpt'] = 0;
+        }
+        var hpt = enemiesList[i].getHPT();
+        if (hpt == 0) {
+            continue;
+        }
+        eobj[enemiesList[i].id]['hpt'] += hpt;
+        for (var j = 0; j < enemiesList.length; j++) {
+            if (enemiesList[i].id == enemiesList[j].id) {
+                continue;
+            }
+            /*if (enemiesList[j].isOnEdge()) {
+                continue;
+            }*/
+            var d = enemiesList[i].pos.getRangeTo(enemiesList[j]);
+            var multi = 0;
+            if (d == 1) {
+                multi = 1;
+            } else if (d < 4) {
+                multi = 0.33;
+            }
+            if (multi > 0) {
+                if (eobj[enemiesList[j].id] == undefined) {
+                    eobj[enemiesList[j].id] = {}
+                }
+                if (eobj[enemiesList[j].id]['hpt'] == undefined) {
+                    eobj[enemiesList[j].id]['hpt'] = 0;
+                }
+                eobj[enemiesList[j].id]['hpt'] += Math.floor(hpt * multi);
+            }
+                
+        }
+    }
+    var best_target = undefined;
+    var most_dmh = 0;
+    for (var ekey in eobj) {
+        var thise = eobj[ekey];
+        var elink = thise['link'];
+        if (!elink) {
+            continue;
+        }
+        var ehpt = thise['hpt'];
+        eobj[ekey]['dpt'] = 0;
+        var num_towers = 0;
+        for (var t = 0; t < rts.length; t++) {
+            var thist = rts[t];
+            if (thist.energy < 10) {
+                continue;
+            }
+            num_towers++;
+            var dpt = thist.getPowerForRange(TOWER_POWER_ATTACK, thist.pos.getRangeTo(elink));
+            eobj[ekey]['dpt'] += dpt;
+        }
+        var etext = eobj[ekey]['dpt'] +  '/' + ehpt; // '(' + num_towers + ') ' +
+        var ecolor = 'green';
+        var try_target = true;
+        if (eobj[ekey]['dpt'] < ehpt) {
+            if (eobj[ekey]['dpt'] >= elink.hits) {
+                ecolor = 'yellow';
+            } else if (elink.hits == elink.hitsMax) {
+                // not enough DPS to hurt this creature.
+                ecolor = 'red';
+                try_target = false;
+            } else {
+                ecolor = 'orange';
+            }
+        }
+        if (try_target) {
+            if (eobj[ekey]['dpt'] > most_dmh) {
+                best_target = elink;
+                most_dmh = eobj[ekey]['dpt'];
+                ecolor = 'cyan';
+            }
+        }
+        if (paint) {
+            new RoomVisual(this.name).text(etext, elink.pos.x, elink.pos.y + 1.5, {color: ecolor, backgroundColor: 'white', font: 0.3});
+        }
+    }
+    return best_target;
+    
+}
+
 Room.prototype.hasAlert = function() {
     if (this.name in Memory['sectors_under_attack']) {
         return 1;

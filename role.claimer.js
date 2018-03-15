@@ -18,6 +18,7 @@ module.exports = {
                                 creep.moveToRUP(creep.room.controller);
                             }
                         } else {
+                            global.CLAIM_ROOM(creep.room.name, creep.room.name, creep.memory[MEMORY_HOME]);
                             var victims = creep.room.clearHostileStructures();
                             creep.room.fullUpdate();
                             creep.room.checkStructures();

@@ -111,6 +111,29 @@ global.RESET_SCIENCE = function() {
         });
 
 
+    // FATIGUE/MOVE made in a HYDROGEN room
+    chains.push( // T1, +100% MOVE part effectiveness
+        {
+            'goal': RESOURCE_ZYNTHIUM_OXIDE,
+            'roomname': 'W55S8',
+            'resource_1': RESOURCE_ZYNTHIUM,
+            'resource_2': RESOURCE_OXYGEN
+        });
+    chains.push( // T2, +200% MOVE part effectiveness
+        {
+            'goal': RESOURCE_ZYNTHIUM_ALKALIDE,
+            'roomname': 'W55S8',
+            'resource_1': RESOURCE_ZYNTHIUM_OXIDE,
+            'resource_2': RESOURCE_HYDROXIDE
+        });
+    chains.push( // T3, +300%  MOVE part effectiveness
+        {
+            'goal': RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
+            'roomname': 'W55S8',
+            'resource_1': RESOURCE_ZYNTHIUM_ALKALIDE,
+            'resource_2': RESOURCE_CATALYST
+        });
+
     // DISMANTLE made in a ZYNTHIUM room
     chains.push( // T1, +100% dismantle
         {
@@ -131,6 +154,29 @@ global.RESET_SCIENCE = function() {
             'goal': RESOURCE_CATALYZED_ZYNTHIUM_ACID,
             'roomname': 'W53S6',
             'resource_1': RESOURCE_ZYNTHIUM_ACID,
+            'resource_2': RESOURCE_CATALYST
+        });
+
+    // UPGRADE made in W46S17, another HYDROGEN room
+    chains.push( // T1, +50% upgradeController
+        {
+            'goal': RESOURCE_GHODIUM_HYDRIDE,
+            'roomname': 'W46S17',
+            'resource_1': RESOURCE_GHODIUM,
+            'resource_2': RESOURCE_HYDROGEN
+        });
+    chains.push( // T2, +80% upgradeController
+        {
+            'goal': RESOURCE_GHODIUM_ACID,
+            'roomname': 'W46S17',
+            'resource_1': RESOURCE_GHODIUM_HYDRIDE,
+            'resource_2': RESOURCE_HYDROXIDE
+        });
+    chains.push( // T3, +100% upgradeController
+        {
+            'goal': RESOURCE_CATALYZED_GHODIUM_ACID,
+            'roomname': 'W46S17',
+            'resource_1': RESOURCE_GHODIUM_ACID,
             'resource_2': RESOURCE_CATALYST
         });
 
@@ -327,7 +373,9 @@ global.SCIENCE_PROCESS = function () {
             }
             var rlabs = rmobj.find(FIND_MY_STRUCTURES, { filter: function(structure){ if(structure.structureType == STRUCTURE_LAB && structure.isUnassigned()) { return 1; } else { return 0; } } });
             if (rlabs.length < 3) {
-                console.log('SCI: ' + reaction['roomname'] + '/' + reaction['goal'] + ' could not find 3 free labs.');
+                if (Game.time % 100 == 0) {
+                    console.log('SCI: ' + reaction['roomname'] + '/' + reaction['goal'] + ' could not find 3 free labs.');
+                }
                 continue;
             }
             var input_lab_1 = _.sample(rlabs);

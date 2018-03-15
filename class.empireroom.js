@@ -1,6 +1,54 @@
 "use strict";
 
 
+global.CLAIM_ROOM = function(rname, primary, secondary) {
+    if (!rname) {
+        console.log('claimRoom: rname not set!');
+        return false;
+    }
+    if (!primary) {
+        console.log(rname + ': claimRoom: PRIMARY not set!');
+        return false;
+    }
+    Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname] = {}
+    Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['spawn_room'] = primary;
+    if (secondary) {
+        Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['backup_spawn_room'] = secondary;
+    }
+    return true;
+}
+
+Room.prototype.abandonRoom = function() {
+    var mys = this.find(FIND_MY_STRUCTURES);
+    for (var i = 0; i < mys.length; i++) {
+        var ts = mys[i];
+        var res = ts.notifyWhenAttacked(false);
+        console.log(ts.id + ': ' + res);
+    }
+    for (var rname in Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT]) {
+        if (rname == this.name) {
+            continue;
+        }
+        if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['spawn_room'] == this.name) {
+            console.log(rname + ': deleted from empire, because Primary Spawn Room is being deleted');
+            delete Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname];
+            delete Memory.rooms[rname];
+        } else if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['backup_spawn_room'] == this.name) {
+            console.log(rname + ': cleared backup_spawn_room');
+            delete Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['backup_spawn_room'];
+        }
+    }
+    if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]) {
+        console.log(rname + ': deleted from empire');
+        delete Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name];
+    }
+    if (Memory.rooms[this.name]) {
+        console.log(rname + ': deleted room memory');
+        delete Memory.rooms[this.name];
+    }
+    return true;
+}
+
 Room.prototype.getRepairableHP = function(blacklist, mindmg) {
     if (blacklist == undefined) {
         blacklist = [];
@@ -122,7 +170,7 @@ global.GET_SOURCE_INFO = function(rname, sid) {
 
 
 Room.prototype.inEmpire = function() {
-    if (empire[this.name] == undefined) {
+    if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name] == undefined) {
         return false;
     }
     return true;
@@ -156,7 +204,7 @@ Room.prototype.createConfig = function() {
     if (!this.inEmpire()) {
         return undefined;
     }
-    var myconf = this.makeConfigBase(empire[this.name]['spawn_room'], empire[this.name]['backup_spawn_room']);
+    var myconf = this.makeConfigBase(Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['spawn_room'], Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['backup_spawn_room']);
     if (myconf != undefined) {
         myconf = this.makeAssignments(myconf);
         return myconf;
@@ -333,7 +381,7 @@ Room.prototype.makeAssignments = function(myconf) {
     } else if (rlvl >= 2) {
         // We are a level 2-3 base
         for (var skey in myconf['sources']) {
-            var n2a = 3;
+            var n2a = 2;
             if (n2a > myconf['sources'][skey]['spaces']) {
                 n2a = myconf['sources'][skey]['spaces'];
             }
@@ -343,11 +391,13 @@ Room.prototype.makeAssignments = function(myconf) {
         // We are a level 1 base
         //console.log(this.name + ': makeAssignments assigned initial base-building units');
         for (var skey in myconf['sources']) {
-            var n2a = 3;
+            /*
+            var n2a = 2;
             if (n2a > myconf['sources'][skey]['spaces']) {
                 n2a = myconf['sources'][skey]['spaces'];
             }
-            myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': n2a, 'remoteconstructor': n2a}, myconf['sources'][skey]['steps']); 
+            */
+            myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 1, 'remoteconstructor': 1}, myconf['sources'][skey]['steps']); 
         }
     } else if (myconf['controller']) {
         // We are a remote mining outpost.
@@ -364,6 +414,9 @@ Room.prototype.makeAssignments = function(myconf) {
                 for (var skey in myconf['sources']) {
                     myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf['sources'][skey]['steps']); 
                 }  
+                if (myconf['backup_spawn_room']) {
+                    myconf = this.addSourceAssignment(myconf, 'reserver', { 'reserver': 1 }, 75);
+                }
             } else if (myconf['scount'] > 1 || true) {
                 var snum = 1;
                 for (var skey in myconf['sources']) {
@@ -538,10 +591,7 @@ Room.prototype.makeAssignments = function(myconf) {
                 continue;
             }
             var labobj = Game.structures[labid];
-            if (science_labs[labid]['action'] == 'fill' && labobj.mineralAmount != labobj.mineralCapacity) {
-                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'labtech', {'labtech': 1}, 500);
-                break;
-            } else if (science_labs[labid]['action'] == 'empty' && labobj.mineralAmount > 0) {
+            if (labobj.needsLabTech()) {
                 myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'labtech', {'labtech': 1}, 500);
                 break;
             }

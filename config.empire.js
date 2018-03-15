@@ -15,22 +15,24 @@
         'alerts_recycle' : 0,
         'alerts_reassign': {}, // Don't reassign anything.
 
-        'repairmax_creeps' : 250000,
-        'repairmax_towers' : 150000,
-
         'mineralcap' : 500000, // once terminal has this many minerals, no more will be mined in a room.
 
-        'storage_energy_max' : 1000000,
-
-        'room_energy_min' : 100000, // 50k in terminal, 50k in storage
-        'room_energy_max' : 300000, // 50k in termal, 250k in storage
         'room_history_ticks': 10,
         'room_minimum_energy_pc': 50, // what % of max stored energy (spawn/extensions) should rooms maintain? If we're below this avg % for room_history_ticks then we will spawn a teller
         'room_crit_energy_pc': 25, // if below this, spawn 2 tellers
 
         }
-    
-    global.empire = {
+
+global.RECONFIG_EMPIRE = function() {
+    for (var rname in Game.rooms) {
+        var troom = Game.rooms[rname];
+        troom.fullUpdate();
+    }
+}
+
+
+global.RELOAD_EMPIRE = function() {
+    var saved_empire = {
         // 1st base
         'W53S18': {
             'roomname' : '1',
@@ -184,8 +186,7 @@
         // 12 Expansions
         'W47S17': {
             'roomname': '12W',
-            'spawn_room': 'W46S17',
-            'backup_spawn_room': 'W48S18'
+            'spawn_room': 'W46S17'
         },
         'W45S17': {
             'roomname': '12E',
@@ -334,4 +335,6 @@
             'backup_spawn_room': 'W43S18'
         },
     }
+    Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT] = saved_empire;
+}
     
