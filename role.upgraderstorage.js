@@ -8,7 +8,7 @@ module.exports = {
 
     run: function(creep) {
         if (creep.carry.energy == 0 && creep.memory[MEMORY_JOB] != JOB_GFS && creep.memory[MEMORY_JOB] != JOB_RENEW) {
-            if (creep.ticksToLive > 400 || !creep.getRenewEnabled() ) {
+            if (creep.ticksToLive > 300 || !creep.getRenewEnabled() ) {
                 creep.memory[MEMORY_JOB] = JOB_GFS;
             } else {
                 creep.memory[MEMORY_JOB] = JOB_RENEW;

@@ -186,6 +186,7 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
                 continue;
             }
             if (einfo['spawn_dist'] >= range_limit) {
+                //console.log('- ATTACK PLAN: ' + fobname + ' -> ' + tgt + ': range ' + einfo['spawn_dist'] + ' over distance.');
                 continue;
             }
 
@@ -220,7 +221,8 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
             if (einfo['allied']) { 
                 // do nothing, ally room.
             } else if (einfo['safemode_until'] && einfo['safemode_until'] > Game.time) {
-                // do nothing, its invincible.
+                console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
+                    einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners. (SAFEMODE, NOT ATTACKABLE)'  + gz_flag_info );
             } else if (einfo['missiles'] != undefined && einfo['missiles'].length > 0) {
                 var nuke_locs = []
                 for (var m = 0; m < einfo['missiles'].length; m++) {
@@ -231,7 +233,7 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
                     einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners, ' + nuke_locs.length + ' incoming nukes at: ' + nuke_locs_string);
             } else if (einfo['enemy_spawns'] && einfo['level'] >= 1) {
                 console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
-                    einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners. '  + gz_flag_info );// + count_my_creeps + '/' + attacker_limit + ' assigned. ' + gz_flag_info );
+                    einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. ' + einfo['enemy_spawns']  + ' spawners. '  + gz_flag_info );
             } else if (einfo['enemy_towers']) {
                 console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
                     + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Spawn drainers as it has towers only. '  + count_my_creeps + '/' + drainer_limit + ' assigned.');

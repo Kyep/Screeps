@@ -5,6 +5,7 @@ var jobBuild = require('job.build');
 var jobRenew = require('job.renew');
 var jobHide = require('job.hide');
 var jobUpgrade = require('job.upgrade');
+var jobGetstoredenergy = require('job.gfs');
 
 module.exports = {
     run: function(creep) {
@@ -23,6 +24,15 @@ module.exports = {
         }
         if (creep.memory[MEMORY_JOB] == JOB_HIDE) {
             if (creep.getShouldHide()) {
+                if (creep.room.name == creep.memory[MEMORY_HOME]) {
+                    if (creep.carry.energy == 0) {
+                    	jobGetstoredenergy.run(creep);
+                    } else {
+                    	jobReturnresources.run(creep, 1, 1, 0.5, 0, 0);
+                    }
+                    creep.say('EFU');
+                    return;
+                }
                 jobHide.run(creep);
             } else if (creep.room.name == creep.memory[MEMORY_DEST]) {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;

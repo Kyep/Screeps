@@ -43,7 +43,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         var towerlist = Game.rooms[roomname].find(FIND_MY_STRUCTURES, {
                     filter: (structure) => {
                         return (
-                                structure.structureType == STRUCTURE_TOWER && structure.energy > 0 && structure.isActive()
+                                structure.structureType == STRUCTURE_TOWER && structure.energy > 250 && structure.isActive()
                         );
                     }
         });
@@ -81,12 +81,9 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         if (myalert['hostileUsername'] == 'Invader' && alert_age < 120) {
             theirthreat -= (1000 * towercount);
         }
-        if (Game.rooms[roomname] != undefined && Game.rooms[roomname].storage != undefined) {
+        if (Game.rooms[roomname] != undefined && Game.rooms[roomname].storage != undefined && myalert['hostileUsername'] != 'Invader') {
             baseforce['teller-towers'] = 1;
             if (theirthreat > 15000) {
-                baseforce['teller-towers'] = 2;
-                baseforce['teller'] = 2;
-            } else if (theirthreat > 8000) {
                 baseforce['teller'] = 1;
             }
         }
@@ -94,6 +91,8 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
     if (myinfo['spawn_room'] == undefined) {
         console.log('ATTACK CONFIG WARNING, SECTOR ' + roomname + ' HAS NO spawn_room SET ON ITS ROOM!');
         patrolforce['rogue'] = 1; // the sad default.
+    } else if (!myalert['hostileHealers'] && myalert['hostileUsername'] == 'Invader' && towercount > 0) {
+        console.log('DEFENSE: Decided that  ' + roomname + ' can handle the incoming threat of ' + theirthreat + ' because it is a healer-less NPC attack on a base with towers.');
     } else if (theirthreat > 0) {
         var gsapfr = GET_SPAWNER_AND_PSTATUS_FOR_ROOM(roomname, true);
         var spawner = gsapfr[0];
@@ -120,6 +119,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
             defense_roles = empire_defaults['defense_roles_ranged'];
             //console.log('KITING DETECTED: ' + roomname);
         }
+        var num_added = 0;
         for (var i = 0; i < defense_roles.length; i++) {
             var oname = defense_roles[i];
             //console.log('checking cost for' + oname);
@@ -145,10 +145,16 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
             } else {
                 patrolforce[oname] += 1;
             }
+            num_added += patrolforce[oname];
             theirthreat -= outfit_cost;
-            //console.log('XAT: Defending ' + roomname + ' with ' + patrolforce[oname] + ' ' + oname + ' (cost: ' + outfit_cost + ' ea) against threat. ' + theirthreat + '/' + myalert['hostileCost'] + ' threat remaining.');
             if (theirthreat < 0) {
                 break;
+            }
+            if (num_added >= 2) {
+                console.log('XAT-2: Defending ' + roomname + ' with ' + patrolforce[oname] + ' ' + oname + ' (cost: ' + outfit_cost + ' ea) against threat. ' + theirthreat + '/' + myalert['hostileCost'] + ' threat remaining. Max cap of 2 reached!');
+                break;
+            } else {
+                console.log('XAT-1: Defending ' + roomname + ' with ' + patrolforce[oname] + ' ' + oname + ' (cost: ' + outfit_cost + ' ea) against threat. ' + theirthreat + '/' + myalert['hostileCost'] + ' threat remaining.');
             }
         }
     } else {
@@ -334,14 +340,18 @@ Room.prototype.detailEnemies = function() {
     var enemiesList = this.getHostileCreeps();
     details['hostileCount'] = enemiesList.length;
     details['hostileRanged'] = 0;
+    details['hostileHealers'] = 0;
     details['hostileUsername'] = 'Invader';
     details['hostileExpires'] = 0;
 
     if(enemiesList.length) {
         for(var i = 0; i < enemiesList.length; i++) {
             var this_enemy_cost = global.CREEP_COST(enemiesList[i].body);
-            if(enemiesList[i].isBoosted()) {
+            if (enemiesList[i].isBoosted()) {
                 this_enemy_cost *= 5; // This treats boosted creeps as 5x as dangerous.
+            }
+            if (enemiesList[i].getActiveBodyparts(HEAL) > 0) {
+                details['hostileHealers']++;
             }
             var thisexp = Game.time + enemiesList[i].ticksToLive;
             if (thisexp > details['hostileExpires']) {
@@ -452,7 +462,9 @@ Room.prototype.deleteAlert = function() {
         	if (!is_intact) {
         	    var alert_string = this.name +': MISSING ' + stype + ' AT: ' +structure_pos.x + ',' + structure_pos.y + ' after attack from ' + myalert['hostileUsername'] + ' - REBUILDING!';
         	    console.log(alert_string);
-        	    Game.notify(alert_string);
+        	    if (stype != "road") {
+            	    Game.notify(alert_string);
+        	    }
         		this.createConstructionSite(structure_pos.x, structure_pos.y, stype);
         	}
         }

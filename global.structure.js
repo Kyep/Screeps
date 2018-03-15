@@ -16,7 +16,6 @@ global.CONVERT_BODY_TO_HPT = function(tbody) {
     */
     
     var hpt = 0;
-    console.log(tbody.length);
     for (var p = 0; p < tbody.length; p++) {
         var thispartobj = tbody[p];
         //console.log(JSON.stringify(thispartobj));
