@@ -28,6 +28,7 @@ global.RUN_CREEPS = function() {
     var roleCHarvester = require('role.charvester');
     var roleHauler = require('role.hauler');
     var roleBanker = require('role.banker');
+    var roleFetcher = require('role.fetcher');
 
     var total_creep_cpu_use = 0;
     var creep_cpu_map = {}
@@ -100,6 +101,8 @@ global.RUN_CREEPS = function() {
             roleDismantler.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'banker') {
             roleBanker.run(creep);
+        } else if(creep.memory[MEMORY_ROLE] == 'fetcher') {
+            roleFetcher.run(creep);
         } else {
             console.log('ALERT: ' + creep.name + ' in room' + creep.room.name + ' has role ' + creep.memory[MEMORY_ROLE] + ' which I do not know how to handle: ' + JSON.stringify(creep.memory));
             //creep.suicide();

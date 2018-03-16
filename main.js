@@ -84,16 +84,16 @@ module.exports.loop = function () {
         //CPU_SECTION('espionage-attackplans', true);
         global.ESPIONAGE_REGEN_TARGETS();
         CPU_SECTION('espionage-regen', true);
-        global.REPORT_STRUCTURES(false); // auto-builds buildable structures that have appropriate flags
-        CPU_SECTION('report-structures', true);
     }
 
     if(Game.time % 500 === 0) {
         UPDATE_MARKET_ORDERS();
         CPU_SECTION('market-order-update', true);
+        global.REPORT_STRUCTURES(false); // auto-builds buildable structures that have appropriate flags
+        CPU_SECTION('report-structures', true);
     }
 
-    if(Game.time % 2400 === 0) {
+    if(Game.time % 2000 === 0) {
         RECREATE_ROAD_NETWORKS();
         CPU_SECTION('recreate-road-networks', true);
     }

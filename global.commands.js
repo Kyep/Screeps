@@ -210,14 +210,7 @@ global.RECREATE_ROAD_NETWORKS = function() {
         
         var grm = Game.rooms[rname];
         grm.memory[MEMORY_ROAD_NETWORK] = [];
-        var origins = grm.getFlagsByType(FLAG_ROADORIGIN);
-        if (origins.length) {
-            for (var a = 0; a < origins.length; a++) {
-                grm.createRoadNetwork(origins[a].pos.x, origins[a].pos.y);
-            }
-        } else {
-            console.log('RECREATE_ROAD_NETWORKS: ' + rname + ': no ORIGIN flag');
-        }
+        grm.createRoadNetwork();
     }
     global.SHOW_ROAD_NETWORKS();
 }

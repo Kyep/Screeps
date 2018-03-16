@@ -16,9 +16,12 @@ module.exports = {
                 if (creep.room.controller.sign && creep.room.controller.sign.username == overlord && creep.room.controller.sign.text == creep.memory[MEMORY_SIGN]) {
                     ESPIONAGE_ADD_TARGET(creep.room.name);
                     creep.suicide();
-                } else if (creep.signController(creep.room.controller, creep.memory[MEMORY_SIGN]) == ERR_NOT_IN_RANGE) { 
+                }
+                var sresult = creep.signController(creep.room.controller, creep.memory[MEMORY_SIGN]);
+                if (sresult == ERR_NOT_IN_RANGE) { 
                     creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#0000ff'}});
                 }
+                creep.say(sresult);
             }
         }
     }

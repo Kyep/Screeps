@@ -185,13 +185,9 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
                 console.log('- ATTACK PLAN: ' + fobname + ' -> ' + tgt + ': could not find einfo for the latter');
                 continue;
             }
-            if (einfo['spawn_dist'] >= range_limit) {
-                //console.log('- ATTACK PLAN: ' + fobname + ' -> ' + tgt + ': range ' + einfo['spawn_dist'] + ' over distance.');
-                continue;
-            }
 
             var fbase = undefined;
-            if ((spawn_units || spawn_signers) && Game.rooms[fobname] != undefined) {
+            if (Game.rooms[fobname] != undefined) {
                 fbase = Game.rooms[fobname];
             }
 
@@ -200,9 +196,17 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
                     var created = fbase.createUnit('signer', tgt);
                     console.log(' -> ' + tgt + ' (' + einfo['level'] + '), signer: ' + created);
                 }
-                
+                if (fbase && einfo['spawn_dist'] <= 1 && tgt != fbase.name && einfo['scount'] == 2 && !einfo['myremote']) {
+                    console.log('REMOTE: advise that ' + fbase.name + ' takes ' + tgt + ' at dist: ' + einfo['spawn_dist']);
+                }
                 continue;
             }
+
+            if (einfo['spawn_dist'] >= range_limit) {
+                //console.log('- ATTACK PLAN: ' + fobname + ' -> ' + tgt + ': range ' + einfo['spawn_dist'] + ' over distance.');
+                continue;
+            }
+
             var ostring = '-';
             if (einfo['owner']) {
                 ostring = einfo['owner'];
@@ -218,7 +222,7 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
                 }
             }
 
-            if (einfo['allied']) { 
+            if (einfo['allied']) {
                 // do nothing, ally room.
             } else if (einfo['safemode_until'] && einfo['safemode_until'] > Game.time) {
                 console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' + 
@@ -237,7 +241,7 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
             } else if (einfo['enemy_towers']) {
                 console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
                     + einfo['spawn_dist'] + ' rooms away, owned by ' + ostring + '. Spawn drainers as it has towers only. '  + count_my_creeps + '/' + drainer_limit + ' assigned.');
-                if(fbase && count_my_creeps < drainer_limit) {
+                if(fbase && spawn_units && count_my_creeps < drainer_limit) {
                     var created = fbase.createUnit('drainerbig', tgt);
                     console.log('SPAWNED: ' + created);
                 }
@@ -254,7 +258,7 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
                 }
                 var created = fbase.createUnit(stype, tgt);
                 console.log('SPAWNED: ' + created);
-            }
+            } 
         }
     }
 }
@@ -320,6 +324,11 @@ global.ESPIONAGE = function() {
                 if (theroom.controller.safeMode) {
                     Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['safemode_until'] = Game.time + theroom.controller.safeMode;
                 }
+            }
+            var all_sources = theroom.find(FIND_SOURCES);
+            Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['scount'] = all_sources.length;
+            if (theroom.isRemote()) {
+                Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['myremote'] = true;
             }
 
             var enemy_structures = theroom.getHostileStructures();

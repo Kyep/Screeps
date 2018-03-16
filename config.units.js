@@ -19,6 +19,7 @@ global.empire_workers = {
 	'hauler': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 3, MOVE: 3}), 'noresizing': 1, 'abbr': 'haul', 'rup': 10},
 
 	'grower': { 'body': global.CONSTRUCT_BODY({CARRY: 25, MOVE: 25}), 'noresizing': 1, 'abbr': 'grow'},
+	'fetcher': { 'body': global.CONSTRUCT_BODY({CARRY: 25, MOVE: 25}), 'noresizing': 1, 'abbr': 'fetch'},
 
 	'extractor': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 2}), 'abbr': 'Ext' },
 	

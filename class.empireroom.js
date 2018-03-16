@@ -1,6 +1,7 @@
 "use strict";
 
 
+
 global.CLAIM_ROOM = function(rname, primary, secondary) {
     if (!rname) {
         console.log('claimRoom: rname not set!');
@@ -10,12 +11,50 @@ global.CLAIM_ROOM = function(rname, primary, secondary) {
         console.log(rname + ': claimRoom: PRIMARY not set!');
         return false;
     }
+    if (!Game.rooms[primary] || !Game.rooms[primary].isMine()) {
+        console.log(rname + ': claimRoom: PRIMARY does not belong to us!');
+        return false;
+    }
+    if (secondary && (!Game.rooms[secondary] || !Game.rooms[secondary].isMine())) {
+        console.log(rname + ': claimRoom: SECONDARY does not belong to us!');
+        return false;
+    }
     Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname] = {}
     Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['spawn_room'] = primary;
     if (secondary) {
         Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['backup_spawn_room'] = secondary;
     }
     return true;
+}
+
+Room.prototype.isRemote = function() {
+    if (!Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT]) {
+        return false;
+    }
+    if (!Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]) {
+        return false;
+    }
+    if (!Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['spawn_room']) {
+        return false;
+    }
+    if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['spawn_room'] == this.name) {
+        return false;
+    }
+    return true;
+}
+
+Room.prototype.getRemote = function() {
+    var current_remotes = []
+    for (var rname in Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT]) {
+        if (rname == this.name) {
+            continue;
+        }
+        if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname] && Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['spawn_room'] && Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['spawn_room'] == this.name) {
+            current_remotes.push(rname);
+        }
+    }
+    //console.log(JSON.stringify(current_remotes));
+    return current_remotes;
 }
 
 Room.prototype.abandonRoom = function() {
@@ -306,11 +345,11 @@ Room.prototype.makeConfigBase = function(spawn_room, backup_spawn_room) {
     return rconfig;
 }
 
-Room.prototype.addSourceAssignment = function(rconfig, sourceid, ass_object, steps) {
+Room.prototype.addSourceAssignment = function(rconfig, sourceid, ass_object, steps, overwrite) {
     if (!rconfig || !sourceid || !ass_object || !steps) {
         return rconfig;
     }
-    rconfig = global.ADD_ROOM_KEY_ASSIGNMENT(rconfig, sourceid, ass_object, 1000 + steps);
+    rconfig = global.ADD_ROOM_KEY_ASSIGNMENT(rconfig, sourceid, ass_object, 1000 + steps, overwrite);
     return rconfig;
 }
 
@@ -374,7 +413,11 @@ Room.prototype.makeAssignments = function(myconf) {
                 //    myconf = this.addSourceAssignment(myconf, skey, { 'sharvester': 1 }, myconf['sources'][skey]['steps']);
                 //}
             } else {
-                myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 2}, myconf['sources'][skey]['steps']); 
+                if (this.storage) {
+                    myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 2}, myconf['sources'][skey]['steps']); 
+                } else {
+                    myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf['sources'][skey]['steps']); 
+                }
             }
             snum++;
         }
@@ -410,7 +453,7 @@ Room.prototype.makeAssignments = function(myconf) {
             var max_carry = sro.getMaxCarryPartsPerHauler();
             //
             
-            if (srl < 4) {
+            if (srl < 4 || !sro.storage) {
                 for (var skey in myconf['sources']) {
                     myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf['sources'][skey]['steps']); 
                 }  
@@ -484,9 +527,11 @@ Room.prototype.makeAssignments = function(myconf) {
                 myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'BS', newobj, 1200);
             } else {
                 for (var skey in myconf['sources']) {
-                    if (myconf['sources'][skey]['spaces'] != 1) {
-                        myconf = this.addSourceAssignment(myconf, skey, newobj, 1400);
+                    var owrite = false;
+                    if (myconf['scount'] == 1) {
+                        owrite = true;
                     }
+                    myconf = this.addSourceAssignment(myconf, skey, newobj, 1400, owrite);
                 }
             }
             spawned_builders = true;
@@ -529,7 +574,7 @@ Room.prototype.makeAssignments = function(myconf) {
             if (total_e > 50000) {
                 if (rlvl == 8) {
                     var upobj = {'upstor8': 1}
-                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'upstor8', upobj, 1200);
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'upstor8', upobj, 1100);
                 } else {
                     var upcount = Math.floor(total_e / 40000);
                     var upobj = {'upstorclose': upcount}
@@ -548,14 +593,16 @@ Room.prototype.makeAssignments = function(myconf) {
         }
 
         // Scavengers
-        var dropped_resources = this.find(FIND_DROPPED_RESOURCES, {filter: (s) => s.energy > 0});
-        if (dropped_resources.length > 0) {
-            var energy_on_ground = 0;
-            for (var i = 0; i < dropped_resources.length; i++) {
-                energy_on_ground += dropped_resources[i].energy;
-            }
-            if (energy_on_ground > (1.5 * UNIT_COST(empire_workers['scavenger']['body']))) {
-                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'scavenger', {'scavenger': 1}, 250);
+        if (this.storage) {
+            var dropped_resources = this.find(FIND_DROPPED_RESOURCES, {filter: (s) => s.energy > 0});
+            if (dropped_resources.length > 0) {
+                var energy_on_ground = 0;
+                for (var i = 0; i < dropped_resources.length; i++) {
+                    energy_on_ground += dropped_resources[i].energy;
+                }
+                if (energy_on_ground > (1.5 * UNIT_COST(empire_workers['scavenger']['body']))) {
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'scavenger', {'scavenger': 1}, 250);
+                }
             }
         }
     

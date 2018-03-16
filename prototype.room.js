@@ -285,12 +285,13 @@ Room.prototype.markNuclearTargets = function() {
 }
 
 
-Room.prototype.createRoadNetwork = function(origin_x, origin_y) {
-    if (origin_x == undefined || origin_y == undefined) {
-        console.log('createRoadNetworkk: FAIL, no origin_x or no origin_y');
+Room.prototype.createRoadNetwork = function() {
+    var origins = this.getFlagsByType(FLAG_ROADORIGIN);
+    if (!origins || !origins.length) {
+        console.log(this.name + ': createRoadNetworkk: FAIL, no origin flag');
         return false;
     }
-    var origin = new RoomPosition(origin_x, origin_y, this.name);
+    var origin = origins[0].pos;
 
     var all_csites = Game.constructionSites;
     for (var site_key in all_csites) {
@@ -312,6 +313,9 @@ Room.prototype.createRoadNetwork = function(origin_x, origin_y) {
     }
     
     this.memory[MEMORY_ROAD_NETWORK] = [];
+    
+    var created_max = 25;
+    var created_total = 0;
     
     var all_sources = this.find(FIND_SOURCES);
     var all_dest_flags = this.getFlagsByType(FLAG_ROADDEST);
@@ -340,7 +344,12 @@ Room.prototype.createRoadNetwork = function(origin_x, origin_y) {
                 }    
             }
             if (!roads_here) {
-                Game.rooms[this.name].createConstructionSite(pos_x, pos_y, STRUCTURE_ROAD);
+                created_total++;
+                if (created_total >= created_max) {
+                    
+                } else {
+                    Game.rooms[this.name].createConstructionSite(pos_x, pos_y, STRUCTURE_ROAD);
+                }
             }
             this.memory[MEMORY_ROAD_NETWORK].push(path_pos);
         }
