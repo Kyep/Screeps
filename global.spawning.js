@@ -212,6 +212,9 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
                         if (rconfig.sources[sname]['y'] != undefined) { dest_y = rconfig.sources[sname]['y']; }
                         if (rconfig.sources[sname]['dest_x'] != undefined) { dest_x = rconfig.sources[sname]['dest_x']; }
                         if (rconfig.sources[sname]['dest_y'] != undefined) { dest_y = rconfig.sources[sname]['dest_y']; }
+                    } else if (rconfig['controller'] && rconfig['controller']['x'] && rconfig['controller']['y']) {
+                        dest_x = rconfig['controller']['x'];
+                        dest_y = rconfig['controller']['y'];
                     }
                     var this_pri = 2500; // max.
                     if (rconfig && rconfig['assignments'] && rconfig['assignments'][sname] && rconfig['assignments'][sname]['pri']) {
@@ -349,7 +352,7 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname, force) {
     }
     var spawners_secondary_preferred = 0;
     var spawners_secondary_allowed = 1;
-    if (room_primary_level > 4 && room_primary_level < 4) {
+    if (room_primary_level < 4) {
         spawners_secondary_preferred = 1;
     } else if (room_primary_level > 5) {
         //spawners_secondary_allowed = 0;

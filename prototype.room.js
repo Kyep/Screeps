@@ -108,7 +108,7 @@ Room.prototype.checkStructures = function(verbose) {
     }
     var r_messages = [];
     var rlvl = this.getLevel();
-    if (rlvl < 3) {
+    if (rlvl < 4) {
         always_blacklist.push("constructedWall");
         always_blacklist.push("rampart");
     }
@@ -314,8 +314,8 @@ Room.prototype.createRoadNetwork = function() {
     
     this.memory[MEMORY_ROAD_NETWORK] = [];
     
-    var created_max = 25;
-    var created_total = 0;
+    let created_max = 25;
+    let created_total = 0;
     
     var all_sources = this.find(FIND_SOURCES);
     var all_dest_flags = this.getFlagsByType(FLAG_ROADDEST);
@@ -336,18 +336,16 @@ Room.prototype.createRoadNetwork = function() {
             var pos_x = path_to_dest[j]['x'];
             var pos_y = path_to_dest[j]['y'];
             var path_pos = new RoomPosition(pos_x, pos_y, this.name);
-            var objects_here = this.lookAt(path_pos);
-            var roads_here = 0;
-            for (var k = 0; k < objects_here.length; k++) {
-                if (objects_here[k].structureType == STRUCTURE_ROAD) {
-                    roads_here++;
-                }    
-            }
-            if (!roads_here) {
+
+            if (path_pos.hasStructureOfType(STRUCTURE_ROAD)) {
+                new RoomVisual(this.name).circle(path_pos, {stroke: 'green'});
+            } else {
                 created_total++;
                 if (created_total >= created_max) {
-                    
+                    new RoomVisual(this.name).circle(path_pos, {stroke: 'red'});
+                    //console.log(this.name + ': not creating road as we are at ' + created_total + ' beyond max roads ' + created_max);
                 } else {
+                    new RoomVisual(this.name).circle(path_pos, {stroke: 'yellow'});
                     Game.rooms[this.name].createConstructionSite(pos_x, pos_y, STRUCTURE_ROAD);
                 }
             }

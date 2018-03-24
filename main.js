@@ -19,6 +19,7 @@ require('config.defines');
 require('config.flags');
 
 require('prototype.creep');
+require('prototype.pos');
 require('prototype.room');
 require('prototype.room.defense');
 require('prototype.room.boosts');
@@ -104,6 +105,7 @@ module.exports.loop = function () {
     }
 
     if(Game.time % 300 === 0) {
+        
         CHECK_FOR_OVERBURDENED_SPAWNERS();
         CPU_SECTION('rooms-partsalert', true);
     }

@@ -619,27 +619,4 @@ Creep.prototype.getDropsInDist = function(dradius) {
     return nearby_drops;
 }
 
-Creep.prototype.createRoadIfNone = function() {
-    if (this.memory[MEMORY_ATTACKEDAT] != undefined) {
-        var ticks_ago = Game.time - this.memory[MEMORY_ATTACKEDAT];
-        if (ticks_ago < 100) {
-            return -1;
-        }
-    }
-    this.memory['checkroad'] = false;
-    var can_drop_site = global.CAN_CREATE_CSITE();
-    if (can_drop_site) {
-        var objects_here = this.room.lookAt(this);
-        var roads_here = 0;
-        for (var i = 0; i < objects_here.length; i++) {
-            if (objects_here[i].structureType == STRUCTURE_ROAD) {
-                roads_here++;
-            }    
-        }
-        if (!roads_here) {
-            Game.rooms[this.room.name].createConstructionSite(this.pos.x, this.pos.y, STRUCTURE_ROAD);
-            console.log(this.name + ': CREATED ROAD at ' + this.room.name + ': ' + this.pos.x + ',' + this.pos.y);
-            this.memory['checkroad'] = true;
-        }
-    }
-}
+

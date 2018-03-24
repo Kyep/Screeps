@@ -277,12 +277,16 @@ global.SCIENCE_PROCESS = function () {
                     var setup_fail_msg = 'SCI: reaction for ' + reaction['goal'] + ' in room ' + reaction['roomname'] +'  FATAL SETUP ERROR, BAD DISTANCE OR LAB MATERIALS MISMATCH.  Debug: ' + JSON.stringify(reaction);
                     console.log(setup_fail_msg);
                     Game.notify(setup_fail_msg);
+                    continue;
                 } else if (result == OK) {
                     //console.log('SCI: reaction for ' + reaction['goal'] + ' in room ' + reaction['roomname'] +' ran successfully: ' +lab_3.mineralAmount + '/' + lab_3.mineralCapacity);
+                    continue;
+                } else if (result == ERR_RCL_NOT_ENOUGH) {
+                    console.log('SCI: reaction for ' + reaction['goal'] + ' in room ' + reaction['roomname'] +' produced weird runReaction result: ' + result + '. MOVING TO CLEANUP STAGE.');
                 } else {
                     console.log('SCI: reaction for ' + reaction['goal'] + ' in room ' + reaction['roomname'] +' produced weird runReaction result: ' + result + '.');
+                    continue;
                 }
-                continue;
             }
             
         

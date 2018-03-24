@@ -2,7 +2,7 @@
 
 
 
-global.CLAIM_ROOM = function(rname, primary, secondary) {
+global.CLAIM_ROOM = function(rname, primary, secondary, override) {
     if (!rname) {
         console.log('claimRoom: rname not set!');
         return false;
@@ -12,8 +12,12 @@ global.CLAIM_ROOM = function(rname, primary, secondary) {
         return false;
     }
     if (!Game.rooms[primary] || !Game.rooms[primary].isMine()) {
-        console.log(rname + ': claimRoom: PRIMARY does not belong to us!');
-        return false;
+        if (override) {
+            console.log(rname + ': claimRoom: PRIMARY does not belong to us! Allowing claim anyway as this is registering a new primary room.');
+        } else {
+            console.log(rname + ': claimRoom: PRIMARY does not belong to us!');
+            return false;
+        }
     }
     if (secondary && (!Game.rooms[secondary] || !Game.rooms[secondary].isMine())) {
         console.log(rname + ': claimRoom: SECONDARY does not belong to us!');
@@ -57,13 +61,18 @@ Room.prototype.getRemote = function() {
     return current_remotes;
 }
 
-Room.prototype.abandonRoom = function() {
+
+Room.prototype.endNotifications = function() {
     var mys = this.find(FIND_MY_STRUCTURES);
     for (var i = 0; i < mys.length; i++) {
         var ts = mys[i];
         var res = ts.notifyWhenAttacked(false);
         console.log(ts.id + ': ' + res);
     }
+}
+
+Room.prototype.abandonRoom = function() {
+    this.endNotifications();
     for (var rname in Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT]) {
         if (rname == this.name) {
             continue;
@@ -78,11 +87,14 @@ Room.prototype.abandonRoom = function() {
         }
     }
     if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]) {
-        console.log(rname + ': deleted from empire');
+        console.log(this.name + ': deleted from empire');
         delete Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name];
     }
+    if (this.memory[MEMORY_RCONFIG]){
+        delete this.memory[MEMORY_RCONFIG];
+    }
     if (Memory.rooms[this.name]) {
-        console.log(rname + ': deleted room memory');
+        console.log(this.name + ': deleted room memory');
         delete Memory.rooms[this.name];
     }
     return true;
@@ -241,6 +253,7 @@ Room.prototype.getConfig = function() {
 
 Room.prototype.createConfig = function() {
     if (!this.inEmpire()) {
+        console.log('createConfig: ' + this.name + ' is not in empire.');
         return undefined;
     }
     var myconf = this.makeConfigBase(Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['spawn_room'], Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['backup_spawn_room']);

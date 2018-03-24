@@ -181,11 +181,6 @@ module.exports = {
                     }
                 }
             }
-            
-            if(Game.time % 25 == 0 || (creep.memory['checkroad'] != undefined && creep.memory['checkroad'] == true)) {
-                //creep.createRoadIfNone();
-            }
-            
             creep.moveToRUP(creep.getHomePos());
 
         } else if (creep.memory[MEMORY_JOB] == JOB_USELINK) {
