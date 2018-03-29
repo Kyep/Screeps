@@ -1,3 +1,161 @@
+
+
+global.REBUILD_EMPIRE_DATA = function() {
+    var espt = ESPIONAGE_LIST_TARGETS();
+    if (espt.length) {
+        console.log('REBUILD_EMPIRE_DATA failed, espionage in progress. Remaining rooms: ' + espt.length);
+        return false;
+    }
+    // Wipe existing data.
+    Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT] = {}
+
+    // Define bases first.
+    var bases = global.LIST_BASES();
+    for (var i = 0; i < bases.length; i++) {
+        var rname = bases[i];
+        CLAIM_ROOM(rname, rname); // rname, primary, secondary, override
+        Game.rooms[rname].setRemotes();
+    }
+    
+    // Add secondaries for bases.
+    global.VERIFY_SECONDARIES(true);
+    
+}
+
+
+global.VERIFY_SECONDARIES = function() {
+    var bases = global.LIST_BASES();
+    for (var i = 0; i < bases.length; i++) {
+        var rname = bases[i];
+        if (!Game.rooms[rname]){ 
+            console.log(rname + ' not defined.');
+            continue;
+        }
+        if (!Game.rooms[rname].inEmpire()){ 
+            console.log(rname + ' owned, but not in empire!');
+            continue;
+        }
+        
+        Game.rooms[rname].seekSecondary();
+    }
+}
+
+Room.prototype.seekSecondary = function(force_recalc) {
+    if (!this.inEmpire()) {
+        return false;
+    }
+    var bsr = Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['backup_spawn_room'];
+    
+    if (bsr && bsr != this.name && Game.rooms[bsr] && Game.rooms[bsr].isMine() && !force_recalc) {
+        return bsr;
+    }
+    
+    var alts = global.LIST_BASES();
+    var champ_name = undefined;
+    var champ_steps = 99999999;
+    var my_spawns = Game.rooms[this.name].find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN); } });
+    if (!my_spawns.length) {
+        return false;
+    }
+    for (var j = 0; j < alts.length; j++) {
+        var r2 = alts[j];
+        if (r2 == this.name) {
+            continue;
+        }
+        var this_dist = Game.map.getRoomLinearDistance(this.name, r2);
+        if (this_dist > 4) {
+            // Do not even bother trying to compute a path for secondaries 5 or more rooms away.
+            continue;
+        }
+        var their_spawns = Game.rooms[r2].find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN); } });
+        if (!their_spawns.length) {
+            continue;
+        }
+        var pfobj = PathFinder.search(my_spawns[0].pos, {'pos': their_spawns[0].pos, 'range': 2}, {'maxOps': 10000, 'swampCost': 2});
+        var pfpath = pfobj['path'];
+        var pflength = pfpath.length;
+        var pfops = pfobj['ops'];
+        if (pfobj['incomplete']) {
+            console.log(this.name + ' <- ' + r2 + ': incomplete path from: ' + JSON.stringify(my_spawns[0].pos) + ' to ' + JSON.stringify(their_spawns[0].pos) + ' in ' + pfops + ' operations.');
+            continue;
+        }
+        console.log(this.name + ': considering secondary: ' + r2 + ' based on steps of ' + pflength);
+        if (pflength < champ_steps) {
+            champ_name = r2;
+            champ_steps = pflength;
+        }
+    }
+    if (champ_name) {
+        if (champ_name != bsr) {
+            console.log(this.name + ': would be assigned secondary of: ' + champ_name + ' based on steps of ' + champ_steps + ' (current: ' + bsr +')');
+            Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['backup_spawn_room'] = champ_name;
+            Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['backup_spawn_steps'] = champ_steps;
+        } else {
+            console.log(this.name + ': keeps existing secondary of: ' + champ_name + ' based on steps of ' + champ_steps);
+        }
+        return champ_name;
+    } else {
+        console.log(this.name + ': no secondary to assign.');
+    }
+    return undefined;
+}
+
+global.LIST_BASES = function() {
+    var bases = [];
+    for (var rname in Game.rooms) {
+        if (!Game.rooms[rname].isMine()) {
+            continue;
+        }
+        bases.push(rname);
+    }
+    return bases;
+}
+
+global.UPDATE_CSITES = function() {
+    var rc = {}
+    for (var hash in Game.constructionSites) {
+        var thisc = Game.constructionSites[hash];
+        if (rc[thisc.room.name] == undefined) {
+            rc[thisc.room.name] = [];
+        }
+        rc[thisc.room.name].push(hash);
+    }
+    for (var rname in rc) {
+        console.log(rname + ': ' + rc[rname].length);
+    }
+}
+
+global.BUY_ENERGY = function() {
+    if (Game.market.credits < 2000000) {
+        return false;
+    }
+    for (var rname in Game.rooms) {
+        var robj = Game.rooms[rname];
+        if (!robj.isMine()) {
+            continue;
+        }
+        if (robj.getLevel() == 8) {
+            continue;
+        }
+        var rterm = robj.terminal;
+        if (!rterm || !rterm.isActive()) {
+            continue;
+        }
+        if (rterm.store[RESOURCE_ENERGY] >= 50000) {
+            continue;
+        }
+        var ber = robj.buyEnergy();
+        if (ber) {
+            console.log(rname + ': BUY_ENERGY(): attempted energy buy: SUCCESS');
+            return true;
+        } else {
+            console.log(rname + ': BUY_ENERGY(): attempted energy buy: FAILURE');
+        }
+        break;
+    }
+    return false;
+}
+
 global.CHECK_HAULER_BODIES = function(sid) {
     var combined = {}
     for (var crname in Game.creeps) {

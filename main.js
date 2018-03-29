@@ -8,6 +8,8 @@ require('global_functions');
 require('global.commands');
 require('global.espionage');
 require('global.expansion');
+require('global.gclfarm');
+
 require('global.creep');
 require('global.structure');
 require('global.spawning');
@@ -21,13 +23,14 @@ require('config.flags');
 require('prototype.creep');
 require('prototype.pos');
 require('prototype.room');
+require('prototype.room.config');
+require('prototype.room.remote');
 require('prototype.room.defense');
 require('prototype.room.boosts');
 require('prototype.structures_all');
 require('prototype.structure');
 require('prototype.source');
 
-require('class.empireroom');
 require('lib.loanuserlist');
 
 
@@ -108,6 +111,10 @@ module.exports.loop = function () {
         
         CHECK_FOR_OVERBURDENED_SPAWNERS();
         CPU_SECTION('rooms-partsalert', true);
+    }
+
+    if(Game.time % 25 === 0) {
+        GCLFARM_PROCESS();
     }
 
     if(Game.time % 100 === 0) {

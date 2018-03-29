@@ -68,7 +68,7 @@ global.UPDATE_OBSERVERS = function() {
 
 global.ESPIONAGE_CREATE_TARGETS = function() {
 	var start_x = 31;
-	var end_x = 59;
+	var end_x = 60;
 	var start_y = 1;
 	var end_y = 29;
 	var espionage_targets = [];
@@ -159,7 +159,13 @@ global.ESPIONAGE_GET_ROOM = function(rname) {
 }
 
 global.ESPIONAGE_SHOW_ROOM = function(rname) {
-    return JSON.stringify(ESPIONAGE_GET_ROOM(rname));
+    var ei = ESPIONAGE_GET_ROOM(rname);
+    if (!ei) {
+        var target_list = ESPIONAGE_LIST_TARGETS();
+        var t_i = target_list.indexOf(rname);
+        console.log(rname + ': index ' + t_i + ' in targets list.');
+    }
+    return JSON.stringify(ei);
 }
 
 global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
@@ -245,7 +251,7 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
                     var created = fbase.createUnit('drainerbig', tgt);
                     console.log('SPAWNED: ' + created);
                 }
-            } else if (einfo['reserved']) {
+            } else if (einfo['reserver']) {
                 // Ignore... not worth our time to fuss over.
             } else if (spawn_units && fbase && count_my_creeps < cleaner_limit) {
                 console.log(' -> ' + tgt + ' (' + einfo['level'] + '), ' + einfo['enemy_structures'] + ' targets ' 
@@ -299,6 +305,7 @@ global.ESPIONAGE = function() {
 
     var num_processed = 0;
     var levels_added = 0;
+    var max_per_tick = 15; // do not attempt to recreate data for more than this many rooms per tick.
     for (var rname in Game.rooms) {
         if (target_list.indexOf(rname) != -1) {
             //console.log('ESPIONAGE: scoring ' + rname);
@@ -316,7 +323,7 @@ global.ESPIONAGE = function() {
             var signed_by_me = false;
             if (theroom.controller) {
                 if (theroom.controller.reservation) {
-                    Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['reserved'] = true;
+                    Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['reserver'] = theroom.controller.reservation.username;
                 }
                 if (theroom.controller.sign && theroom.controller.sign.username == overlord && theroom.controller.sign.text == empire_defaults['sign']) {
                     signed_by_me = true;
@@ -405,6 +412,9 @@ global.ESPIONAGE = function() {
 
             ESPIONAGE_REMOVE_TARGET(rname);
             num_processed++;
+            if (num_processed >= max_per_tick) {
+                break;
+            }
         }
     }
     //console.log('ESPIONAGE: processed ' + num_processed + '/' + target_list.length + ', adding: ' + levels_added);

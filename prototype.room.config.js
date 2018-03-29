@@ -31,36 +31,6 @@ global.CLAIM_ROOM = function(rname, primary, secondary, override) {
     return true;
 }
 
-Room.prototype.isRemote = function() {
-    if (!Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT]) {
-        return false;
-    }
-    if (!Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]) {
-        return false;
-    }
-    if (!Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['spawn_room']) {
-        return false;
-    }
-    if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['spawn_room'] == this.name) {
-        return false;
-    }
-    return true;
-}
-
-Room.prototype.getRemote = function() {
-    var current_remotes = []
-    for (var rname in Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT]) {
-        if (rname == this.name) {
-            continue;
-        }
-        if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname] && Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['spawn_room'] && Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['spawn_room'] == this.name) {
-            current_remotes.push(rname);
-        }
-    }
-    //console.log(JSON.stringify(current_remotes));
-    return current_remotes;
-}
-
 
 Room.prototype.endNotifications = function() {
     var mys = this.find(FIND_MY_STRUCTURES);
@@ -578,10 +548,10 @@ Room.prototype.makeAssignments = function(myconf) {
         // Upgraders
         if (!spawned_builders) {
             var total_e = 0;
-            if (this.storage && this.storage.store[RESOURCE_ENERGY] && this.storage.isActive()) {
+            if (this.storage && this.storage.store[RESOURCE_ENERGY]) {
                 total_e += this.storage.store[RESOURCE_ENERGY];
             }
-            if (this.terminal && this.terminal.store[RESOURCE_ENERGY] && this.terminal.isActive()) {
+            if (this.terminal && this.terminal.store[RESOURCE_ENERGY]) {
                 total_e += this.terminal.store[RESOURCE_ENERGY]
             }
             if (total_e > 50000) {
@@ -590,6 +560,9 @@ Room.prototype.makeAssignments = function(myconf) {
                     myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'upstor8', upobj, 1100);
                 } else {
                     var upcount = Math.floor(total_e / 40000);
+                    if (upcount > 10) {
+                        upcount = 10;
+                    }
                     var upobj = {'upstorclose': upcount}
                     myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'upgrades', upobj, 1200);
                 }

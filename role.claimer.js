@@ -17,12 +17,14 @@ module.exports = {
                             if (result == ERR_NOT_IN_RANGE) {
                                 creep.moveToRUP(creep.room.controller);
                             }
-                        } else {
+                        } else if (!creep.room.inEmpire()){
                             global.CLAIM_ROOM(creep.room.name, creep.room.name, creep.memory[MEMORY_HOME]);
                             var victims = creep.room.clearHostileStructures();
                             creep.room.fullUpdate();
                             creep.room.checkStructures();
-                            creep.sleepFor(100);
+                            if (Memory[MEMORY_GLOBAL_GCL_FARM].indexOf(creep.room.name) == -1) {
+                                creep.sleepFor(100);
+                            }
                         }
                     }            
                 } else {

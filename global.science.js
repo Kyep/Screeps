@@ -227,7 +227,7 @@ global.SCIENCE_PROCESS = function () {
         }
         var term = rmobj.terminal;
         if (term == undefined || !term.isActive()) {
-            console.log('SCI: skipping reaction in room with no active terminal: ' + JSON.stringify(reaction));
+            //console.log('SCI: skipping reaction in room with no active terminal: ' + JSON.stringify(reaction));
             continue;
         }
         

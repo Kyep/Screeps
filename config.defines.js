@@ -8,6 +8,7 @@ global.MEMORY_GLOBAL_LINKS = 'links';
 global.MEMORY_GLOBAL_SCIENCEREACTIONS = 'science_reactions';
 global.MEMORY_GLOBAL_SCIENCELABS = 'science_labs';
 global.MEMORY_GLOBAL_EMPIRE_LAYOUT = 'empire_layout';
+global.MEMORY_GLOBAL_GCL_FARM = 'gcl_farm';
 
 // Creep memory, top-level categories
 global.MEMORY_ROLE = 'role';
