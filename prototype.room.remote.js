@@ -28,8 +28,12 @@ global.COMPARE_ALL_REMOTES = function() {
 }
 
 Room.prototype.compareRemotes = function() {
+    var origins = this.getFlagsByType(FLAG_ROADORIGIN);
+}
+
+Room.prototype.compareRemotes = function() {
     var actual = this.listRemotes();
-    var suggested = this.suggestRemotes(true);
+    var suggested = this.suggestRemotes(); // true
     var differences = 0;
     for (var i = 0; i < actual.length; i++) {
         if (suggested.indexOf(actual[i]) == -1) {
@@ -102,8 +106,9 @@ Room.prototype.suggestRemotes = function(verbose) {
     }
     var dist = 2;
     
+    var original_exits = Object.values(Game.map.describeExits(this.name)); 
     var candidate_batch = Object.values(Game.map.describeExits(this.name)); // dist = 0.
-    var good_candidates = [];
+    var chosen_candidates = [];
     var ok_candidates = [];
     var bad_candidates = [];
 
@@ -118,8 +123,13 @@ Room.prototype.suggestRemotes = function(verbose) {
             if (cand == this.name) {
                 continue;
             }
-
-            if (good_candidates.indexOf(cand) == -1 && ok_candidates.indexOf(cand) == -1 && bad_candidates.indexOf(cand) == -1) {
+            var e = Game.map.describeExits(cand);
+            if (!e) {
+                continue;
+                
+            }
+            var their_exits = Object.values(e);
+            if (chosen_candidates.indexOf(cand) == -1 && ok_candidates.indexOf(cand) == -1 && bad_candidates.indexOf(cand) == -1) {
                 var rconf = GET_ROOM_CONFIG(cand);
                 var scount = undefined;
                 var einfo = Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][cand];
@@ -157,13 +167,55 @@ Room.prototype.suggestRemotes = function(verbose) {
                         ok_candidates.push(cand);
                     }
                 } else if (scount == 2) {
-                    if (good_candidates.indexOf(cand) == -1) {
-                        if (verbose) {
-                            console.log(this.name +': good potential remote: ' + cand + ' with ' + scount + ' sources.');
+                    if (chosen_candidates.indexOf(cand) == -1 && bad_candidates.indexOf(cand) == -1) {
+                        if (original_exits.indexOf(cand) == -1) {
+                            // if this is a good room that is NOT directly connected to our spawn room.
+                            var shared_rooms = [];
+                            var adj_base = false;
+                            for (var k = 0; k < original_exits.length; k++) {
+                                for (var l = 0; l < their_exits.length; l++) {
+                                    if (original_exits[k] == their_exits[l] && (chosen_candidates.indexOf(their_exits[l]) != -1 || ok_candidates.indexOf(their_exits[l]) != -1)) {
+                                        shared_rooms.push(their_exits[l]);
+                                    }
+                                    if (Game.rooms[their_exits[l]] && Game.rooms[their_exits[l]].isMine() && their_exits[l] != this.name) {
+                                        adj_base = true;
+                                    }
+                                }
+                            }
+                            var path_through = undefined;
+                            for (var k = 0; k < shared_rooms.length; k++) {
+                                if (chosen_candidates.indexOf(shared_rooms[k]) != -1) {
+                                    path_through = shared_rooms[k];
+                                }
+                            }
+                            if (adj_base) {
+                                if (verbose) {
+                                    console.log(this.name +': potential remote: ' + cand + ' excluded as it is next to another base of ours.');
+                                }
+                            } else if (path_through) {
+                                if (verbose) {
+                                    console.log(this.name +': good potential remote: ' + cand + ' with ' + scount + ' sources and existing chosen connection through ' + path_through);
+                                }
+                                chosen_candidates.push(cand);
+                            } else if (shared_rooms.length) {
+                                chosen_candidates.push(cand);
+                                chosen_candidates.push(shared_rooms[0]);
+                                if (verbose) {
+                                    console.log(this.name +': good potential remote: ' + cand + ' with ' + scount + ' sources, but connecting room not previously chosen, choosing now: ' + shared_rooms[0]);
+                                }
+                            } else {
+                                if (verbose) {
+                                    console.log(this.name +': good potential remote: ' + cand + ' with ' + scount + ' sources, but no valid path or potentially valid path: ');
+                                }
+                            }
+                        } else {
+                            if (verbose) {
+                                console.log(this.name +': good potential remote: ' + cand + ' with ' + scount + ' sources.');
+                            }
+                            chosen_candidates.push(cand);
                         }
-                        good_candidates.push(cand);
-                        if (good_candidates.length >= 3) {
-                            return good_candidates;
+                        if (chosen_candidates.length >= 3) {
+                            return chosen_candidates;
                         }
                     }
                 } else {
@@ -173,12 +225,7 @@ Room.prototype.suggestRemotes = function(verbose) {
                 }
 
             }
-            var e = Game.map.describeExits(cand);
-            if (!e) {
-                continue;
-                
-            }
-            var their_exits = Object.values(e);
+
             for (var k = 0; k < their_exits.length; k++) {
                 var this_exit = their_exits[k];
                 if (candidate_batch.indexOf(this_exit) == -1 && next_batch.indexOf(this_exit) == -1) {
@@ -189,16 +236,16 @@ Room.prototype.suggestRemotes = function(verbose) {
         }
         candidate_batch = next_batch.slice();
     }
-    if (good_candidates.length < 3 && ok_candidates.length) {
-        good_candidates.push(ok_candidates.shift());
+    if (chosen_candidates.length < 3 && ok_candidates.length) {
+        chosen_candidates.push(ok_candidates.shift());
     }
-    if (good_candidates.length < 3 && ok_candidates.length) {
-        good_candidates.push(ok_candidates.shift());
+    if (chosen_candidates.length < 3 && ok_candidates.length) {
+        chosen_candidates.push(ok_candidates.shift());
     }
     if (verbose) {
-        console.log(this.name +': advising remotes: ' + good_candidates);
+        console.log(this.name +': advising remotes: ' + chosen_candidates);
     }
-    return good_candidates;
+    return chosen_candidates;
 }
 
 Room.prototype.suicideRemoteCreeps = function() {

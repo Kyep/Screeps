@@ -73,6 +73,12 @@ StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, transf
             continue;
         }
         if (rterm.store[mineral_type] && rterm.store[mineral_type] > (transfer_amount + leave_amount)) {
+            if (mineral_type == RESOURCE_ENERGY && robj.storage && robj.storage.store[mineral_type] && robj.storage.store[mineral_type] > 900000) {
+                best_terminal = rterm;
+                best_distance = this_distance;
+                break;
+            }
+            
             var this_distance = Game.map.getRoomLinearDistance(this.room.name, rname, true);
             if (this_distance < best_distance) {
                 best_terminal = rterm;

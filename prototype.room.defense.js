@@ -465,7 +465,9 @@ Room.prototype.deleteAlert = function() {
         	    if (stype != "road") {
             	    Game.notify(alert_string);
         	    }
-        		this.createConstructionSite(structure_pos.x, structure_pos.y, stype);
+        	    if (this.isMine() || stype == "road") {
+            		this.createConstructionSite(structure_pos.x, structure_pos.y, stype);
+        	    }
         	}
         }
     }

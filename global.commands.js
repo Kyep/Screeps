@@ -16,12 +16,24 @@ global.REBUILD_EMPIRE_DATA = function() {
         CLAIM_ROOM(rname, rname); // rname, primary, secondary, override
         Game.rooms[rname].setRemotes();
     }
-    
+
     // Add secondaries for bases.
     global.VERIFY_SECONDARIES(true);
     
+    // Completely wipe and regenerate all room configs.
+
+    global.REBUILD_RCONFIG();
+    
 }
 
+global.REBUILD_RCONFIG = function() {
+    for (var rname in Memory.rooms) {
+        if (Memory.rooms[rname][MEMORY_RCONFIG]) {
+            delete Memory.rooms[rname][MEMORY_RCONFIG];
+        }
+    }
+    global.ESPIONAGE_REGEN_TARGETS();
+}
 
 global.VERIFY_SECONDARIES = function() {
     var bases = global.LIST_BASES();
@@ -35,7 +47,6 @@ global.VERIFY_SECONDARIES = function() {
             console.log(rname + ' owned, but not in empire!');
             continue;
         }
-        
         Game.rooms[rname].seekSecondary();
     }
 }
