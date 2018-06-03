@@ -77,7 +77,9 @@ module.exports = {
             }
         }
         if(creep.memory[MEMORY_JOB] == JOB_BUILD) {
-            if (jobBuild.run(creep) == -1) {
+            var jobResult = jobBuild.run(creep);
+            //creep.say(jobResult);
+            if (!jobResult) {
                 if (creep.room.name != creep.memory[MEMORY_HOME]) {
                     creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
                     creep.announceJob();

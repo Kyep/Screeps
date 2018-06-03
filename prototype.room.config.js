@@ -605,7 +605,7 @@ Room.prototype.makeAssignments = function(myconf) {
         // Energy push to level < 8 rooms
         if (this.storage && this.storage.isActive()) {
             if (this.terminal && this.terminal.isActive()) {
-                if (rlvl < 8 && this.storage.store[RESOURCE_ENERGY] < 200000 && this.terminal.getEnergyAboveMinimum() >= -5000) {
+                if (rlvl < 8 && this.storage.store[RESOURCE_ENERGY] < 200000 && this.terminal.getEnergyAboveMinimum() > 0) {
                     myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 2}, 700);
                 } else if (rlvl == 8 && this.storage.store[RESOURCE_ENERGY] > 800000 && !this.terminal.metEnergyMax()) {
                     myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 1}, 700);

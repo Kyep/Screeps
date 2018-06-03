@@ -600,6 +600,7 @@ global.READY_LAUNCHERS = function() {
     var ticks_per_second = 2.9;
     var available_nukers = [];
     var missing_nukers = []
+    var resource_xfer = false;
     for(var rname in Game.rooms) {
         var robj = Game.rooms[rname];
         if(robj.isMine() && robj.getLevel() == 8) {
@@ -609,12 +610,12 @@ global.READY_LAUNCHERS = function() {
     for(var id in Game.structures){
         if(Game.structures[id].structureType == STRUCTURE_NUKER){
             if (!Game.structures[id].room.isMine()) {
-                console.log('LAUNCHER: located in room ' + Game.structures[id].room.name + ' which I do not own.');
+                //console.log('LAUNCHER: located in room ' + Game.structures[id].room.name + ' which I do not own.');
                 continue;
             }
             _.pull(missing_nukers, Game.structures[id].room.name);
             if (!Game.structures[id].isActive()) {
-                console.log('LAUNCHER: inactive ' + Game.structures[id].room.name + '(RLVL: ' + Game.structures[id].room.getLevel() + ')');
+                //console.log('LAUNCHER: inactive ' + Game.structures[id].room.name + '(RLVL: ' + Game.structures[id].room.getLevel() + ')');
                 continue;
             }
             var g_amt = Game.structures[id].ghodium;
@@ -622,10 +623,22 @@ global.READY_LAUNCHERS = function() {
                 g_amt = 0;
             }
             var g_storage = 0;
-            if (Game.structures[id].room.terminal && Game.structures[id].room.terminal.store[RESOURCE_GHODIUM]) {
-                g_storage = Game.structures[id].room.terminal.store[RESOURCE_GHODIUM];
+            if (Game.structures[id].room.terminal) {
+                if (Game.structures[id].room.terminal.store[RESOURCE_GHODIUM]) {
+                    g_storage = Game.structures[id].room.terminal.store[RESOURCE_GHODIUM];
+                }
+                if (g_storage < 5000) {
+                    if (g_amt == 5000) {
+                        
+                    } else if (resource_xfer) {
+                        console.log(Game.structures[id].room.name + ': want to acquire GHODIUM next cycle.');
+                    } else {
+                        resource_xfer = true;
+                        var retval = Game.structures[id].room.terminal.acquireMineralAmount(RESOURCE_GHODIUM, 5000, 5000);
+                        console.log(Game.structures[id].room.name + ': acquiring GHODIUM: ' + retval);
+                    }        
+                }
             }
-
             if (Game.structures[id].cooldown > 0) {
                 var hrs = ((Game.structures[id].cooldown * ticks_per_second) / (60 * 60));
                 console.log('LAUNCHER: on cooldown ' + Game.structures[id].room.name + ', for ' + hrs + ' hours'  + ' (' + g_amt + ' G in launcher, ' + g_storage + ' G in storage)');

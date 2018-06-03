@@ -21,7 +21,7 @@ module.exports =  {
                 creep.announceJob();
 	        }
         } else if(creep.memory[MEMORY_JOB] == JOB_BUILD) {
-            if (jobBuild.run(creep) == -1) {
+            if (!jobBuild.run(creep)) {
                 creep.memory[MEMORY_JOB] = JOB_UPGRADE;
                  creep.announceJob();
             }

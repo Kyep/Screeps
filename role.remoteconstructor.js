@@ -41,7 +41,7 @@ module.exports = {
             if (creep.carry.energy == 0) {
                 creep.memory[MEMORY_JOB] = JOB_HARVEST;
                 return;
-            } else if (jobBuild.run(creep) == -1) {
+            } else if (!jobBuild.run(creep)) {
                 if(creep.room.name == creep.memory[MEMORY_DEST]) {
                     creep.memory[MEMORY_JOB] = JOB_UPGRADE;
                     creep.announceJob();

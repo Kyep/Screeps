@@ -1,6 +1,7 @@
 "use strict";
 
 global.GCLFARM_LIST = function() {
+    // Example: GCLFARM_SET(["W57S11","W43S18","W58S8","W56S18"]);
     console.log(JSON.stringify(Memory[MEMORY_GLOBAL_GCL_FARM]));
 }
 

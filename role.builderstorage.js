@@ -29,7 +29,7 @@ module.exports =  {
         } else if (creep.memory[MEMORY_JOB] == JOB_BUILD) {
             if(creep.memory[MEMORY_DEST] != creep.room.name){
                 creep.moveToDestination();
-            } else if(jobBuild.run(creep) == -1){
+            } else if (!jobBuild.run(creep)){
                 creep.memory[MEMORY_JOB] = JOB_REPAIR;
                 creep.announceJob();
             }

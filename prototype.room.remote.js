@@ -149,7 +149,7 @@ Room.prototype.suggestRemotes = function(verbose) {
                 }
                 if (einfo && einfo['owner'] && einfo['owner'] != overlord) {
                     if (verbose) {
-                        console.log(this.name +': bad potential remote: ' + cand + ' owned by someone else.');
+                        console.log(this.name +': bad potential remote: ' + cand + ' owned by: ' + einfo['owner']);
                     }
                 } else if (einfo && einfo['reserver'] && einfo['reserver'] != overlord) {
                     if (verbose) {

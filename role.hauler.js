@@ -51,6 +51,11 @@ module.exports = {
                 creep.moveToDestination();
                 return 0;
             }
+            var origins = creep.room.getFlagsByType(FLAG_ROADORIGIN);
+            if (!origins.length) {
+                //creep.room.createFlagByType(FLAG_ROADORIGIN, creep.pos.x, creep.pos.y);
+                console.log(creep.name+ ': created flag in ' + creep.room.name);
+            }
             // If we are there, but >=75% full, go back.
             if (creep.carry.energy > (creep.carryCapacity * 0.75)) {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
@@ -233,7 +238,7 @@ module.exports = {
                 creep.memory[MEMORY_JOB] = JOB_RENEW;
                 return;
             }
-            if (jobBuild.run(creep) == -1) {
+            if (!jobBuild.run(creep)) {
                 creep.memory[MEMORY_JOB] = JOB_UPGRADE;
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_RENEW) {

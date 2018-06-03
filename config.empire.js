@@ -1,7 +1,7 @@
 
     global.overlord = 'Phisec';
     global.allies = []; // not including anyone in alliance.
-    global.enemies = [];
+    global.enemies = ['Kaim0d0'];
     
     global.empire_defaults = {
         'sign': 'Reserved. #overlords',

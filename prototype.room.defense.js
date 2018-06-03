@@ -24,12 +24,12 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         console.log('HANDLE_ROOM_ALERT: skipping alert as its not been updated with threat data yet: ' + roomname);
         return;
     }
-    
+
     var myinfo = GET_ROOM_CONFIG(roomname);
     if (!myinfo) {
         return;
     }
-    
+
     var baseforce = {};
     var patrolforce = {};
     var room_has_spawn = 0;
@@ -131,7 +131,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
                 continue;
             }
             if ((i + 1) != defense_roles.length) {
-                if (outfit_cost > (theirthreat * 1.2)) { 
+                if (outfit_cost > (theirthreat * 1.2)) {
                     //console.log('XAT: No point using ' + oname + ' as its cost ' + outfit_cost + ' is > 1.2*their_threat ' + theirthreat + ' (i: ' + i +  ', DRL:' + defense_roles.length + ')');
                     continue; // overkill...
                 }
@@ -163,7 +163,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
     var rconf = GET_ROOM_CONFIG(roomname);
     rconf = ADD_ROOM_KEY_ASSIGNMENT(rconf, 'basemil', baseforce, 25, true);
     rconf = ADD_ROOM_KEY_ASSIGNMENT(rconf, 'defmil', patrolforce, 50, true);
-    
+
 }
 
 Room.prototype.getHostileCreeps = function() {
@@ -171,8 +171,8 @@ Room.prototype.getHostileCreeps = function() {
 }
 
 Room.prototype.getHostileStructures = function(include_public_ramparts) {
-    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){ 
-        if (IS_ALLY(s.owner.username) || s.isInvincible()) { 
+    return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){
+        if (IS_ALLY(s.owner.username) || s.isInvincible()) {
             return false;
         }
         if (!include_public_ramparts && s.structureType == STRUCTURE_RAMPART) {
@@ -186,9 +186,9 @@ Room.prototype.getHostileStructures = function(include_public_ramparts) {
 
 
 Room.prototype.getBestTowerTarget = function(rts) {
-    
+
     var paint = false;
-    
+
     var enemiesList = this.getHostileCreeps();
     var eobj = {}
     for (var i = 0; i < enemiesList.length; i++) {
@@ -230,7 +230,7 @@ Room.prototype.getBestTowerTarget = function(rts) {
                 }
                 eobj[enemiesList[j].id]['hpt'] += Math.floor(hpt * multi);
             }
-                
+
         }
     }
     var best_target = undefined;
@@ -279,7 +279,7 @@ Room.prototype.getBestTowerTarget = function(rts) {
         }
     }
     return best_target;
-    
+
 }
 
 Room.prototype.hasAlert = function() {
@@ -299,8 +299,8 @@ Room.prototype.getAlertObject = function() {
 
 Room.prototype.shouldHaveAlert = function(enemy_details, nuke_details) {
     var debug = 0;
-    /*if (enemy_details['hostileCount'] > 0) { 
-        console.log(this.name + ': shouldHaveAlert: ' + 'eval');   
+    /*if (enemy_details['hostileCount'] > 0) {
+        console.log(this.name + ': shouldHaveAlert: ' + 'eval');
         debug = 1;
     }*/
     if (!this.inEmpire()) {
@@ -311,7 +311,7 @@ Room.prototype.shouldHaveAlert = function(enemy_details, nuke_details) {
         if (debug) { console.log(this.name + ': shouldHaveAlert: ' + 'not ours');   }
         return 0; // never create alerts for rooms owned by other players, even if they are defined as part of us.
     }
-    
+
     if (enemy_details['hostileCount'] > 0) {
         if (!IS_ALLY(enemy_details['hostileUsername'])) {
             return 1;
@@ -320,10 +320,10 @@ Room.prototype.shouldHaveAlert = function(enemy_details, nuke_details) {
     if (nuke_details['nukeCount'] > 0 && nuke_details['nukeTimeToLand'] < 200) {
         return 1;
     }
-    
+
     if (this.hasAlert()) {
         var thealert = this.getAlertObject();
-        var tgap = Game.time - thealert['lastRefreshed']; 
+        var tgap = Game.time - thealert['lastRefreshed'];
         if (tgap >= empire_defaults['alerts_duration']) {
             return 0;
         }
@@ -394,7 +394,7 @@ Room.prototype.createAlert = function(enemy_details, nuke_details) {
     thisalert['attackStart'] = Game.time;
     thisalert['myStructureCount'] = this.getMyStructuresCount();
     thisalert['updateCount'] = 0;
-    
+
     var texits = Game.map.describeExits(this.name);
     var exit_arr = []
     for (var ex in texits) {
@@ -435,9 +435,9 @@ Room.prototype.createAlert = function(enemy_details, nuke_details) {
 }
 
 Room.prototype.deleteAlert = function() {
-    
+
     var myalert = Memory['sectors_under_attack'][this.name];
-    
+
     if (myalert == undefined) {
         var alert_string = this.name +': ERROR: trying to delete a non-existent alert.';
 	    console.log(alert_string);
@@ -462,16 +462,14 @@ Room.prototype.deleteAlert = function() {
         	if (!is_intact) {
         	    var alert_string = this.name +': MISSING ' + stype + ' AT: ' +structure_pos.x + ',' + structure_pos.y + ' after attack from ' + myalert['hostileUsername'] + ' - REBUILDING!';
         	    console.log(alert_string);
-        	    if (stype != "road") {
-            	    Game.notify(alert_string);
+        	    if (myalert['hostileUsername'] != "Invader") {
+                    Game.notify(alert_string);
         	    }
-        	    if (this.isMine() || stype == "road") {
-            		this.createConstructionSite(structure_pos.x, structure_pos.y, stype);
-        	    }
+        		this.createConstructionSite(structure_pos.x, structure_pos.y, stype);
         	}
         }
     }
-    
+
     // Reassign or recycle mobs created because of the alert.
     if(empire_defaults['alerts_recycle'] == 1) {
         for(var name in Game.creeps) {
@@ -520,7 +518,7 @@ Room.prototype.deleteAlert = function() {
 }
 
 Room.prototype.updateAlert = function(enemy_details, nuke_details) {
-    
+
     var thisalert = {};
     if(this.hasAlert) {
         thisalert = this.getAlertObject();
@@ -530,7 +528,7 @@ Room.prototype.updateAlert = function(enemy_details, nuke_details) {
         Game.notify(tmsg);
         return {};
     }
-    
+
     /*
     var sanitized = Object.assign({}, thisalert);
     delete sanitized['myStructureData'];
@@ -546,9 +544,9 @@ Room.prototype.updateAlert = function(enemy_details, nuke_details) {
     if (enemy_details['hostileCost'] > thisalert['hostileCostMax']) {
         thisalert['hostileCostMax'] = enemy_details['hostileCost'];
     }
-    
+
     thisalert['updateCount']++;
-    
+
     if (thisalert['updateCount'] == 2) {
         // why 2? because we need to run update at least once.
         var attack_details = this.name + ': ' + thisalert['hostileCount'] + ' hostiles, ' + thisalert['hostileCost'] + ' cost, ' + thisalert['hostileRanged'] + ' ranged, ' + thisalert['nukeCount'] + ' nukes, sent by: ' + thisalert['hostileUsername'];
@@ -566,9 +564,9 @@ Room.prototype.updateAlert = function(enemy_details, nuke_details) {
         }
     }
 
-    
 
-    for (var thiskey in enemy_details) { 
+
+    for (var thiskey in enemy_details) {
         //console.log('saving ' + thiskey);
         thisalert[thiskey] = enemy_details[thiskey];
     }

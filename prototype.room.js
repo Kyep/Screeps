@@ -30,6 +30,14 @@ Room.prototype.getFlagsByType = function(structuretype) {
     return this.getFlagsByColors(color_list[0],color_list[1]);
 }
 
+Room.prototype.createFlagByType = function(ftype, pos_x, pos_y) {
+    var color_list = FLAG_TYPE_TO_COLORS_COLORS(ftype);
+    if (color_list == undefined || !color_list.length) {
+        return undefined;
+    }
+    return this.createFlag(pos_x, pos_y, undefined, color_list[0], color_list[1]);
+}
+
 Room.prototype.getFlagsByColors = function(primary, secondary) {
     if (primary == undefined || secondary == undefined) {
         return [];
@@ -318,7 +326,14 @@ Room.prototype.createRoadNetwork = function() {
     let created_total = 0;
     
     var all_sources = this.find(FIND_SOURCES);
-    var all_dest_flags = this.getFlagsByType(FLAG_ROADDEST);
+    var all_dest_flags = []
+    var rdfs = this.getFlagsByType(FLAG_ROADDEST);
+    for (var i = 0; i < rdfs.length; i++) {
+        if (rdfs[i].isRoadActive()) {
+            all_dest_flags.push(rdfs[i]);
+        }
+        
+    }
     var all_dests = []
     all_dests = all_sources.concat(all_dest_flags);
     
@@ -463,6 +478,7 @@ Room.prototype.getOwnerOrReserver = function() {
     if (this.controller.reservation != undefined && this.controller.reservation.username != undefined) {
         return this.controller.reservation.username;
     }
+    /*
     var enemy_structures = this.find(FIND_HOSTILE_STRUCTURES); 
     for (var i = 0; i < enemy_structures.length; i++) {
         if(enemy_structures[i].structureType == STRUCTURE_SPAWN) {
@@ -470,7 +486,8 @@ Room.prototype.getOwnerOrReserver = function() {
                 return enemy_structures[i].owner.username;
             }
         }
-    }    
+    } 
+    */
     return undefined;
 }
 

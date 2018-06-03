@@ -30,6 +30,7 @@ require('prototype.room.boosts');
 require('prototype.structures_all');
 require('prototype.structure');
 require('prototype.source');
+require('prototype.flag');
 
 require('lib.loanuserlist');
 
