@@ -18,7 +18,7 @@ module.exports =  {
             creep.memory[MEMORY_CONTAINER] = undefined;
 	    }
 	    if(creep.memory[MEMORY_JOB] == JOB_SCAVENGE) {
-	        if (jobScavenge.run(creep) == -1) {
+	        if (!jobScavenge.run(creep)) {
 	            if (creep.carry.energy > 0) {
                     creep.memory[MEMORY_JOB] = JOB_RETURN;
 	            }

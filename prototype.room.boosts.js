@@ -6,7 +6,7 @@ Creep.prototype.getBoostsWanted = function() {
     }
     
     // ideal: from W46S17 -> W37S18 (shard1) 
-    // SIEGEBIG: {TOUGH: 10, MOVE: 20, WORK: 20} + SIEGEHEALER {TOUGH: 10, MOVE: 25, HEAL: 15} -- with XZH2O (T3 dismantle boost), XLHO2 (T3 heal boost), and XGHO2 (T3 TOUGH boost)
+    // SIEGEX: {TOUGH: 10, MOVE: 20, WORK: 20} + SIEGEHEALER {TOUGH: 10, MOVE: 25, HEAL: 15} -- with XZH2O (T3 dismantle boost), XLHO2 (T3 heal boost), and XGHO2 (T3 TOUGH boost)
     
     var melee_parts = this.getActiveBodyparts(ATTACK);
     var work_parts = this.getActiveBodyparts(WORK);
@@ -107,6 +107,23 @@ Room.prototype.getUsableLabForBooster = function(btype) {
     }
     console.log(this.name + ': getUsableLabForBooster: no lab with usable booster of type: ' + btype);
     return undefined;
+}
+
+Room.prototype.listBoostsAvailable = function() {
+    var assigned_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
+    var boosts = [];
+    for (var labid in assigned_labs) {
+        var labdata = assigned_labs[labid];
+        var thislab = Game.getObjectById(labid);
+        if (thislab.room.name != this.name) {
+            continue;
+        }
+        if (labdata['mineralid'] != btype || labdata['purpose'] != 'boost') {
+            continue;
+        }
+        boosts.push(labdata['mineralid']);
+    }
+    return boosts;
 }
 
 Room.prototype.getLabsForBooster = function(btype) {

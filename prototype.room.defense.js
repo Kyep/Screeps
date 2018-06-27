@@ -172,7 +172,10 @@ Room.prototype.getHostileCreeps = function() {
 
 Room.prototype.getHostileStructures = function(include_public_ramparts) {
     return this.find(FIND_HOSTILE_STRUCTURES, {filter: function(s){
-        if (IS_ALLY(s.owner.username) || s.isInvincible()) {
+        if (s.isInvincible()) {
+            return false;
+        }
+        if (!s.room.isMine() && IS_ALLY(s.owner.username)) {
             return false;
         }
         if (!include_public_ramparts && s.structureType == STRUCTURE_RAMPART) {
@@ -184,6 +187,20 @@ Room.prototype.getHostileStructures = function(include_public_ramparts) {
     } });
 }
 
+Room.prototype.getHostileConstructionSites = function() {
+    return this.find(FIND_HOSTILE_CONSTRUCTION_SITES, {
+        filter: function(s){
+            if (s.owner) {
+                if (s.owner.username) {
+                    if (IS_ALLY(s.owner.username)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+    });
+}
 
 Room.prototype.getBestTowerTarget = function(rts) {
 

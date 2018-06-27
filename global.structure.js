@@ -1,20 +1,7 @@
 
  
 global.CONVERT_BODY_TO_HPT = function(tbody) {
-    /*
-    var tbody = [{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
-    {"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},
-    {"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},
-    {"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},{"type":"move","hits":0},
-    {"type":"move","hits":0},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
-    {"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
-    {"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
-    {"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
-    {"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
-    {"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},{"type":"heal","hits":0,"boost":"LO"},
-    {"type":"heal","hits":36,"boost":"LO"},{"type":"heal","hits":100,"boost":"LO"},{"type":"move","hits":100}];
-    */
-    
+
     var hpt = 0;
     for (var p = 0; p < tbody.length; p++) {
         var thispartobj = tbody[p];

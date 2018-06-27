@@ -13,6 +13,13 @@ Structure.prototype.getRampartHP = function() {
     return rampart_hp;
 }
 
+Structure.prototype.isMine = function() {
+    if(this.owner && this.owner.username && this.owner.username == overlord) {
+        return true;
+    }
+    return false;
+}
+
 Structure.prototype.isInvincible = function() {
     var structure_blacklist = [STRUCTURE_CONTROLLER, STRUCTURE_POWER_BANK, STRUCTURE_KEEPER_LAIR];
     if (structure_blacklist.includes(this.structureType)) {

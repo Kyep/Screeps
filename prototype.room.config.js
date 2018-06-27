@@ -104,7 +104,9 @@ Room.prototype.getRepairable = function(blacklist, mindmg) {
         filter: function(structure){
             if (blacklist && blacklist.length && blacklist.includes(structure.structureType)) {
                 return false;
-            } else if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
+            } else if (structure.owner && structure.owner.username && structure.owner.username != overlord) {
+                return false;
+            } else if (structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
                 return (structure.hits < (repairMax - mindmg))
             } else{
                 return (structure.hits < (structure.hitsMax - mindmg))
@@ -570,7 +572,7 @@ Room.prototype.makeAssignments = function(myconf) {
         }
 
         // Tellers
-        if (this.storage && this.storage.isActive()) {
+        if (this.storage && this.storage.isActive() && this.storage.store[RESOURCE_ENERGY] >= 1000) {
             var teller_obj = this.getEnergyHistoryAdvisedSpawns();
             if (typeof teller_obj === "object" ) {
                 //console.log('this.name HAS TELLER OBJ: ' + JSON.stringify(teller_obj));

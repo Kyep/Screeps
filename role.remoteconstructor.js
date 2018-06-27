@@ -8,12 +8,13 @@ var jobRenew = require('job.renew');
 var jobGetstoredenergy = require('job.gfs');
 var jobHarvest = require('job.harvest');
 var jobUpgrade = require('job.upgrade');
+var jobScavenge = require('job.scavenge');
 
 module.exports = {
     run: function(creep) {
         // FLOW: undefined -> GFS -> TRAVEL_OUT -> BUILD -> UPGRADE -> DEATH
         //                               ^          V         V
-        //                            HARVEST ------<---------<
+        //                            HARVEST <-----SCAVENGE --<
         if (creep.memory[MEMORY_JOB] == undefined) {
             creep.memory[MEMORY_JOB] = JOB_GFS;
         } else if (creep.memory[MEMORY_JOB] == JOB_GFS) {
@@ -24,6 +25,14 @@ module.exports = {
             var retval = jobGetstoredenergy.run(creep);
             if (retval == -1) {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
+            }
+        } else if(creep.memory[MEMORY_JOB] == JOB_SCAVENGE) {
+            if (creep.carry.energy == creep.carryCapacity) {
+                creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
+                return;
+            }
+            if (!jobScavenge.run(creep)) {
+                creep.memory[MEMORY_JOB] = JOB_HARVEST;
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_OUT) {
             if(!creep.isAtDestinationRoom()){
@@ -39,7 +48,7 @@ module.exports = {
             }
         } else if(creep.memory[MEMORY_JOB] == JOB_BUILD) {
             if (creep.carry.energy == 0) {
-                creep.memory[MEMORY_JOB] = JOB_HARVEST;
+                creep.memory[MEMORY_JOB] = JOB_SCAVENGE;
                 return;
             } else if (!jobBuild.run(creep)) {
                 if(creep.room.name == creep.memory[MEMORY_DEST]) {
@@ -49,7 +58,7 @@ module.exports = {
             }
         } else if(creep.memory[MEMORY_JOB] == JOB_UPGRADE) {
             if (creep.carry.energy == 0) {
-                creep.memory[MEMORY_JOB] = JOB_HARVEST;
+                creep.memory[MEMORY_JOB] = JOB_SCAVENGE;
                 return;
             } else if (creep.room.name == creep.memory[MEMORY_HOME]) {
                 jobUpgrade.run(creep);

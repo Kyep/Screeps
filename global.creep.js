@@ -29,6 +29,7 @@ global.RUN_CREEPS = function() {
     var roleHauler = require('role.hauler');
     var roleBanker = require('role.banker');
     var roleFetcher = require('role.fetcher');
+    var roleWiper = require('role.wiper');
 
     var total_creep_cpu_use = 0;
     var creep_cpu_map = {}
@@ -75,9 +76,9 @@ global.RUN_CREEPS = function() {
             roleTeller.run(creep, 1);
         } else if(creep.memory[MEMORY_ROLE] == 'drainer' || creep.memory[MEMORY_ROLE] == 'drainerbig') {
             roleDrainer.run(creep, 1);
-        } else if(creep.memory[MEMORY_ROLE] == 'siege' || creep.memory[MEMORY_ROLE] == 'siegefar' || creep.memory[MEMORY_ROLE] == 'siegemini' || creep.memory[MEMORY_ROLE] == 'siegebig') {
+        } else if(creep.memory[MEMORY_ROLE] == 'siege' || creep.memory[MEMORY_ROLE] == 'siegeX') {
             roleSiege.run(creep);
-        } else if(creep.memory[MEMORY_ROLE] == 'siegehealer') {
+        } else if(creep.memory[MEMORY_ROLE] == 'siegehealer' || creep.memory[MEMORY_ROLE] == 'siegehealerX') {
             roleSiegeHealer.run(creep);
         } else if (empire_defaults['military_roles'].includes(creep.memory[MEMORY_ROLE])) {
             roleAdventurer.run(creep);
@@ -103,6 +104,8 @@ global.RUN_CREEPS = function() {
             roleBanker.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'fetcher') {
             roleFetcher.run(creep);
+        } else if(creep.memory[MEMORY_ROLE] == 'wiper') {
+            roleWiper.run(creep);
         } else {
             console.log('ALERT: ' + creep.name + ' in room' + creep.room.name + ' has role ' + creep.memory[MEMORY_ROLE] + ' which I do not know how to handle: ' + JSON.stringify(creep.memory));
             //creep.suicide();

@@ -7,8 +7,9 @@ module.exports =  {
             if (creep.pickup(source) == ERR_NOT_IN_RANGE) {
                 creep.moveToRUP(source);
             }
+            return true;
         } else {
-            return -1;
+            return false;
         }
     }
 };

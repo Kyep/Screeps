@@ -294,6 +294,10 @@ Room.prototype.markNuclearTargets = function() {
 
 
 Room.prototype.createRoadNetwork = function() {
+    if (!this.isMine() && !this.isRemote()) {
+        this.memory[MEMORY_ROAD_NETWORK] = [];
+        return false;
+    }
     var origins = this.getFlagsByType(FLAG_ROADORIGIN);
     if (!origins || !origins.length) {
         console.log(this.name + ': createRoadNetworkk: FAIL, no origin flag');
@@ -367,6 +371,7 @@ Room.prototype.createRoadNetwork = function() {
             this.memory[MEMORY_ROAD_NETWORK].push(path_pos);
         }
     }
+    return true;
 }
 
 Room.prototype.showRoadNetwork = function() {
@@ -519,18 +524,30 @@ Room.prototype.clearHostileStructures = function() {
             stuff_destroyed++;
         }
     }
-
     var enemy_csites = this.find(FIND_HOSTILE_CONSTRUCTION_SITES);
     for (var i = 0; i < enemy_csites.length; i++) {
         enemy_csites[i].remove();
         stuff_destroyed++;
     }
-
     console.log(stuff_destroyed);
-
     return stuff_destroyed;
 }
 
+Room.prototype.clearMyStructures = function() {
+    var stuff_destroyed = 0;
+    var my_structures = this.find(FIND_MY_STRUCTURES); 
+    for (var i = 0; i < my_structures.length; i++) {
+        my_structures[i].destroy();
+        stuff_destroyed++;
+    }
+    var my_csites = this.find(FIND_MY_CONSTRUCTION_SITES);
+    for (var i = 0; i < my_csites.length; i++) {
+        my_csites[i].remove();
+        stuff_destroyed++;
+    }
+    console.log('Destroyed in ' + this.name + ': ' + stuff_destroyed + ' structures/sites');
+    return stuff_destroyed;
+}
 
 Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, dest_x, dest_y, force) {
 
@@ -605,8 +622,18 @@ Room.prototype.createSiegeTeam = function (targetroomname, roompath, dest_x, des
         console.log('createSiegeTeam('+this.name+'): <2 free spawners.');
         return false;
     }
-    var tank_design = 'siegebig';
+    var boosts = this.listBoostsAvailable();
+    var tank_design = 'siege';
     var healer_design = 'siegehealer';
+    if(boosts.len) {
+        console.log('boosts AVAILABLE in ' + this.name + ': ' + boosts);
+        tank_design = 'siegeX';
+        healer_design = 'siegehealerX';
+    } else {
+        console.log('NO BOOSTS available in ' + this.name + '. Falling back to unboosted attack builds...');
+    }
+
+
     var tank_properties = TEMPLATE_PROPERTIES(tank_design);
     var healer_properties = TEMPLATE_PROPERTIES(healer_design);
     var tank_cost = tank_properties['cost'];
@@ -628,9 +655,9 @@ Room.prototype.createSiegeTeam = function (targetroomname, roompath, dest_x, des
     shared_memory[MEMORY_HOME_X] = free_spawns[0].pos.x;
     shared_memory[MEMORY_HOME_Y] = free_spawns[0].pos.y;
     shared_memory[MEMORY_RENEW] = false;
-    
-    shared_memory[MEMORY_BOOSTSALLOWED] = true;
-
+    if(boosts.len) {
+        shared_memory[MEMORY_BOOSTSALLOWED] = true;
+    }
     var tank_memory = Object.assign({}, shared_memory);
     tank_memory[MEMORY_ROLE] = tank_design;
     var healer_memory = Object.assign({}, shared_memory);
@@ -641,6 +668,7 @@ Room.prototype.createSiegeTeam = function (targetroomname, roompath, dest_x, des
     
     console.log('tank: ' + thetank);
     console.log('healer: ' + thehealer);
+
     return true;
 }
 

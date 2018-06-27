@@ -51,6 +51,7 @@ Room.prototype.compareRemotes = function() {
 }
 
 Room.prototype.setRemotes = function() {
+    this.deleteRemotes();
     var suggested = this.suggestRemotes();
     var color_list = FLAG_TYPE_TO_COLORS_COLORS(FLAG_ROADORIGIN);
     

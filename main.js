@@ -85,7 +85,7 @@ module.exports.loop = function () {
 
     if(Game.time % 1900 === 0) {
         //global.PRESET_ATTACK_WAVE();
-        //global.ESPIONAGE_ATTACK_PLANS(true);
+        //global.ESPIONAGE_ATTACK_PLANS(true, true);
         //CPU_SECTION('espionage-attackplans', true);
         global.ESPIONAGE_REGEN_TARGETS();
         CPU_SECTION('espionage-regen', true);

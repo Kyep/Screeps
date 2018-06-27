@@ -12,7 +12,19 @@ module.exports =  {
         if (creep.room.energyAvailable < (creep.room.energyCapacityAvailable *0.75)) {
             ext_priority = 1;
         }
-        
+
+        var myresource = RESOURCE_ENERGY;
+        var storekeys = Object.keys(creep.carry);
+        for (var i = 0; i < storekeys.length; i++) {
+            if (storekeys[i] != RESOURCE_ENERGY) {
+                //console.log(creep.name + ': ' + storekeys[i] + ' v ' + RESOURCE_ENERGY);
+                myresource = storekeys[i];
+                //creep.say('rr r: ' + myresource);
+                break;
+            }
+        }
+
+
         if(creep.memory[MEMORY_CONTAINER] != undefined) {
             using_memory = 1;
             target = Game.getObjectById(creep.memory[MEMORY_CONTAINER]);
@@ -36,12 +48,19 @@ module.exports =  {
                 }
             }
         }
-        if(creep.memory[MEMORY_CONTAINER] != undefined || target == undefined) {
+        if (myresource != RESOURCE_ENERGY) {
+            if (creep.room.terminal && creep.room.terminal.isActive() && creep.room.terminal.isMine() && creep.room.terminal.canDepositEnergy()) {
+                targets.push(creep.room.terminal);
+            }
+            if (creep.room.storage && creep.room.storage.isActive() && creep.room.storage.isMine()) {
+                targets.push(creep.room.storage);
+            }
+        } else if(creep.memory[MEMORY_CONTAINER] != undefined || target == undefined) {
             if(ext_priority) {
                 targets = creep.room.find(FIND_STRUCTURES, {
                     filter: (structure) => {
                         return (
-                                (
+                                structure.isMine() && (
                                   (((structure.structureType == STRUCTURE_SPAWN && fill_spawner) || ( structure.structureType == STRUCTURE_EXTENSION && fill_extensions)) && structure.energy < structure.energyCapacity)
                                   || (structure.structureType == STRUCTURE_TOWER && structure.energy < (structure.energyCapacity * tower_factor)) && structure.isActive()
                                 )
@@ -53,7 +72,7 @@ module.exports =  {
                 targets = creep.room.find(FIND_STRUCTURES, {
                         filter: (structure) => {
                             return (
-                                    (
+                                    structure.isMine() && (
                                         (((structure.structureType == STRUCTURE_SPAWN && fill_spawner) || ( structure.structureType == STRUCTURE_EXTENSION && fill_extensions)) && structure.energy < structure.energyCapacity)
                                         || (structure.structureType == STRUCTURE_TOWER && structure.energy < (structure.energyCapacity * tower_factor))
                                         || (structure.structureType == STRUCTURE_NUKER && structure.energy < structure.energyCapacity)
@@ -66,7 +85,7 @@ module.exports =  {
                 targets = creep.room.find(FIND_STRUCTURES, {
                         filter: (structure) => {
                             return (
-                                    (
+                                    structure.isMine() && (
                                        (structure.structureType == STRUCTURE_TERMINAL && structure.canDepositEnergy())
                                        || (structure.structureType == STRUCTURE_LAB && structure.energy < structure.energyCapacity)
                                     ) && structure.isActive()
@@ -78,7 +97,7 @@ module.exports =  {
                 targets = creep.room.find(FIND_STRUCTURES, {
                         filter: (structure) => {
                             return (
-                                    (
+                                    structure.isMine() && (
                                        (((structure.structureType == STRUCTURE_CONTAINER && fill_containers) || ( structure.structureType == STRUCTURE_STORAGE && fill_storage))
                                        && structure.store.energy < structure.storeCapacity)
                                     ) && structure.isActive()
@@ -93,7 +112,11 @@ module.exports =  {
                 target = creep.pos.findClosestByRange(targets);
                 creep.memory[MEMORY_CONTAINER] = target.id;
             }
-
+            if (myresource == RESOURCE_ENERGY) {
+                //new RoomVisual(creep.room.name).line(creep.pos.x, creep.pos.y, target.pos.x, target.pos.y, {color: 'yellow'});
+            } else {
+                new RoomVisual(creep.room.name).line(creep.pos.x, creep.pos.y, target.pos.x, target.pos.y, {color: 'white'});
+            }
             var structure_max_storage = 0;
             if (target.energyCapacity != undefined) {
                 structure_max_storage = target.energyCapacity;   
@@ -109,15 +132,13 @@ module.exports =  {
                 structure_contents = target.energy;
             }
             if (target.store != undefined) {
-                if (target.store.energy != undefined) {
-                    structure_contents = target.store.energy;
-                }
+                structure_contents = _.sum(target.store);
             }
-            var amount_to_deposit = creep.carry.energy;
-            if (creep.carry.energy > (structure_max_storage - structure_contents)) {
-                amount_to_deposit = Math.min(creep.carry.energy, (structure_max_storage - structure_contents));
+            var amount_to_deposit = creep.carry[myresource];
+            if (_.sum(creep.carry) > (structure_max_storage - structure_contents)) {
+                amount_to_deposit = Math.min(creep.carry[myresource], (structure_max_storage - structure_contents));
             }
-            var result = creep.transfer(target, RESOURCE_ENERGY, amount_to_deposit);
+            var result = creep.transfer(target, myresource, amount_to_deposit);
             //creep.say(result + '/' + amount_to_deposit);            
             if(result == ERR_NOT_IN_RANGE) {
                 creep.moveToRUP(target);
@@ -125,7 +146,7 @@ module.exports =  {
                 creep.memory[MEMORY_CONTAINER] = undefined;
                 creep.adjustEarnings(amount_to_deposit);
             }
-            if (creep.carry.energy == 0) {
+            if (_.sum(creep.carry) == 0) {
                 creep.memory[MEMORY_CONTAINER] = undefined;
             }
             

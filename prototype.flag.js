@@ -25,22 +25,22 @@ Flag.prototype.isRoadActive = function() {
     }
     var destr = myexits[exnum];
     if (!destr) {
-        console.log("Flag.isRoadActive: " + this.name + " in " + this.room.name + " not active because my pos " + this.pos.x + "/" + this.pos.y + " is not on an edge.");
+        console.log("Flag.isRoadActive: " + this.name + " in " + this.room.name + ": not active because my pos " + this.pos.x + "/" + this.pos.y + " is not on an edge.");
         return false;
     }
     if (!Game.rooms[destr]) {
-        console.log("Flag.isRoadActive: Outgoing room is not in Game.rooms: " + destr + "...");
+        console.log("Flag.isRoadActive: " + this.name + " in " + this.room.name + ": destination room " + destr + ": is not in Game.rooms");
         return false;
     }
     if (Game.rooms[destr].isMine()) {
-        console.log("Flag.isRoadActive: Outgoing room is not in Game.rooms: " + destr + "...");
+        console.log("Flag.isRoadActive: " + this.name + " in " + this.room.name + ": destination room " + destr + ": isMine!");
         return true;
     }
     if (Game.rooms[destr].isRemote()) {
-        console.log("Flag.isRoadActive: Outgoing room is not a remote: " + destr + "...");
+        console.log("Flag.isRoadActive: " + this.name + " in " + this.room.name + ": destination room " + destr + ": isRemote!");
         return true;
     }
-    console.log("Flag.isRoadActive: Outgoing room IS a remote: " + destr + "...");
+            console.log("Flag.isRoadActive: " + this.name + " in " + this.room.name + ": destination room " + destr + ": !isMine && !isRemote... fail");
     return false;
     
 }

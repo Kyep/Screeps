@@ -12,8 +12,8 @@ global.HANDLE_SPAWNING = function() {
         //console.log('eval ' + spawnername +': ' + JSON.stringify(spn));
         if (spn.memory[MEMORY_SPAWNINGROLE] != undefined) {
             if (spn.spawning == undefined) {
-                spn.memory[MEMORY_SPAWNINGROLE] = undefined;
-                spn.memory[MEMORY_SPAWNINGDEST] = undefined;
+                delete spn.memory[MEMORY_SPAWNINGROLE];
+                delete spn.memory[MEMORY_SPAWNINGDEST];
             } else if (empire_defaults['military_roles'].includes(spn.memory[MEMORY_SPAWNINGROLE])) {
                 spn.room.visual.text(spn.spawning.remainingTime + ': ' + spn.spawning.name, spn.pos.x, spn.pos.y +1.5, {color: 'red', backgroundColor: 'white', font: 0.8});
             } else if (spn.memory[MEMORY_SPAWNINGDEST] != undefined && spn.memory[MEMORY_SPAWNINGDEST] == spn.room.name) {
@@ -352,7 +352,7 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname, force) {
     }
     var spawners_secondary_preferred = 0;
     var spawners_secondary_allowed = 1;
-    if (room_primary_level < 4) {
+    if (room_primary_level < 5) {
         spawners_secondary_preferred = 1;
     } else if (room_primary_level > 5) {
         //spawners_secondary_allowed = 0;

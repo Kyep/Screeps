@@ -1,5 +1,5 @@
 
-// rule: must have  1 move part for 1 every other part, or 2 every other parts if creep uses roads exclusively
+// rule: must have 1 move part for 1 every other part, or 2 every other parts if creep uses roads exclusively
 global.empire_workers = { 
     'upclose': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 1, MOVE: 1}) },
 	'upfar': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 1}) },
@@ -7,7 +7,7 @@ global.empire_workers = {
 
 	'remoteconstructor': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 4}), 'renew_allowed': 0, 'abbr': 'RC'},
 	'minirc': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 4}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'miniRC'},
-	'dismantler': { 'body': global.CONSTRUCT_BODY({WORK: 10, CARRY: 10, MOVE: 10}), 'renew_allowed': 1, 'abbr': 'DIS'},
+    'dismantler': { 'body': global.CONSTRUCT_BODY({WORK: 3, CARRY: 27, MOVE: 10}), 'renew_allowed': 1, 'abbr': 'DIS'},
 
 	'sharvester': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 1}) },
 	'fharvester': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 2}) },
@@ -60,19 +60,18 @@ global.empire_workers = {
     // Anti-player defense classes
 	'wizard': { 'body':   [MOVE, RANGED_ATTACK], 'renew_allowed': 0}, // horrificly expensive anti-crowd unit
 
-    // Anti-player ATTACK classes
-    //'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 10, MOVE: 10, ATTACK: 30}), 'renew_allowed': 0, 'abbr': 'SB'},   // {"cost":3000,"dps":900} <--- 3.6k DPS with boosts
-	//'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 15, MOVE: 10, WORK: 25}), 'renew_allowed': 0, 'abbr': 'SB'},   // {"cost":3150,"dismantle_dps":1250} <--- 5k DPS with boosts
-	'siegebig': { 'body':      global.CONSTRUCT_BODY({TOUGH: 10, MOVE: 10, WORK: 30}), 'renew_allowed': 0, 'abbr': 'SB'},   // {"cost":3600,"dismantle_dps":1500} <--- 6k DPS with boosts
+    // Anti-player SIEGE TEAM ATTACK classes (boosted)
+	'siegeX': { 'body':      global.CONSTRUCT_BODY({TOUGH: 10, MOVE: 10, WORK: 30}), 'renew_allowed': 0, 'abbr': 'SB'},   // {"cost":3600,"dismantle_dps":1500} <--- 6k DPS with boosts
+	'siegehealerX': { 'body':     global.CONSTRUCT_BODY({TOUGH: 20, MOVE: 10, HEAL: 20}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'}, //{"cost":6300,"hps":240,
+
+    // Anti-player SIEGE TEAM ATTACK classes (unboosted)
 	'siege': { 'body':     global.CONSTRUCT_BODY({MOVE: 6, WORK: 6}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'S'},
+	'siegehealer': { 'body':   global.CONSTRUCT_BODY({TOUGH: 15, MOVE: 10, HEAL: 25}) }, //{"cost":6300,"hps":240}
 
-	//'siegehealer': { 'body':     global.CONSTRUCT_BODY({MOVE: 1, HEAL: 1}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'},
-	'siegehealer': { 'body':     global.CONSTRUCT_BODY({TOUGH: 20, MOVE: 10, HEAL: 20}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SH'}, //{"cost":6300,"hps":240,
-
+    // Anti-player SOLO ATTACK classes (unboosted)
 	'drainer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, 
 	'drainerbig': { 'body': global.CONSTRUCT_BODY({TOUGH: 5, MOVE: 25, HEAL: 20}), 'noresizing': 1, 'renew_allowed': 0, 'rup': 20}, // {"cost":4800,"hps":180}
 
-	'healer': { 'body':   global.CONSTRUCT_BODY({TOUGH: 15, MOVE: 10, HEAL: 25}) }, //{"cost":6300,"hps":240}
 
 
     // Territory control classes
@@ -81,6 +80,7 @@ global.empire_workers = {
 	'claimer': { 'body': [CLAIM, MOVE], 'noresizing': 1, 'renew_allowed': 0 },
 	'bclaimer': { 'body': global.CONSTRUCT_BODY({CLAIM: 7, MOVE: 7}), 'renew_allowed': 0 },
 	'signer': { 'body': [MOVE], 'noresizing': 1, 'renew_allowed': 0}, 
+	'wiper': { 'body':      global.CONSTRUCT_BODY({MOVE: 10, ATTACK: 10}), 'noresizing': 1, 'renew_allowed': 0},
 
     // Base maint/defense classes.
     'banker': { 'body': global.CONSTRUCT_BODY({CARRY: 10, MOVE: 5}), 'noresizing': 1},

@@ -142,10 +142,18 @@ module.exports = {
                     creep.memory[MEMORY_FRUSTRATION] = frustration;
                 }
                 return;
-            } else {
+            } else if (frustration < 1000) {
                 frustration += 100;
                 creep.memory[MEMORY_FRUSTRATION] = frustration;
                 creep.sleepFor(5);
+            } else {
+                target = creep.getClosestHostileConstructionSite();
+                if (target) {
+                    creep.moveToRUP(target)
+                } else {
+                    creep.sleepFor(15);
+                }
+                
             }
         }
         

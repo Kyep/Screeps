@@ -198,12 +198,17 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
             }
 
             if (!einfo['enemy_structures']) {
-                if (fbase && spawn_signers && einfo['needs_signing'] && ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt, 'signer') == 0) {
-                    var created = fbase.createUnit('signer', tgt);
-                    console.log(' -> ' + tgt + ' (' + einfo['level'] + '), signer: ' + created);
-                }
-                if (fbase && einfo['spawn_dist'] <= 1 && tgt != fbase.name && einfo['scount'] == 2 && !einfo['myremote']) {
-                    //console.log('REMOTE: advise that ' + fbase.name + ' takes ' + tgt + ' at dist: ' + einfo['spawn_dist']);
+                if (fbase) {
+                    if (einfo['needs_siege'] && ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt, 'siege') == 0) {
+                        var created = fbase.createUnit('siege', tgt);
+                        console.log(' -> ' + tgt + ' (' + einfo['level'] + '), siege: ' + created);
+                    } else if (spawn_signers && einfo['needs_signing'] && ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt, 'signer') == 0) {
+                        var created = fbase.createUnit('signer', tgt);
+                        console.log(' -> ' + tgt + ' (' + einfo['level'] + '), signer: ' + created);
+                    } else if (einfo['needs_atk'] && ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt, 'siege') == 0) {
+                        var created = fbase.createUnit('rogue', tgt);
+                        console.log(' -> ' + tgt + ' (' + einfo['level'] + '), rogue: ' + created);
+                    }
                 }
                 continue;
             }
@@ -259,8 +264,6 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
                 var stype = 'siege';
                 if (einfo['enemy_creeps'] > 0) {
                     stype = 'boss';
-                } else if (einfo['enemy_structures'] > 10) {
-                    stype = 'siegebig';
                 }
                 var created = fbase.createUnit(stype, tgt);
                 console.log('SPAWNED: ' + created);
@@ -339,8 +342,11 @@ global.ESPIONAGE = function() {
             }
 
             var enemy_structures = theroom.getHostileStructures();
+            var enemy_csites = theroom.getHostileConstructionSites();
+            
             var enemy_creeps = theroom.getHostileCreeps();
             Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['enemy_structures'] = enemy_structures.length;
+            Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['enemy_csites'] = enemy_csites.length;
             Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['enemy_creeps'] = enemy_creeps.length;
             Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['enemy_towers'] = 0;
             Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['enemy_spawns'] = 0;
@@ -365,9 +371,15 @@ global.ESPIONAGE = function() {
                 }
                 Memory[MEMORY_GLOBAL_ESPIONAGE]['fob'][sfrom].push(rname);
             }
-            if (theroom.controller && !signed_by_me && Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['spawn_dist'] < 3 && Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['enemy_structures'] == 0) {
-                if (theroom.isMine() || !Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['allied']) {
-                    Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['needs_signing'] = true;
+            // Auto-gen for nearby rooms
+            if (Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['spawn_dist'] < 3 && Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['enemy_structures'] == 0) {
+                if (theroom.controller && !signed_by_me) {
+                    if (theroom.isMine() || !Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['allied']) {
+                        Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['needs_signing'] = true;
+                    }
+                }
+                if (Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['enemy_csites'] > 0) {
+                    Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['needs_siege'] = true;
                 }
             }
             
