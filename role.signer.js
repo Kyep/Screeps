@@ -13,7 +13,7 @@ module.exports = {
                 creep.memory[MEMORY_SIGN] = empire_defaults['sign'];
             }
             if(creep.room.controller) {
-                if (creep.room.controller.sign && creep.room.controller.sign.username == overlord && creep.room.controller.sign.text == creep.memory[MEMORY_SIGN]) {
+                if (creep.room.controller.sign && creep.room.controller.sign.username == overlord && creep.room.controller.sign.text == creep.memory[MEMORY_SIGN] && creep.room.controller.sign.time > (Game.time - 400000)) {
                     ESPIONAGE_ADD_TARGET(creep.room.name);
                     creep.suicide();
                 }

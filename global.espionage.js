@@ -203,7 +203,7 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
                     console.log(' -> ' + tgt + ' (' + einfo['level'] + '), signer: ' + created);
                 }
                 if (fbase && einfo['spawn_dist'] <= 1 && tgt != fbase.name && einfo['scount'] == 2 && !einfo['myremote']) {
-                    console.log('REMOTE: advise that ' + fbase.name + ' takes ' + tgt + ' at dist: ' + einfo['spawn_dist']);
+                    //console.log('REMOTE: advise that ' + fbase.name + ' takes ' + tgt + ' at dist: ' + einfo['spawn_dist']);
                 }
                 continue;
             }
@@ -325,7 +325,7 @@ global.ESPIONAGE = function() {
                 if (theroom.controller.reservation) {
                     Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['reserver'] = theroom.controller.reservation.username;
                 }
-                if (theroom.controller.sign && theroom.controller.sign.username == overlord && theroom.controller.sign.text == empire_defaults['sign']) {
+                if (theroom.controller.sign && theroom.controller.sign.username == overlord && theroom.controller.sign.text == empire_defaults['sign'] && theroom.controller.sign.time > (Game.time - 400000)) {
                     signed_by_me = true;
                 }
                 if (theroom.controller.safeMode) {
