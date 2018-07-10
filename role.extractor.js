@@ -37,7 +37,23 @@ module.exports = {
                     creep.memory[MEMORY_ROLE] = 'recycler';
                     return;
                 }
-                
+                if (typeof creep.memory['flagrally'] === 'undefined') {
+                    var rallyflags = creep.room.getFlagsByType(FLAG_MININGPOS);
+                    if(rallyflags.length) {
+                        creep.memory[MEMORY_STAND_X] = rallyflags[0].pos.x;
+                        creep.memory[MEMORY_STAND_Y] = rallyflags[0].pos.y;
+                        creep.memory['flagrally'] = true;
+                    } else {
+                        creep.memory['flagrally'] = false;
+                    }
+                }
+                if (creep.memory[MEMORY_STAND_X] !== undefined && creep.memory[MEMORY_STAND_Y] !== undefined) {
+                    if(creep.pos.x != creep.memory[MEMORY_STAND_X] || creep.pos.y != creep.memory[MEMORY_STAND_Y]) {
+                        creep.moveToRUP(new RoomPosition(creep.memory[MEMORY_STAND_X], creep.memory[MEMORY_STAND_Y], creep.room.name));
+                        return;
+                    }
+                }
+    
                 var result = creep.harvest(mineral);
                 if (result == ERR_NOT_IN_RANGE) {
                     creep.moveToRUP(mineral);

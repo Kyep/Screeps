@@ -15,7 +15,8 @@ module.exports = {
             //creep.announceJob();
         }
         if(creep.memory[MEMORY_JOB] == JOB_GFS) {
-            if (jobGetstoredenergy.run(creep) == -1){
+            var gfsresult = jobGetstoredenergy.run(creep);
+            if (gfsresult == ERR_NOT_ENOUGH_RESOURCES){
                 //creep.memory[MEMORY_ROLE] = 'recycler'; // this is super-dangerous, it can create an endless loop when a room without a container spawns a teller :P
             }
 	    } else if(creep.memory[MEMORY_JOB] == JOB_RETURN) {

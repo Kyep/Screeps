@@ -5,9 +5,16 @@ module.exports = {
         if(!creep.isAtDestinationRoom()){
             creep.moveToDestination();
             return;
-        } else if (creep.updateDestination()) {
+        }
+        if (creep.updateDestination()) {
             return;
-        } else {
+        }
+        if (creep.avoidEdges()) {
+            return;
+        }
+        if (creep.redRally()) {
+            return;
+        }
             if(creep.room.controller) {
                 if (creep.room.controller.owner != undefined) {
                     if (creep.room.controller.owner.username != undefined) {
@@ -36,6 +43,6 @@ module.exports = {
                     }
                 }
             }
-        }
+        
     }
 }

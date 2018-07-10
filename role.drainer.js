@@ -6,7 +6,6 @@ module.exports = {
         if(creep.hits < creep.hitsMax) {
             if (heal_parts > 0) {
                 creep.heal(creep);
-                //creep.say('heal');
                 if (!creep.room.controller) {
                     creep.moveToDestination();
                 } else if (!creep.isAtDestinationRoom()) {
