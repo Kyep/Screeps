@@ -53,12 +53,12 @@ global.REPORT_CPU_USAGE_HISTORY = function() {
 global.CPU_GET_DIVISOR = function() {
     // We run some code every X ticks.
     // This sets that X, based on the amount of CPU in our bucket.
-    var divisor = 3;
+    var divisor = 4;
     if (Game.cpu.bucket < 8000) {
-        divisor = 5;
-        if (Game.cpu.bucket < 1000) {
+        divisor = 6;
+        if (Game.cpu.bucket < 250) {
             console.log('Account: ' + Game.cpu.limit + ', Cycle: ' + Game.cpu.tickLimit + ', Bucket: ' + Game.cpu.bucket);
-            divisor = 30;
+            divisor = 60;
         }
     }
     return divisor;

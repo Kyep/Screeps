@@ -1,12 +1,12 @@
 
 global.overlord = 'Phisec';
-global.allies = []; // not including anyone in alliance.
-global.enemies = [];
+global.allies = ['Nyoom']; // not including anyone in alliance.
+global.enemies = ['o4kapuk','Jumpp','demawi','montblanc','fritee','SirFrump','art999'];
     
 global.empire_defaults = {
     'sign': 'Reserved. #overlords',
     'priority_roles': ['teller', 'teller-towers'],
-    'military_roles': ['scout', 'slasher', 'rogue', 'ninja', 'dragon', 'boss', 'uberboss', 'wizard', 'healer', 'siegeX', 'siege', 'drainer', 'drainerbig', 'antikite16', 'antikite8', 'antikite4', 'antikite2'],
+    'military_roles': ['scout', 'slasher', 'rogue', 'ninja', 'dragon', 'boss', 'uberboss', 'gar_melee', 'gar_ranged', 'wizard', 'healer', 'siegeX', 'siege', 'drainer', 'drainerbig', 'antikite16', 'antikite8', 'antikite4', 'antikite2'],
     'defense_roles': ['uberboss', 'boss', 'dragon', 'ninja', 'rogue', 'slasher', 'scout'], // LIST MOST POWERFUL FIRST.
     'defense_roles_ranged': ['antikite16', 'antikite8', 'antikite4', 'antikite2'], // LIST MOST POWERFUL FIRST.
     'siege_roles': ['siegeX', 'siege', 'siegehealerX', 'siegehealer', 'drainerbig', 'drainer', 'healer', 'wizard'], 

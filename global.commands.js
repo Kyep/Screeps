@@ -1,3 +1,42 @@
+global.ADD_SIEGEPLAN = function(ticksahead, fromroom, destroom, waypoints, destx, desty) {
+    var current_plans = Memory['MEMORY_GLOBAL_SIEGEPLANS'];
+    // Game.rooms['W39S17'].createSiegeTeam('W39S20', ['W30S20','W30S27'], 25, 25);
+    if (!fromroom || !ticksahead || !destroom || !Game.rooms[fromroom] || !destx || !desty) {
+        console.log('params missing');
+        return false;
+    }
+    current_plans[Game.time + ticksahead] = [fromroom, destroom, waypoints, destx, desty];
+    Memory['MEMORY_GLOBAL_SIEGEPLANS'] = current_plans;
+    return true;    
+}
+
+global.RUN_SIEGEPLANS = function(verbose) {
+    var current_plans = Memory['MEMORY_GLOBAL_SIEGEPLANS'];
+    for (var starttime in current_plans) {
+        var timetogo = starttime - Game.time;
+        var optsarray = current_plans[starttime];
+        if (timetogo < 0) {
+            
+            if(!Game.rooms[optsarray[0]]) {
+                delete Memory['MEMORY_GLOBAL_SIEGEPLANS'][starttime];
+                return true;
+            }
+            var spawnresult = Game.rooms[optsarray[0]].createSiegeTeam(optsarray[1], optsarray[2], optsarray[3], optsarray[4]);
+            var textresult = 'NOW: ' + optsarray[0] + ' -> ' + optsarray[1] + '(' + optsarray[3] + ',' + optsarray[4] + ') then: ' + JSON.stringify(optsarray[2]) + ', result: ' + spawnresult
+            console.log(textresult);
+            if (spawnresult == true) {
+                Game.notify(textresult);
+                delete Memory['MEMORY_GLOBAL_SIEGEPLANS'][starttime];
+                return true;
+            }
+            break;
+        } else if (verbose) {
+            console.log('In ' + timetogo + ': ' + optsarray[0] + ' -> ' + optsarray[1] + '(' + optsarray[3] + ',' + optsarray[4] + ') then: ' + JSON.stringify(optsarray[2]));
+        }
+    }
+    return false;
+}
+
 
 
 global.REBUILD_EMPIRE_DATA = function() {
@@ -146,7 +185,7 @@ global.BUY_ENERGY = function() {
             continue;
         }
         if (robj.getLevel() == 8) {
-            continue;
+            //continue;
         }
         var rterm = robj.terminal;
         if (!rterm || !rterm.isActive()) {
@@ -254,10 +293,10 @@ global.REPORT_RES_HAVE = function() {
     }
 }
 
-global.REPORT_STRUCTURES = function(verbose) {
+global.REPORT_STRUCTURES = function(verbose, force) {
     var ns = 0;
     for (var rname in Game.rooms) {
-        ns += Game.rooms[rname].checkStructures(verbose);
+        ns += Game.rooms[rname].checkStructures(verbose, force);
     }
     return ns;
 }
@@ -357,14 +396,9 @@ global.SHOW_MINERALS = function(mintype) {
 
 }
 
-global.REPORT_WORKERS = function(onoff) {
-    if (onoff) {
-        SET_GLOBAL_CONFIG_KEY('report_workers', true);
-        return true;
-    } else {
-        SET_GLOBAL_CONFIG_KEY('report_workers', false);
-        return false;
-    }
+global.REPORT_WORKERS = function(keyval) {
+    SET_GLOBAL_CONFIG_KEY('report_workers', keyval);
+    return keyval;
 }
 
 global.RECREATE_ROAD_NETWORKS = function() {
@@ -407,6 +441,7 @@ global.SHOW_INCOMING_NUKES = function() {
 global.ENERGY_STATUS = function() {
     for (var rname in Game.rooms) {
         var rm = Game.rooms[rname];
+        var rp = rm.getEnergyPriority();
         if (!rm.isMine()) {
             continue;
         }
@@ -419,7 +454,7 @@ global.ENERGY_STATUS = function() {
            terminal_energy = rm.terminal.store[RESOURCE_ENERGY];
         }
         var total_energy = storage_energy + terminal_energy;
-        console.log(rname + ': Storage:' + storage_energy.toLocaleString('en') + ' (Term:' + terminal_energy.toLocaleString('en') + ') L:' + rm.getLevel());
+        console.log(rname + ': Storage:' + storage_energy.toLocaleString('en') + ' (Term:' + terminal_energy.toLocaleString('en') + ') L:' + rm.getLevel() + ' P:' + rp);
     }
     
 }
@@ -566,11 +601,14 @@ global.RETARGET_ROLE = function (role, newtarget, waypoints) {
 }
 
 global.SWITCH_ROLE = function (rolea, roleb) {
+    var switchedCount = 0;
     for (var crname in Game.creeps) {
         if (Game.creeps[crname].memory[MEMORY_ROLE] == rolea) {
             Game.creeps[crname].memory[MEMORY_ROLE] = roleb;
+            switchedCount++;
         }
     }
+    return switchedCount;
 }
 
 global.RETARGET_SIEGE = function (newtarget, waypoints, newx, newy) {

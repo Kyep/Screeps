@@ -1,4 +1,7 @@
 global.GET_ALL_GLOBAL_CONFIG = function() {
+    if (typeof Memory[MEMORY_GLOBAL_GCONFIG] == 'undefined') {
+        Memory[MEMORY_GLOBAL_GCONFIG] = {};
+    }
     var gconf = Memory[MEMORY_GLOBAL_GCONFIG];
     if (!gconf) {
         console.log('GET_ALL_GLOBAL_CONFIG: no such memory key: MEMORY_GLOBAL_GCONFIG');
