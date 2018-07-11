@@ -19,6 +19,7 @@ global.RUN_CREEPS = function() {
     var roleRemoteconstructor = require('role.remoteconstructor');
     var roleSiege = require('role.siege');
     var roleSiegeHealer = require('role.siegehealer');
+    var roleSiegeDefense = require('role.siegedefense');
     var roleDrainer = require('role.drainer');
     var roleSigner = require('role.signer');
     var roleLabtech = require('role.labtech');
@@ -30,6 +31,7 @@ global.RUN_CREEPS = function() {
     var roleBanker = require('role.banker');
     var roleFetcher = require('role.fetcher');
     var roleWiper = require('role.wiper');
+    var roleSafemoder = require('role.safemoder');
 
     var total_creep_cpu_use = 0;
     var creep_cpu_map = {}
@@ -52,6 +54,7 @@ global.RUN_CREEPS = function() {
             creep.setDefaults();
         } else if (creep.memory[MEMORY_SLEEPFOR] != undefined && creep.memory[MEMORY_SLEEPFOR] > 0) {
             creep.memory[MEMORY_SLEEPFOR]--;
+            creep.say('zzz' + creep.memory[MEMORY_SLEEPFOR]);
         } else if(creep.memory[MEMORY_ROLE] == 'sharvester' || creep.memory[MEMORY_ROLE] == 'bharvester' || creep.memory[MEMORY_ROLE] == 'fharvester') {
             roleHarvester.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'c15harvester' || creep.memory[MEMORY_ROLE] == 'c30harvester') {
@@ -76,10 +79,12 @@ global.RUN_CREEPS = function() {
             roleTeller.run(creep, 1);
         } else if(creep.memory[MEMORY_ROLE] == 'drainer' || creep.memory[MEMORY_ROLE] == 'drainerbig') {
             roleDrainer.run(creep, 1);
-        } else if(creep.memory[MEMORY_ROLE] == 'siege' || creep.memory[MEMORY_ROLE] == 'siegeX') {
+        } else if(creep.memory[MEMORY_ROLE] == 'siege' || creep.memory[MEMORY_ROLE] == 'siegeX' || creep.memory[MEMORY_ROLE] == 'sieger' || creep.memory[MEMORY_ROLE] == 'siegerx' ) {
             roleSiege.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'siegehealer' || creep.memory[MEMORY_ROLE] == 'siegehealerX') {
             roleSiegeHealer.run(creep);
+        } else if(creep.memory[MEMORY_ROLE] == 'siegedefense') {
+            roleSiegeDefense.run(creep);
         } else if (empire_defaults['military_roles'].includes(creep.memory[MEMORY_ROLE])) {
             roleAdventurer.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'scavenger' || creep.memory[MEMORY_ROLE] == 'bigscavenger') {
@@ -100,23 +105,48 @@ global.RUN_CREEPS = function() {
             roleNuketech.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'dismantler') {
             roleDismantler.run(creep);
-        } else if(creep.memory[MEMORY_ROLE] == 'banker') {
+        } else if(creep.memory[MEMORY_ROLE] == 'banker' || creep.memory[MEMORY_ROLE] == 'bankerb') {
             roleBanker.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'fetcher') {
             roleFetcher.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'wiper') {
             roleWiper.run(creep);
+        } else if(creep.memory[MEMORY_ROLE] == 'safemoder') {  
+            roleSafemoder.run(creep);
         } else {
-            console.log('ALERT: ' + creep.name + ' in room' + creep.room.name + ' has role ' + creep.memory[MEMORY_ROLE] + ' which I do not know how to handle: ' + JSON.stringify(creep.memory));
-            //creep.suicide();
+
+            if(Game.shard.name == 'shard0') {
+                if (creep.identifyRole()) {
+                    /*
+                    creep.memory[MEMORY_DEST] = 'W87N0';
+                    if (creep.getActiveBodyparts(CLAIM) > 0) {
+                        creep.memory[MEMORY_DEST] = 'W88N1';
+                    }
+                    */
+                    creep.memory[MEMORY_DEST] = 'W88N1';
+                    creep.memory[MEMORY_DEST_X] = 25;
+                    creep.memory[MEMORY_DEST_Y] = 25;
+                    if (creep.getActiveBodyparts(HEAL) > 0) {
+                        creep.assignTank();
+                    }
+                    console.log("<span style='color:rgb(209, 169, 27)'>SHARD TRANSITION: " + creep.name + " now a " + creep.memory[MEMORY_ROLE] + " found itself on " + Game.shard.name + " proceeding to " + creep.memory[MEMORY_DEST] + "</span>");
+                } else {
+                    console.log('ALERT: ' + creep.name + ' in room' + creep.room.name + ' has role ' + creep.memory[MEMORY_ROLE] + ' which I cannot identify: ' + JSON.stringify(creep.memory));
+                }
+            } else {
+                console.log('ALERT: ' + creep.name + ' in room' + creep.room.name + ' has role ' + creep.memory[MEMORY_ROLE] + ' which I do not know how to handle: ' + JSON.stringify(creep.memory));
+                //creep.suicide();
+            }
         }
         
         if (config_save_cpu_creeps || config_report_cpu_creeps) {
             var creep_cpu = Game.cpu.getUsed() - cpu_base;
-            if(creep_cpu_map[creep.memory[MEMORY_ROLE]] == undefined) {
-                creep_cpu_map[creep.memory[MEMORY_ROLE]] = [];
+            var cmkey = creep.memory[MEMORY_ROLE] + '/' + creep.memory[MEMORY_JOB];
+            //var cmkey = creep.memory[MEMORY_ROLE];
+            if(creep_cpu_map[cmkey] == undefined) {
+                creep_cpu_map[cmkey] = [];
             }
-            creep_cpu_map[creep.memory[MEMORY_ROLE]].unshift(creep_cpu);
+            creep_cpu_map[cmkey].unshift(creep_cpu);
         }
         
     }

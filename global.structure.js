@@ -42,28 +42,69 @@ global.RUN_STRUCTURES = function() {
             Game.structures[id].runLink();
         }
     }
-
+    
     // TOWER MANAGEMENT, room-by-room basis
     for(var rname in rtowers) {
         
         var theroom = Game.rooms[rname];
         
         if(ROOM_UNDER_ATTACK(rname)) {
-            var best_target = theroom.getBestTowerTarget(rtowers[rname]);
+            var tower_tgt = theroom.memory[MEMORY_TOWER_TARGET];
+            var tower_frustration = theroom.memory[MEMORY_TOWER_FRUSTRATION];
+
+            var best_target;
+            var using_memory = false;
+            
+            if (tower_tgt != undefined && tower_frustration != undefined) {
+                best_target = Game.getObjectById(tower_tgt);
+                if (best_target && tower_frustration && tower_frustration < 5) {
+                    theroom.memory[MEMORY_TOWER_FRUSTRATION]++;
+                    using_memory = true;
+                } else {
+                    if (tower_tgt) {
+                        delete theroom.memory[MEMORY_TOWER_TARGET];
+                    }
+                    if (tower_frustration) {
+                        delete theroom.memory[MEMORY_TOWER_FRUSTRATION];
+                    }
+                }
+            }
+            if (!best_target) {
+
+                best_target = theroom.getBestTowerTarget(rtowers[rname]);
+                if (best_target) {
+                    theroom.memory[MEMORY_TOWER_TARGET] = best_target.id;
+                    theroom.memory[MEMORY_TOWER_FRUSTRATION] = 1;
+                }
+            }
             
             if (best_target) {
+                if (using_memory) {
+                    new RoomVisual(theroom.name).circle(best_target.pos, {radius: 0.6, opacity: 0.6, stroke: 'red', lineStyle: 'dashed'});
+                } else {
+                    new RoomVisual(theroom.name).circle(best_target.pos, {radius: 0.7, opacity: 0.6, stroke: 'red', lineStyle: undefined});
+                }
                 for (var tnum in rtowers[rname]) {
                     var thistower = rtowers[rname][tnum];
                     thistower.attack(best_target);
                 }
             }
+            theroom.setRamparts(false);
             continue; // stops towers attempting to repair anything or heal anyone while there are enemies present.
+        } else if (Game.time % 250 === 0) {
+            theroom.setRamparts(true);
         }
         
         // If no hostiles in room, repair.
-        var repairTargets = theroom.getRepairable([STRUCTURE_WALL, STRUCTURE_RAMPART], TOWER_POWER_REPAIR);
-        if (!repairTargets.length) {
-            repairTargets = theroom.getRepairable([STRUCTURE_WALL], TOWER_POWER_REPAIR);
+        var totalHPToRepair = theroom.getRepairableHP();
+        var repairTargets = [];
+        if (totalHPToRepair > 100000) {
+            repairTargets = theroom.getRepairable([], TOWER_POWER_REPAIR, true);
+        } else {
+            repairTargets = theroom.getRepairable([STRUCTURE_WALL, STRUCTURE_RAMPART], TOWER_POWER_REPAIR, true);
+            if (!repairTargets.length) {
+                repairTargets = theroom.getRepairable([STRUCTURE_WALL], TOWER_POWER_REPAIR, true);
+            }
         }
         if (!repairTargets.length) {
             continue;

@@ -140,6 +140,7 @@ global.TEMPLATE_PROPERTIES = function (template_name) {
     var attack_parts = 0;
     var ranged_attack_parts = 0;
     var heal_parts = 0;
+    var claim_parts = 0;
     
     for (var i = 0; i < thebody.length; i++) {
         if (thebody[i] == WORK) {
@@ -153,6 +154,9 @@ global.TEMPLATE_PROPERTIES = function (template_name) {
         }
         if (thebody[i] == HEAL) {
             heal_parts++;
+        }
+        if (thebody[i] == CLAIM) {
+            claim_parts++;
         }
     }
     if (work_parts > 0) {
@@ -170,6 +174,10 @@ global.TEMPLATE_PROPERTIES = function (template_name) {
     if (heal_parts > 0) {
         var hps = heal_parts * HEAL_POWER;
         retval['hps'] = hps;
+    }
+    if (claim_parts > 0) {
+        var ctrlatk = claim_parts * CONTROLLER_CLAIM_DOWNGRADE;
+        retval['controllerAttack'] = ctrlatk;
     }
     console.log(JSON.stringify(retval));
     retval['parts'] = thebody;

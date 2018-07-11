@@ -60,7 +60,7 @@ global.EXPANSION_PROCESS = function() {
             if (Game.rooms[etarget] == undefined) {
                 console.log (etarget + ': no rconfig or room visibility... send a unit there!');
             } else {
-                console.log (etarget + ': no rconfig - forcing full update!');
+                //console.log (etarget + ': no rconfig - forcing full update!');
                 robj.fullUpdate();
             }
             return;

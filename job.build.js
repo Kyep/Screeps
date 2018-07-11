@@ -3,6 +3,7 @@
 module.exports =  {
     run: function(creep) {
         var targets = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
+        
         if(targets.length) {
             var target = creep.pos.findClosestByRange(targets)
             var rr = creep.build(target);

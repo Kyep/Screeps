@@ -21,6 +21,7 @@ module.exports = {
         creep.say(creep.ticksToLive);
 
         var target = undefined;
+        var using_memory = false;
         if (creep.memory[MEMORY_RENEWALSP]) {
             var spobj = Game.getObjectById(creep.memory[MEMORY_RENEWALSP]);
             if (!spobj || !spobj.isActive() || spobj.spawning != undefined) {
@@ -29,8 +30,10 @@ module.exports = {
                 delete creep.memory[MEMORY_RENEWALSP];
             } else {
                 target = spobj;
+                using_memory = true;
             }
         }
+        
         if (!target) {
             var targets = creep.room.find(FIND_STRUCTURES, {
                     filter: (structure) => {
@@ -65,6 +68,11 @@ module.exports = {
                 creep.memory[MEMORY_RENEWALTICK] = Game.time;
             } else if(result == ERR_NOT_IN_RANGE) {
                 creep.moveToRUP(target);
+                if(using_memory) {
+                    new RoomVisual(creep.room.name).line(creep.pos.x, creep.pos.y, target.pos.x, target.pos.y, {color: 'green', lineStyle: 'dashed'});
+                } else {
+                    new RoomVisual(creep.room.name).line(creep.pos.x, creep.pos.y, target.pos.x, target.pos.y, {color: 'green', lineStyle: undefined});
+                }
             } else if (result == ERR_NOT_ENOUGH_ENERGY) {
                 if (creep.carry.energy > 0) {
                     var amount_to_deposit = Math.min(target.energyCapacity - target.energy, creep.carry.energy);

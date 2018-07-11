@@ -1,3 +1,19 @@
+
+Creep.prototype.identifyRole = function() {
+    var name_parts = this.name.split("_");
+    if(!name_parts[1]) {
+        return false;
+    }
+    var mynick = name_parts[1];e
+    for(var template_name in empire_workers) {
+        if (template_name == mynick || (empire_workers[template_name]['abbr'] && empire_workers[template_name]['abbr'] === mynick)) {
+            this.memory[MEMORY_ROLE] = template_name;
+            return true;
+        }
+    }
+    return false;
+}
+
 Creep.prototype.getClosestHostileCreep = function() {
     return this.pos.findClosestByPath(FIND_HOSTILE_CREEPS, {filter: function(c){ if (IS_ALLY(c.owner.username)) { return false } else { return true } } });
 }
@@ -34,41 +50,8 @@ Creep.prototype.getClosestHostileConstructionSite = function() {
 }
 
 
-Creep.prototype.getClosestDismantableStructure = function(include_public_ramparts) {
-    return this.pos.findClosestByPath(FIND_STRUCTURES, {
-        filter: function(s){
-            if(s.isInvincible()) {
-                return false;
-            }
-            if (s.structureType == STRUCTURE_WALL) {
-                return false;
-            }
-            if (s.structureType == STRUCTURE_ROAD) {
-                return false;
-            }
-            if (s.isMine()) {
-                return false;
-            }
-            if (!include_public_ramparts && s.structureType == STRUCTURE_RAMPART) {
-                if (s.isPublic) {
-                    return false;
-                }
-            }
-            if (s.owner) {
-                if (s.owner.username) {
-                    if (s.owner.username == overlord) {
-                        return false;
-                    }
-                    if (!s.room.isMine()) {
-                        if (IS_ALLY(s.owner.username)) {
-                            return false;
-                        }
-                    }
-                }
-            }
-            return true;
-        }
-    });
+Creep.prototype.getClosestDismantableStructure = function() {
+    return this.pos.findClosestByPath(this.room.getDismanteableStructures());
 }
 
 

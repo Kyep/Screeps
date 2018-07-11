@@ -152,7 +152,7 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
             }
             r_messages.push(stext + ': ' + s_messages.join(', '));
     	}
-    	if (report_summary) {
+    	if (report_summary && report_summary == rname) {
     	    var lvl = 'R';
     	    if (Game.rooms[rname] && Game.rooms[rname].getLevel() > 0) {
     	        lvl = Game.rooms[rname].getLevel();
@@ -293,8 +293,8 @@ global.SPAWN_VALIDATED = function (spawner, bodylist, memory_object){
     }
     memory_object[MEMORY_SPAWNERNAME] = spawner.name;
     memory_object[MEMORY_SPAWNERROOM] = spawner.room.name;
-    var result = spawner.createCreep(bodylist, crname, memory_object);
-    if (result) {
+    var result = spawner.spawnCreep(bodylist, crname, {memory: memory_object});
+    if (result == OK) {
         spawner.memory[MEMORY_SPAWNINGROLE] = memory_object[MEMORY_ROLE];
         spawner.memory[MEMORY_SPAWNINGDEST] = memory_object[MEMORY_DEST];
         //console.log(spawner.room.name + '(' + spawner.name + '): created: ' + crname + ' -> ' + memory_object[MEMORY_DEST]);

@@ -83,6 +83,7 @@ module.exports =  {
         if (attackPower >= healPower) {
             if (target && rangetotarget == 1) {
                 creep.attack(target);
+                creep.room.focusTowers(target.id);
             } else if (creep.hits < creep.hitsMax && heal_parts > 0) {
                 creep.heal(creep);
             } else if (hurtfriendly != undefined && heal_parts > 0) {
@@ -103,6 +104,7 @@ module.exports =  {
                 }
             } else if (target && rangetotarget == 1) {
                 creep.attack(target);
+                creep.room.focusTowers(target.id);
             }
         }
 
@@ -112,8 +114,9 @@ module.exports =  {
             var nearby_enemies = creep.getHostileCreepsInRange(3);
             if (nearby_enemies.length >= 2) {
                 creep.rangedMassAttack();
-            } else {
+            } else if (target && rangetotarget <= 3) {
                 creep.rangedAttack(target);
+                creep.room.focusTowers(target.id);
             }
         }
     }
