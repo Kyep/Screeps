@@ -200,14 +200,29 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
             if (!einfo['enemy_structures']) {
                 if (fbase) {
                     if (einfo['needs_siege'] && ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt, 'siege') == 0) {
-                        var created = fbase.createUnit('siege', tgt);
-                        console.log(' -> ' + tgt + ' (' + einfo['level'] + '), siege: ' + created);
+                        if(spawn_units) {
+                            var created = fbase.createUnit('siege', tgt);
+                            console.log(' -> ' + tgt + ' (' + einfo['level'] + '), siege: ' + created);
+                        } else {
+                            console.log(' -> ' + tgt + ' (' + einfo['level'] + '), WOULD send siege.');
+                        }
                     } else if (spawn_signers && einfo['needs_signing'] && ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt, 'signer') == 0) {
                         var created = fbase.createUnit('signer', tgt);
                         console.log(' -> ' + tgt + ' (' + einfo['level'] + '), signer: ' + created);
                     } else if (einfo['needs_atk'] && ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt, 'siege') == 0) {
-                        var created = fbase.createUnit('rogue', tgt);
-                        console.log(' -> ' + tgt + ' (' + einfo['level'] + '), rogue: ' + created);
+                        if(spawn_units) {
+                            var created = fbase.createUnit('rogue', tgt);
+                            console.log(' -> ' + tgt + ' (' + einfo['level'] + '), rogue: ' + created);
+                        } else {
+                            console.log(' -> ' + tgt + ' (' + einfo['level'] + '), WOULD send siege.');
+                        }
+                    } else if ((!einfo['allied'] || einfo['myremote']) && einfo['lootable_structures'] > 0 && einfo['spawn_dist'] <= 1 && ESPIONAGE_GET_MYCREEP_COUNT_IN_ROOM(tgt, 'dismantler') < 3) {
+                        //if(spawn_units) {
+                            var created = fbase.createUnit('dismantler', tgt);
+                            console.log(' -> ' + tgt + ' (' + einfo['level'] + '), dismantler: ' + created);
+                        //} else {
+                        //    console.log(' -> ' + tgt + ' (' + einfo['level'] + '), WOULD send dismantler.');
+                        //}
                     }
                 }
                 continue;
@@ -319,6 +334,13 @@ global.ESPIONAGE = function() {
             var rowner = theroom.getOwnerOrReserver();
             if(rowner) {
                 Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['owner'] = rowner;
+                if(IS_ENEMY(rowner) && rname != 'W52S2') {
+                    Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['wartarget'] = true;
+                    var alertmsg = 'Detected warget ' + rowner + ' owns ' + rname + '!'; 
+                    console.log(alertmsg);
+                    Game.notify(alertmsg);
+                    
+                }
                 if (IS_ALLY(rowner)) {
                     Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['allied'] = true;
                 }
@@ -343,6 +365,7 @@ global.ESPIONAGE = function() {
 
             var enemy_structures = theroom.getHostileStructures();
             var enemy_csites = theroom.getHostileConstructionSites();
+            var lootable_structures = theroom.getDismanteableStructures();
             
             var enemy_creeps = theroom.getHostileCreeps();
             Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['enemy_structures'] = enemy_structures.length;
@@ -350,6 +373,8 @@ global.ESPIONAGE = function() {
             Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['enemy_creeps'] = enemy_creeps.length;
             Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['enemy_towers'] = 0;
             Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['enemy_spawns'] = 0;
+            
+            Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['lootable_structures'] = lootable_structures.length;
 
             var rlvl = theroom.getLevel();
 

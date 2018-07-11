@@ -92,7 +92,7 @@ Room.prototype.getRepairableHP = function(blacklist, mindmg) {
     return total_hp;
 }
 
-Room.prototype.getRepairable = function(blacklist, mindmg) {
+Room.prototype.getRepairable = function(blacklist, mindmg, istower) {
     if (blacklist == undefined) {
         blacklist = [];
     }
@@ -106,6 +106,8 @@ Room.prototype.getRepairable = function(blacklist, mindmg) {
                 return false;
             } else if (structure.owner && structure.owner.username && structure.owner.username != overlord) {
                 return false;
+            } else if (istower && structure.hits >= 50000 && structure.hits < (repairMax - (mindmg + 25000))) {
+                return false;
             } else if (structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
                 return (structure.hits < (repairMax - mindmg))
             } else{
@@ -115,28 +117,6 @@ Room.prototype.getRepairable = function(blacklist, mindmg) {
     });
 }
 
-Room.prototype.getRepairMax = function() {
-    if (!this.isMine()) {
-        return 0;
-    }
-    var lvl = this.getLevel();
-    if (lvl < 3) {
-        return 0; // no towers at this level anyway
-    } else if (lvl == 3) {
-        return 2000;
-    } else if (lvl == 4) {
-        return 5000;
-    } else if (lvl == 5) {
-        return 10000;
-    } else if (lvl == 6) {
-        return 20000;
-    } else if (lvl == 7) {
-        return 1000000;
-    } else if (lvl == 8) {
-        return 1000000; 
-    }
-    return 50000 * lvl;
-}
 
 Room.prototype.getMaxCarryPartsPerHauler = function() {
     if (!this.isMine()) {
@@ -193,6 +173,9 @@ global.GET_SOURCE_INFO = function(rname, sid) {
 
 
 Room.prototype.inEmpire = function() {
+    if (typeof Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT] == 'undefined') {
+        return false;
+    }
     if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name] == undefined) {
         return false;
     }
@@ -433,7 +416,9 @@ Room.prototype.makeAssignments = function(myconf) {
 
         var srn = myconf['spawn_room'];
         var sro = Game.rooms[srn];
-        if (sro) {
+        if (sro.memory[MEMORY_NOREMOTE] || sro.priorityRebuild() || sro.priorityDefend() ) {
+            
+        } else if (sro) {
             var srl = sro.getLevel();
             var max_carry = sro.getMaxCarryPartsPerHauler();
             //
@@ -484,29 +469,53 @@ Room.prototype.makeAssignments = function(myconf) {
         console.log(this.name + ': makeAssignments assigned nothing because room lacks controller.');
     }
 
-    var spawned_builders = false;
+    var spawned_builders = 0;
 
     // Adjust builders depending on unfinished projects.
 
-    if (Game.rooms[spawn_room] && Game.rooms[spawn_room].storage) { //  
+    if (Game.rooms[spawn_room] && Game.rooms[spawn_room].storage && Game.rooms[spawn_room].storage.store[RESOURCE_ENERGY] >= 10000) { //  
         var projectsList = this.find(FIND_MY_CONSTRUCTION_SITES, { filter: (csite) => { return (csite.structureType != STRUCTURE_CONTAINER); } });
         var repairablehp = 0;
-        if (this.isMine() && this.storage && this.storage.store[RESOURCE_ENERGY] > 100000) {
+        if (this.isMine() && this.storage && this.storage.store[RESOURCE_ENERGY] > 20000) {
             repairablehp = this.getRepairableHP([], 0); 
         }
-        if (projectsList.length > 0 || repairablehp > 50000) {
-            var btype = 'builderstorage';
-            if (!this.isMine()) {
-                btype = 'remoteconstructor';
-            } else if (!this.storage) {
-                btype = 'minirc';
+        var buildablehp = 0;
+        if (projectsList.length > 0) {
+            for (var c = 0; c < projectsList.length; c++) {
+                buildablehp += (projectsList[c].progressTotal - projectsList[c].progress)
             }
+        }
+        if (projectsList.length > 0 || repairablehp > 25000) {
+            var btype = 'builderstorage';
+            if (this.isMine()) {
+                if (!this.storage) {
+                    btype = 'minirc';
+                }
+            } else {
+                if (repairablehp < 20000 && buildablehp < 20000) {
+                    btype = 'minirc';
+                } else {
+                    btype = 'remoteconstructor';
+                }
+            }
+            var free_energy = Game.rooms[spawn_room].storage.store[RESOURCE_ENERGY];
+            
             var newobj = {}
             newobj[btype] = 1;
-            if (repairablehp > 2000000) {
+            if (repairablehp > 10000000 && free_energy >= 200000) {
+                newobj[btype] = 4;
+            } else if (repairablehp > 5000000 && free_energy >= 50000) {
                 newobj[btype] = 3;
-            } else if (repairablehp > 500000) {
+            } else if (repairablehp > 500000  && free_energy >= 10000) {
                 newobj[btype] = 2;
+            }
+            spawned_builders = newobj[btype];
+            if (this.isMine()) {
+                if (this.priorityRebuild()) {
+                    newobj[btype] += 6;
+                } else if (this.isFortified()) {
+                    newobj[btype] += 3;
+                }
             }
             if (this.isMine()) {
                 myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'BS', newobj, 1200);
@@ -532,7 +541,7 @@ Room.prototype.makeAssignments = function(myconf) {
         }
         
         // Mineral mining
-        if (myconf['mineralid'] && rlvl >= 6) {
+        if (this.isMine() && myconf['mineralid'] && rlvl >= 6) {
             var mineralpatch = Game.getObjectById(myconf['mineralid']);
             if (mineralpatch) {
                 var term = this.terminal;
@@ -548,7 +557,7 @@ Room.prototype.makeAssignments = function(myconf) {
         }
         
         // Upgraders
-        if (!spawned_builders) {
+        if (spawned_builders < 3) {
             var total_e = 0;
             if (this.storage && this.storage.store[RESOURCE_ENERGY]) {
                 total_e += this.storage.store[RESOURCE_ENERGY];
@@ -607,7 +616,11 @@ Room.prototype.makeAssignments = function(myconf) {
         // Energy push to level < 8 rooms
         if (this.storage && this.storage.isActive()) {
             if (this.terminal && this.terminal.isActive()) {
-                if (rlvl < 8 && this.storage.store[RESOURCE_ENERGY] < 200000 && this.terminal.getEnergyAboveMinimum() > 0) {
+                if (this.priorityRebuild() && this.storage.store[RESOURCE_ENERGY] < 75000 && this.terminal.store[RESOURCE_ENERGY] >= 50000) {
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 4}, 700);
+                } else if (this.isFortified() && this.storage.store[RESOURCE_ENERGY] < 250000 && this.terminal.store[RESOURCE_ENERGY] >= 50000) {
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 2}, 700);
+                } else if (rlvl < 8 && this.storage.store[RESOURCE_ENERGY] < 200000 && this.terminal.getEnergyAboveMinimum() > 0) {
                     myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 2}, 700);
                 } else if (rlvl == 8 && this.storage.store[RESOURCE_ENERGY] > 800000 && !this.terminal.metEnergyMax()) {
                     myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 1}, 700);
@@ -631,6 +644,13 @@ Room.prototype.makeAssignments = function(myconf) {
                 break;
             }
         }
+        
+        // Static guards
+        if (this.priorityDefend()) {
+            myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'safemode_defense', {'uberboss': 3}, 900);
+        }
+        
+        
     }
     myconf['lastassignupdate'] = Game.time;
     this.memory[MEMORY_RCONFIG] = myconf;
@@ -692,7 +712,7 @@ Room.prototype.getEnergyHistoryAdvisedSpawns = function() {
     if (e_hist_avg == 300) {
         //console.log(this.name + ': emergency energy condition 1, energy == 300');
         return {'teller-mini': 2};
-    } else if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc']) {
+    } else if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc'] || this.memory[MEMORY_NOREMOTE] || this.priorityRebuild() || this.priorityDefend() ) {
         //console.log(this.name + ': emergency energy condition 2, energy pc < critlcal energy pc');
         return {'teller': 2};
     } else if (e_hist_avg_pc < empire_defaults['room_minimum_energy_pc']) {

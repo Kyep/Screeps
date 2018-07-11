@@ -9,6 +9,9 @@ global.MEMORY_GLOBAL_SCIENCEREACTIONS = 'science_reactions';
 global.MEMORY_GLOBAL_SCIENCELABS = 'science_labs';
 global.MEMORY_GLOBAL_EMPIRE_LAYOUT = 'empire_layout';
 global.MEMORY_GLOBAL_GCL_FARM = 'gcl_farm';
+global.MEMORY_GLOBAL_FORTIFY = 'fortify';
+global.MEMORY_GLOBAL_SIEGEPLANS = 'siegeplans';
+
 
 // Creep memory, top-level categories
 global.MEMORY_ROLE = 'role';
@@ -21,6 +24,8 @@ global.MEMORY_DEST = 'dest';
 global.MEMORY_DEST_X = 'dest_x';
 global.MEMORY_DEST_Y = 'dest_y';
 global.MEMORY_NEXTDEST = 'nextdest'
+global.MEMORY_STAND_X = 'stand_x';
+global.MEMORY_STAND_Y = 'stand_y';
 global.MEMORY_SPAWNERNAME = 'spawnername';
 global.MEMORY_SPAWNERROOM = 'spawnerroom';
 global.MEMORY_RENEW = 'renew_allowed';
@@ -55,6 +60,9 @@ global.MEMORY_BOOSTSWANTED = 'boostswanted';
 global.MEMORY_BOOSTSGOT = 'boostsgot';
 global.MEMORY_BOOSTSMISSING = 'boostsmissing';
 global.MEMORY_HAULERSLEEP = 'haulersleep';
+global.MEMORY_ROAD_REPAIR_TARGETS = 'road_repair_targets';
+global.MEMORY_REPAIR_TARGET = 'repair_target';
+global.MEMORY_GFS_TARGET = 'gfs_target';
 
 // Creep memory, roles
 global.ROLE_HARVESTER = 'harvester';
@@ -107,11 +115,30 @@ global.MEMORY_ROAD_NETWORK = 'road_network';
 global.MEMORY_RCONFIG = 'rconfig';
 global.MEMORY_EHISTORY = 'ehistory';
 global.MEMORY_RLVL = 'rlvl';
+global.MEMORY_NUKEDETAILS = 'nukedetails';
+global.MEMORY_NUKEOLD = 'nukeold';
+global.MEMORY_FORTIFY = 'fortify';
+global.MEMORY_FORT_HP = 'fort_hp';
+global.MEMORY_FORT_TARGET = 'fort_target';
+global.MEMORY_FORT_REPAIRMAX = 'fort_repairmax';
+global.MEMORY_CHECKSTRUCTURES_TIME = 'checkstructures_time';
+global.MEMORY_NOREMOTE = 'noremote';
+global.MEMORY_LAST_PLAYER_ATTACK = 'last_player_attack';
+global.MEMORY_TOWER_TARGET = 'tower_target';
+global.MEMORY_TOWER_FRUSTRATION = 'tower_frustration';
 
 
 // Spawns, top level memory categories
 global.MEMORY_SPAWNINGROLE = 'role_spawning';
 global.MEMORY_SPAWNINGDEST = 'dest_spawning';
+
+global.BOOST_MOVE = 'XZHO2';
+global.BOOST_WORK = 'XZH2O';
+global.BOOST_MELEE = 'XUH2O';
+global.BOOST_HEAL = 'XLHO2';
+global.BOOST_TOUGH = 'XGHO2';
+global.BOOST_RANGED = 'XKHO2';
+
 
 
 global.COLOR_HARVEST = '#ffffff';
@@ -130,3 +157,4 @@ global.FLAG_ROADORIGIN = 'roadorigin';
 global.FLAG_ROADDEST = 'roaddest';
 global.FLAG_RALLYMIL = 'mobrallymil';
 global.FLAG_SIEGETARGET = 'siegetarget';
+global.FLAG_MININGPOS = 'miningpos';

@@ -47,6 +47,13 @@ global.RESET_SCIENCE = function() {
             'resource_1': RESOURCE_UTRIUM_ACID, 
             'resource_2': RESOURCE_CATALYST
         });
+    chains.push( // +300% ATTACK (T3) --- emergency double production
+        {
+            'goal': RESOURCE_CATALYZED_UTRIUM_ACID,
+            'roomname': 'W52S17',
+            'resource_1': RESOURCE_UTRIUM_ACID, 
+            'resource_2': RESOURCE_CATALYST
+        });
 
     // TOUGH boosts made in an OXYGEN room - verified
     chains.push( // -30% DMG TAKEN (T1)
@@ -157,6 +164,30 @@ global.RESET_SCIENCE = function() {
             'resource_2': RESOURCE_CATALYST
         });
 
+    // RANGED_ATTACK made in an X room, because its far SW and well protected
+    chains.push( // T1, +100% dismantle
+        {
+            'goal': RESOURCE_KEANIUM_OXIDE,
+            'roomname': 'W59S18',
+            'resource_1': RESOURCE_KEANIUM,
+            'resource_2': RESOURCE_OXYGEN
+        });
+    chains.push( // T2, +200% dismantle
+        {
+            'goal': RESOURCE_KEANIUM_ALKALIDE,
+            'roomname': 'W59S18',
+            'resource_1': RESOURCE_KEANIUM_OXIDE,
+            'resource_2': RESOURCE_HYDROXIDE
+        });
+    chains.push( // T3, +300% dismantle
+        {
+            'goal': RESOURCE_CATALYZED_KEANIUM_ALKALIDE,
+            'roomname': 'W59S18',
+            'resource_1': RESOURCE_KEANIUM_ALKALIDE,
+            'resource_2': RESOURCE_CATALYST
+        });
+
+
     // UPGRADE made in W46S17, another HYDROGEN room
     chains.push( // T1, +50% upgradeController
         {
@@ -196,6 +227,12 @@ global.RESET_SCIENCE = function() {
 global.SCIENCE_PROCESS = function () {
     
     var max_fueling_time = 500;
+    
+    return;
+    
+    if (typeof Memory[MEMORY_GLOBAL_SCIENCEREACTIONS] == undefined || typeof Memory[MEMORY_GLOBAL_SCIENCELABS] == undefined) {
+        return false;
+    }
     
     var science_reactions = Memory[MEMORY_GLOBAL_SCIENCEREACTIONS];
     var science_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
@@ -354,7 +391,7 @@ global.SCIENCE_PROCESS = function () {
             
             var desired_amount = 10000; // by default, assume T1 or T2. have a little bit, but don't build up masses of it - the higher tier boosts matter more.
             if (MINERAL_REACTION_COUNT(reaction['goal']) == 0) {
-                desired_amount = 40000; // this is T3... it is not used in any further reactions
+                desired_amount = 60000; // this is T3... it is not used in any further reactions
             }
             if (term.store[reaction['goal']] && term.store[reaction['goal']] > desired_amount) {
                 //console.log('SCI: skipping reaction for ' + reaction['goal'] + ' in room ' + reaction['roomname'] + ' because we already have enough end product');
