@@ -15,7 +15,7 @@ module.exports = {
         var pullmin = 10000;
         var pushmax = 900000;
         
-        if (creep.room.getLevel() == 8) {
+        if (creep.room.getLevel() == 8 && !(creep.room.isFortified() || creep.room.priorityRebuild() || creep.room.priorityDefend())) {
             pullfrom = creep.room.storage;
             depositto = creep.room.terminal;
             pullmin = 10000;

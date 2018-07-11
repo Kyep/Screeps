@@ -11,7 +11,7 @@ module.exports = {
         //       
         // FLOW: JOB_TRAVEL_OUT -> JOB_HARVEST -> EXPIRES FROM TTL.
         // If attacked, -> JOB_HIDE, then back to JOB_TRAVEL_OUT.
-        if(Game.time % 5 === 0) {
+        if(Game.time % 15 === 0) {
             if (creep.getShouldHide()) {
                 creep.memory[MEMORY_JOB] = JOB_HIDE;
             }
@@ -33,16 +33,16 @@ module.exports = {
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_HARVEST) {
 
-            if (!creep.isAtDestination()) {
-                creep.moveToDestination();
+            /*if (!creep.isAtDestination()) {
+                creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
+                creep.avoidEdges();
                 return;
-            }
+            }*/
             var harvestresult = jobHarvest.run(creep);
-            if (harvestresult == ERR_NOT_ENOUGH_ENERGY && Game.time % 10 == 0) {
-                var energypile = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: (s) => s.energy > 0});
-                if(energypile.length){
-                    creep.say('pile!');
-                    creep.pickup(energypile[0]);
+            if (harvestresult == ERR_NOT_ENOUGH_ENERGY) {
+                var source = Game.getObjectById(creep.memory[MEMORY_SOURCE]);
+                if (source) {
+                    creep.sleepFor(source.ticksToRegeneration);
                 }
             }
             if (creep.carry.energy == 0) {
@@ -56,11 +56,15 @@ module.exports = {
                     } else {
                         creep.transfer(thecontainer, RESOURCE_ENERGY);
                     }
+                    if (harvestresult == ERR_NOT_ENOUGH_ENERGY) {
+                        creep.sleepFor(25);   
+                    }
                 } else {
-                    creep.memory[MEMORY_CONTAINER] = undefined;
+                    delete creep.memory[MEMORY_CONTAINER];
                 }
                 return 0;
             }
+            //console.log(creep.name + ' scan');
             var nearby_containers = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: { structureType: STRUCTURE_CONTAINER } } );
             if (nearby_containers.length > 0) {
                 creep.memory[MEMORY_CONTAINER] = nearby_containers[0].id;

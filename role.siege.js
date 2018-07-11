@@ -9,6 +9,8 @@ module.exports = {
         
         var melee_parts = creep.getActiveBodyparts(ATTACK);
         var work_parts = creep.getActiveBodyparts(WORK);
+        var ranged_parts = creep.getActiveBodyparts(RANGED_ATTACK);
+
         var frustration = 0;
         if (creep.memory[MEMORY_FRUSTRATION] == undefined) {
             creep.memory[MEMORY_FRUSTRATION] = 0;
@@ -18,23 +20,31 @@ module.exports = {
         var myhealer = creep.getHealer();
 
         if (creep.memory[MEMORY_JOB] == undefined) {
+
             if (creep.gettingBoosts()) {
                 return;
             }
+
+            if (!creep.memory[MEMORY_FRUSTRATION]) {
+                creep.memory[MEMORY_FRUSTRATION] = 1;
+            }
+            creep.memory[MEMORY_FRUSTRATION]++;
+
             if(!myhealer) {
-                var tickspassed = (Game.time - creep.memory[MEMORY_INIT]);
-                if (tickspassed < 30) { // give them 30 T to find a healer.
-                    creep.say('HLR? ' + tickspassed);
-                    creep.sleepFor(2);
+                if (creep.memory[MEMORY_FRUSTRATION] < 200) {
+                    creep.say('hlr? ' + creep.memory[MEMORY_FRUSTRATION]);
                     return;
+                } else {
+                    Game.notify(creep.name + ' gave up on trying to find a healer.');
                 }
             }
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
+            creep.memory[MEMORY_FRUSTRATION] = 0;
         }
-        
+
         if (myhealer && myhealer.room.name == creep.room.name) {
             var therange = creep.pos.getRangeTo(myhealer);
-            if (therange == 2 && Game.time % 25 == 0) {
+            if (therange >= 2 && Game.time % 25 == 0) {
                 return;
             } else if (therange > 2) {
                 creep.moveTo(myhealer);
@@ -71,7 +81,10 @@ module.exports = {
                 target = undefined;
             }
         }
-        if (melee_parts) {
+
+        /*
+        if (melee_parts && !work_parts) {
+            creep.avoidEdges();
             target = creep.getClosestHostileCreep();
             if (target) {
                 var trange = creep.pos.getRangeTo(target);
@@ -86,10 +99,46 @@ module.exports = {
                 }
             }
         }
+        */
+        
+        /*
+        */
+        
+        
+        if (ranged_parts) {
+            creep.avoidEdges();
+            if (!target) {
+                target = creep.getClosestHostileStructure();
+            }
+            if (!target) {
+                target = creep.getClosestHostileCreep();
+            }
+            if (target) {
+                creep.memory[MEMORY_TARGETID] = target.id;
+                var trange = creep.pos.getRangeTo(target);
+                if (trange <= 3) {
+                    creep.rangedAttack(target);
+                } else {
+                    creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_PATROL}});
+                }
+                return;
+            } else {
+                target = creep.getClosestHostileConstructionSite();
+                if (target) {
+                    creep.moveToRUP(target);
+                    return;
+                }
+                creep.say('victory!');
+                
+                return;
+            }
+        }
+
 
         if (work_parts > 0 || melee_parts > 0) {
             if (!target) {
 
+                        
                 
                 var sflags = creep.room.getFlagsByType(FLAG_SIEGETARGET);
                 if (sflags.length) {
@@ -109,29 +158,33 @@ module.exports = {
                         flag.remove();
                     }
                 } else {
-                    var valid_types = [STRUCTURE_SPAWN];
+                    var valid_types = [STRUCTURE_TOWER];
                     //var valid_types = [];
-                    var valid_types2 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB];
+                    var valid_types2 = [STRUCTURE_SPAWN, STRUCTURE_TOWER];
+                    //var valid_types2 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB];
                     var valid_types3 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB, STRUCTURE_TERMINAL, STRUCTURE_LINK, STRUCTURE_NUKER, STRUCTURE_OBSERVER, STRUCTURE_EXTRACTOR, STRUCTURE_RAMPART];
                     if (frustration < 100) {
                         target = creep.getClosestHostileStructureInTypes(valid_types);
                         if (!target) {
                             target = creep.getClosestHostileStructureInTypes(valid_types);
                         }
-                    } else if (frustration < 500) {
+                    } else if (frustration < 250) {
                         target = creep.getClosestHostileStructureInTypes(valid_types2);
                         if (!target) {
                             target = creep.getClosestHostileStructureInTypes(valid_types2);
                         }
                     } else {
                         target = creep.getClosestHostileStructure();
+                        if (!target && melee_parts) {
+                            target = creep.getClosestHostileCreep();
+                        }
                     }
                 }
             }
             if (target) {
                 creep.memory[MEMORY_TARGETID] = target.id;
                 var atkresult = ERR_NO_BODYPART;
-                if (work_parts) {
+                if (work_parts && !(target instanceof Creep)) {
                     atkresult = creep.dismantle(target);
                 } else if (melee_parts) {
                     atkresult = creep.attack(target);
@@ -145,19 +198,19 @@ module.exports = {
             } else if (frustration < 1000) {
                 frustration += 100;
                 creep.memory[MEMORY_FRUSTRATION] = frustration;
-                creep.sleepFor(5);
+                creep.sleepFor(1);
             } else {
                 target = creep.getClosestHostileConstructionSite();
                 if (target) {
                     creep.moveToRUP(target)
                 } else {
-                    creep.sleepFor(15);
+                    creep.sleepFor(5);
                 }
                 
             }
         }
         
-        //creep.avoidEdges();
+        creep.avoidEdges();
         return;
         
         

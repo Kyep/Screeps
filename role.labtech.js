@@ -16,15 +16,23 @@ module.exports = {
         var mymineral = creep.memory[MEMORY_MINERALID];
         
         if (myjob == 'fill_lab') {
+            /*
+            if (mymineral && _.sum(creep.carry) != creep.carry[mymineral]) {
+                creep.memory[MEMORY_JOB] = 'empty_lab';
+                return;
+            }
+            */
             var amount_to_withdraw = mylab.mineralCapacity - mylab.mineralAmount;
             if (amount_to_withdraw == 0) {
                 creep.say('done!');
                 creep.memory[MEMORY_JOB] = 'idle';
+                creep.memory[MEMORY_LABID] = undefined;
+                creep.memory[MEMORY_MINERALID] = undefined;
                 return;
             }
             if (creep.carry[mymineral] != undefined && creep.carry[mymineral] > 0) {
                 if (creep.transfer(mylab, mymineral) == ERR_NOT_IN_RANGE) {
-                    creep.moveToRUP(mylab);
+                    creep.moveTo(mylab, {visualizePathStyle: {stroke: COLOR_DROPOFF}});
                 }
             } else if (myterminal.store[mymineral] != undefined && myterminal.store[mymineral] > 0) {
                 
@@ -47,6 +55,8 @@ module.exports = {
                 }
             } else {
                 creep.memory[MEMORY_JOB] = 'idle';
+                creep.memory[MEMORY_LABID] = undefined;
+                creep.memory[MEMORY_MINERALID] = undefined;
             }
             return;
         } else if (myjob == 'empty_lab') {
@@ -59,6 +69,8 @@ module.exports = {
                 if (mylab.mineralAmount == 0) {
                     creep.say('done!');
                     creep.memory[MEMORY_JOB] = 'idle';
+                    creep.memory[MEMORY_LABID] = undefined;
+                    creep.memory[MEMORY_MINERALID] = undefined;
                 } else if (creep.withdraw(mylab, mylab.mineralType) == ERR_NOT_IN_RANGE) {
                     creep.moveToRUP(mylab);
                 }
@@ -90,7 +102,9 @@ module.exports = {
                 //console.log(creep.name + ' skip (no assignment): ' + thislab.id );
                 continue;
             }
-            
+            if(assignment['purpose'] != 'boost') {
+                continue;
+            }
             var rock = assignment[MEMORY_MINERALID];
             if (assignment['action'] == 'fill') {
                 if (thislab.mineralType != undefined && thislab.mineralType != rock && thislab.mineralAmount > 0) {

@@ -1,3 +1,63 @@
+
+Room.prototype.getEnergyPriority = function() {
+    // Returns a number indicating how important it is that this room have energy in its terminal.
+    // Higher = better.
+    if (!this.isMine()) {
+        return 0;
+    }
+    if (this.priorityDefend()) {
+        return 5;
+    }
+    if (this.priorityRebuild()) {
+        return 4;
+    }
+    if (this.isFortified()) {
+        return 3;
+    }
+    if (this.getLevel() < 8 && this.terminal && this.terminal.isActive() && this.terminal.isMine()) {
+        return 2;
+    }
+    return 1;
+}
+
+
+Room.prototype.priorityRebuild = function() {
+    if (!this.isMine()) {
+        return false;
+    }
+    if (this.controller) {
+        if (this.controller.safeMode && this.controller.safeMode > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+Room.prototype.priorityDefend = function() {
+    if (!this.isMine()) {
+        return false;
+    }
+    if (this.controller) {
+        if (this.controller.safeMode && this.controller.safeMode > 200) {
+            return false;
+        }
+        if (this.controller.safeModeCooldown && this.controller.safeModeCooldown > 0) {
+            return true;
+        } 
+    }
+    if(!ROOM_UNDER_ATTACK(this.name)) {
+        if (this.memory[MEMORY_LAST_PLAYER_ATTACK] && this.memory[MEMORY_LAST_PLAYER_ATTACK] > 0) {
+           var attacked_ago = Game.time - this.memory[MEMORY_LAST_PLAYER_ATTACK];
+           if (attacked_ago < 1000) {
+               return true;
+           }
+        }
+    }
+    return false;
+}
+
+
+
 Room.prototype.buyEnergy = function(buyAmount = 5000) {
     var myRoomName = this.name;
     let maxPrice = 0.05;
@@ -108,7 +168,13 @@ Room.prototype.deleteConstructionSites = function() {
     return csites.length;
 }
 
-Room.prototype.checkStructures = function(verbose) {
+Room.prototype.checkStructures = function(verbose, force) {
+    var lastcheck_time = this.memory[MEMORY_CHECKSTRUCTURES_TIME];
+    if (lastcheck_time && lastcheck_time >= (Game.time - 5000) && !force) {
+        return 0;
+    }
+    this.memory[MEMORY_CHECKSTRUCTURES_TIME] = Game.time;
+    
     var always_blacklist = ['container', 'link', 'lab', 'road'];
     var newly_built = 0;
     if (!this.isMine()) {
@@ -385,6 +451,41 @@ Room.prototype.showRoadNetwork = function() {
     }
 }
 
+Room.prototype.deleteNonNetworkRoads = function() {
+    var roads = this.find(FIND_STRUCTURES, { filter: function(s){ return s.structureType == STRUCTURE_ROAD; } });
+    for (var i = 0; i < roads.length; i++) {
+        var thisroad = roads[i];
+        if (thisroad.inRoadNetwork()) {
+            new RoomVisual(this.name).circle(thisroad.pos, {stroke: 'green'});
+        } else {
+            new RoomVisual(this.name).circle(thisroad.pos, {stroke: 'red'});
+            thisroad.destroy();
+        }
+    }
+}
+
+Room.prototype.getDismanteableStructures = function() {
+    return this.find(FIND_HOSTILE_STRUCTURES, {
+        filter: function(s){
+            if(s.isInvincible()) {
+                return false;
+            }
+            if (s.owner && s.owner.username && s.owner.username == "Kamots") {
+                return false;
+            }
+            if (s.structureType == STRUCTURE_WALL) {
+                return false;
+            }
+            if (s.structureType == STRUCTURE_ROAD) {
+                return false;
+            }
+            if (s.isMine()) {
+                return false;
+            }
+            return true;
+        }
+    });
+}
 
 
 
@@ -423,7 +524,11 @@ Room.prototype.getShouldUpgrade = function() {
 
 
 Room.prototype.getMyStructuresCount = function() {
-    var mystructures = this.find(FIND_MY_STRUCTURES);
+    var mystructures = this.find(FIND_MY_STRUCTURES, {
+        filter: (structure) => {
+            return (structure.structureType != STRUCTURE_LINK);
+        }
+    });
     var mywalls = this.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_WALL } } );
     return mystructures.length + mywalls.length;
 }
@@ -549,6 +654,18 @@ Room.prototype.clearMyStructures = function() {
     return stuff_destroyed;
 }
 
+Room.prototype.clearStructuresOfType = function(stype) {
+    var stuff_destroyed = 0;
+    var my_structures = this.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == stype); } } ); 
+    for (var i = 0; i < my_structures.length; i++) {
+        my_structures[i].destroy();
+        new RoomVisual(this.name).circle(my_structures[i].pos, {radius: 0.5, opacity: 0.3, stroke: 'red'});
+        stuff_destroyed++;
+    }
+    console.log('Destroyed in ' + this.name + ': ' + stuff_destroyed + ' structures');
+    return stuff_destroyed;
+}
+
 Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, dest_x, dest_y, force) {
 
     if (force == undefined) {
@@ -616,21 +733,33 @@ Room.prototype.createUnit = function (role, targetroomname, roompath, homeroom, 
     return result;
 }
 
-Room.prototype.createSiegeTeam = function (targetroomname, roompath, dest_x, dest_y) {
+Room.prototype.createSiegeTeam = function (targetroomname, roompath, dest_x = 25, dest_y = 25) {
+    var siege_boosts = [BOOST_MOVE, BOOST_TOUGH, BOOST_WORK, BOOST_HEAL];
+    for (var i = 0; i < siege_boosts.length; i++) {
+        var blab = this.getUsableLabForBooster(siege_boosts[i]);
+        if (blab) {
+            console.log(siege_boosts[i] + ': AVAILABLE');
+        } else {
+            console.log(siege_boosts[i] + ': NOT AVAILABLE');
+        }
+    }
     var free_spawns = this.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable(true)); } });
     if (free_spawns.length < 2) {
         console.log('createSiegeTeam('+this.name+'): <2 free spawners.');
         return false;
     }
+
+
     var boosts = this.listBoostsAvailable();
     var tank_design = 'siege';
     var healer_design = 'siegehealer';
-    if(boosts.len) {
+    if (boosts.length > 0) {
         console.log('boosts AVAILABLE in ' + this.name + ': ' + boosts);
         tank_design = 'siegeX';
         healer_design = 'siegehealerX';
+        this.ensureLabTech();
     } else {
-        console.log('NO BOOSTS available in ' + this.name + '. Falling back to unboosted attack builds...');
+        console.log('NO BOOSTS available in ' + this.name + '. Falling back to unboosted attack builds... ' + JSON.stringify(boosts));
     }
 
 
@@ -655,7 +784,7 @@ Room.prototype.createSiegeTeam = function (targetroomname, roompath, dest_x, des
     shared_memory[MEMORY_HOME_X] = free_spawns[0].pos.x;
     shared_memory[MEMORY_HOME_Y] = free_spawns[0].pos.y;
     shared_memory[MEMORY_RENEW] = false;
-    if(boosts.len) {
+    if (boosts.length > 0) {
         shared_memory[MEMORY_BOOSTSALLOWED] = true;
     }
     var tank_memory = Object.assign({}, shared_memory);
@@ -721,21 +850,21 @@ Room.prototype.sellResource = function (mtype) {
     }
     if (mtype == RESOURCE_ENERGY) {
         if (sell_price < 0.005) {
-            sell_price = 0.005;
-            console.log('MKT: selling ' + mtype + ' in ' + this.name + ': increasing price to configured minimum: ' + sell_price + ' for resource: ' + mtype);
+            //sell_price = 0.005;
+            //console.log('MKT: selling ' + mtype + ' in ' + this.name + ': increasing price to configured minimum: ' + sell_price + ' for resource: ' + mtype);
         }
         if (sell_price > 0.1) {
-            sell_price = 0.1;
-            console.log('MKT: selling ' + mtype + ' in ' + this.name + ': reducing price to configured maximum: ' + sell_price + ' for resource: ' + mtype);
+            //sell_price = 0.1;
+            //console.log('MKT: selling ' + mtype + ' in ' + this.name + ': reducing price to configured maximum: ' + sell_price + ' for resource: ' + mtype);
         }
     } else {
         if (sell_price < 0.05) {
-            sell_price = 0.05;
-            console.log('MKT: selling ' + mtype + ' in ' + this.name + ': increasing price to configured minimum: ' + sell_price + ' for resource: ' + mtype);
+            //sell_price = 0.05;
+            //console.log('MKT: selling ' + mtype + ' in ' + this.name + ': increasing price to configured minimum: ' + sell_price + ' for resource: ' + mtype);
         }
         if (sell_price > 8) {
-            sell_price = 8;
-            console.log('MKT: selling ' + mtype + ' in ' + this.name + ': reducing price to configured maximum: ' + sell_price + ' for resource: ' + mtype);
+            //sell_price = 8;
+            //console.log('MKT: selling ' + mtype + ' in ' + this.name + ': reducing price to configured maximum: ' + sell_price + ' for resource: ' + mtype);
         }
     }
     var buy_price = 0;
@@ -818,5 +947,22 @@ Room.prototype.recycleObsolete = function () {
         }
     }
     console.log(this.name + ': set ' + nrcount + ' probably-obsolete creeps to not renew');
-    
+}
+
+Room.prototype.refreshCreeps = function () {
+    var nrcount = 0;
+    for (var crname in Game.creeps) {
+        if(Game.creeps[crname].memory[MEMORY_SPAWNERROOM] == undefined) {
+            continue;
+        }
+        if(Game.creeps[crname].memory[MEMORY_SPAWNERROOM] != this.name) {
+            continue;
+        }
+        if(!Game.creeps[crname].getRenewEnabled()) {
+            continue;
+        }
+        Game.creeps[crname].disableRenew();
+        nrcount++;
+    }
+    return nrcount;
 }

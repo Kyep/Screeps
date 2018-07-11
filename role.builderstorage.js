@@ -46,7 +46,9 @@ module.exports =  {
                 if (creep.carry.energy == 0) {
                     creep.suicide();
                 } else {
-                    jobReturnresources.run(creep, 1, 1, 0.6, 1, 1, 1);
+                    creep.disableRenew();
+    	            creep.memory[MEMORY_JOB] = JOB_BUILD;
+                    creep.announceJob();
                 }
             } else {
                 if (jobRenew.run(creep) == -1){

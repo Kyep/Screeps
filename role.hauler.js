@@ -17,7 +17,7 @@ module.exports = {
             creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
             creep.memory[MEMORY_STEPS_ACTUAL] = 0;
         }
-        if(Game.time % 5 === 0) {
+        if(Game.time % 20 === 0) {
             if (creep.getShouldHide()) {
                 creep.memory[MEMORY_JOB] = JOB_HIDE;
             }
@@ -30,7 +30,7 @@ module.exports = {
                     } else {
                     	jobReturnresources.run(creep, 1, 1, 0.5, 0, 0);
                     }
-                    creep.say('EFU');
+                    creep.say('Hide');
                     return;
                 }
                 jobHide.run(creep);
@@ -60,7 +60,6 @@ module.exports = {
             if (creep.carry.energy > (creep.carryCapacity * 0.75)) {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
                 //console.log(creep.name + ' -> ' + creep.memory[MEMORY_DEST] + ': expected: ' + creep.memory[MEMORY_STEPS_EXPECTED] + ' but actual: ' + creep.memory[MEMORY_STEPS_ACTUAL]);
-                
                 return 0;
             }
             // If we are there, but don't have our container memorized, look to memorize it.
@@ -143,6 +142,41 @@ module.exports = {
                 return 0;
             }
 
+            creep.moveToRUP(creep.getHomePos());
+            
+            if(creep.carry.energy == 0) {
+                return 0;
+            }
+            
+            if (creep.memory[MEMORY_HAULERSLEEP] == undefined) {
+                creep.memory[MEMORY_HAULERSLEEP] = 0;
+            }
+            if (creep.memory[MEMORY_HAULERSLEEP] > 0) {
+                creep.say('hs: ' + creep.memory[MEMORY_HAULERSLEEP]);
+                creep.memory[MEMORY_HAULERSLEEP]--;
+                return 0;
+            }
+            //creep.say('scan');
+            var repairable = creep.room.find(FIND_STRUCTURES, { filter: function(s){ if(s.structureType == STRUCTURE_ROAD && s.hits != s.hitsMax) { return true; } else { return false; } } });
+            //console.log(creep.name + ' scanned ' + creep.room.name + ' getting ' + repairable.length);
+
+            if (!repairable.length) {
+                creep.memory[MEMORY_HAULERSLEEP] = 20;
+                return 0;
+            }
+            var nearest = creep.pos.findClosestByRange(repairable);
+            new RoomVisual(creep.room.name).line(creep.pos.x, creep.pos.y, nearest.pos.x, nearest.pos.y);
+            
+            var thisrange = creep.pos.getRangeTo(nearest);
+            if (thisrange <= 3) {
+                var retval = creep.repair(nearest);
+            } else {
+                creep.memory[MEMORY_HAULERSLEEP] = 3;
+            }
+            
+            return 0;
+            
+
             // While en route, look for roads to repair - if we can.
             if(creep.carry.energy > 0) {
                 if (creep.memory[MEMORY_HAULERSLEEP] != undefined && creep.memory[MEMORY_HAULERSLEEP] > 0) {
@@ -153,7 +187,6 @@ module.exports = {
                     //console.log(creep.name + ': nearby: ' + nearby.length);
                     var repaired_something = false;
                     if (nearby.length) {
-                        var r
                         for (var i = 0; i < nearby.length; i++) {
                             var thetarget = nearby[i];
                             //console.log(creep.name + ': nearby: ' + JSON.stringify(thetarget.structure));
@@ -186,7 +219,7 @@ module.exports = {
                     }
                 }
             }
-            creep.moveToRUP(creep.getHomePos());
+            
 
         } else if (creep.memory[MEMORY_JOB] == JOB_USELINK) {
             var nearby_structures = creep.getStructuresInDist(5);
