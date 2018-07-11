@@ -627,7 +627,11 @@ Room.prototype.makeAssignments = function(myconf) {
                 }
             } else if (rlvl == 4 || rlvl == 5) {
                 if (myconf['backup_spawn_room']) {
-                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'grower', {'grower': 3}, 700);
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'grower', {'grower': 3}, 600);
+                }
+            } else if (rlvl >= 7) {
+                if (myconf['backup_spawn_room']) {
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'grower', {'grower': 3}, 600);
                 }
             }
         }

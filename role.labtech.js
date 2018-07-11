@@ -102,9 +102,11 @@ module.exports = {
                 //console.log(creep.name + ' skip (no assignment): ' + thislab.id );
                 continue;
             }
+            /*
             if(assignment['purpose'] != 'boost') {
                 continue;
             }
+            */
             var rock = assignment[MEMORY_MINERALID];
             if (assignment['action'] == 'fill') {
                 if (thislab.mineralType != undefined && thislab.mineralType != rock && thislab.mineralAmount > 0) {

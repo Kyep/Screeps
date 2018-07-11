@@ -47,6 +47,7 @@ module.exports =  {
                     creep.suicide();
                 } else {
                     creep.disableRenew();
+                    console.log(creep.name + ': disabled renew as ended up in job_renew with energy');
     	            creep.memory[MEMORY_JOB] = JOB_BUILD;
                     creep.announceJob();
                 }

@@ -228,8 +228,6 @@ global.SCIENCE_PROCESS = function () {
     
     var max_fueling_time = 500;
     
-    return;
-    
     if (typeof Memory[MEMORY_GLOBAL_SCIENCEREACTIONS] == undefined || typeof Memory[MEMORY_GLOBAL_SCIENCELABS] == undefined) {
         return false;
     }

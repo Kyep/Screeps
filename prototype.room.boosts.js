@@ -250,14 +250,15 @@ Room.prototype.ensureDefenseBoosts = function() {
 }
 
 Room.prototype.ensureBoostList = function(required_boosts) {
+    var retval = true;;
     for (var i = 0; i < required_boosts.length; i++) {
         var result = this.ensureBoostAvailable(required_boosts[i]);
         console.log(required_boosts[i] + ': ' + result);
         if (result === false) {
-            return false;
+            retval = false;
         }
     }
-    return true;
+    return retval;
 }
 
 Room.prototype.assignBoost = function(btype) {
