@@ -2,6 +2,16 @@
 
 module.exports = {
     run: function(creep) {
+        
+        if (creep.memory[MEMORY_JOB] && creep.memory[MEMORY_JOB] == JOB_RETURN) {
+            if (_.sum(creep.carry) > 0) {
+                creep.returnToStorage();
+            } else {
+                delete creep.memory[MEMORY_JOB];
+            }
+            return;
+        }
+        
         var silos = creep.room.find(FIND_STRUCTURES, { filter: (structure) => { return ((structure.structureType == STRUCTURE_NUKER));}});
         if (silos.length == 0) {
             creep.say('no silo!');
@@ -14,6 +24,8 @@ module.exports = {
                 var tr = creep.transfer(mysilo, resources_needed[i]);
                 if (tr == ERR_NOT_IN_RANGE) {
                     creep.moveToRUP(mysilo);
+                } else if (tr == ERR_FULL) {
+                    creep.memory[MEMORY_JOB] = JOB_RETURN;
                 }
                 return;
             }
@@ -52,6 +64,7 @@ module.exports = {
             return;
         }
         creep.say('bored!');
+        creep.sleepFor(20);
 
 	}
 };

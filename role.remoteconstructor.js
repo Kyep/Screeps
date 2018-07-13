@@ -1,7 +1,6 @@
 "use strict";
 
 var jobRenew = require('job.renew');
-var jobReturnresources = require('job.returnresources');
 var jobBuild = require('job.build');
 var jobRepair = require('job.repair');
 var jobRenew = require('job.renew');
@@ -23,7 +22,7 @@ module.exports = {
                 return;
             }
             var retval = jobGetstoredenergy.run(creep);
-            if (retval == -1) {
+            if (retval == ERR_NOT_ENOUGH_RESOURCES) {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
             }
         } else if(creep.memory[MEMORY_JOB] == JOB_SCAVENGE) {

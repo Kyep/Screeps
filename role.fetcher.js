@@ -1,6 +1,5 @@
 "use strict";
 
-var jobReturnresources = require('job.returnresources');
 var jobRenew = require('job.renew');
 var jobGetstoredenergy = require('job.gfs');
 
@@ -63,7 +62,7 @@ module.exports = {
             if (creep.carry.energy == 0) {
                 creep.memory[MEMORY_JOB] = JOB_RENEW;
             } else {
-                jobReturnresources.run(creep, 1, 1, 1, 1, 1);
+                creep.returnToStorage();
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_RENEW) {
             if (creep.ticksToLive > 600 || !creep.getRenewEnabled()) {

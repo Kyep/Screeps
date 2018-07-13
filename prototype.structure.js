@@ -107,6 +107,11 @@ StructureTerminal.prototype.acquireMineralAmount = function(mineral_type, transf
         }
     }
     if (best_terminal != undefined) {
+        var trans_cost = Game.market.calcTransactionCost(transfer_amount, best_terminal.room.name, this.room.name);
+        if (trans_cost > best_terminal.store[RESOURCE_ENERGY]) {
+            console.log('RES NETWORK PROBLEM: ' + best_terminal.room.name + ' lacks the energy to send ' + transfer_amount + ' ' + mineral_type + ' to ' + this.room.name);
+            return false;
+        }
         var retval = best_terminal.send(mineral_type, transfer_amount, this.room.name);
         var local_before = 0;
         if (this.store[mineral_type]) {
@@ -366,18 +371,18 @@ StructureLab.prototype.isAvailable = function(flash) {
     var assigned_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
     if (assigned_labs[this.id] != undefined) {
         if (flash) {
-            new RoomVisual(this.room.name).text('!Av: ass', this.pos.x, this.pos.y + 1.5, {color: 'red', backgroundColor: 'white', font: 0.8});
+            new RoomVisual(this.room.name).text('req: busy', this.pos.x, this.pos.y + 1.5, {color: 'red', backgroundColor: 'white', font: 0.8});
         }
         return false;
     }
     if (this.mineralAmount > 0) {
         if (flash) {
-            new RoomVisual(this.room.name).text('!Av: full', this.pos.x, this.pos.y + 1.5, {color: 'red', backgroundColor: 'white', font: 0.8});
+            new RoomVisual(this.room.name).text('req: busy', this.pos.x, this.pos.y + 1.5, {color: 'red', backgroundColor: 'white', font: 0.8});
         }
         return false;
     }
     if (flash) {
-        new RoomVisual(this.room.name).text('Av', this.pos.x, this.pos.y + 1.5, {color: 'green', backgroundColor: 'white', font: 0.8});
+        new RoomVisual(this.room.name).text('req: avail!', this.pos.x, this.pos.y + 1.5, {color: 'green', backgroundColor: 'white', font: 0.8});
     }
     return true;
 }

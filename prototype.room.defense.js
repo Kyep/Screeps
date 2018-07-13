@@ -235,7 +235,7 @@ Room.prototype.setRamparts = function(ispublic) {
 
 Room.prototype.getBestTowerTarget = function(rts) {
 
-    var paint = false;
+    var paint = true;
 
     var enemiesList = this.getHostileCreeps();
     var eobj = {}
@@ -307,7 +307,7 @@ Room.prototype.getBestTowerTarget = function(rts) {
         if (eobj[ekey]['dpt'] < ehpt) {
             if (eobj[ekey]['dpt'] >= elink.hits) {
                 ecolor = 'yellow';
-            } else if (elink.hits == elink.hitsMax && Math.random() < 0.95) {
+            } else if (elink.hits == elink.hitsMax) { // && Math.random() < 0.95
                 // not enough DPS to hurt this creature.
                 // Ignore it 95% of the time. This way we'll still fire on it occasionally and if it isn't healed properly we can take advantage.
                 ecolor = 'red';

@@ -1,6 +1,5 @@
 "use strict";
 
-var jobReturnresources = require('job.returnresources');
 var jobRenew = require('job.renew');
 var jobGetstoredenergy = require('job.gfs');
 
@@ -41,7 +40,7 @@ module.exports = {
             } else if (creep.carry.energy == 0) {
                 creep.memory[MEMORY_JOB] = JOB_TRAVEL_BACK;
             } else {
-                jobReturnresources.run(creep, 1, 1, 0.5, 1, 1);
+                creep.returnToStorage([], [], [STRUCTURE_STORAGE]);
             }
         } else if (creep.memory[MEMORY_JOB] == JOB_TRAVEL_BACK) {
             if (creep.isAtHomeRoom()) {

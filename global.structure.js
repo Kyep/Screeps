@@ -49,44 +49,56 @@ global.RUN_STRUCTURES = function() {
         var theroom = Game.rooms[rname];
         
         if(ROOM_UNDER_ATTACK(rname)) {
+
+            var towers_enabled = true;
+
+            var myalert = theroom.getAlertObject();
+            /*
+            if (myalert['hostileUsername'] == 'Invader') {
+                towers_enabled = false;
+            }
+            */
+
             var tower_tgt = theroom.memory[MEMORY_TOWER_TARGET];
             var tower_frustration = theroom.memory[MEMORY_TOWER_FRUSTRATION];
 
             var best_target;
             var using_memory = false;
             
-            if (tower_tgt != undefined && tower_frustration != undefined) {
-                best_target = Game.getObjectById(tower_tgt);
-                if (best_target && tower_frustration && tower_frustration < 5) {
-                    theroom.memory[MEMORY_TOWER_FRUSTRATION]++;
-                    using_memory = true;
-                } else {
-                    if (tower_tgt) {
-                        delete theroom.memory[MEMORY_TOWER_TARGET];
-                    }
-                    if (tower_frustration) {
-                        delete theroom.memory[MEMORY_TOWER_FRUSTRATION];
+            if (towers_enabled) {
+                if (tower_tgt != undefined && tower_frustration != undefined) {
+                    best_target = Game.getObjectById(tower_tgt);
+                    if (best_target && tower_frustration && tower_frustration < 3) {
+                        theroom.memory[MEMORY_TOWER_FRUSTRATION]++;
+                        using_memory = true;
+                    } else {
+                        if (tower_tgt) {
+                            delete theroom.memory[MEMORY_TOWER_TARGET];
+                        }
+                        if (tower_frustration) {
+                            delete theroom.memory[MEMORY_TOWER_FRUSTRATION];
+                        }
                     }
                 }
-            }
-            if (!best_target) {
-
-                best_target = theroom.getBestTowerTarget(rtowers[rname]);
+                if (!best_target) {
+    
+                    best_target = theroom.getBestTowerTarget(rtowers[rname]);
+                    if (best_target) {
+                        theroom.memory[MEMORY_TOWER_TARGET] = best_target.id;
+                        theroom.memory[MEMORY_TOWER_FRUSTRATION] = 1;
+                    }
+                }
+                
                 if (best_target) {
-                    theroom.memory[MEMORY_TOWER_TARGET] = best_target.id;
-                    theroom.memory[MEMORY_TOWER_FRUSTRATION] = 1;
-                }
-            }
-            
-            if (best_target) {
-                if (using_memory) {
-                    new RoomVisual(theroom.name).circle(best_target.pos, {radius: 0.6, opacity: 0.6, stroke: 'red', lineStyle: 'dashed'});
-                } else {
-                    new RoomVisual(theroom.name).circle(best_target.pos, {radius: 0.7, opacity: 0.6, stroke: 'red', lineStyle: undefined});
-                }
-                for (var tnum in rtowers[rname]) {
-                    var thistower = rtowers[rname][tnum];
-                    thistower.attack(best_target);
+                    if (using_memory) {
+                        new RoomVisual(theroom.name).circle(best_target.pos, {radius: 0.6, opacity: 0.6, stroke: 'red', lineStyle: 'dashed'});
+                    } else {
+                        new RoomVisual(theroom.name).circle(best_target.pos, {radius: 0.7, opacity: 0.6, stroke: 'red', lineStyle: undefined});
+                    }
+                    for (var tnum in rtowers[rname]) {
+                        var thistower = rtowers[rname][tnum];
+                        thistower.attack(best_target);
+                    }
                 }
             }
             theroom.setRamparts(false);

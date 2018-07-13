@@ -1,3 +1,34 @@
+global.LIST_SCIENCE = function() {
+    var science_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
+    for (var rname in Game.rooms) {
+        var robj = Game.rooms[rname];
+        if (!robj.isMine()) {
+            continue;
+        }
+        var room_ass = [];
+        for (var labkey in science_labs) {
+            if (science_labs[labkey]['roomname'] != rname) {
+                continue;
+            }
+            room_ass.push(science_labs[labkey]['purpose']);
+        }
+        var fort_msg = '';
+        if (robj.isFortified()) {
+            fort_msg = '(F)';
+        }
+        console.log(rname + fort_msg + ': ' + room_ass.join(", "));
+    }
+    var science_reactions = Memory[MEMORY_GLOBAL_SCIENCEREACTIONS];
+    for (var i = 0; i < science_reactions.length; i++) {
+        var tr = science_reactions[i];
+        if (tr['state']) {
+            console.log(tr['roomname'] +': ' + tr['goal'] + ': ' + tr['state']);
+        } else {
+            console.log(tr['roomname'] +': ' + tr['goal'] + ': idle');
+        }
+    }
+}
+
 global.RESET_SCIENCE = function() {
     var chains = [];
     // ZK made in a KEANIUM room - verified
@@ -78,25 +109,25 @@ global.RESET_SCIENCE = function() {
             'resource_1': RESOURCE_CATALYST
         });
 
-    // HEAL boosts made in a LEMERGIUM room - verified
+    // HEAL boosts made in a safe room - verified
     chains.push( // // +100% HEAL
         {
             'goal': RESOURCE_LEMERGIUM_OXIDE,
-            'roomname': 'W43S18',
+            'roomname': 'W59S22',
             'resource_1': RESOURCE_LEMERGIUM,
             'resource_2': RESOURCE_OXYGEN
         });
     chains.push( // +200% HEAL (T2)
         {
             'goal': RESOURCE_LEMERGIUM_ALKALIDE,
-            'roomname': 'W53S18',
+            'roomname': 'W59S22',
             'resource_1': RESOURCE_HYDROXIDE,
             'resource_2': RESOURCE_LEMERGIUM_OXIDE
         });
     chains.push( // +300% HEAL (T3)
         {
             'goal': RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE,
-            'roomname': 'W43S18',
+            'roomname': 'W59S22',
             'resource_1': RESOURCE_LEMERGIUM_ALKALIDE,
             'resource_2': RESOURCE_CATALYST
         });
@@ -122,21 +153,21 @@ global.RESET_SCIENCE = function() {
     chains.push( // T1, +100% MOVE part effectiveness
         {
             'goal': RESOURCE_ZYNTHIUM_OXIDE,
-            'roomname': 'W55S8',
+            'roomname': 'W57S11',
             'resource_1': RESOURCE_ZYNTHIUM,
             'resource_2': RESOURCE_OXYGEN
         });
     chains.push( // T2, +200% MOVE part effectiveness
         {
             'goal': RESOURCE_ZYNTHIUM_ALKALIDE,
-            'roomname': 'W55S8',
+            'roomname': 'W57S11',
             'resource_1': RESOURCE_ZYNTHIUM_OXIDE,
             'resource_2': RESOURCE_HYDROXIDE
         });
     chains.push( // T3, +300%  MOVE part effectiveness
         {
             'goal': RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
-            'roomname': 'W55S8',
+            'roomname': 'W57S11',
             'resource_1': RESOURCE_ZYNTHIUM_ALKALIDE,
             'resource_2': RESOURCE_CATALYST
         });
@@ -182,7 +213,7 @@ global.RESET_SCIENCE = function() {
     chains.push( // T3, +300% dismantle
         {
             'goal': RESOURCE_CATALYZED_KEANIUM_ALKALIDE,
-            'roomname': 'W59S18',
+            'roomname': 'W58S8',
             'resource_1': RESOURCE_KEANIUM_ALKALIDE,
             'resource_2': RESOURCE_CATALYST
         });
@@ -311,7 +342,9 @@ global.SCIENCE_PROCESS = function () {
                 if (result == ERR_NOT_IN_RANGE || result == ERR_INVALID_ARGS) {
                     var setup_fail_msg = 'SCI: reaction for ' + reaction['goal'] + ' in room ' + reaction['roomname'] +'  FATAL SETUP ERROR, BAD DISTANCE OR LAB MATERIALS MISMATCH.  Debug: ' + JSON.stringify(reaction);
                     console.log(setup_fail_msg);
-                    Game.notify(setup_fail_msg);
+                    reaction['state'] = 'cleanup';
+                    science_reactions[i] = reaction; // Save to parent object.
+                    //Game.notify(setup_fail_msg);
                     continue;
                 } else if (result == OK) {
                     //console.log('SCI: reaction for ' + reaction['goal'] + ' in room ' + reaction['roomname'] +' ran successfully: ' +lab_3.mineralAmount + '/' + lab_3.mineralCapacity);
@@ -386,10 +419,14 @@ global.SCIENCE_PROCESS = function () {
             
         } else { // reaction not started.
         
+            if (Game.time % 5 !== 0) {
+                // Only check to start reactions once per 5 ticks.
+                continue;
+            }
             
             var desired_amount = 10000; // by default, assume T1 or T2. have a little bit, but don't build up masses of it - the higher tier boosts matter more.
             if (MINERAL_REACTION_COUNT(reaction['goal']) == 0) {
-                desired_amount = 60000; // this is T3... it is not used in any further reactions
+                desired_amount = 50000; // this is T3... it is not used in any further reactions
             }
             if (term.store[reaction['goal']] && term.store[reaction['goal']] > desired_amount) {
                 //console.log('SCI: skipping reaction for ' + reaction['goal'] + ' in room ' + reaction['roomname'] + ' because we already have enough end product');
@@ -410,7 +447,7 @@ global.SCIENCE_PROCESS = function () {
                     continue;
                 }
             }
-            var rlabs = rmobj.find(FIND_MY_STRUCTURES, { filter: function(structure){ if(structure.structureType == STRUCTURE_LAB && structure.isUnassigned()) { return 1; } else { return 0; } } });
+            var rlabs = rmobj.find(FIND_MY_STRUCTURES, { filter: function(structure){ if(structure.structureType == STRUCTURE_LAB && structure.isActive() && structure.isUnassigned()) { return 1; } else { return 0; } } });
             if (rlabs.length < 3) {
                 if (Game.time % 100 == 0) {
                     console.log('SCI: ' + reaction['roomname'] + '/' + reaction['goal'] + ' could not find 3 free labs.');
@@ -419,7 +456,7 @@ global.SCIENCE_PROCESS = function () {
             }
             var input_lab_1 = _.sample(rlabs);
             var rlabs2 = rmobj.find(FIND_MY_STRUCTURES, { filter: function(structure){ 
-                if (structure.structureType == STRUCTURE_LAB && structure.isAvailable(true) && structure.pos.getRangeTo(input_lab_1) <= 2 && structure.id != input_lab_1.id) { return 1; } else { return 0; } 
+                if (structure.structureType == STRUCTURE_LAB && structure.isActive() && structure.isAvailable(true) && structure.pos.getRangeTo(input_lab_1) <= 2 && structure.id != input_lab_1.id) { return 1; } else { return 0; } 
             } });
             var input_lab_2 = _.sample(rlabs2);
             if (input_lab_2 == undefined || input_lab_2.id == undefined) {
@@ -427,7 +464,7 @@ global.SCIENCE_PROCESS = function () {
                 continue;
             }
             var rlabs3 = rmobj.find(FIND_MY_STRUCTURES, { filter: function(structure){ 
-                if (structure.structureType == STRUCTURE_LAB && structure.isAvailable(true) && structure.pos.getRangeTo(input_lab_1) <= 2 && structure.id != input_lab_1.id 
+                if (structure.structureType == STRUCTURE_LAB && structure.isActive() && structure.isAvailable(true) && structure.pos.getRangeTo(input_lab_1) <= 2 && structure.id != input_lab_1.id 
                 && structure.pos.getRangeTo(input_lab_2) <= 2 && structure.id != input_lab_2.id) { return 1; } else { return 0; } 
             } });
             var output_lab = _.sample(rlabs3);

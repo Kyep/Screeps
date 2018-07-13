@@ -63,6 +63,8 @@ global.MEMORY_HAULERSLEEP = 'haulersleep';
 global.MEMORY_ROAD_REPAIR_TARGETS = 'road_repair_targets';
 global.MEMORY_REPAIR_TARGET = 'repair_target';
 global.MEMORY_GFS_TARGET = 'gfs_target';
+global.MEMORY_RETURNRESOURCES_TARGET = 'returnresources_target';
+global.MEMORY_BUILD_TARGET = 'build_target';
 
 // Creep memory, roles
 global.ROLE_HARVESTER = 'harvester';
@@ -127,6 +129,18 @@ global.MEMORY_LAST_PLAYER_ATTACK = 'last_player_attack';
 global.MEMORY_TOWER_TARGET = 'tower_target';
 global.MEMORY_TOWER_FRUSTRATION = 'tower_frustration';
 
+// RCONFIG sub-categories
+global.MEMORY_RC_PSR = 'spawn_room';
+global.MEMORY_RC_BSR = 'backup_spawn_room';
+global.MEMORY_RC_SHORTNAME = 'shortname';
+global.MEMORY_RC_SOURCES = 'sources';
+global.MEMORY_RC_ASSIGNMENTS = 'assignments';
+global.MEMORY_RC_SCOUNT = 'scount';
+global.MEMORY_RC_MINERALID = 'mineralid';
+global.MEMORY_RC_MINERALTYPE = 'mineraltype';
+global.MEMORY_RC_LASTBASEUPDATE = 'lastbaseupdate';
+global.MEMORY_RC_LASTASSIGNUPDATE = 'lastassignupdate';
+global.MEMORY_RC_CONTROLLER = 'controller';
 
 // Spawns, top level memory categories
 global.MEMORY_SPAWNINGROLE = 'role_spawning';
@@ -138,7 +152,7 @@ global.BOOST_MELEE = 'XUH2O';
 global.BOOST_HEAL = 'XLHO2';
 global.BOOST_TOUGH = 'XGHO2';
 global.BOOST_RANGED = 'XKHO2';
-
+global.ALL_SIEGE_BOOSTS = [BOOST_MOVE, BOOST_WORK, BOOST_MELEE, BOOST_HEAL, BOOST_TOUGH, BOOST_RANGED];
 
 
 global.COLOR_HARVEST = '#ffffff';

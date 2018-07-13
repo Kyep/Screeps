@@ -3,6 +3,11 @@
 module.exports = {
     run: function(creep) {
 
+        if(!creep.isAtDestinationRoom()){
+            creep.moveToDestination();
+            return;
+        }
+
         var myterminal = creep.room.terminal;
         var myjob = creep.memory[MEMORY_JOB];
         var mylab = undefined;
@@ -16,6 +21,7 @@ module.exports = {
         var mymineral = creep.memory[MEMORY_MINERALID];
         
         if (myjob == 'fill_lab') {
+            
             /*
             if (mymineral && _.sum(creep.carry) != creep.carry[mymineral]) {
                 creep.memory[MEMORY_JOB] = 'empty_lab';
@@ -35,6 +41,18 @@ module.exports = {
                     creep.moveTo(mylab, {visualizePathStyle: {stroke: COLOR_DROPOFF}});
                 }
             } else if (myterminal.store[mymineral] != undefined && myterminal.store[mymineral] > 0) {
+                
+                var carrySum = _.sum(creep.carry);
+                if (carrySum > 0) {
+                    var xresource = RESOURCE_ENERGY;
+                    var keyslist = Object.keys(creep.carry);
+                    if (keyslist.length > 0) {
+                        xresource = keyslist[1];
+                    }
+                    if (creep.transfer(myterminal, xresource) == ERR_NOT_IN_RANGE) {
+                        creep.moveToRUP(myterminal);
+                    }
+                }
                 
                 if (amount_to_withdraw > creep.carryCapacity) {
                     amount_to_withdraw = creep.carryCapacity;
@@ -149,10 +167,18 @@ module.exports = {
                 //console.log(creep.name + ' skip (ignore): ' + thislab.id );
             }
         }
-        if (Game.time % 50 === 0 ) {
-            creep.say('no work!');
+        var sumc = _.sum(creep.carry);
+        creep.say(sumc);
+        if (sumc > 0) {
+            var xfer = RESOURCE_ENERGY;
+            if (leyslist.length > 0) {
+                var keyslist = Object.keys(creep.carry);
+                xfer = keyslist[1];
+            }
+            if (creep.transfer(myterminal, xfer) == ERR_NOT_IN_RANGE) {
+                creep.moveToRUP(myterminal);
+            }
         }
-        
-
+        creep.sleepFor(3);
 	}
 };

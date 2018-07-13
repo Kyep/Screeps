@@ -33,17 +33,37 @@ Room.prototype.priorityRebuild = function() {
     return false;
 }
 
+Room.prototype.inCritical = function() {
+    return (this.inSafeMode() || this.getSafeModeCooldown() > 0);
+}
+
+Room.prototype.inSafeMode = function() {
+    if (this.controller) {
+        if (this.controller.safeMode && this.controller.safeMode > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+Room.prototype.getSafeModeCooldown = function() {
+    if (this.controller) {
+        if (this.controller.safeModeCooldown && this.controller.safeModeCooldown > 0) {
+            return this.controller.safeModeCooldown;
+        } 
+    }
+    return 0;
+}
+
 Room.prototype.priorityDefend = function() {
     if (!this.isMine()) {
         return false;
     }
-    if (this.controller) {
-        if (this.controller.safeMode && this.controller.safeMode > 200) {
-            return false;
-        }
-        if (this.controller.safeModeCooldown && this.controller.safeModeCooldown > 0) {
-            return true;
-        } 
+    if (this.inSafeMode()) {
+        return false;
+    }
+    if (this.getSafeModeCooldown() > 0) {
+        return true;
     }
     if(!ROOM_UNDER_ATTACK(this.name)) {
         if (this.memory[MEMORY_LAST_PLAYER_ATTACK] && this.memory[MEMORY_LAST_PLAYER_ATTACK] > 0) {

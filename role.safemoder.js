@@ -20,8 +20,5 @@ module.exports = {
         creep.say('no G?');
         creep.sleepFor(50);
         return false;
-     
-     
     }
-
 };

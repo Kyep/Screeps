@@ -160,23 +160,35 @@ module.exports = {
                 } else {
                     var valid_types = [STRUCTURE_TOWER];
                     //var valid_types = [];
-                    var valid_types2 = [STRUCTURE_SPAWN, STRUCTURE_TOWER];
+                    //var valid_types2 = [STRUCTURE_SPAWN, STRUCTURE_TOWER];
+                    var valid_types2 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_EXTENSION];
                     //var valid_types2 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB];
                     var valid_types3 = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_EXTENSION, STRUCTURE_LINK, STRUCTURE_LAB, STRUCTURE_TERMINAL, STRUCTURE_LINK, STRUCTURE_NUKER, STRUCTURE_OBSERVER, STRUCTURE_EXTRACTOR, STRUCTURE_RAMPART];
                     if (frustration < 100) {
                         target = creep.getClosestHostileStructureInTypes(valid_types);
-                        if (!target) {
-                            target = creep.getClosestHostileStructureInTypes(valid_types);
-                        }
                     } else if (frustration < 250) {
                         target = creep.getClosestHostileStructureInTypes(valid_types2);
-                        if (!target) {
-                            target = creep.getClosestHostileStructureInTypes(valid_types2);
-                        }
                     } else {
                         target = creep.getClosestHostileStructure();
                         if (!target && melee_parts) {
                             target = creep.getClosestHostileCreep();
+                        }
+                        if (!target && !IS_ALLY(creep.room.getOwner())) {
+                            var targets = creep.room.find(FIND_STRUCTURES, {
+                                filter: (structure) => {
+                                    return (structure.structureType == STRUCTURE_CONTAINER);
+                                }
+                            });  
+                            if (!targets.length) {
+                                targets = creep.room.find(FIND_STRUCTURES, {
+                                    filter: (structure) => {
+                                        return (structure.structureType == STRUCTURE_CONTAINER || structure.structureType == STRUCTURE_ROAD);
+                                    }
+                                });
+                            }
+                            if (targets.length) {
+                                target = creep.pos.findClosestByRange(targets);
+                            }
                         }
                     }
                 }
@@ -200,13 +212,7 @@ module.exports = {
                 creep.memory[MEMORY_FRUSTRATION] = frustration;
                 creep.sleepFor(1);
             } else {
-                target = creep.getClosestHostileConstructionSite();
-                if (target) {
-                    creep.moveToRUP(target)
-                } else {
-                    creep.sleepFor(5);
-                }
-                
+                creep.sleepFor(3);
             }
         }
         

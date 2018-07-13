@@ -1,3 +1,11 @@
+global.CONVERT_TICKS = function(ticks) {
+    var mins = ((ticks * 3.2) / 60);
+    if (mins > 60) {
+        return (mins / 60) + ' hours';
+    }
+    return mins + ' mins';
+}
+
 global.ADD_SIEGEPLAN = function(ticksahead, fromroom, destroom, waypoints, destx, desty) {
     var current_plans = Memory['MEMORY_GLOBAL_SIEGEPLANS'];
     // Game.rooms['W39S17'].createSiegeTeam('W39S20', ['W30S20','W30S27'], 25, 25);
@@ -229,9 +237,9 @@ global.CHECK_HAULER_BODIES = function(sid) {
     for (var rname in Game.rooms) {
         var rconfig = Game.rooms[rname].getConfig();
         if (!rconfig) { continue; }
-        if (rconfig['spawn_room'] == rname) { continue; }
-        for (var skey in rconfig['sources']) {
-            var ts = rconfig['sources'][skey];
+        if (rconfig[MEMORY_RC_PSR] == rname) { continue; }
+        for (var skey in rconfig[MEMORY_RC_SOURCES]) {
+            var ts = rconfig[MEMORY_RC_SOURCES][skey];
             var steps = ts['steps'];
             var intended = ts['carry_total'];
             if (!intended) {
@@ -360,7 +368,8 @@ global.MINERAL_REACTION_COUNT = function(mname) {
     return Object.keys(reobj).length;
 }
 
-global.FIND_MINERAL = function(mintype) {
+global.FIND_MINERAL = function(mintype, silent, threshold = 3000) {
+    var running_total = 0;
     for (var rname in Game.rooms) {
         if (!Game.rooms[rname].isMine() || !Game.rooms[rname].terminal) {
             continue;
@@ -370,10 +379,24 @@ global.FIND_MINERAL = function(mintype) {
         if (!a) {
             continue;
         }
-        console.log(rname + ': ' + a);
+        if (a < threshold) {
+            continue;
+        }
+        var adj_amt = a - threshold;
+        running_total += adj_amt;
+        if (!silent) {
+            console.log(rname + ': ' + a);
+        }
+    }
+    return running_total;
+}
+
+global.SHOW_SIEGE_BOOSTS = function() {
+    for (var i = 0; i < ALL_SIEGE_BOOSTS.length; i++) {
+        var amt = FIND_MINERAL(ALL_SIEGE_BOOSTS[i], true, 3000);
+        console.log(ALL_SIEGE_BOOSTS[i] + ': ' + amt);
     }
 }
-        
 
 global.SHOW_MINERALS = function(mintype) {
     var minobj = global.MINERAL_INVENTORY();

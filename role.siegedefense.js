@@ -10,24 +10,29 @@ module.exports = {
             creep.moveToDestination();
             return;
         }
-
-        /*
-        if (!ROOM_UNDER_ATTACK(creep.room.name)) {
-            creep.say('no foe!');
-            creep.sleepFor(3);
-            return;
-        }
-        */
-
         if (!creep.memory[MEMORY_BOOSTSALLOWED]) {
+            //creep.say('B');
+
+            if (!creep.room.hasAlert()) {
+                creep.say('no foe!');
+                creep.sleepFor(3);
+                return;            
+            }
+            var myalert = creep.room.getAlertObject();
+            //creep.say(myalert['hostileUsername']);
+            if (myalert['hostileUsername'] == 'Invader') {
+                jobPatrol.run(creep);
+                return;
+            }
             creep.memory[MEMORY_BOOSTSALLOWED] = true;
         }
-
+        //creep.say('T');
+        
         if (creep.gettingBoosts()) {
             return;
         }
-        
+        //creep.say('D');
+
         jobPatrol.run(creep);
-        creep.say('patrol...');
     }
 };

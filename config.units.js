@@ -50,11 +50,14 @@ global.empire_workers = {
     'boss': { 'body':       global.CONSTRUCT_BODY({MOVE: 25, ATTACK: 25}), 'noresizing': 1, 'renew_allowed': 0}, // {"cost":2840,"dps":600}
     'uberboss': { 'body':   global.CONSTRUCT_BODY({ATTACK: 30, MOVE: 10, HEAL: 10}), 'noresizing': 1, 'renew_allowed': 0}, // {"cost":5400,"dps":900,"hps":120}
 
-    'siegedefense': { 'body':   global.CONSTRUCT_BODY({TOUGH: 10, ATTACK: 20, MOVE: 10, HEAL: 10}), 'noresizing': 1, 'renew_allowed': 0}, //  {"cost":4700,"dps":600,"hps":120}, with boosts {"cost":4700,"dps":2400,"hps":480}
+    'siegedefense': { 'body':   global.CONSTRUCT_BODY({TOUGH: 10, ATTACK: 28, MOVE: 10, HEAL: 2}), 'noresizing': 1, 'renew_allowed': 0}, //  {"cost":4700,"dps":600,"hps":120}, with boosts {"cost":4700,"dps":2400,"hps":480}
 
     // priorityDefend classes
     'gar_melee': { 'body':   global.CONSTRUCT_BODY({MOVE: 16, ATTACK: 32}), 'noresizing': 1, 'renew_allowed': 0}, // {"cost":3360,"dps":960}
     'gar_ranged': { 'body':   global.CONSTRUCT_BODY({MOVE: 16, RANGED_ATTACK: 32}), 'noresizing': 1, 'renew_allowed': 0}, // {"cost":5600,"ranged_dps":320}
+
+    // annoyance classes
+    'timewaster': { 'body':   global.CONSTRUCT_BODY({ATTACK: 1, MOVE: 1}), 'noresizing': 1, 'renew_allowed': 0}, 
 
 
     // ANTIKITE

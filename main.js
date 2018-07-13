@@ -21,6 +21,8 @@ require('config.defines');
 require('config.flags');
 
 require('prototype.creep');
+require('prototype.creep.rts');
+require('prototype.creep.combat');
 require('prototype.pos');
 require('prototype.room');
 require('prototype.room.config');
@@ -96,67 +98,71 @@ module.exports.loop = function () {
         }
     }
 
-    if(Game.shard.name =='shard1') {
+    var cpu_heavytick = false;
 
-    if(Game.time % 1900 === 0) {
-        //global.PRESET_ATTACK_WAVE();
-        global.ESPIONAGE_ATTACK_PLANS();
-        //global.ESPIONAGE_ATTACK_PLANS(true, true);
-        //CPU_SECTION('espionage-attackplans', true);
-        global.ESPIONAGE_REGEN_TARGETS();
-        CPU_SECTION('espionage-regen', true);
-    }
+    if(Game.shard.name == 'shard1') {
 
-    if(Game.time % 500 === 0) {
-        UPDATE_MARKET_ORDERS();
-        CPU_SECTION('market-order-update', true);
-        global.REPORT_STRUCTURES(false, false); // auto-builds buildable structures that have appropriate flags
-        CPU_SECTION('report-structures', true);
-    }
+        if(Game.time % 1990 === 0) {
+            //global.PRESET_ATTACK_WAVE();
+            global.ESPIONAGE_ATTACK_PLANS();
+            CPU_SECTION('espionage-plans', true);
+        }
 
-    if(Game.time % 2000 === 0) {
-        RECREATE_ROAD_NETWORKS();
-        CPU_SECTION('recreate-road-networks', true);
-    }
-
-    if(Game.time % 100 === 0) {
-        UPDATE_FORTHP();
-        CPU_SECTION('update-forthp', true);
-    }
-
-    if(Game.time % 2 === 0) {
+        if(Game.time % 1901 === 0) {
+            global.ESPIONAGE_REGEN_TARGETS();
+            cpu_heavytick = true;
+            CPU_SECTION('espionage-regen', true);
+        }
+    
+        if(Game.time % 500 === 0) {
+            UPDATE_MARKET_ORDERS();
+            CPU_SECTION('market-order-update', true);
+            global.REPORT_STRUCTURES(false, false); // auto-builds buildable structures that have appropriate flags
+            CPU_SECTION('report-structures', true);
+        }
+    
+        if(Game.time % 2000 === 0) {
+            RECREATE_ROAD_NETWORKS();
+            CPU_SECTION('recreate-road-networks', true);
+        }
+    
+        if(Game.time % 100 === 0) {
+            UPDATE_FORTHP();
+            CPU_SECTION('update-forthp', true);
+        }
+    
+        if(Game.time % 300 === 0) {
+            CHECK_FOR_OVERBURDENED_SPAWNERS();
+            CPU_SECTION('rooms-partsalert', true);
+        }
+    
+        if(Game.time % 25 === 0) {
+            GCLFARM_PROCESS();
+        }
+    
+        if(Game.time % 500 === 0) {
+            HEAP_TEST();
+            RUN_SIEGEPLANS();
+        }
+        
+        // ----------------------------------------------------------------------------------
+        // SECTION: Global actions that are done every tick
+        
+        var lastFour = Game.time % 10000;
+        var observe_energy = 0;
+        if (lastFour == 9999) {
+            observe_energy = 1;
+        }
+        UPDATE_OBSERVERS(observe_energy);
+        CPU_SECTION('update-observers');
+    
+        if (!cpu_heavytick) {
+            ESPIONAGE();
+            CPU_SECTION('espionage-main');
+        }
+    
         SCIENCE_PROCESS();
         CPU_SECTION('science', true);
-    }
-
-    if(Game.time % 300 === 0) {
-        
-        CHECK_FOR_OVERBURDENED_SPAWNERS();
-        CPU_SECTION('rooms-partsalert', true);
-    }
-
-    if(Game.time % 25 === 0) {
-        GCLFARM_PROCESS();
-    }
-
-    if(Game.time % 500 === 0) {
-        HEAP_TEST();
-        RUN_SIEGEPLANS();
-    }
-    
-    // ----------------------------------------------------------------------------------
-    // SECTION: Global actions that are done every tick
-    
-    var lastFour = Game.time % 10000;
-    var observe_energy = 0;
-    if (lastFour == 9999) {
-        observe_energy = 1;
-    }
-    UPDATE_OBSERVERS(observe_energy);
-    CPU_SECTION('update-observers');
-
-    ESPIONAGE();
-    CPU_SECTION('espionage-main');
 
     }
 

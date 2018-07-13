@@ -24,9 +24,9 @@ global.CLAIM_ROOM = function(rname, primary, secondary, override) {
         return false;
     }
     Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname] = {}
-    Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['spawn_room'] = primary;
+    Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname][MEMORY_RC_PSR] = primary;
     if (secondary) {
-        Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['backup_spawn_room'] = secondary;
+        Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname][MEMORY_RC_BSR] = secondary;
     }
     return true;
 }
@@ -47,13 +47,13 @@ Room.prototype.abandonRoom = function() {
         if (rname == this.name) {
             continue;
         }
-        if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['spawn_room'] == this.name) {
+        if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname][MEMORY_RC_PSR] == this.name) {
             console.log(rname + ': deleted from empire, because Primary Spawn Room is being deleted');
             delete Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname];
             delete Memory.rooms[rname];
-        } else if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['backup_spawn_room'] == this.name) {
+        } else if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname][MEMORY_RC_BSR] == this.name) {
             console.log(rname + ': cleared backup_spawn_room');
-            delete Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname]['backup_spawn_room'];
+            delete Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][rname][MEMORY_RC_BSR];
         }
     }
     if (Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]) {
@@ -146,15 +146,15 @@ global.ADD_ROOM_KEY_ASSIGNMENT = function(rconfig, sourceidorkey, ass_object, pr
     if (!rconfig || !sourceidorkey || !ass_object || !priority) {
         return rconfig;
     }
-    if (rconfig['assignments'] == undefined) {
+    if (rconfig[MEMORY_RC_ASSIGNMENTS] == undefined) {
         console.log('ADD_ROOM_KEY_ASSIGNMENT warning - called with no rconfig to set: ' + sourceidorkey + '/' + JSON.stringify(ass_object));
         return rconfig;
     }
-    if (rconfig['assignments'][sourceidorkey] == undefined || overwrite) {
-        rconfig['assignments'][sourceidorkey] = {'ass': {}, 'pri': priority}
+    if (rconfig[MEMORY_RC_ASSIGNMENTS][sourceidorkey] == undefined || overwrite) {
+        rconfig[MEMORY_RC_ASSIGNMENTS][sourceidorkey] = {'ass': {}, 'pri': priority}
     }
     for (var skey in ass_object) {
-        rconfig['assignments'][sourceidorkey]['ass'][skey] = ass_object[skey];
+        rconfig[MEMORY_RC_ASSIGNMENTS][sourceidorkey]['ass'][skey] = ass_object[skey];
     }   
     return rconfig;
 }
@@ -162,10 +162,10 @@ global.ADD_ROOM_KEY_ASSIGNMENT = function(rconfig, sourceidorkey, ass_object, pr
 global.GET_SOURCE_INFO = function(rname, sid) {
     if (Memory.rooms[rname] 
         && Memory.rooms[rname][MEMORY_RCONFIG]
-        && Memory.rooms[rname][MEMORY_RCONFIG]['sources']
-        && Memory.rooms[rname][MEMORY_RCONFIG]['sources'][sid]
+        && Memory.rooms[rname][MEMORY_RCONFIG][global.MEMORY_RC_SOURCES]
+        && Memory.rooms[rname][MEMORY_RCONFIG][global.MEMORY_RC_SOURCES][sid]
     ) {
-        return Memory.rooms[rname][MEMORY_RCONFIG]['sources'][sid];
+        return Memory.rooms[rname][MEMORY_RCONFIG][global.MEMORY_RC_SOURCES][sid];
     }
     return undefined;
 }
@@ -189,7 +189,7 @@ Room.prototype.getSpawnRoom = function() {
     if (!myconf) {
         return undefined;
     }
-    return myconf['spawn_room'];
+    return myconf[MEMORY_RC_PSR];
 }
 
 Room.prototype.showConfig = function() {
@@ -211,7 +211,7 @@ Room.prototype.createConfig = function() {
         console.log('createConfig: ' + this.name + ' is not in empire.');
         return undefined;
     }
-    var myconf = this.makeConfigBase(Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['spawn_room'], Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['backup_spawn_room']);
+    var myconf = this.makeConfigBase(Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name][MEMORY_RC_PSR], Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name][MEMORY_RC_BSR]);
     if (myconf != undefined) {
         myconf = this.makeAssignments(myconf);
         return myconf;
@@ -250,22 +250,22 @@ Room.prototype.makeConfigBase = function(spawn_room, backup_spawn_room) {
 
     var shouldupdate = true;
     var rconfig = {}
-    rconfig['spawn_room'] = spawn_room;
-    rconfig['backup_spawn_room'] = backup_spawn_room;
-    rconfig['shortname'] = this.name.replace(/\D+/g, '');;
+    rconfig[MEMORY_RC_PSR] = spawn_room;
+    rconfig[MEMORY_RC_BSR] = backup_spawn_room;
+    rconfig[MEMORY_RC_SHORTNAME] = this.name.replace(/\D+/g, '');;
     var slist = this.find(FIND_SOURCES);
-    rconfig['sources'] = {}
-    rconfig['assignments'] = {}
-    rconfig['scount'] = slist.length;
+    rconfig[global.MEMORY_RC_SOURCES] = {}
+    rconfig[MEMORY_RC_ASSIGNMENTS] = {}
+    rconfig[MEMORY_RC_SCOUNT] = slist.length;
     for (var i = 0; i < slist.length; i++) {
         var ts = slist[i];
-        rconfig['sources'][ts.id] = {}
-        rconfig['sources'][ts.id]['shortname'] = String.fromCharCode(97+i); // a, b, c, etc.
-        rconfig['sources'][ts.id]['longname'] = rconfig['shortname'] + '-' + String.fromCharCode(97+i); // a, b, c, etc.
-        rconfig['sources'][ts.id]['x'] = ts['pos']['x'];
-        rconfig['sources'][ts.id]['y'] = ts['pos']['y'];
+        rconfig[global.MEMORY_RC_SOURCES][ts.id] = {}
+        rconfig[global.MEMORY_RC_SOURCES][ts.id][MEMORY_RC_SHORTNAME] = String.fromCharCode(97+i); // a, b, c, etc.
+        rconfig[global.MEMORY_RC_SOURCES][ts.id]['longname'] = rconfig[MEMORY_RC_SHORTNAME] + '-' + String.fromCharCode(97+i); // a, b, c, etc.
+        rconfig[global.MEMORY_RC_SOURCES][ts.id]['x'] = ts['pos']['x'];
+        rconfig[global.MEMORY_RC_SOURCES][ts.id]['y'] = ts['pos']['y'];
         var open_slots = ts.getSlotPositions();
-        rconfig['sources'][ts.id]['spaces'] = open_slots.length;
+        rconfig[global.MEMORY_RC_SOURCES][ts.id]['spaces'] = open_slots.length;
         if (pspawns.length) {
             var pfobj = PathFinder.search(pspawns[0].pos, {'pos': ts.pos, 'range': 1}, {'swampCost': 1.1});
             var pfpath = pfobj['path'];
@@ -279,19 +279,19 @@ Room.prototype.makeConfigBase = function(spawn_room, backup_spawn_room) {
                 shouldupdate = false;
                 continue;
             }
-            rconfig['sources'][ts.id]['steps'] = 50;
+            rconfig[global.MEMORY_RC_SOURCES][ts.id]['steps'] = 50;
             if (pflength > 0) {
-                rconfig['sources'][ts.id]['steps'] = pflength;
+                rconfig[global.MEMORY_RC_SOURCES][ts.id]['steps'] = pflength;
             }
             var lastpos = pfpath.slice(-1)[0];
-            rconfig['sources'][ts.id]['dest_x'] = lastpos['x'];
-            rconfig['sources'][ts.id]['dest_y'] = lastpos['y'];
+            rconfig[global.MEMORY_RC_SOURCES][ts.id]['dest_x'] = lastpos['x'];
+            rconfig[global.MEMORY_RC_SOURCES][ts.id]['dest_y'] = lastpos['y'];
             new RoomVisual(thispos['roomName']).circle(lastpos, {radius: 0.5, stroke: 'red'});
         } else {
-            rconfig['sources'][ts.id]['steps'] = 50;
+            rconfig[global.MEMORY_RC_SOURCES][ts.id]['steps'] = 50;
             var random_slot = _.sample(open_slots);
-            rconfig['sources'][ts.id]['dest_x'] = random_slot.x;
-            rconfig['sources'][ts.id]['dest_y'] = random_slot.y;
+            rconfig[global.MEMORY_RC_SOURCES][ts.id]['dest_x'] = random_slot.x;
+            rconfig[global.MEMORY_RC_SOURCES][ts.id]['dest_y'] = random_slot.y;
         }
     }
     if (this.controller) {
@@ -301,11 +301,11 @@ Room.prototype.makeConfigBase = function(spawn_room, backup_spawn_room) {
     }
     var all_minerals = this.find(FIND_MINERALS);
     if (all_minerals.length) {
-        rconfig['mineralid'] = all_minerals[0].id;
-        rconfig['mineraltype'] = all_minerals[0].mineralType;
+        rconfig[MEMORY_RC_MINERALID] = all_minerals[0].id;
+        rconfig[MEMORY_RC_MINERALTYPE] = all_minerals[0].mineralType;
     }
-    rconfig['lastbaseupdate'] = Game.time;
-    rconfig['lastassignupdate'] = 0;
+    rconfig[MEMORY_RC_LASTBASEUPDATE] = Game.time;
+    rconfig[MEMORY_RC_LASTASSIGNUPDATE] = 0;
     if (shouldupdate) {
         this.memory[MEMORY_RCONFIG] = rconfig;
         console.log(this.name + ': makeConfig saved: ' + JSON.stringify(rconfig));
@@ -334,21 +334,27 @@ Room.prototype.makeAssignments = function(myconf) {
         console.log(this.name + ': makeAssignments got asked to assign units to room without a base config');
         return myconf;
     }
-    myconf['assignments'] = {}
+    myconf[MEMORY_RC_ASSIGNMENTS] = {}
     if (!this.inEmpire()) {
         console.log(this.name + ': makeAssignments got asked to assign units to non-empire room. Deleting all assignments.');
         this.memory[MEMORY_RCONFIG] = myconf;
         return myconf;
     }
     
-    var spawn_room = myconf['spawn_room'];
-    if (!spawn_room) {
+    var psr_name = myconf[MEMORY_RC_PSR];
+    if (!psr_name) {
         console.log(this.name + ': makeAssignments got asked to assign units here, when we have no idea of which room is our spawn!');
         return myconf;
     }
-    if (!Game.rooms[spawn_room]) {
-        console.log(this.name + ': makeAssignments got asked to assign units here, when have no vision of our spawn room: ' + spawn_room);
+    var psr_obj = Game.rooms[psr_name];
+    if (!psr_obj) {
+        console.log(this.name + ': makeAssignments got asked to assign units here, when have no vision of our spawn room: ' + psr_name);
         return myconf;
+    }
+    var bsr_name = myconf[MEMORY_RC_BSR];
+    var bsr_obj;
+    if (bsr_name && Game.rooms[bsr_name] && (psr_obj.inCritical() || !Game.rooms[bsr_name].inCritical())) {
+        bsr_obj = Game.rooms[bsr_name];
     }
 
     var eroom = EXPANSION_GETROOM();
@@ -358,7 +364,7 @@ Room.prototype.makeAssignments = function(myconf) {
             if (!this.isMine()) {
                 clobj['claimer'] = 1;
             }
-            for (var skey in myconf['sources']) {
+            for (var skey in myconf[global.MEMORY_RC_SOURCES]) {
                 myconf = this.addSourceAssignment(myconf, skey, clobj, 5); 
             }
             return myconf;
@@ -369,101 +375,102 @@ Room.prototype.makeAssignments = function(myconf) {
     if (rlvl >= 4) {
         // We are a lvl 4-8 base
         //console.log(this.name + ': makeAssignments assigned normal base units');
-        for (var skey in myconf['sources']) {
+        for (var skey in myconf[global.MEMORY_RC_SOURCES]) {
             var snum = 1;
-            if (myconf['sources'][skey]['spaces'] == 1) {
-                myconf = this.addSourceAssignment(myconf, skey, { 'sharvester': 1}, myconf['sources'][skey]['steps']);
+            if (myconf[global.MEMORY_RC_SOURCES][skey]['spaces'] == 1) {
+                myconf = this.addSourceAssignment(myconf, skey, { 'sharvester': 1}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
             } else if (rlvl == 8) {
-                myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 2 }, myconf['sources'][skey]['steps']);
+                myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 2 }, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
                 //if (snum == 1) {
-                //    myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 1, 'up8': 1 }, myconf['sources'][skey]['steps']); 
+                //    myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 1, 'up8': 1 }, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
                 //} else {
-                //    myconf = this.addSourceAssignment(myconf, skey, { 'sharvester': 1 }, myconf['sources'][skey]['steps']);
+                //    myconf = this.addSourceAssignment(myconf, skey, { 'sharvester': 1 }, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
                 //}
             } else {
                 if (this.storage) {
-                    myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 2}, myconf['sources'][skey]['steps']); 
+                    myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 2}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
                 } else {
-                    myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf['sources'][skey]['steps']); 
+                    myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
                 }
             }
             snum++;
         }
     } else if (rlvl >= 2) {
         // We are a level 2-3 base
-        for (var skey in myconf['sources']) {
+        for (var skey in myconf[global.MEMORY_RC_SOURCES]) {
             var n2a = 2;
-            if (n2a > myconf['sources'][skey]['spaces']) {
-                n2a = myconf['sources'][skey]['spaces'];
+            if (n2a > myconf[global.MEMORY_RC_SOURCES][skey]['spaces']) {
+                n2a = myconf[global.MEMORY_RC_SOURCES][skey]['spaces'];
             }
-            myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': n2a}, myconf['sources'][skey]['steps']); 
+            myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': n2a}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
         }
     } else if (this.isMine()) {
         // We are a level 1 base
         //console.log(this.name + ': makeAssignments assigned initial base-building units');
-        for (var skey in myconf['sources']) {
+        for (var skey in myconf[global.MEMORY_RC_SOURCES]) {
             /*
             var n2a = 2;
-            if (n2a > myconf['sources'][skey]['spaces']) {
-                n2a = myconf['sources'][skey]['spaces'];
+            if (n2a > myconf[global.MEMORY_RC_SOURCES][skey]['spaces']) {
+                n2a = myconf[global.MEMORY_RC_SOURCES][skey]['spaces'];
             }
             */
-            myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 1, 'remoteconstructor': 1}, myconf['sources'][skey]['steps']); 
+            myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 1, 'remoteconstructor': 1}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
         }
     } else if (myconf['controller']) {
         // We are a remote mining outpost.
         //console.log(this.name + ': makeAssignments assigned remote mining units');
 
-        var srn = myconf['spawn_room'];
-        var sro = Game.rooms[srn];
-        if (sro.memory[MEMORY_NOREMOTE] || sro.priorityRebuild() || sro.priorityDefend() ) {
-            
-        } else if (sro) {
-            var srl = sro.getLevel();
-            var max_carry = sro.getMaxCarryPartsPerHauler();
+        //if (psr_obj.memory[MEMORY_NOREMOTE] || psr_obj.priorityDefend() ) {
+        if (psr_obj.memory[MEMORY_NOREMOTE]) {
+            if (Game.time % 500 === 0) {
+                console.log("Not spawning remote creeps from " + this.name + " because it has NOREMOTE set.");
+            }
+        } else if (psr_obj) {
+            var srl = psr_obj.getLevel();
+            var max_carry = psr_obj.getMaxCarryPartsPerHauler();
             //
             
-            if (srl < 4 || !sro.storage) {
-                for (var skey in myconf['sources']) {
-                    myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf['sources'][skey]['steps']); 
+            if (srl < 4 || !psr_obj.storage) {
+                for (var skey in myconf[global.MEMORY_RC_SOURCES]) {
+                    myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
                 }  
-                if (myconf['backup_spawn_room']) {
+                if (bsr_obj) {
                     myconf = this.addSourceAssignment(myconf, 'reserver', { 'reserver': 1 }, 75);
                 }
-            } else if (myconf['scount'] > 1 || true) {
+            } else if (myconf[MEMORY_RC_SCOUNT] > 1 || true) {
                 var snum = 1;
-                for (var skey in myconf['sources']) {
+                for (var skey in myconf[global.MEMORY_RC_SOURCES]) {
 
-                    myconf['sources'][skey]['carry_total'] = CARRY_PARTS(3000, myconf['sources'][skey]['steps']);
-                    myconf['sources'][skey]['carry_per_hauler'] = myconf['sources'][skey]['carry_total'];
-                    myconf['sources'][skey]['max_carry'] = max_carry;
+                    myconf[global.MEMORY_RC_SOURCES][skey]['carry_total'] = CARRY_PARTS(3000, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
+                    myconf[global.MEMORY_RC_SOURCES][skey]['carry_per_hauler'] = myconf[global.MEMORY_RC_SOURCES][skey]['carry_total'];
+                    myconf[global.MEMORY_RC_SOURCES][skey]['max_carry'] = max_carry;
                     var hauler_count = 1;
-                    if (myconf['sources'][skey]['carry_per_hauler'] > max_carry) {
+                    if (myconf[global.MEMORY_RC_SOURCES][skey]['carry_per_hauler'] > max_carry) {
                         hauler_count = 2;
-                        myconf['sources'][skey]['carry_per_hauler'] = Math.floor(myconf['sources'][skey]['carry_per_hauler'] / 2);
+                        myconf[global.MEMORY_RC_SOURCES][skey]['carry_per_hauler'] = Math.floor(myconf[global.MEMORY_RC_SOURCES][skey]['carry_per_hauler'] / 2);
                     }
 
                     if (snum == 1) {
-                        myconf = this.addSourceAssignment(myconf, 'reserver', { 'reserver': 1 }, myconf['sources'][skey]['steps']);
+                        myconf = this.addSourceAssignment(myconf, 'reserver', { 'reserver': 1 }, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
                     }
-                    myconf = this.addSourceAssignment(myconf, skey, { 'c30harvester': 1, 'hauler': hauler_count}, myconf['sources'][skey]['steps']);
+                    myconf = this.addSourceAssignment(myconf, skey, { 'c30harvester': 1, 'hauler': hauler_count}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
                     snum++;
                 }
             } else {
-                for (var skey in myconf['sources']) {
-                    myconf['sources'][skey]['carry_total'] = CARRY_PARTS(1500, myconf['sources'][skey]['steps']);
-                    myconf['sources'][skey]['carry_per_hauler'] = myconf['sources'][skey]['carry_total'];
-                    myconf['sources'][skey]['max_carry'] = max_carry;
+                for (var skey in myconf[global.MEMORY_RC_SOURCES]) {
+                    myconf[global.MEMORY_RC_SOURCES][skey]['carry_total'] = CARRY_PARTS(1500, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
+                    myconf[global.MEMORY_RC_SOURCES][skey]['carry_per_hauler'] = myconf[global.MEMORY_RC_SOURCES][skey]['carry_total'];
+                    myconf[global.MEMORY_RC_SOURCES][skey]['max_carry'] = max_carry;
                     var hauler_count = 1;
-                    if (myconf['sources'][skey]['carry_per_hauler'] > max_carry) {
+                    if (myconf[global.MEMORY_RC_SOURCES][skey]['carry_per_hauler'] > max_carry) {
                         hauler_count = 2;
-                        myconf['sources'][skey]['carry_per_hauler'] = Math.floor(myconf['sources'][skey]['carry_per_hauler'] / 2);
+                        myconf[global.MEMORY_RC_SOURCES][skey]['carry_per_hauler'] = Math.floor(myconf[global.MEMORY_RC_SOURCES][skey]['carry_per_hauler'] / 2);
                     }
-                    myconf = this.addSourceAssignment(myconf, skey, { 'c15harvester': 1, 'hauler': hauler_count}, myconf['sources'][skey]['steps']);  
+                    myconf = this.addSourceAssignment(myconf, skey, { 'c15harvester': 1, 'hauler': hauler_count}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);  
                 }
             }
         } else {
-            console.log(this.name + ': makeAssignments could not read object spawn_room for: ' + srn);
+            console.log(this.name + ': makeAssignments could not read object spawn_room for: ' + psr_name);
         }
     } else {
         console.log(this.name + ': makeAssignments assigned nothing because room lacks controller.');
@@ -473,7 +480,7 @@ Room.prototype.makeAssignments = function(myconf) {
 
     // Adjust builders depending on unfinished projects.
 
-    if (Game.rooms[spawn_room] && Game.rooms[spawn_room].storage && Game.rooms[spawn_room].storage.store[RESOURCE_ENERGY] >= 10000) { //  
+    if (psr_obj && psr_obj.storage && psr_obj.storage.store[RESOURCE_ENERGY] >= 10000) { //  
         var projectsList = this.find(FIND_MY_CONSTRUCTION_SITES, { filter: (csite) => { return (csite.structureType != STRUCTURE_CONTAINER); } });
         var repairablehp = 0;
         if (this.isMine() && this.storage && this.storage.store[RESOURCE_ENERGY] > 20000) {
@@ -498,7 +505,7 @@ Room.prototype.makeAssignments = function(myconf) {
                     btype = 'remoteconstructor';
                 }
             }
-            var free_energy = Game.rooms[spawn_room].storage.store[RESOURCE_ENERGY];
+            var free_energy = psr_obj.storage.store[RESOURCE_ENERGY];
             
             var newobj = {}
             newobj[btype] = 1;
@@ -520,9 +527,9 @@ Room.prototype.makeAssignments = function(myconf) {
             if (this.isMine()) {
                 myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'BS', newobj, 1200);
             } else {
-                for (var skey in myconf['sources']) {
+                for (var skey in myconf[global.MEMORY_RC_SOURCES]) {
                     var owrite = false;
-                    if (myconf['scount'] == 1) {
+                    if (myconf[MEMORY_RC_SCOUNT] == 1) {
                         owrite = true;
                     }
                     myconf = this.addSourceAssignment(myconf, skey, newobj, 1400, owrite);
@@ -541,12 +548,12 @@ Room.prototype.makeAssignments = function(myconf) {
         }
         
         // Mineral mining
-        if (this.isMine() && myconf['mineralid'] && rlvl >= 6) {
-            var mineralpatch = Game.getObjectById(myconf['mineralid']);
+        if (this.isMine() && myconf[MEMORY_RC_MINERALID] && rlvl >= 6 && this.terminal) {
+            var mineralpatch = Game.getObjectById(myconf[MEMORY_RC_MINERALID]);
             if (mineralpatch) {
                 var term = this.terminal;
                 if (term) {
-                    var got_minerals = term.store[myconf['mineralid']];
+                    var got_minerals = term.store[myconf[MEMORY_RC_MINERALID]];
                     if (got_minerals >= empire_defaults['mineralcap']) {
                         //console.log(rname + ' is capped on minerals with ' + got_minerals + ' > ' + empire_defaults['mineralcap']);
                     } else if (mineralpatch.mineralAmount > 0) {
@@ -617,46 +624,38 @@ Room.prototype.makeAssignments = function(myconf) {
         if (this.storage && this.storage.isActive()) {
             if (this.terminal && this.terminal.isActive()) {
                 if (this.priorityRebuild() && this.storage.store[RESOURCE_ENERGY] < 75000 && this.terminal.store[RESOURCE_ENERGY] >= 50000) {
-                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 4}, 700);
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'bankerb': 1}, 700);
                 } else if (this.isFortified() && this.storage.store[RESOURCE_ENERGY] < 250000 && this.terminal.store[RESOURCE_ENERGY] >= 50000) {
-                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 2}, 700);
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'bankerb': 1}, 700);
                 } else if (rlvl < 8 && this.storage.store[RESOURCE_ENERGY] < 200000 && this.terminal.getEnergyAboveMinimum() > 0) {
-                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 2}, 700);
-                } else if (rlvl == 8 && this.storage.store[RESOURCE_ENERGY] > 800000 && !this.terminal.metEnergyMax()) {
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'bankerb': 1}, 700);
+                } else if (rlvl == 8 && this.storage.store[RESOURCE_ENERGY] > 500000 && !this.terminal.metEnergyMax()) {
                     myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 1}, 700);
                 }
             } else if (rlvl == 4 || rlvl == 5) {
-                if (myconf['backup_spawn_room']) {
+                if (bsr_obj) {
                     myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'grower', {'grower': 3}, 600);
                 }
             } else if (rlvl >= 7) {
-                if (myconf['backup_spawn_room']) {
-                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'grower', {'grower': 3}, 600);
+                if (bsr_obj) {
+                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'grower', {'grower': 10}, 600);
                 }
             }
         }
         
         // Science
-        var science_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
-        for (var labid in science_labs) {
-            if (science_labs[labid]['roomname'] != this.name) {
-                continue;
-            }
-            var labobj = Game.structures[labid];
-            if (labobj.needsLabTech()) {
-                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'labtech', {'labtech': 1}, 500);
-                break;
-            }
+        if (this.needsLabTech()) {
+            myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'labtech', {'labtech': 1}, 500);
         }
         
         // Static guards
         if (this.priorityDefend()) {
-            myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'safemode_defense', {'uberboss': 3}, 900);
+            //myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'safemode_defense', {'siegedefense': 1}, 900);
         }
         
         
     }
-    myconf['lastassignupdate'] = Game.time;
+    myconf[MEMORY_RC_LASTASSIGNUPDATE] = Game.time;
     this.memory[MEMORY_RCONFIG] = myconf;
     return myconf;
 }
@@ -666,7 +665,7 @@ Room.prototype.getBaseConfigAge = function() {
     if (!rc) {
         return Number.POSITIVE_INFINITY;
     }
-    var old = rc['lastassignupdate'];
+    var old = rc[MEMORY_RC_LASTASSIGNUPDATE];
     if (!old) {
         return Number.POSITIVE_INFINITY;
     }
@@ -716,10 +715,10 @@ Room.prototype.getEnergyHistoryAdvisedSpawns = function() {
     if (e_hist_avg == 300) {
         //console.log(this.name + ': emergency energy condition 1, energy == 300');
         return {'teller-mini': 2};
-    } else if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc'] || this.memory[MEMORY_NOREMOTE] || this.priorityRebuild() || this.priorityDefend() ) {
+    } else if (e_hist_avg_pc < empire_defaults['room_crit_energy_pc']) {
         //console.log(this.name + ': emergency energy condition 2, energy pc < critlcal energy pc');
         return {'teller': 2};
-    } else if (e_hist_avg_pc < empire_defaults['room_minimum_energy_pc']) {
+    } else if (e_hist_avg_pc < empire_defaults['room_minimum_energy_pc'] || this.memory[MEMORY_NOREMOTE] || this.priorityRebuild() || this.priorityDefend() ) {
         //console.log(this.name + ': emergency energy condition 3, energy pc < minimum energy pc');
         return {'teller': 1};
     }

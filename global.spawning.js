@@ -63,7 +63,7 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
         if (!rconfig) {
             continue;
         }
-        var assigned = rconfig['assignments'];
+        var assigned = rconfig[MEMORY_RC_ASSIGNMENTS];
         if (!assigned) {
             continue;
         } 
@@ -118,7 +118,7 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
         if (!rconfig) {
             continue;
         }
-        var spawn_room = rconfig['spawn_room'];
+        var spawn_room = rconfig[MEMORY_RC_PSR];
     	for (var sname in combined[rname]) {
     	    var s_messages = []
             var stext = sname;
@@ -176,7 +176,7 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
         	var home_room = spawner.room.name;
             var renew_allowed = 1;
             var rconfig = Memory.rooms[rname][MEMORY_RCONFIG];
-            var spawn_room = rconfig['spawn_room'];
+            var spawn_room = rconfig[MEMORY_RC_PSR];
             if (!using_primary) {
         		home_room = spawn_room;
         		if (Game.rooms[rname] && Game.rooms[rname].getLevel() < 5) {
@@ -212,15 +212,15 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
                         if (rconfig.sources[sname]['y'] != undefined) { dest_y = rconfig.sources[sname]['y']; }
                         if (rconfig.sources[sname]['dest_x'] != undefined) { dest_x = rconfig.sources[sname]['dest_x']; }
                         if (rconfig.sources[sname]['dest_y'] != undefined) { dest_y = rconfig.sources[sname]['dest_y']; }
-                    } else if (rconfig['controller'] && rconfig['controller']['x'] && rconfig['controller']['y']) {
-                        dest_x = rconfig['controller']['x'];
-                        dest_y = rconfig['controller']['y'];
+                    } else if (rconfig[MEMORY_RC_CONTROLLER] && rconfig[MEMORY_RC_CONTROLLER]['x'] && rconfig[MEMORY_RC_CONTROLLER]['y']) {
+                        dest_x = rconfig[MEMORY_RC_CONTROLLER]['x'];
+                        dest_y = rconfig[MEMORY_RC_CONTROLLER]['y'];
                     }
                     var this_pri = 2500; // max.
-                    if (rconfig && rconfig['assignments'] && rconfig['assignments'][sname] && rconfig['assignments'][sname]['pri']) {
-                        this_pri = rconfig['assignments'][sname]['pri'];
+                    if (rconfig && rconfig[MEMORY_RC_ASSIGNMENTS] && rconfig[MEMORY_RC_ASSIGNMENTS][sname] && rconfig[MEMORY_RC_ASSIGNMENTS][sname]['pri']) {
+                        this_pri = rconfig[MEMORY_RC_ASSIGNMENTS][sname]['pri'];
                     } else {
-                        console.log('No PRI: ' + JSON.stringify(rconfig['assignments'][sname]));
+                        console.log('No PRI: ' + JSON.stringify(rconfig[MEMORY_RC_ASSIGNMENTS][sname]));
                     }
                     if (spawner_data[spawner.name] != undefined) {
                         if (spawner_data[spawner.name]['priority'] < this_pri) {
@@ -333,13 +333,13 @@ global.GET_SPAWNER_AND_PSTATUS_FOR_ROOM = function(theroomname, force) {
     var spawners_primary = []
     var spawners_primary_unavailable = []
     if (room_primary != undefined) {
-        spawners_primary = room_primary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable(force)); } });
-        spawners_primary_unavailable = room_primary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && !structure.isAvailable(force)); } });
+        spawners_primary = room_primary.find(FIND_MY_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable(force)); } });
+        spawners_primary_unavailable = room_primary.find(FIND_MY_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && !structure.isAvailable(force)); } });
     }
 
     var spawners_secondary = []
     if (room_secondary != undefined) {
-        spawners_secondary = room_secondary.find(FIND_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable(force)); } });
+        spawners_secondary = room_secondary.find(FIND_MY_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN && structure.isAvailable(force)); } });
     }
     
     var room_primary_level = 0;

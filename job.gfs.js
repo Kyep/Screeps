@@ -11,13 +11,13 @@ module.exports =  {
         var using_memory = false;
         if(creep.memory[MEMORY_GFS_TARGET]) {
             target = Game.getObjectById(creep.memory[MEMORY_GFS_TARGET]);
-            var target_valid = true;
+            var target_valid = false;
             if (!target) {
                 target_valid = false;
-            } else if (target.energy && target.energyCapacity && target.energy == target.energyCapacity) {
-                target_valid = false;
-            } else if (target.store && _.sum(target.store) == target.storeCapacity) {
-                target_valid = false;
+            } else if (target.energy && target.energyCapacity && target.energy > 0) {
+                target_valid = true;
+            } else if (target.store && target.store[RESOURCE_ENERGY] > 0) {
+                target_valid = true;
             }
             if (target_valid) {
                 using_memory = true;
@@ -46,12 +46,12 @@ module.exports =  {
         }
         if (target) {
             var amount_to_withdraw = 0;
-            if (target.store) {
+            if (target.store !== undefined) {
                 amount_to_withdraw = Math.min(target.store[RESOURCE_ENERGY], creep.carryCapacity - creep.carry.energy);
-            } else if (target.energy) {
+            } else if (target.energy !== undefined) {
                 amount_to_withdraw = Math.min(target.energy, creep.carryCapacity - creep.carry.energy);
             } else {
-                console.log(creep.name + ": GFS unable to identify withdraw method when withdrawing " + amount_to_withdraw + " from " + JSON.stringify(target));
+                console.log(creep.name + ": GFS unable to identify withdraw method when withdrawing " + amount_to_withdraw + " from " + target.structureType);
                 return;
             }
             

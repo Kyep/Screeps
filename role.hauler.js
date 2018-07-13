@@ -1,6 +1,5 @@
 "use strict";
 
-var jobReturnresources = require('job.returnresources');
 var jobBuild = require('job.build');
 var jobRenew = require('job.renew');
 var jobHide = require('job.hide');
@@ -28,7 +27,10 @@ module.exports = {
                     if (creep.carry.energy == 0) {
                     	jobGetstoredenergy.run(creep);
                     } else {
-                    	jobReturnresources.run(creep, 1, 1, 0.5, 0, 0);
+                        var result = creep.returnToStorage();
+            	        if (result == false) {
+                            creep.sleepFor(5);
+                        }
                     }
                     creep.say('Hide');
                     return;
@@ -253,12 +255,12 @@ module.exports = {
                return 0;
             }
             if (creep.room.storage == undefined || !creep.room.storage.isActive()) {
-                var try_return = jobReturnresources.run(creep, 1, 1, 1, 1, 1, 0);
+                var try_return = creep.returnToStorage(sleepDelay = 0);
                 if (try_return == -1) { // if it is not possible to return resources, upgrade instead.
                     creep.memory[MEMORY_JOB] = JOB_BUILD;
                     return;
                 }
-            } else if (jobReturnresources.run(creep, 1, 1, 0.5, 1, 1, 1) == -1) {
+            } else if (!creep.returnToStorage()) {
                 // Sleep for a few seconds, then try again.
                 creep.say('zzz 5');
                 creep.sleepFor(5);

@@ -48,7 +48,7 @@ module.exports =  {
                 desired_range = 2;
             }
             if (rangetotarget > desired_range) {
-                creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_PATROL}});
+                creep.safeMoveToEnemy(target, {visualizePathStyle: {stroke: COLOR_PATROL}});
             // if we are kiting, move away.
             } else if (rangetotarget < desired_range) {
                 var theirdirection = creep.pos.getDirectionTo(target);
@@ -114,7 +114,7 @@ module.exports =  {
             var nearby_enemies = creep.getHostileCreepsInRange(3);
             if (nearby_enemies.length >= 2) {
                 creep.rangedMassAttack();
-            } else if (target && rangetotarget <= 3) {
+            } else if (target && rangetotarget <= 3 && rangedAttackPower > 0) {
                 creep.rangedAttack(target);
                 creep.room.focusTowers(target.id);
             }

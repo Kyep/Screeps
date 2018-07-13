@@ -53,8 +53,8 @@ global.RUN_CREEPS = function() {
         } else if (!creep.hasSetDefaults()) {
             creep.setDefaults();
         } else if (creep.memory[MEMORY_SLEEPFOR] != undefined && creep.memory[MEMORY_SLEEPFOR] > 0) {
-            creep.memory[MEMORY_SLEEPFOR]--;
             creep.say('zzz' + creep.memory[MEMORY_SLEEPFOR]);
+            creep.memory[MEMORY_SLEEPFOR]--;
         } else if(creep.memory[MEMORY_ROLE] == 'sharvester' || creep.memory[MEMORY_ROLE] == 'bharvester' || creep.memory[MEMORY_ROLE] == 'fharvester') {
             roleHarvester.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'c15harvester' || creep.memory[MEMORY_ROLE] == 'c30harvester') {
@@ -113,6 +113,8 @@ global.RUN_CREEPS = function() {
             roleWiper.run(creep);
         } else if(creep.memory[MEMORY_ROLE] == 'safemoder') {  
             roleSafemoder.run(creep);
+        } else if(creep.memory[MEMORY_ROLE] == 'timewaster') {  
+            creep.wasteEnemyTime();
         } else {
 
             if(Game.shard.name == 'shard0') {

@@ -1,6 +1,5 @@
 "use strict";
 
-var jobReturnresources = require('job.returnresources');
 var jobRenew = require('job.renew');
 var jobGetstoredenergy = require('job.gfs');
 
@@ -21,15 +20,9 @@ module.exports = {
             }
 	    } else if(creep.memory[MEMORY_JOB] == JOB_RETURN) {
             if (towersonly) {
-    	        if (jobReturnresources.run(creep, 0, 0, 0.75, 0, 0) == -1) { // fill towers first.
-    	            if (jobReturnresources.run(creep, 1, 1, 0.5, 0, 0) == -1) { // fill other things.
-                        creep.sleepFor(5);
-                    }
-                }
+                var result = creep.returnToStorage([], [STRUCTURE_STORAGE, STRUCTURE_TERMINAL], [STRUCTURE_TOWER]);
             } else {
-    	        if (jobReturnresources.run(creep, 1, 1, 0.5, 0, 0) == -1) { // fill most things.
-                    creep.sleepFor(5);
-                }
+                var result = creep.returnToStorage([], [STRUCTURE_STORAGE, STRUCTURE_TERMINAL]);
             }
         } else {
             console.log('WARNING: ' + creep.name + ' has no job! ' + creep.memory[MEMORY_JOB]);

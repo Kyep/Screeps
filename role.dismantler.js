@@ -2,7 +2,6 @@
 
 var jobRenew = require('job.renew');
 var jobBuild = require('job.build');
-var jobReturnresources = require('job.returnresources');
 var jobUpgrade = require('job.upgrade');
 
 module.exports = {
@@ -99,8 +98,8 @@ module.exports = {
                 creep.announceJob();
                 return;
             }
-            var result = jobReturnresources.run(creep, 1, 1, 0.6, 1, 1, 1);
-            if (result == -1) {
+            var result = creep.returnToStorage();
+            if (!result) {
                 if(creep.carry.energy > 0) {
                     creep.memory[MEMORY_JOB] = JOB_UPGRADE;
                 }

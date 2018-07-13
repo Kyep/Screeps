@@ -1,4 +1,6 @@
 
+
+
 Creep.prototype.identifyRole = function() {
     var name_parts = this.name.split("_");
     if(!name_parts[1]) {
@@ -208,7 +210,7 @@ Creep.prototype.getShouldHide = function() {
             return 1;
         }
     }
-    if (this.room.hasAlert()) {
+    if (this.room.hasAlert() && !this.room.inSafeMode()) {
         this.memory[MEMORY_ATTACKEDIN] = this.room.name;
         return 1;        
     }

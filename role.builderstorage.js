@@ -1,6 +1,5 @@
 "use strict";
 
-var jobReturnresources = require('job.returnresources');
 var jobBuild = require('job.build');
 var jobRepair = require('job.repair');
 var jobRenew = require('job.renew');
@@ -23,10 +22,20 @@ module.exports =  {
             if (creep.carry.energy == creep.carryCapacity) {
                 creep.memory[MEMORY_JOB] = JOB_BUILD;
                 creep.announceJob();
-            } else if (jobGetstoredenergy.run(creep) == -1){
-                //
+            } else if (jobGetstoredenergy.run(creep) == ERR_NOT_ENOUGH_RESOURCES){
+                creep.say('NO E!');
+                /*
+                var allsources = creep.room.find(FIND_SOURCES);
+                var chosen_source = _.sample(allsources);
+                if (chosen_source) {
+                    creep.memory[MEMORY_SOURCE] = chosen_source.id;
+                    creep.memory[MEMORY_ROLE] = 'remoteconstructor';
+                    creep.memory[MEMORY_JOB] = JOB_TRAVEL_OUT;
+                }
+                */
             }
-        } else if (creep.memory[MEMORY_JOB] == JOB_BUILD) {
+        } 
+        if (creep.memory[MEMORY_JOB] == JOB_BUILD) {
             if(creep.memory[MEMORY_DEST] != creep.room.name){
                 creep.moveToDestination();
             } else if (!jobBuild.run(creep)){
@@ -47,7 +56,7 @@ module.exports =  {
                     creep.suicide();
                 } else {
                     creep.disableRenew();
-                    console.log(creep.name + ': disabled renew as ended up in job_renew with energy');
+                    //console.log(creep.name + ': disabled renew as ended up in job_renew with energy');
     	            creep.memory[MEMORY_JOB] = JOB_BUILD;
                     creep.announceJob();
                 }

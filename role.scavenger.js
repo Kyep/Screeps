@@ -1,6 +1,5 @@
 "use strict";
 
-var jobReturnresources = require('job.returnresources');
 var jobScavenge = require('job.scavenge');
 
 module.exports =  {
@@ -25,10 +24,9 @@ module.exports =  {
 	        }
         }
         if(creep.memory[MEMORY_JOB] == JOB_RETURN) {
-            var retval = jobReturnresources.run(creep, 0, 0, 0.8, 1, 1, 0);
-	        if (retval == -1) {
+            var result = creep.returnToStorage();
+	        if (result == false) {
                 creep.memory[MEMORY_JOB] = JOB_SCAVENGE;
-                creep.sleepFor(5);
             }
         }
 

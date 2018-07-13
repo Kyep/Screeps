@@ -1,7 +1,6 @@
 "use strict";
 
 var jobHarvest = require('job.harvest');
-var jobReturnresources = require('job.returnresources');
 var jobUpgrade = require('job.upgrade');
 var jobRepair = require('job.repair');
 var jobRenew = require('job.renew');
@@ -34,7 +33,8 @@ module.exports =  {
 	    } else if(creep.memory[MEMORY_JOB] == JOB_HARVEST) {
 	        jobHarvest.run(creep);
 	    } else if(creep.memory[MEMORY_JOB] == JOB_RETURN) {
-            if (jobReturnresources.run(creep, 1, 1, 0.75, 1, 1) == -1) {
+            var result = creep.returnToStorage();
+            if (!result) {
                 creep.memory[MEMORY_JOB] = JOB_REPAIR;
                 creep.announceJob();
             }

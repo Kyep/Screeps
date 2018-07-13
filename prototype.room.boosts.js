@@ -1,4 +1,40 @@
 
+Room.prototype.needsLabTech = function() {
+    if (!this.isMine()) {
+        return false;
+    }
+    if (!this.terminal) {
+        return false;
+    }
+    if (!this.terminal.isActive() || !this.terminal.isMine()) {
+        return false;
+    }
+    var science_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
+    for (var labid in science_labs) {
+        if (science_labs[labid]['roomname'] === undefined) {
+            var labobj = Game.structures[labid];
+            if (labobj) {
+                Memory[MEMORY_GLOBAL_SCIENCELABS][labid]['roomname'] = labobj.room.name;
+                console.log(labobj.id + '(' + labobj.room.name + ') lacked roomname in memory, assigned.');
+            } else if (science_labs[labid]['purpose'] == 'boost') {
+                delete Memory[MEMORY_GLOBAL_SCIENCELABS][labid];
+                console.log(labobj.id + ' lab in memory, but does not physically exist. Deleted from memory.');
+            }
+            continue;
+        }
+        if (science_labs[labid]['roomname'] != this.name) {
+            continue;
+        }
+        var labobj = Game.structures[labid];
+        var labres = labobj.needsLabTech();
+        //console.log(labobj.id + ": " + labres);
+        if (labres) {
+            return true;
+        }
+    }
+    return false;
+}
+
 Creep.prototype.getBoostsWanted = function() {
     var boosts_desired = [];
 
@@ -114,7 +150,7 @@ Room.prototype.countCreepsWithRole = function(role) {
     return count;
 }
 
-Room.prototype.ensureBoostAvailable = function(btype) {
+Room.prototype.ensureBoostAvailable = function(btype, verbose) {
     if (!this.isMine()) {
         if (Game.time % 100 === 0) {
             console.log(this.name + ': Room.prototype.ensureBoostAvailable: not our room...');
@@ -129,20 +165,28 @@ Room.prototype.ensureBoostAvailable = function(btype) {
     var already_assigned = this.getLabsForBooster(btype);
     if (!already_assigned.length) {
         var retval = this.assignBoost(btype);
-        console.log(this.name + ': Room.prototype.ensureBoostAvailable: boost not assigned, trying to assign: ' + retval);
+        if (verbose) {
+            console.log(this.name + ': Room.prototype.ensureBoostAvailable: boost not assigned, trying to assign: ' + retval);
+        }
         return false;
     }
     var amt_in_terminal = 0;
     if (this.terminal && this.terminal.store[btype]) {
         amt_in_terminal = this.terminal.store[btype];
     }
-    if (amt_in_terminal < 3000) {
-        var trv = this.terminal.acquireMineralAmount(btype, 2000, 6000);
-        console.log(this.name + ': Room.prototype.ensureBoostAvailable: attempting to acquire mineral ' + btype + ' result: ' + trv);
+    var desired_amount = 3000;
+    if (amt_in_terminal < desired_amount) {
+        var gap_amount = desired_amount - amt_in_terminal;
+        var trv = this.terminal.acquireMineralAmount(btype, gap_amount, 3000);
+        if (verbose) {
+            console.log(this.name + ': Room.prototype.ensureBoostAvailable: attempting to acquire mineral ' + btype + ' result: ' + trv);
+        }
     }
     var ltresult = this.ensureLabTech();
     if (ltresult != OK) {
-        //console.log(this.name + ': Room.prototype.ensureBoostAvailable: demanding lab tech: ' + ltresult);
+        if (verbose) {
+            //console.log(this.name + ': Room.prototype.ensureBoostAvailable: demanding lab tech: ' + ltresult);
+        }
     }
     return false;
 }
@@ -153,7 +197,7 @@ Room.prototype.getUsableLabForBooster = function(btype) {
     if (lab_objs.length) {
         for (var i = 0; i < lab_objs.length; i++) {
             var thislab = lab_objs[i];
-            if (thislab.mineralAmount >= 3000 && thislab.energy >= 1000) {
+            if (thislab.mineralAmount >= 2000 && thislab.energy >= 1000) {
                 return thislab;
             }
         }
@@ -241,19 +285,21 @@ Room.prototype.assignSiegeBoosts = function() {
     this.assignBoost(BOOST_TOUGH);
 }
 
-Room.prototype.ensureSiegeBoosts = function() {
-    return this.ensureBoostList([BOOST_MOVE, BOOST_MELEE, BOOST_HEAL, BOOST_TOUGH, BOOST_WORK]);
+Room.prototype.ensureSiegeBoosts = function(verbose) {
+    return this.ensureBoostList([BOOST_MOVE, BOOST_MELEE, BOOST_HEAL, BOOST_TOUGH, BOOST_WORK], verbose);
 }
 
-Room.prototype.ensureDefenseBoosts = function() {
-    return this.ensureBoostList([BOOST_MOVE, BOOST_MELEE, BOOST_HEAL, BOOST_TOUGH]);
+Room.prototype.ensureDefenseBoosts = function(verbose) {
+    return this.ensureBoostList([BOOST_MOVE, BOOST_MELEE, BOOST_HEAL, BOOST_TOUGH], verbose);
 }
 
-Room.prototype.ensureBoostList = function(required_boosts) {
+Room.prototype.ensureBoostList = function(required_boosts, verbose) {
     var retval = true;;
     for (var i = 0; i < required_boosts.length; i++) {
-        var result = this.ensureBoostAvailable(required_boosts[i]);
-        console.log(required_boosts[i] + ': ' + result);
+        var result = this.ensureBoostAvailable(required_boosts[i], verbose);
+        if(verbose) {
+            console.log(required_boosts[i] + ': ' + result);
+        }
         if (result === false) {
             retval = false;
         }
@@ -279,13 +325,18 @@ Room.prototype.assignBoost = function(btype) {
     }
     var lab_to_assign = rlabs[0];
     var mincount = this.terminal.store[btype];
-    if (mincount == undefined || mincount < 2000) {
-        var acq = this.terminal.acquireMineralAmount(btype, 3000, 3000);
+    if (mincount == undefined) {
+        mincount = 0;
+    }
+    var desired_amount = 3000;
+    if (mincount < desired_amount) {
+        var gap_amount = desired_amount - mincount;
+        var acq = this.terminal.acquireMineralAmount(btype, gap_amount, 3000);
         if (!acq) {
              console.log(this.name + ': assignBooster: we do not have any of following mineral, anywhere: ' + btype);
              return false;
         }
     }
-    Memory[MEMORY_GLOBAL_SCIENCELABS][lab_to_assign.id] = {'mineralid': btype, 'purpose': 'boost', 'action': 'fill'};
+    Memory[MEMORY_GLOBAL_SCIENCELABS][lab_to_assign.id] = {'roomname': this.name, 'mineralid': btype, 'purpose': 'boost', 'action': 'fill'};
     return true;
 }
