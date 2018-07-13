@@ -1,4 +1,3 @@
-
 Room.prototype.getEnergyPriority = function() {
     // Returns a number indicating how important it is that this room have energy in its terminal.
     // Higher = better.
@@ -381,11 +380,14 @@ Room.prototype.markNuclearTargets = function() {
 
 Room.prototype.createRoadNetwork = function() {
     if (!this.isMine() && !this.isRemote()) {
-        this.memory[MEMORY_ROAD_NETWORK] = [];
+        if (this.memory[MEMORY_ROAD_NETWORK]) {
+            delete this.memory[MEMORY_ROAD_NETWORK];
+        }
         return false;
     }
     var origins = this.getFlagsByType(FLAG_ROADORIGIN);
     if (!origins || !origins.length) {
+        var myspawns = this.find(FIND_MY_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN); } });
         if (myspawns.length) {
             this.createFlagByType(FLAG_ROADORIGIN, myspawns[0].pos.x, myspawns[0].pos.y);
             console.log(this.name + ': createRoadNetworkk: FAIL, no origin flag... created one on the spawner.');

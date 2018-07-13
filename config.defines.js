@@ -131,6 +131,7 @@ global.MEMORY_TOWER_FRUSTRATION = 'tower_frustration';
 // RCONFIG sub-categories
 global.MEMORY_RC_PSR = 'spawn_room';
 global.MEMORY_RC_BSR = 'backup_spawn_room';
+global.MEMORY_RC_BSS = 'backup_spawn_steps';
 global.MEMORY_RC_SHORTNAME = 'shortname';
 global.MEMORY_RC_SOURCES = 'sources';
 global.MEMORY_RC_ASSIGNMENTS = 'assignments';

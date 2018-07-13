@@ -23,8 +23,8 @@ module.exports =  {
         if(rr == ERR_NOT_IN_RANGE) {
             creep.moveToRUP(buildTarget);
         } else if (rr == ERR_RCL_NOT_ENOUGH) {
-            new RoomVisual(creep.room.name).circle(target.pos, {radius: 0.5, opacity: 0.3, stroke: 'red'});
-            target.remove();
+            new RoomVisual(creep.room.name).circle(buildTarget.pos, {radius: 0.5, opacity: 0.3, stroke: 'red'});
+            buildTarget.remove();
         }
         return true;
 	}

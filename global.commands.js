@@ -107,6 +107,24 @@ Room.prototype.seekSecondary = function(force_recalc) {
     if (bsr && bsr != this.name && Game.rooms[bsr] && Game.rooms[bsr].isMine() && !force_recalc) {
         return bsr;
     }
+    
+    if (this.isRemote()) {
+        var rconfig = this.memory[MEMORY_RCONFIG];
+        if (!rconfig) {
+            return false;
+        }
+        var spawn_room = rconfig[MEMORY_RC_PSR];
+        if (Memory.rooms[spawn_room] && Memory.rooms[spawn_room][MEMORY_RCONFIG] && Memory.rooms[spawn_room][MEMORY_RCONFIG][MEMORY_RC_BSR]) {
+            Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name][MEMORY_RC_BSR] = Memory.rooms[spawn_room][MEMORY_RCONFIG][MEMORY_RC_BSR];
+            this.memory[MEMORY_RCONFIG][MEMORY_RC_BSR] = Memory.rooms[spawn_room][MEMORY_RCONFIG][MEMORY_RC_BSR];
+            if (Memory.rooms[spawn_room][MEMORY_RC_BSS]) {
+                Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name][MEMORY_RC_BSS] = Memory.rooms[spawn_room][MEMORY_RCONFIG][MEMORY_RC_BSS];
+                this.memory[MEMORY_RCONFIG][MEMORY_RC_BSS] = Memory.rooms[spawn_room][MEMORY_RCONFIG][MEMORY_RC_BSS];
+            }
+            return true;
+        }
+        return false;
+    }
 
     var alts = global.LIST_BASES();
     var champ_name = undefined;
@@ -144,10 +162,12 @@ Room.prototype.seekSecondary = function(force_recalc) {
         }
     }
     if (champ_name) {
+        Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name][MEMORY_RC_BSR] = champ_name;
+        Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name][MEMORY_RC_BSS] = champ_steps;
+        this.memory[MEMORY_RCONFIG][MEMORY_RC_BSR] = champ_name;
+        this.memory[MEMORY_RCONFIG][MEMORY_RC_BSS] = champ_steps;
         if (champ_name != bsr) {
-            console.log(this.name + ': would be assigned secondary of: ' + champ_name + ' based on steps of ' + champ_steps + ' (current: ' + bsr +')');
-            Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['backup_spawn_room'] = champ_name;
-            Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['backup_spawn_steps'] = champ_steps;
+            console.log(this.name + ': is assigned secondary of: ' + champ_name + ' based on steps of ' + champ_steps + ' (current: ' + bsr +')');
         } else {
             console.log(this.name + ': keeps existing secondary of: ' + champ_name + ' based on steps of ' + champ_steps);
         }
@@ -155,7 +175,7 @@ Room.prototype.seekSecondary = function(force_recalc) {
     } else {
         console.log(this.name + ': no secondary to assign.');
     }
-    return undefined;
+    return true;
 }
 
 global.LIST_BASES = function() {

@@ -34,20 +34,14 @@ global.EXPANSION_PROCESS = function() {
             console.log (etarget + ': cannot proceed with expansion as we have no visibility to target room: ' + etarget);
             return false;
         }
+        if (!robj.isMine()) {
+           console.log (etarget + ': waiting for room to be claimed. Send a claimer.');
+           return false;
+        }
         var rconfig = GET_ROOM_CONFIG(etarget);
         if (!rconfig) {
-            if (Game.rooms[etarget] == undefined) {
-                console.log (etarget + ': no rconfig or room visibility... send a unit there!');
-            } else {
-                console.log (etarget + ': no rconfig - forcing full update!');
-                robj.fullUpdate();
-            }
+            console.log (etarget + ': waiting for claimer to claim the room and generate room config: ' + etarget);
             return false;
-        }
-
-        if (!robj.isMine()) {
-           console.log (etarget + ': waiting for room to be claimed.');
-           return false;
         }
 
         var myspawns = robj.find(FIND_MY_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN); } });

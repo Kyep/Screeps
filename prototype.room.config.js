@@ -206,6 +206,17 @@ Room.prototype.getConfig = function() {
     return myconf;
 }
 
+Room.prototype.getBSR = function() {
+    var myconf = this.memory[MEMORY_RCONFIG];
+    if (!myconf) {
+        return false;
+    }
+    if (myconf[MEMORY_RC_BSR]) {
+        return myconf[MEMORY_RC_BSR];
+    }
+    return false;
+}
+
 Room.prototype.createConfig = function() {
     if (!this.inEmpire()) {
         console.log('createConfig: ' + this.name + ' is not in empire.');
