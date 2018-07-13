@@ -138,15 +138,15 @@ module.exports = {
                 if (amount_needed == 0) {
                     continue;
                 }
-                if (creep.room.terminal.store[rock] == undefined || creep.room.terminal.store[rock] < 3000) {
+                if (creep.room.terminal.store[rock] == undefined || creep.room.terminal.store[rock] < amount_needed) {
                     if (Game.time % 5 === 0) {
-                        if (creep.room.terminal.acquireMineralAmount(rock, 3000, 6000)) {
+                        if (creep.room.terminal.acquireMineralAmount(rock, amount_needed, 3000)) {
                             console.log(creep.name + ': short on ' + rock + ' in ' + creep.room.name + ' for assignment! Pulled in extra from another room!');
                             return;
                         } else {
-                            //console.log(creep.name + ': short on ' + rock + ' in ' + creep.room.name + ' no others found anywhere!');
+                            console.log(creep.name + ': short on ' + rock + ' in ' + creep.room.name + ' no others found anywhere!');
                         }
-                        creep.say('short ' + rock); 
+                        creep.say('short ' + amount_needed + ' of ' + rock); 
                     }
                     continue;
                 }
@@ -168,7 +168,7 @@ module.exports = {
             }
         }
         var sumc = _.sum(creep.carry);
-        creep.say(sumc);
+        //creep.say(sumc);
         if (sumc > 0) {
             var xfer = RESOURCE_ENERGY;
             if (leyslist.length > 0) {
@@ -179,6 +179,7 @@ module.exports = {
                 creep.moveToRUP(myterminal);
             }
         }
+        creep.wander();
         creep.sleepFor(3);
 	}
 };

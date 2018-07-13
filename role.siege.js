@@ -137,9 +137,6 @@ module.exports = {
 
         if (work_parts > 0 || melee_parts > 0) {
             if (!target) {
-
-                        
-                
                 var sflags = creep.room.getFlagsByType(FLAG_SIEGETARGET);
                 if (sflags.length) {
                     var flag = sflags[0];
@@ -212,7 +209,13 @@ module.exports = {
                 creep.memory[MEMORY_FRUSTRATION] = frustration;
                 creep.sleepFor(1);
             } else {
-                creep.sleepFor(3);
+                target = creep.getClosestHostileConstructionSite();
+                if (target) {
+                    creep.moveToRUP(target);
+                    return;
+                } else {
+                    creep.sleepFor(3);
+                }
             }
         }
         

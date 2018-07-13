@@ -371,6 +371,11 @@ Creep.prototype.avoidEdges = function() {
     return false;
 }
 
+Creep.prototype.wander = function() {
+    this.move(_.sample([TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT, LEFT, RIGHT]));
+}
+
+
 Creep.prototype.isAtDestinationRoom = function() {
     if (this.memory[MEMORY_DEST] == undefined) {
         console.log(this.name + 'checked isAtDestinationRoom with no MEMORY_DEST');

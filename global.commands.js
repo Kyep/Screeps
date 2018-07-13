@@ -476,7 +476,9 @@ global.SHOW_INCOMING_NUKES = function() {
         }
         var incoming = grm.find(FIND_NUKES);
         if (incoming.length > 0) {
-            console.log(rname + ': ' + incoming.length + ' incoming nuke(s)');
+            var msg = rname + ': ' + incoming.length + ' incoming nuke(s)';
+            console.log(msg);
+            Game.notify(msg);
         }
     }
 }

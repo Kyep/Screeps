@@ -136,7 +136,18 @@ module.exports = {
             // If we are home, get away from the room edge, then check for links.
             if (creep.room.name == creep.memory[MEMORY_HOME]) {
                 if (creep.pos.x < 2 || creep.pos.x > 47 || creep.pos.y < 2 || creep.pos.y > 47) {
-                    // Continue in a little bit, get off the edge before changing state.
+                    var needs_flag = true;
+                    var rdests = creep.room.getFlagsByType(FLAG_ROADDEST);
+                    if (rdests.length) {
+                        var clflag = creep.pos.findClosestByRange(rdests);
+                        if (creep.pos.getRangeTo(clflag) < 20) {
+                            needs_flag = false;
+                        }
+                    }
+                    if (needs_flag) {
+                        creep.room.createFlagByType(FLAG_ROADDEST, creep.pos.x, creep.pos.y);
+                        console.log(creep.name+ ': created DEST flag in ' + creep.room.name);
+                    }
                 } else {
                     creep.memory[MEMORY_JOB] = JOB_USELINK;
                 }

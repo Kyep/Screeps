@@ -31,6 +31,7 @@ require('prototype.room.fortify');
 require('prototype.room.remote');
 require('prototype.room.defense');
 require('prototype.room.boosts');
+//require('prototype.room.safearea');
 require('prototype.structures_all');
 require('prototype.structure');
 require('prototype.source');
@@ -101,6 +102,12 @@ module.exports.loop = function () {
 
     var cpu_heavytick = false;
 
+
+
+    //Game.rooms['W8S4'].analyse_empty();
+
+
+
     if(Game.shard.name == 'shard1') {
 
         if(Game.time % 1990 === 0) {
@@ -145,6 +152,10 @@ module.exports.loop = function () {
             HEAP_TEST();
             RUN_SIEGEPLANS();
         }
+        
+        if(Game.time % 5000 === 0) {
+            SHOW_INCOMING_NUKES();
+        }
 
         // ----------------------------------------------------------------------------------
         // SECTION: Global actions that are done every tick
@@ -164,6 +175,8 @@ module.exports.loop = function () {
 
         SCIENCE_PROCESS();
         CPU_SECTION('science', true);
+
+
 
     }
 
