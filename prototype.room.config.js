@@ -372,29 +372,7 @@ Room.prototype.makeAssignments = function(myconf) {
     }
 
     var rlvl = this.getLevel();
-    if (rlvl >= 4) {
-        // We are a lvl 4-8 base
-        //console.log(this.name + ': makeAssignments assigned normal base units');
-        var template_name = 'bharvester';
-        if (this.energyCapacityAvailable < 800) {
-            template_name = 'sharvester';
-        }
-        for (var skey in myconf[global.MEMORY_RC_SOURCES]) {
-            var snum = 1;
-            if (myconf[global.MEMORY_RC_SOURCES][skey]['spaces'] == 1) {
-                myconf = this.addSourceAssignment(myconf, skey, { 'sharvester': 1}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
-            } else if (rlvl == 8) {
-                myconf = this.addSourceAssignment(myconf, skey, { template_name: 2 }, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
-            } else {
-                if (this.storage) {
-                    myconf = this.addSourceAssignment(myconf, skey, { template_name: 2}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
-                } else {
-                    myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
-                }
-            }
-            snum++;
-        }
-    } else if (rlvl >= 2) {
+    if (rlvl >= 2 && (rlvl < 4 || this.energyCapacityAvailable < 800)) {
         // We are a level 2-3 base
         for (var skey in myconf[global.MEMORY_RC_SOURCES]) {
             var n2a = 2;
@@ -402,6 +380,24 @@ Room.prototype.makeAssignments = function(myconf) {
                 n2a = myconf[global.MEMORY_RC_SOURCES][skey]['spaces'];
             }
             myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': n2a}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
+        }
+    } else if (rlvl >= 4) {
+        // We are a lvl 4-8 base
+        //console.log(this.name + ': makeAssignments assigned normal base units');
+        for (var skey in myconf[global.MEMORY_RC_SOURCES]) {
+            var snum = 1;
+            if (myconf[global.MEMORY_RC_SOURCES][skey]['spaces'] == 1) {
+                myconf = this.addSourceAssignment(myconf, skey, { 'sharvester': 1}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
+            } else if (rlvl == 8) {
+                myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 2 }, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
+            } else {
+                if (this.storage) {
+                    myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 2}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
+                } else {
+                    myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
+                }
+            }
+            snum++;
         }
     } else if (this.isMine()) {
         // We are a level 1 base
@@ -483,7 +479,7 @@ Room.prototype.makeAssignments = function(myconf) {
         var projectsList = this.find(FIND_MY_CONSTRUCTION_SITES, { filter: (csite) => { return (csite.structureType != STRUCTURE_CONTAINER); } });
         var repairablehp = 0;
         if (this.isMine() && this.storage && this.storage.store[RESOURCE_ENERGY] > 20000) {
-            repairablehp = this.getRepairableHP([], 0); 
+            repairablehp = this.getRepairableHP([], TOWER_POWER_REPAIR + 1); 
         }
         var buildablehp = 0;
         if (projectsList.length > 0) {
