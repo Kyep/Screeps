@@ -26,6 +26,7 @@
         "roadorigin": [COLOR_WHITE, COLOR_BLUE],
         "roaddest": [COLOR_WHITE, COLOR_RED],
         "hideout": [COLOR_WHITE, COLOR_GREEN],
+        "expand": [COLOR_WHITE, COLOR_PURPLE],
         
         // MOB AI, RED type
         "mobrallymil": [COLOR_RED, COLOR_RED],

@@ -55,7 +55,7 @@ module.exports = {
             }
             var origins = creep.room.getFlagsByType(FLAG_ROADORIGIN);
             if (!origins.length) {
-                //creep.room.createFlagByType(FLAG_ROADORIGIN, creep.pos.x, creep.pos.y);
+                creep.room.createFlagByType(FLAG_ROADORIGIN, creep.pos.x, creep.pos.y);
                 console.log(creep.name+ ': created flag in ' + creep.room.name);
             }
             // If we are there, but >=75% full, go back.

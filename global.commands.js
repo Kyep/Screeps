@@ -15,7 +15,7 @@ global.ADD_SIEGEPLAN = function(ticksahead, fromroom, destroom, waypoints, destx
     }
     current_plans[Game.time + ticksahead] = [fromroom, destroom, waypoints, destx, desty];
     Memory['MEMORY_GLOBAL_SIEGEPLANS'] = current_plans;
-    return true;    
+    return true;
 }
 
 global.RUN_SIEGEPLANS = function(verbose) {
@@ -24,7 +24,7 @@ global.RUN_SIEGEPLANS = function(verbose) {
         var timetogo = starttime - Game.time;
         var optsarray = current_plans[starttime];
         if (timetogo < 0) {
-            
+
             if(!Game.rooms[optsarray[0]]) {
                 delete Memory['MEMORY_GLOBAL_SIEGEPLANS'][starttime];
                 return true;
@@ -66,11 +66,11 @@ global.REBUILD_EMPIRE_DATA = function() {
 
     // Add secondaries for bases.
     global.VERIFY_SECONDARIES(true);
-    
+
     // Completely wipe and regenerate all room configs.
 
     global.REBUILD_RCONFIG();
-    
+
 }
 
 global.REBUILD_RCONFIG = function() {
@@ -82,19 +82,19 @@ global.REBUILD_RCONFIG = function() {
     global.ESPIONAGE_REGEN_TARGETS();
 }
 
-global.VERIFY_SECONDARIES = function() {
+global.VERIFY_SECONDARIES = function(force) {
     var bases = global.LIST_BASES();
     for (var i = 0; i < bases.length; i++) {
         var rname = bases[i];
-        if (!Game.rooms[rname]){ 
+        if (!Game.rooms[rname]){
             console.log(rname + ' not defined.');
             continue;
         }
-        if (!Game.rooms[rname].inEmpire()){ 
+        if (!Game.rooms[rname].inEmpire()){
             console.log(rname + ' owned, but not in empire!');
             continue;
         }
-        Game.rooms[rname].seekSecondary();
+        Game.rooms[rname].seekSecondary(force);
     }
 }
 
@@ -103,11 +103,11 @@ Room.prototype.seekSecondary = function(force_recalc) {
         return false;
     }
     var bsr = Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT][this.name]['backup_spawn_room'];
-    
+
     if (bsr && bsr != this.name && Game.rooms[bsr] && Game.rooms[bsr].isMine() && !force_recalc) {
         return bsr;
     }
-    
+
     var alts = global.LIST_BASES();
     var champ_name = undefined;
     var champ_steps = 99999999;
@@ -134,7 +134,7 @@ Room.prototype.seekSecondary = function(force_recalc) {
         var pflength = pfpath.length;
         var pfops = pfobj['ops'];
         if (pfobj['incomplete']) {
-            console.log(this.name + ' <- ' + r2 + ': incomplete path from: ' + JSON.stringify(my_spawns[0].pos) + ' to ' + JSON.stringify(their_spawns[0].pos) + ' in ' + pfops + ' operations.');
+            console.log(this.name + ' <- ' + r2 + ': incomplete path of ' + pflength + ' steps from: ' + JSON.stringify(my_spawns[0].pos) + ' to ' + JSON.stringify(my_sources[0].pos) + ' in ' + pfops + ' operations.');
             continue;
         }
         console.log(this.name + ': considering secondary: ' + r2 + ' based on steps of ' + pflength);
@@ -281,7 +281,7 @@ global.CHECK_HAULER_BODIES = function(sid) {
             if (cr != undefined && cr > 1) {
                 crtext = '(' + cr + ')';
             }
-            s_msgs.push(skey + ': ' + actual + crtext + ' / ' + needed);   
+            s_msgs.push(skey + ': ' + actual + crtext + ' / ' + needed);
         }
         console.log(rname + ': ' + s_msgs.join(', '));
     }
@@ -323,8 +323,8 @@ global.REPORT_CSITES = function() {
 
 
 global.REPORT_TERMINALS = function(mintype) {
-    for (var rname in Game.rooms) { 
-        if(Game.rooms[rname].terminal) { 
+    for (var rname in Game.rooms) {
+        if(Game.rooms[rname].terminal) {
             if (mintype && Game.rooms[rname].terminal.store[mintype] == undefined) {
                 continue;
             }
@@ -346,8 +346,8 @@ global.SHOW_BOOSTERS = function() {
 
 global.MINERAL_INVENTORY = function() {
     var minobj = {}
-    for (var rname in Game.rooms) { 
-        if(Game.rooms[rname].isMine() && Game.rooms[rname].terminal) { 
+    for (var rname in Game.rooms) {
+        if(Game.rooms[rname].isMine() && Game.rooms[rname].terminal) {
             for (var mtype in Game.rooms[rname].terminal.store) {
                 var mcount = Game.rooms[rname].terminal.store[mtype];
                 if (!minobj[mtype]) {
@@ -433,7 +433,7 @@ global.RECREATE_ROAD_NETWORKS = function() {
         if (!psr || !Game.rooms[psr] || Game.rooms[psr].getLevel() < 4) {
             continue;
         }
-        
+
         var grm = Game.rooms[rname];
         grm.memory[MEMORY_ROAD_NETWORK] = [];
         grm.createRoadNetwork();
@@ -479,15 +479,15 @@ global.ENERGY_STATUS = function() {
         var total_energy = storage_energy + terminal_energy;
         console.log(rname + ': Storage:' + storage_energy.toLocaleString('en') + ' (Term:' + terminal_energy.toLocaleString('en') + ') L:' + rm.getLevel() + ' P:' + rp);
     }
-    
+
 }
 
 
 global.REPORT_EARNINGS_SOURCES = function(filtervalue) {
     var report = {}
     for (var cr in Game.creeps) {
-        var earnings = Game.creeps[cr].getEarnings(); 
-        var ept = Math.round(Game.creeps[cr].getEarningsPerTick()); 
+        var earnings = Game.creeps[cr].getEarnings();
+        var ept = Math.round(Game.creeps[cr].getEarningsPerTick());
         var tal = Game.creeps[cr].getTicksAlive();
 
         if (Game.creeps[cr].memory[MEMORY_SOURCE] == undefined) {
@@ -520,7 +520,7 @@ global.REPORT_EARNINGS_SOURCES = function(filtervalue) {
         for (sname in report[rname]) {
             report[rname][sname]['ept'] = Math.round(report[rname][sname]['earnings'] / report[rname][sname]['ticks']);
             if (filtervalue == undefined || report[rname][sname]['ept'] < filtervalue) {
-                console.log(rname + '/' + sname + ': has earned ' + report[rname][sname]['earnings'] + ' over ' + report[rname][sname]['ticks'] + ' or EPT: ' + report[rname][sname]['ept']); 
+                console.log(rname + '/' + sname + ': has earned ' + report[rname][sname]['earnings'] + ' over ' + report[rname][sname]['ticks'] + ' or EPT: ' + report[rname][sname]['ept']);
             }
             r_e += report[rname][sname]['earnings'];
             r_t += report[rname][sname]['ticks'];
@@ -528,7 +528,7 @@ global.REPORT_EARNINGS_SOURCES = function(filtervalue) {
         var r_ept = Math.round(r_e/r_t);
         report[rname]['ept'] = r_ept;
         if (filtervalue == undefined || r_ept < filtervalue) {
-            console.log(rname +'/ALL has earned ' + r_e + ' over ' + r_t + ' or EPT: ' + ROUND_NUMBER_TO_PLACES(r_ept, 2)); 
+            console.log(rname +'/ALL has earned ' + r_e + ' over ' + r_t + ' or EPT: ' + ROUND_NUMBER_TO_PLACES(r_ept, 2));
         }
     }
 
@@ -542,7 +542,7 @@ global.REPORT_CREEPS = function(prune) {
             if (prune == undefined) {
                 // do nothing.
             } else if (prune == 1) {
-               Game.creeps[cr].disableRenew(); 
+               Game.creeps[cr].disableRenew();
             } else if (prune == 2) {
                 Game.creeps[cr].memory[MEMORY_ROLE] = 'recycler';
             } else if (prune == 3) {
@@ -594,9 +594,9 @@ global.ROOMLIST_ATTACK_WAVE = function (roomlist, unit_type, dest_room, roompath
         console.log('arg 3 must be dest_room');
         return -1;
     }
-    
+
     var tprops = global.TEMPLATE_PROPERTIES(unit_type);
-    
+
     var spawncount = 0;
     for (var rname in Game.rooms) {
         if (roomlist.indexOf(rname) != -1) {
@@ -690,14 +690,14 @@ global.READY_LAUNCHERS = function() {
                 }
                 if (g_storage < 5000) {
                     if (g_amt == 5000) {
-                        
+
                     } else if (resource_xfer) {
                         console.log(Game.structures[id].room.name + ': want to acquire GHODIUM next cycle.');
                     } else {
                         resource_xfer = true;
                         var retval = Game.structures[id].room.terminal.acquireMineralAmount(RESOURCE_GHODIUM, 5000, 5000);
                         console.log(Game.structures[id].room.name + ': acquiring GHODIUM: ' + retval);
-                    }        
+                    }
                 }
             }
             if (Game.structures[id].cooldown > 0) {
@@ -751,29 +751,6 @@ global.IS_NUKABLE = function(roomname, silent) {
     return valid_launchers.length;
 }
 
-global.GET_ALL_NUKE_FLAGS = function() {
-    var flag_colors = FLAG_TYPE_TO_COLORS_COLORS(FLAG_GROUNDZERO);
-    var c1 = flag_colors[0];
-    var c2 = flag_colors[1];
-    return _.filter(Game.flags, (flag) => (flag.color == c1) && (flag.secondaryColor == c2));
-}
-
-global.LIST_ALL_NUKE_FLAGS = function() {
-    var nuke_flags = global.GET_ALL_NUKE_FLAGS();
-    for (var i = 0; i < nuke_flags.length; i++) {
-        console.log('Nuke target: ' + nuke_flags[i].pos);
-    }
-    return true;
-}
-
-global.CLEAR_ALL_NUKE_FLAGS = function() {
-    var nuke_flags = global.GET_ALL_NUKE_FLAGS();
-    for (var i = 0; i < nuke_flags.length; i++) {
-        console.log('Nuke target: ' + nuke_flags[i].pos + ' - deleted.');
-        nuke_flags[i].remove();
-    }
-    return true;
-}
 
 global.GET_NUKE_FLAG_IN_ROOM = function(roomname) {
     var flag_colors = FLAG_TYPE_TO_COLORS_COLORS(FLAG_GROUNDZERO);
@@ -790,16 +767,16 @@ global.GET_NUKE_FLAG_IN_ROOM = function(roomname) {
 global.LAUNCH_NUKE = function(roomname) {
     var available_nukers = global.READY_LAUNCHERS();
 
-    console.log('NUKE: ' + available_nukers.length + ' launcher(s) available.'); 
-    
+    console.log('NUKE: ' + available_nukers.length + ' launcher(s) available.');
+
     var target_flag = global.GET_NUKE_FLAG_IN_ROOM(roomname);
-    
+
     if (target_flag == undefined) {
         console.log('NUKE: no target target flag in: ' + roomname);
         return 0;
     }
     var missile_target_pos = target_flag.pos;
-    
+
     for (var i = 0; i < available_nukers.length; i++) {
         var thenuker = Game.structures[available_nukers[i]];
         if (Game.map.getRoomLinearDistance(thenuker.room.name, roomname) > NUKE_RANGE) {
@@ -810,12 +787,12 @@ global.LAUNCH_NUKE = function(roomname) {
         var result = thenuker.launchNuke(missile_target_pos);
         if (result == OK) {
             console.log('NUCLEAR LAUNCH DETECTED! ' + result);
-            
+
             // Delete the target flag
             target_flag.remove();
-            
+
             return 1;
-            
+
         } else {
             console.log('RESULT: ' + result);
         }

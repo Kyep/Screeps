@@ -1,5 +1,4 @@
 // GLOBAL memory keys, IE: Memory['this_key']
-global.MEMORY_GLOBAL_EXPANSION = 'expansion';
 global.MEMORY_GLOBAL_ESPIONAGE = 'espionage';
 global.MEMORY_GLOBAL_CPUSTATS = 'cpustats';
 global.MEMORY_GLOBAL_GCONFIG = 'gconfig';
@@ -153,7 +152,7 @@ global.BOOST_HEAL = 'XLHO2';
 global.BOOST_TOUGH = 'XGHO2';
 global.BOOST_RANGED = 'XKHO2';
 global.ALL_SIEGE_BOOSTS = [BOOST_MOVE, BOOST_WORK, BOOST_MELEE, BOOST_HEAL, BOOST_TOUGH, BOOST_RANGED];
-
+global.BOOST_ENABLED_SHARDS = ['shard1'];
 
 global.COLOR_HARVEST = '#ffffff';
 global.COLOR_UPGRADE = '#0000ff';
@@ -172,3 +171,4 @@ global.FLAG_ROADDEST = 'roaddest';
 global.FLAG_RALLYMIL = 'mobrallymil';
 global.FLAG_SIEGETARGET = 'siegetarget';
 global.FLAG_MININGPOS = 'miningpos';
+global.FLAG_EXPAND = 'expand';

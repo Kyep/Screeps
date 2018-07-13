@@ -10,6 +10,7 @@ require('global.espionage');
 require('global.expansion');
 require('global.gclfarm');
 
+require('global.flag');
 require('global.creep');
 require('global.structure');
 require('global.spawning');
@@ -39,14 +40,14 @@ require('lib.loanuserlist');
 
 
 // ---------------------------
-// BEGIN MAIN LOOP 
+// BEGIN MAIN LOOP
 // ---------------------------
 
 module.exports.loop = function () {
-    
+
     // ----------------------------------------------------------------------------------
     // SECTION: CPU tracking (must come first)
-    
+
     global.GLOBALCONFIG = global.GET_ALL_GLOBAL_CONFIG();
 
     if (typeof Memory[MEMORY_GLOBAL_CPUSTATS] === 'undefined') {
@@ -65,11 +66,11 @@ module.exports.loop = function () {
 
     global.cpu_thistick = {}
     CPU_SECTION('requirefiles');
-    
+
     // ----------------------------------------------------------------------------------
     // SECTION: setup (has to come second)
     var divisor = CPU_GET_DIVISOR();
-    
+
     for(var name in Memory.creeps) {
         if(!Game.creeps[name]) {
             delete Memory.creeps[name];
@@ -84,7 +85,7 @@ module.exports.loop = function () {
     //global.LOANlist = [];
 
     CPU_SECTION('setup');
-    
+
 
 
     // ----------------------------------------------------------------------------------
@@ -113,41 +114,41 @@ module.exports.loop = function () {
             cpu_heavytick = true;
             CPU_SECTION('espionage-regen', true);
         }
-    
+
         if(Game.time % 500 === 0) {
             UPDATE_MARKET_ORDERS();
             CPU_SECTION('market-order-update', true);
             global.REPORT_STRUCTURES(false, false); // auto-builds buildable structures that have appropriate flags
             CPU_SECTION('report-structures', true);
         }
-    
+
         if(Game.time % 2000 === 0) {
             RECREATE_ROAD_NETWORKS();
             CPU_SECTION('recreate-road-networks', true);
         }
-    
+
         if(Game.time % 100 === 0) {
             UPDATE_FORTHP();
             CPU_SECTION('update-forthp', true);
         }
-    
+
         if(Game.time % 300 === 0) {
             CHECK_FOR_OVERBURDENED_SPAWNERS();
             CPU_SECTION('rooms-partsalert', true);
         }
-    
+
         if(Game.time % 25 === 0) {
             GCLFARM_PROCESS();
         }
-    
+
         if(Game.time % 500 === 0) {
             HEAP_TEST();
             RUN_SIEGEPLANS();
         }
-        
+
         // ----------------------------------------------------------------------------------
         // SECTION: Global actions that are done every tick
-        
+
         var lastFour = Game.time % 10000;
         var observe_energy = 0;
         if (lastFour == 9999) {
@@ -155,12 +156,12 @@ module.exports.loop = function () {
         }
         UPDATE_OBSERVERS(observe_energy);
         CPU_SECTION('update-observers');
-    
+
         if (!cpu_heavytick) {
             ESPIONAGE();
             CPU_SECTION('espionage-main');
         }
-    
+
         SCIENCE_PROCESS();
         CPU_SECTION('science', true);
 
@@ -168,16 +169,16 @@ module.exports.loop = function () {
 
     RUN_CREEPS();
     CPU_SECTION('creep-life');
-    
+
     if(Game.shard.name =='shard0') {
         return;
     }
-    
+
     RUN_STRUCTURES();
     CPU_SECTION('structure-life');
-    
+
     // ----------------------------------------------------------------------------------
-    // SECTION: SECTION: Global actions which are done every X ticks, but X varies according to our current CPU bucket. 
+    // SECTION: SECTION: Global actions which are done every X ticks, but X varies according to our current CPU bucket.
 
     // DEFCON MANAGEMENT
     for(var rname in Game.rooms) {
@@ -236,7 +237,9 @@ module.exports.loop = function () {
                     }
                 }
                 if (Game.rooms[rname].isFortified() || Game.rooms[rname].priorityRebuild() || Game.rooms[rname].priorityDefend()) {
-                    Game.rooms[rname].ensureBoostAvailable(BOOST_MELEE);
+                    if (BOOST_ENABLED_SHARDS.includes(Game.shard.name)) {
+                        Game.rooms[rname].ensureBoostAvailable(BOOST_MELEE);
+                    }
                     if (Game.rooms[rname].terminal && Game.rooms[rname].terminal.isActive() && Game.rooms[rname].storage && Game.rooms[rname].storage.isActive() && Game.rooms[rname].storage.store[RESOURCE_ENERGY] < 250000) {
                         var min_surplus = 10000;
                         if (Game.rooms[rname].priorityRebuild() || Game.rooms[rname].priorityDefend()) {
@@ -252,7 +255,7 @@ module.exports.loop = function () {
             }
         }
         CPU_SECTION('terminal-transfer', true);
-        
+
 
         for(var rname in Game.rooms) {
             if(Game.rooms[rname].inEmpire()) {
@@ -260,13 +263,13 @@ module.exports.loop = function () {
             }
         }
         CPU_SECTION('assignment-updates', true);
-        
+
 
         HANDLE_SPAWNING();
         CPU_SECTION('creep-spawning', true);
-    
+
     }
-    
+
     CPU_SECTION_FINAL();
-    Memory[MEMORY_GLOBAL_TICKCOMPLETED] = Game.time;    
+    Memory[MEMORY_GLOBAL_TICKCOMPLETED] = Game.time;
 }

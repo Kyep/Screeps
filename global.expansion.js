@@ -1,40 +1,19 @@
 "use strict";
 
-global.EXPANSION_SET = function(rname, lvl) {
-    Memory[MEMORY_GLOBAL_EXPANSION] = {'room': rname, 'gcl': lvl}
-}
-
 global.EXPANSION_RESET = function() {
-    Memory[MEMORY_GLOBAL_EXPANSION] = {}
+    CLEAR_ALL_FLAGS_OF_TYPE(FLAG_EXPAND);
 }
 
 global.EXPANSION_GETROOM = function() {
-    var emem = Memory[MEMORY_GLOBAL_EXPANSION];
-    if (!emem) {
+    var bases = LIST_BASES();
+    if (bases.length >= Game.gcl.level) {
         return undefined;
     }
-    var etarget = emem['room'];
-    if (!etarget) {
+    var exp_flags = GET_ALL_FLAGS_OF_TYPE(FLAG_EXPAND);
+    if (exp_flags.length == 0) {
         return undefined;
     }
-    if (!emem['gcl'] || emem['gcl'] > Game.gcl.level) {
-        return undefined;
-    }
-    return etarget;
-}
-
-global.EXPANSION_CANEXPAND = function() {
-    return etarget;
-    var rooms_owned = 0;
-    for (var rname in Game.rooms) {
-        if (Game.rooms[rname].isMine()) {
-            rooms_owned++;
-        }
-    }
-    if (rooms_owned < Game.gcl.level) {
-        return true;
-    }
-    return false;
+    return exp_flags[0].room.name;
 }
 
 global.EXPANSION_PROCESS = function() {
@@ -42,7 +21,7 @@ global.EXPANSION_PROCESS = function() {
         // 1. add room to config.empire, with primary spawn room (itself) and backup spawn room (where the claimer will come from)
         // 2. run: EXPANSION_SET(roomname, gcl_at_which_to_claim_it);
         // 3. drop a flag (yellow/red) in the target room to mark where the spawn should be.
-        // 4. 
+        // 4.
 
         var etarget = EXPANSION_GETROOM();
         if (!etarget) {
@@ -60,17 +39,17 @@ global.EXPANSION_PROCESS = function() {
             if (Game.rooms[etarget] == undefined) {
                 console.log (etarget + ': no rconfig or room visibility... send a unit there!');
             } else {
-                //console.log (etarget + ': no rconfig - forcing full update!');
+                console.log (etarget + ': no rconfig - forcing full update!');
                 robj.fullUpdate();
             }
-            return;
+            return false;
         }
-        
+
         if (!robj.isMine()) {
-            console.log (etarget + ': waiting for room to be claimed.');
-           return;
+           console.log (etarget + ': waiting for room to be claimed.');
+           return false;
         }
-        
+
         var myspawns = robj.find(FIND_MY_STRUCTURES, { filter: (structure) => { return (structure.structureType == STRUCTURE_SPAWN); } });
         var csites = robj.find(FIND_MY_CONSTRUCTION_SITES);
         if (myspawns.length) {
@@ -82,14 +61,14 @@ global.EXPANSION_PROCESS = function() {
                     }
                 }
             }
-            EXPANSION_RESET();
+            robj.deleteFlagsByType(FLAG_EXPAND);
             console.log('EXPAND: ' + robj.name + ': CLAIMED SUCCESSFULLY!');
         } else if (csites.length) {
             var csite = csites[0];
-            console.log('EXPAND: ' + robj.name + ': WAIT FOR SPAWNER TO BE BUILT, PROGRESS: ' + csite.progress + '/' + csite.progressTotal);
+            //console.log('EXPAND: ' + robj.name + ': WAIT FOR SPAWNER TO BE BUILT, PROGRESS: ' + csite.progress + '/' + csite.progressTotal);
         } else {
             robj.checkStructures();
         }
-        return;
+        return true;
 
 }

@@ -190,7 +190,7 @@ Room.prototype.deleteConstructionSites = function() {
 
 Room.prototype.checkStructures = function(verbose, force) {
     var lastcheck_time = this.memory[MEMORY_CHECKSTRUCTURES_TIME];
-    if (lastcheck_time && lastcheck_time >= (Game.time - 5000) && !force) {
+    if (lastcheck_time && lastcheck_time >= (Game.time - 1000) && !force) {
         return 0;
     }
     this.memory[MEMORY_CHECKSTRUCTURES_TIME] = Game.time;
