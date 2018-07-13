@@ -71,6 +71,12 @@ global.ESPIONAGE_CREATE_TARGETS = function() {
 	var end_x = 60;
 	var start_y = 1;
 	var end_y = 29;
+	if (Game.shard.name == 'vsrv2') {
+	    start_x = 1;
+	    end_x = 17;
+	    start_y = 1;
+	    end_y = 9;
+	}
 	var espionage_targets = [];
 	for (var i = start_x; i < end_x; i++) {
 		for (var j = start_y; j < end_y; j++) {

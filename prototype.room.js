@@ -386,8 +386,14 @@ Room.prototype.createRoadNetwork = function() {
     }
     var origins = this.getFlagsByType(FLAG_ROADORIGIN);
     if (!origins || !origins.length) {
-        console.log(this.name + ': createRoadNetworkk: FAIL, no origin flag');
-        return false;
+        if (myspawns.length) {
+            this.createFlagByType(FLAG_ROADORIGIN, myspawns[0].pos.x, myspawns[0].pos.y);
+            console.log(this.name + ': createRoadNetworkk: FAIL, no origin flag... created one on the spawner.');
+            return false;
+        } else {
+            console.log(this.name + ': createRoadNetworkk: FAIL, no origin flag');
+            return false;
+        }
     }
     var origin = origins[0].pos;
 

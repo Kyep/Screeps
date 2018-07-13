@@ -31,6 +31,13 @@ global.LIST_SCIENCE = function() {
 
 global.RESET_SCIENCE = function() {
     var chains = [];
+
+    if (Game.shard.name != 'shard1') {
+        Memory[MEMORY_GLOBAL_SCIENCEREACTIONS] = chains;
+        Memory[MEMORY_GLOBAL_SCIENCELABS] = {}
+        return;
+    }
+
     // ZK made in a KEANIUM room - verified
     chains.push( // 1st pre-req for GHODIUM
         {

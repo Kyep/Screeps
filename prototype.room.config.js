@@ -375,20 +375,19 @@ Room.prototype.makeAssignments = function(myconf) {
     if (rlvl >= 4) {
         // We are a lvl 4-8 base
         //console.log(this.name + ': makeAssignments assigned normal base units');
+        var template_name = 'bharvester';
+        if (this.energyCapacityAvailable < 800) {
+            template_name = 'sharvester';
+        }
         for (var skey in myconf[global.MEMORY_RC_SOURCES]) {
             var snum = 1;
             if (myconf[global.MEMORY_RC_SOURCES][skey]['spaces'] == 1) {
                 myconf = this.addSourceAssignment(myconf, skey, { 'sharvester': 1}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
             } else if (rlvl == 8) {
-                myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 2 }, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
-                //if (snum == 1) {
-                //    myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 1, 'up8': 1 }, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
-                //} else {
-                //    myconf = this.addSourceAssignment(myconf, skey, { 'sharvester': 1 }, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
-                //}
+                myconf = this.addSourceAssignment(myconf, skey, { template_name: 2 }, myconf[global.MEMORY_RC_SOURCES][skey]['steps']);
             } else {
                 if (this.storage) {
-                    myconf = this.addSourceAssignment(myconf, skey, { 'bharvester': 2}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
+                    myconf = this.addSourceAssignment(myconf, skey, { template_name: 2}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
                 } else {
                     myconf = this.addSourceAssignment(myconf, skey, { 'fharvester': 2}, myconf[global.MEMORY_RC_SOURCES][skey]['steps']); 
                 }
