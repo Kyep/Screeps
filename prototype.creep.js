@@ -514,9 +514,19 @@ Creep.prototype.updateDestination = function() {
             return 1;
         }
     }
-    this.memory[MEMORY_DEST] = this.memory[MEMORY_NEXTDEST][0];
+    var newdest = this.memory[MEMORY_NEXTDEST][0];
     this.memory[MEMORY_NEXTDEST].shift();
-    //console.log('WAYPOINT: ' + this.name + ' has reached ' + this.room.name + ', continuing on to ' + this.memory[MEMORY_DEST]);
+    
+    if (typeof newdest === "string") {
+        this.memory[MEMORY_DEST] = newdest;
+        COLORED_CONSOLE_MSG('WAYPOINT: ' + this.name + ' has reached RM ' + this.room.name + ', continuing on to ' + this.memory[MEMORY_DEST] + ':' + this.memory[MEMORY_DEST_X] + ',' + this.memory[MEMORY_DEST_Y]);
+    } else if (newdest['x'] !== undefined && newdest['y'] !== undefined && newdest['roomName'] !== undefined) {
+        this.memory[MEMORY_DEST] = newdest['roomName'];
+        this.memory[MEMORY_DEST_X] = newdest['x'];
+        this.memory[MEMORY_DEST_Y] = newdest['y'];
+        COLORED_CONSOLE_MSG('WAYPOINT: ' + this.name + ' has reached WP ' + this.room.name + ', continuing on to ' + this.memory[MEMORY_DEST] + ':' + this.memory[MEMORY_DEST_X] + ',' + this.memory[MEMORY_DEST_Y]);
+    }
+    
     return 1;
 }
 

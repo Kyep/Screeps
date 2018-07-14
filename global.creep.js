@@ -131,7 +131,9 @@ global.RUN_CREEPS = function() {
                     if (creep.getActiveBodyparts(HEAL) > 0) {
                         creep.assignTank();
                     }
-                    console.log("<span style='color:rgb(209, 169, 27)'>SHARD TRANSITION: " + creep.name + " now a " + creep.memory[MEMORY_ROLE] + " found itself on " + Game.shard.name + " proceeding to " + creep.memory[MEMORY_DEST] + "</span>");
+                    var xmsg = "SHARD TRANSITION: " + creep.name + " now a " + creep.memory[MEMORY_ROLE] + " found itself on " + Game.shard.name + " proceeding to " + creep.memory[MEMORY_DEST];
+                    COLORED_CONSOLE_MSG(xmsg);
+                    Game.notify(xmsg);
                 } else {
                     console.log('ALERT: ' + creep.name + ' in room' + creep.room.name + ' has role ' + creep.memory[MEMORY_ROLE] + ' which I cannot identify: ' + JSON.stringify(creep.memory));
                 }

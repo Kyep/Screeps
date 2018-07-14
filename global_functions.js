@@ -1,3 +1,8 @@
+
+global.COLORED_CONSOLE_MSG = function (msgtxt) {
+    console.log("<span style='color:rgb(209, 169, 27)'>" + msgtxt + "</span>");
+}
+
 global.CHECK_FOR_OVERBURDENED_SPAWNERS = function () {
     // 'ROOM IS MANAGING TOO MANY PARTS' ALERT
     var max_parts_per_spawner = 400;

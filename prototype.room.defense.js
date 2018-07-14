@@ -127,7 +127,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         
         if (myalert['hostileUsername'] != 'Invader' && myalert['hostileHealers'] > 0 && towercount > 0 && myalert['hostileCost'] > 10000) {
             if(Game.rooms[roomname].ensureDefenseBoosts()) {
-                patrolforce['siegedefense'] = 1;
+                patrolforce['siegedefense'] = 2;
             } else {
                 patrolforce[defense_roles[0]] = 2;
             }
@@ -622,7 +622,7 @@ Room.prototype.updateAlert = function(enemy_details, nuke_details) {
             console.log(tmsg);
             Game.notify(tmsg);
         } else if (thisalert['hostileUsername'] == 'Invader') {
-            console.log('ATTACK: NEW NPC ATTACK DETECTED: ' + attack_details );
+            //console.log('ATTACK: NEW NPC ATTACK DETECTED: ' + attack_details );
         } else {
             if (thisalert['hostileCostMax'] > 50) {
                 Game.notify('NON-NPC ATTACK! ' + attack_details);

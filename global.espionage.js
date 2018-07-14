@@ -58,6 +58,7 @@ global.UPDATE_OBSERVERS = function() {
     if (rtc) {
         rooms_to_observe.push(rtc);
     }
+    rooms_to_observe = rooms_to_observe.concat(ESPIONAGE_LIST_CANARIES());
     if (espionage_targets.length) {
         var retval = global.ASSIGN_OBSERVERS(available_observers, espionage_targets);
         return retval;
@@ -100,6 +101,16 @@ global.ESPIONAGE_LIST_TARGETS = function() {
         Memory[MEMORY_GLOBAL_ESPIONAGE]['targets'] = []
     }
 	return Memory[MEMORY_GLOBAL_ESPIONAGE]['targets'];
+}
+
+global.ESPIONAGE_LIST_CANARIES = function() {
+    if (Memory[MEMORY_GLOBAL_ESPIONAGE] == undefined) {
+        Memory[MEMORY_GLOBAL_ESPIONAGE] = {}
+    }
+    if (Memory[MEMORY_GLOBAL_ESPIONAGE]['canaries'] == undefined) {
+        Memory[MEMORY_GLOBAL_ESPIONAGE]['canaries'] = []
+    }
+	return Memory[MEMORY_GLOBAL_ESPIONAGE]['canaries'];
 }
 
 global.ESPIONAGE_SET_TARGETS = function(thelist) {
@@ -325,8 +336,27 @@ global.ESPIONAGE = function() {
     if (Memory[MEMORY_GLOBAL_ESPIONAGE]['fob'] == undefined) {
         Memory[MEMORY_GLOBAL_ESPIONAGE]['fob'] = {}
     }
-    var target_list = global.ESPIONAGE_LIST_TARGETS();
 
+    var canary_list = global.ESPIONAGE_LIST_CANARIES();
+    var bases = global.LIST_BASES();
+    for (var i = 0; i < canary_list.length; i++) {
+        if (Game.rooms[canary_list[i]]) {
+            var hostiles = Game.rooms[canary_list[i]].getHostileCreeps();
+            //console.log('canary ' + canary_list[i] + ' H: ' + hostiles.length);
+            if (hostiles.length) {
+                for (var j = 0; j < bases.length; j++) {
+                    if (Game.map.getRoomLinearDistance(canary_list[i], bases[j]) < 7) {
+                        if (Game.time % 10 === 0) {
+                            console.log('Canary: hostiles in ' + canary_list[i] + ' would trigger an alert in ' + bases[j]);
+                        }
+                        Game.rooms[bases[j]].memory[MEMORY_LAST_PLAYER_ATTACK] = Game.time;
+                    }    
+                }
+            }
+        }
+    }
+
+    var target_list = global.ESPIONAGE_LIST_TARGETS();
     var num_processed = 0;
     var levels_added = 0;
     var max_per_tick = 15; // do not attempt to recreate data for more than this many rooms per tick.
