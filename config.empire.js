@@ -1,6 +1,6 @@
 
 global.overlord = 'Phisec';
-global.allies = ['Nyoom']; // not including anyone in alliance.
+global.allies = ['Nyoom', 'Nemah']; // not including anyone in alliance.
 global.enemies = ['o4kapuk','Jumpp','demawi','montblanc','fritee','SirFrump','art999'];
     
 global.empire_defaults = {

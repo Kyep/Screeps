@@ -13,7 +13,7 @@ global.EXPANSION_GETROOM = function() {
     if (exp_flags.length == 0) {
         return undefined;
     }
-    return exp_flags[0].room.name;
+    return exp_flags[0].pos.roomName;
 }
 
 global.EXPANSION_PROCESS = function() {

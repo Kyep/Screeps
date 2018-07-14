@@ -60,9 +60,11 @@ module.exports.loop = function () {
     if (tick_done != tick_expected && Game.shard.name == 'shard1') {
         var crashmsg = 'MISSING TICK: possible crash during tick ' + tick_expected + ',  after section: ' + Memory[MEMORY_GLOBAL_CPUSTATS]['lastsection'];
         console.log(crashmsg);
-        if ( Memory[MEMORY_GLOBAL_CPUSTATS]['lastsection'] != 'finished') {
+        /*
+        if (Memory[MEMORY_GLOBAL_CPUSTATS]['lastsection'] != 'finished') {
             Game.notify(crashmsg);
         }
+        */
     }
 
     global.cpu_thistick = {}
@@ -107,8 +109,6 @@ module.exports.loop = function () {
     //Game.rooms['W8S4'].analyse_empty();
 
 
-
-    if(Game.shard.name == 'shard1') {
 
         if(Game.time % 1990 === 0) {
             //global.PRESET_ATTACK_WAVE();
@@ -176,9 +176,6 @@ module.exports.loop = function () {
         SCIENCE_PROCESS();
         CPU_SECTION('science', true);
 
-
-
-    }
 
     RUN_CREEPS();
     CPU_SECTION('creep-life');
