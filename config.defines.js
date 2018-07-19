@@ -64,6 +64,7 @@ global.MEMORY_REPAIR_TARGET = 'repair_target';
 global.MEMORY_GFS_TARGET = 'gfs_target';
 global.MEMORY_RETURNRESOURCES_TARGET = 'returnresources_target';
 global.MEMORY_BUILD_TARGET = 'build_target';
+global.MEMORY_IGNORE_RAMPARTS = 'ignore_ramparts';
 
 // Creep memory, roles
 global.ROLE_HARVESTER = 'harvester';

@@ -204,7 +204,7 @@ Room.prototype.getUsableLabForBooster = function(btype) {
         //console.log(this.name + ': getUsableLabForBooster: no lab has enough booster material of our type, despite assignment. Spawning labtech to refill our supply of: ' + btype);
         this.ensureLabTech();
     } else {
-        console.log(this.name + ': getUsableLabForBooster: no lab assigned to booster type: ' + btype);
+        //console.log(this.name + ': getUsableLabForBooster: no lab assigned to booster type: ' + btype);
     }
     //console.log(this.name + ': getUsableLabForBooster: no lab with usable booster of type: ' + btype);
     return undefined;

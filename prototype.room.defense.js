@@ -1,7 +1,3 @@
-
-
-
-
 global.ROOM_UNDER_ATTACK = function(roomname) {
     var myalert = Memory['sectors_under_attack'][roomname];
     if (myalert == undefined) {
@@ -60,6 +56,9 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
             try_safemode = 1;
         }
     }
+    if (!room_has_spawn && myinfo['spawn_room'] != undefined && myinfo['spawn_room'] != roomname && ROOM_UNDER_ATTACK(myinfo['spawn_room'])) {
+        return;
+    }
 
     if (try_safemode) {
         var cc = Game.rooms[roomname].controller;
@@ -92,6 +91,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
             }
         }
     }
+    //console.log(roomname + ' ' + myalert['hostileHealers'] + ' / ' + myalert['hostileUsername'] + ' theirthreat: ' + theirthreat + ' towercount: ' + towercount);
     if (myinfo['spawn_room'] == undefined) {
         console.log('ATTACK CONFIG WARNING, SECTOR ' + roomname + ' HAS NO spawn_room SET ON ITS ROOM!');
         patrolforce['rogue'] = 1; // the sad default.
@@ -102,7 +102,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         var spawner = gsapfr[0];
         var using_primary = gsapfr[1];
         if (spawner == undefined) {
-            //console.log('XAT: ' + roomname + " has no free 1x spawner");
+            //console.log('XAT: skipping ' + roomname + " as there are no spawners free for it");
             return;
         }
         var home_room = spawner.room.name;
@@ -110,10 +110,10 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
             home_room = myinfo['spawn_room'];
         }
         if (spawner == undefined) {
-            //console.log('XAT: ' + roomname + " has no free 1x-b spawner");
+            console.log('XAT: ' + roomname + " has no free 1x-b spawner");
             return;
         } else {
-            //console.log('XAT: Deciding what to spawn for the ' + theirthreat + ' attack on ' + roomname + ' defended by ' + spawner.name);
+            //console.log('XAT: Deciding what to spawn for the ' + theirthreat + ' threat attack on ' + roomname + ' which contains my spawner: ' + spawner.name);
         }
         var enow = spawner.room.energyAvailable;
         var emax = spawner.room.energyCapacityAvailable;
@@ -124,13 +124,19 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
             //console.log('KITING DETECTED: ' + roomname);
         }
         var num_added = 0;
-        
-        if (myalert['hostileUsername'] != 'Invader' && myalert['hostileHealers'] > 0 && towercount > 0 && myalert['hostileCost'] > 10000) {
-            if(Game.rooms[roomname].ensureDefenseBoosts()) {
+        if (towercount > 0) {
+            //console.log(roomname + ' EVAL XAT FOR ??? ALERT (boosts: ' + bval + ' : ' + JSON.stringify(myalert));
+        }
+        if (myalert['isSiegeAttack'] || (enemies.includes(myalert['hostileUsername']) && towercount > 0 && myalert['hostileCost'] > 5000)) {
+            var bval = Game.rooms[roomname].ensureDefenseBoosts();
+            //console.log(roomname + ' EVAL XAT FOR MAJOR ALERT (boosts: ' + bval + ' : ' + JSON.stringify(myalert));
+            if(bval) {
                 patrolforce['siegedefense'] = 2;
             } else {
-                patrolforce[defense_roles[0]] = 2;
+                patrolforce['siegedefense'] = 1;
+                //patrolforce[defense_roles[0]] = 2;
             }
+            Memory['sectors_under_attack'][roomname]['isSiegeAttack'] = true;
         } else {
             
             for (var i = 0; i < defense_roles.length; i++) {
@@ -174,6 +180,8 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
     } else {
         console.log('DEFENSE: Decided that  ' + roomname + ' can handle the incoming threat of ' + theirthreat + ' without any units being spawned');
     }
+    //baseforce['scout'] = 1;
+    //patrolforce['scout'] = 1;
     //console.log(roomname + ': ' + JSON.stringify(baseforce) + ' | ' + JSON.stringify(patrolforce));
     var rconf = GET_ROOM_CONFIG(roomname);
     rconf = ADD_ROOM_KEY_ASSIGNMENT(rconf, 'basemil', baseforce, 25, true);

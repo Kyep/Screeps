@@ -43,6 +43,7 @@ Room.prototype.endNotifications = function() {
 
 Room.prototype.abandonRoom = function() {
     this.endNotifications();
+    this.deleteConstructionSites();
     for (var rname in Memory[MEMORY_GLOBAL_EMPIRE_LAYOUT]) {
         if (rname == this.name) {
             continue;
@@ -427,9 +428,9 @@ Room.prototype.makeAssignments = function(myconf) {
         //console.log(this.name + ': makeAssignments assigned remote mining units');
 
         //if (psr_obj.memory[MEMORY_NOREMOTE] || psr_obj.priorityDefend() ) {
-        if (psr_obj.memory[MEMORY_NOREMOTE]) {
+        if (psr_obj.memory[MEMORY_NOREMOTE] || ROOM_UNDER_ATTACK(psr_obj.name)) {
             if (Game.time % 500 === 0) {
-                console.log("Not spawning remote creeps from " + this.name + " because it has NOREMOTE set.");
+                //console.log("Not spawning remote creeps for " + this.name + " because it has NOREMOTE set.");
             }
         } else if (psr_obj) {
             var srl = psr_obj.getLevel();
@@ -639,11 +640,11 @@ Room.prototype.makeAssignments = function(myconf) {
                     myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 1}, 700);
                 }
             } else if (rlvl == 4 || rlvl == 5) {
-                if (bsr_obj) {
+                if (bsr_obj && bsr_obj.storage && bsr_obj.storage.store && bsr_obj.storage.store[RESOURCE_ENERGY] > 250000) {
                     myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'grower', {'grower': 3}, 600);
                 }
             } else if (rlvl >= 7) {
-                if (bsr_obj) {
+                if (bsr_obj && bsr_obj.storage && bsr_obj.storage.store && bsr_obj.storage.store[RESOURCE_ENERGY] > 250000) {
                     myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'grower', {'grower': 10}, 600);
                 }
             }
@@ -656,7 +657,7 @@ Room.prototype.makeAssignments = function(myconf) {
         
         // Static guards
         if (this.priorityDefend()) {
-            //myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'safemode_defense', {'siegedefense': 1}, 900);
+            myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'prioritydefend', {'siegedefense': 1}, 900);
         }
         
         

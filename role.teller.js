@@ -20,9 +20,9 @@ module.exports = {
             }
 	    } else if(creep.memory[MEMORY_JOB] == JOB_RETURN) {
             if (towersonly) {
-                var result = creep.returnToStorage([], [STRUCTURE_STORAGE, STRUCTURE_TERMINAL], [STRUCTURE_TOWER]);
+                var result = creep.returnToStorage([], [STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_NUKER], [STRUCTURE_TOWER]);
             } else {
-                var result = creep.returnToStorage([], [STRUCTURE_STORAGE, STRUCTURE_TERMINAL]);
+                var result = creep.returnToStorage([], [STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_NUKER]);
             }
         } else {
             console.log('WARNING: ' + creep.name + ' has no job! ' + creep.memory[MEMORY_JOB]);

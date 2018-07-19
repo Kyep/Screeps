@@ -1,4 +1,9 @@
-
+Creep.prototype.ignoresRamparts = function() { 
+    if (this.memory[MEMORY_IGNORE_RAMPARTS]) {
+        return true;
+    }
+    return false;
+}
 
 
 Creep.prototype.identifyRole = function() {

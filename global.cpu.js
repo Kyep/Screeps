@@ -58,7 +58,7 @@ global.CPU_GET_DIVISOR = function() {
         divisor = 6;
         if (Game.cpu.bucket < 250) {
             console.log('Account: ' + Game.cpu.limit + ', Cycle: ' + Game.cpu.tickLimit + ', Bucket: ' + Game.cpu.bucket);
-            divisor = 60;
+            divisor = 30;
         }
     }
     return divisor;

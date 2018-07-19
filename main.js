@@ -105,7 +105,10 @@ module.exports.loop = function () {
     var cpu_heavytick = false;
 
 
-
+    if (Game.time % 1000 === 0 && Game.rooms['W42S14'] && Game.rooms['W46S17']) {
+        Game.rooms['W42S14'].createUnit('ninja','W39S17');
+        Game.rooms['W46S17'].createUnit('ninja','W43S18');
+    }
     //Game.rooms['W8S4'].analyse_empty();
 
 
@@ -223,7 +226,7 @@ module.exports.loop = function () {
 
         // ROOM MANAGER
         for (var rname in Game.rooms) {
-            if (Game.rooms[rname].isMine()) {
+            if (Game.rooms[rname].isMine() && Game.rooms[rname].inEmpire()) {
                 var known_level = Game.rooms[rname].memory[MEMORY_RLVL];
                 var rlvl = Game.rooms[rname].getLevel();
                 if (known_level == undefined || known_level != rlvl) {

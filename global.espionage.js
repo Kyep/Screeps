@@ -374,7 +374,7 @@ global.ESPIONAGE = function() {
                     Memory[MEMORY_GLOBAL_ESPIONAGE]['rooms'][rname]['wartarget'] = true;
                     var alertmsg = 'Detected warget ' + rowner + ' owns ' + rname + '!'; 
                     console.log(alertmsg);
-                    Game.notify(alertmsg);
+                    //Game.notify(alertmsg);
                     
                 }
                 if (IS_ALLY(rowner)) {

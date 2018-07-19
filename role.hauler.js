@@ -27,10 +27,7 @@ module.exports = {
                     if (creep.carry.energy == 0) {
                     	jobGetstoredenergy.run(creep);
                     } else {
-                        var result = creep.returnToStorage();
-            	        if (result == false) {
-                            creep.sleepFor(5);
-                        }
+                        creep.returnToStorage([], [STRUCTURE_STORAGE, STRUCTURE_TERMINAL], [STRUCTURE_TOWER]);
                     }
                     creep.say('Hide');
                     return;
@@ -263,19 +260,16 @@ module.exports = {
                 creep.say('ret->H');
                 var newpos = creep.getHomePos();
                 creep.moveToRUP(newpos);
-               return 0;
+                return 0;
             }
             if (creep.room.storage == undefined || !creep.room.storage.isActive()) {
                 var try_return = creep.returnToStorage(sleepDelay = 0);
-                if (try_return == -1) { // if it is not possible to return resources, upgrade instead.
+                if (!try_return) { // if it is not possible to return resources, upgrade instead.
                     creep.memory[MEMORY_JOB] = JOB_BUILD;
-                    return;
                 }
-            } else if (!creep.returnToStorage()) {
-                // Sleep for a few seconds, then try again.
-                creep.say('zzz 5');
-                creep.sleepFor(5);
+                return;
             }
+            creep.returnToStorage();
             if(creep.carry.energy == 0) {
                 creep.memory[MEMORY_JOB] = JOB_RENEW;                
             }

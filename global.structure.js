@@ -80,7 +80,7 @@ global.RUN_STRUCTURES = function() {
                         }
                     }
                 }
-                if (!best_target) {
+                if (!best_target && !enemies.includes(myalert['hostileUsername'])) {
     
                     best_target = theroom.getBestTowerTarget(rtowers[rname]);
                     if (best_target) {

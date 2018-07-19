@@ -75,7 +75,7 @@ Creep.prototype.safeMoveToEnemy = function(enemy) {
                 if (ramparts[0].internal) {
                     this.safeMoveToPos(enemy.pos);
                 } else {
-                    this.safeMoveToPos(Game.spawns[this.room.memory.spawns[0]].pos);
+                    //this.safeMoveToPos(Game.spawns[this.room.memory.spawns[0]].pos);
                 }
             } else if (false) {
                 this.moveTo(enemy, {maxRooms: 1});
@@ -87,3 +87,53 @@ Creep.prototype.safeMoveToEnemy = function(enemy) {
         //if (this.getActiveBodyparts(HEAL)) this.rangedHeal(creep);
     }
 }
+
+Object.defineProperty(StructureRampart.prototype, 'internal', {
+
+    configurable: true,
+
+    get: function() {
+
+        if(_.isUndefined(this.room.memory.intRamparts)) {
+
+            this.room.memory.intRamparts = [];
+
+        }
+
+        if(!!~this.room.memory.intRamparts.indexOf(this.id)) {
+
+            return true;
+
+        } else return false;
+
+    },
+
+    set: function(value) {
+
+        if(_.isUndefined(this.room.memory.intRamparts)) {
+
+            this.room.memory.intRamparts = [];
+
+        }
+
+        if (value) {
+
+            if(!!~this.room.memory.intRamparts.indexOf(this.id)) {
+
+                return;
+
+            } else {
+
+                this.room.memory.intRamparts.push(this.id);
+
+            }
+
+        } else {
+
+            if(!!~this.room.memory.intRamparts.indexOf(this.id)) global.remove(this.room.memory.intRamparts, this.id);
+
+        }
+
+    }
+
+});

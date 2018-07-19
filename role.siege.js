@@ -197,6 +197,9 @@ module.exports = {
                     atkresult = creep.dismantle(target);
                 } else if (melee_parts) {
                     atkresult = creep.attack(target);
+                    if (creep.pos.getRangeTo(target) == 1) {
+                        creep.room.focusTowers(target.id);
+                    }
                 }
                 if (atkresult == ERR_NOT_IN_RANGE) {
                     var movresult = creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_PATROL}});

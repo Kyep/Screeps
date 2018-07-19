@@ -74,7 +74,8 @@ global.GET_SPAWN_QUEUE = function(report_summary) {
                 combined[rname][skey] = {}
             }
             for (var srole in assigned[skey]['ass']) {
-                if (under_attack && !empire_defaults['military_roles'].includes(srole) && !empire_defaults['priority_roles'].includes(srole) ) {
+                if (under_attack && !empire_defaults['military_roles'].includes(srole) && !empire_defaults['priority_roles'].includes(srole) && !empire_defaults['priority_sources'].includes(skey) ) {
+                    //console.log('skip ' + srole + ' for ' + skey + ' in ' + rname);
                     continue;
                 }
                 if (!combined[rname][skey][srole]) { 

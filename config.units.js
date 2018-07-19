@@ -70,9 +70,9 @@ global.empire_workers = {
 	'wizard': { 'body':   global.CONSTRUCT_BODY({MOVE: 25, RANGED_ATTACK: 20, HEAL: 5}), 'noresizing': 1, 'renew_allowed': 0}, // {"cost":5500,"ranged_dps":200,"hps":60}
 
     // Anti-player SIEGE TEAM ATTACK classes (boosted)
-	'siegeX': { 'body':      global.CONSTRUCT_BODY({TOUGH: 13, MOVE: 10, WORK: 27}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SX'},   // {"cost":3600,"dismantle_dps":1500} <--- 6k DPS with boosts
+	//'siegeX': { 'body':      global.CONSTRUCT_BODY({TOUGH: 13, MOVE: 10, WORK: 27}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SX'},   // {"cost":3600,"dismantle_dps":1500} <--- 6k DPS with boosts
 	//'siegeX': { 'body':      global.CONSTRUCT_BODY({TOUGH: 10, MOVE: 10, ATTACK: 3, WORK: 27}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SX'},   // {"cost":3600,"dismantle_dps":1500} <--- 6k DPS with boosts
-	//'siegeX': { 'body':      global.CONSTRUCT_BODY({TOUGH: 10, MOVE: 10, ATTACK: 30}),  'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SX'},
+	'siegeX': { 'body':      global.CONSTRUCT_BODY({TOUGH: 10, MOVE: 10, ATTACK: 30}),  'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SX'},
 	'siegerx': { 'body':     global.CONSTRUCT_BODY({MOVE: 10, RANGED_ATTACK: 40}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SrX'}, // {"cost":6500,"ranged_dps":400} -> 1600 DPS with boosts
 	'siegehealerX': { 'body':     global.CONSTRUCT_BODY({TOUGH: 10, MOVE: 10, HEAL: 30}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SHX'}, // {"cost":8100,"hps":360}
 

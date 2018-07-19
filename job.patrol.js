@@ -48,7 +48,11 @@ module.exports =  {
                 desired_range = 2;
             }
             if (rangetotarget > desired_range) {
-                creep.safeMoveToEnemy(target, {visualizePathStyle: {stroke: COLOR_PATROL}});
+                if (creep.ignoresRamparts()) {
+                    creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_PATROL}});
+                } else {
+                    creep.safeMoveToEnemy(target, {visualizePathStyle: {stroke: COLOR_PATROL}});
+                }
             // if we are kiting, move away.
             } else if (rangetotarget < desired_range) {
                 var theirdirection = creep.pos.getDirectionTo(target);
