@@ -629,25 +629,18 @@ Room.prototype.makeAssignments = function(myconf) {
         
         // Energy push to level < 8 rooms
         if (this.storage && this.storage.isActive()) {
-            if (this.terminal && this.terminal.isActive()) {
-                if (this.priorityRebuild() && this.storage.store[RESOURCE_ENERGY] < 75000 && this.terminal.store[RESOURCE_ENERGY] >= 50000) {
-                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'bankerb': 1}, 700);
-                } else if (this.isFortified() && this.storage.store[RESOURCE_ENERGY] < 250000 && this.terminal.store[RESOURCE_ENERGY] >= 50000) {
-                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'bankerb': 1}, 700);
-                } else if (rlvl < 8 && this.storage.store[RESOURCE_ENERGY] < 200000 && this.terminal.getEnergyAboveMinimum() > 0) {
-                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'bankerb': 1}, 700);
-                } else if (rlvl == 8 && this.storage.store[RESOURCE_ENERGY] > 500000 && !this.terminal.metEnergyMax()) {
-                    myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'banker': 1}, 700);
-                }
+            var emode = this.getEnergyMode();
+            if (emode === 1 || emode === 2) {
+                myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'banker', {'bankerb': 1}, 700);
             } else if (rlvl == 4 || rlvl == 5) {
                 if (bsr_obj && bsr_obj.storage && bsr_obj.storage.store && bsr_obj.storage.store[RESOURCE_ENERGY] > 250000) {
                     myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'grower', {'grower': 3}, 600);
                 }
-            } else if (rlvl >= 7) {
+            }/* else if (rlvl >= 7) {
                 if (bsr_obj && bsr_obj.storage && bsr_obj.storage.store && bsr_obj.storage.store[RESOURCE_ENERGY] > 250000) {
                     myconf = ADD_ROOM_KEY_ASSIGNMENT(myconf, 'grower', {'grower': 10}, 600);
                 }
-            }
+            }*/
         }
         
         // Science

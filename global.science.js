@@ -262,6 +262,11 @@ global.RESET_SCIENCE = function() {
     return true;
 }
 
+global.SCIENCE_CLEAR = function () {
+    Memory[MEMORY_GLOBAL_SCIENCEREACTIONS] = [];
+    Memory[MEMORY_GLOBAL_SCIENCELABS] = {}
+}
+
 global.SCIENCE_PROCESS = function () {
     
     var max_fueling_time = 500;
@@ -298,9 +303,13 @@ global.SCIENCE_PROCESS = function () {
             console.log('SCI: skipping reaction in room we lack visibility to: ' + JSON.stringify(reaction));
             continue;
         }
+        if (!rmobj.inEmpire()) {
+            console.log('SCI: skipping reaction in room not part of our empire: ' + JSON.stringify(reaction));
+            continue;
+        }
         var term = rmobj.terminal;
         if (term == undefined || !term.isActive()) {
-            //console.log('SCI: skipping reaction in room with no active terminal: ' + JSON.stringify(reaction));
+            console.log('SCI: skipping reaction in room with no active terminal: ' + JSON.stringify(reaction));
             continue;
         }
         

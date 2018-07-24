@@ -127,7 +127,7 @@ global.HANDLE_ROOM_ALERT = function(roomname) {
         if (towercount > 0) {
             //console.log(roomname + ' EVAL XAT FOR ??? ALERT (boosts: ' + bval + ' : ' + JSON.stringify(myalert));
         }
-        if (myalert['isSiegeAttack'] || (enemies.includes(myalert['hostileUsername']) && towercount > 0 && myalert['hostileCost'] > 5000)) {
+        if (myalert['isSiegeAttack'] || (towercount > 0 && myalert['hostileUsername'] != 'Invader')) {
             var bval = Game.rooms[roomname].ensureDefenseBoosts();
             //console.log(roomname + ' EVAL XAT FOR MAJOR ALERT (boosts: ' + bval + ' : ' + JSON.stringify(myalert));
             if(bval) {

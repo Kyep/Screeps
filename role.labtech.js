@@ -171,8 +171,8 @@ module.exports = {
         //creep.say(sumc);
         if (sumc > 0) {
             var xfer = RESOURCE_ENERGY;
-            if (leyslist.length > 0) {
-                var keyslist = Object.keys(creep.carry);
+            var keyslist = Object.keys(creep.carry);
+            if (keyslist.length > 0) {
                 xfer = keyslist[1];
             }
             if (creep.transfer(myterminal, xfer) == ERR_NOT_IN_RANGE) {

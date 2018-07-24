@@ -200,6 +200,10 @@ global.ESPIONAGE_ATTACK_PLANS = function(spawn_units, spawn_signers) {
     //console.log(JSON.stringify(fobs));
     for (var fobname in fobs) {
         console.log(fobname + ':');
+        if (!Game.rooms[fobname] || !Game.rooms[fobname].isMine() || !Game.rooms[fobname].inEmpire()) {
+            delete Memory[MEMORY_GLOBAL_ESPIONAGE]['fob'][fobname];
+            continue;
+        }
         
         for (var i = 0; i < fobs[fobname].length; i++) {
             var tgt = fobs[fobname][i];

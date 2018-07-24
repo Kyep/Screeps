@@ -225,18 +225,32 @@ Creep.prototype.getShouldHide = function() {
 
 Creep.prototype.getHomePos = function() {
     var home_x = 25;
-    var home_y = 25;
-    if (this.memory[MEMORY_HOME_X] != undefined && this.memory[MEMORY_HOME_Y] != undefined) {
-        home_x = this.memory[MEMORY_HOME_X];
-        home_y = this.memory[MEMORY_HOME_Y];
-    } else if (Game.spawns[this.memory[MEMORY_SPAWNERNAME]] != undefined) {
-        var thespawn = Game.spawns[this.memory[MEMORY_SPAWNERNAME]];
-        this.memory[MEMORY_HOME_X] = thespawn.pos.x;
-        this.memory[MEMORY_HOME_Y] = thespawn.pos.y;
+    if (this.memory[MEMORY_HOME_X] == undefined) {
+        this.memory[MEMORY_HOME_X] = home_x;
     } else {
-        console.log(this.name + ': has no home co-ords in JOB_TRAVEL_BACK');
+        home_x = this.memory[MEMORY_HOME_X];
+    }   
+    var home_y = 25;
+    if (this.memory[MEMORY_HOME_Y] == undefined) {
+        this.memory[MEMORY_HOME_Y] = home_y;
+    } else {
+        home_Y = this.memory[MEMORY_HOME_Y];
     }
-    return new RoomPosition(home_x, home_y, this.memory[MEMORY_HOME]);
+    var home_room = this.memory[MEMORY_HOME];
+    if (!home_room) {
+        home_room = this.memory[MEMORY_SPAWNERROOM];
+    }
+    if (home_room === 25) {
+        console.log(this.name + ' NO HOME POSITION DATA!');
+        this.memory[MEMORY_HOME] = this.pos.roomName;
+        home_room = this.pos.roomName;
+    }
+    if (!home_room) {
+        console.log(this.name + ' INVALID HOME POSITION DATA: ' + home_x + ' ' + home_y + ' ' + home_room);
+        this.suicide();
+        return new RoomPosition(this.pos.x, this.pos.y, this.pos.roomName);
+    }
+    return new RoomPosition(home_x, home_y, home_room);
 }
 
 

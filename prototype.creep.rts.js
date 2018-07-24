@@ -19,7 +19,7 @@ Creep.prototype.clearRetResTgt = function() {
     return true;
 }
 
-Creep.prototype.setRetResTgt = function(myresource, includeList, excludeList, priList) {
+Creep.prototype.setRetResTgt = function(myresource, includeList = [], excludeList  = [], priList  = []) {
     var total_scan = this.room.find(FIND_MY_STRUCTURES, {
         filter: (structure) => {
             return (

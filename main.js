@@ -105,14 +105,6 @@ module.exports.loop = function () {
     var cpu_heavytick = false;
 
 
-    if (Game.time % 1000 === 0 && Game.rooms['W42S14'] && Game.rooms['W46S17']) {
-        Game.rooms['W42S14'].createUnit('ninja','W39S17');
-        Game.rooms['W46S17'].createUnit('ninja','W43S18');
-    }
-    //Game.rooms['W8S4'].analyse_empty();
-
-
-
         if(Game.time % 1990 === 0) {
             //global.PRESET_ATTACK_WAVE();
             global.ESPIONAGE_ATTACK_PLANS();
@@ -251,7 +243,7 @@ module.exports.loop = function () {
                 }
                 if (Game.rooms[rname].isFortified() || Game.rooms[rname].priorityRebuild() || Game.rooms[rname].priorityDefend()) {
                     if (BOOST_ENABLED_SHARDS.includes(Game.shard.name)) {
-                        Game.rooms[rname].ensureBoostAvailable(BOOST_MELEE);
+                        //Game.rooms[rname].ensureDefenseBoosts();
                     }
                     if (Game.rooms[rname].terminal && Game.rooms[rname].terminal.isActive() && Game.rooms[rname].storage && Game.rooms[rname].storage.isActive() && Game.rooms[rname].storage.store[RESOURCE_ENERGY] < 250000) {
                         var min_surplus = 10000;

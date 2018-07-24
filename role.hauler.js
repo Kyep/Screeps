@@ -263,7 +263,7 @@ module.exports = {
                 return 0;
             }
             if (creep.room.storage == undefined || !creep.room.storage.isActive()) {
-                var try_return = creep.returnToStorage(sleepDelay = 0);
+                var try_return = creep.returnToStorage([], [], [], 0);
                 if (!try_return) { // if it is not possible to return resources, upgrade instead.
                     creep.memory[MEMORY_JOB] = JOB_BUILD;
                 }

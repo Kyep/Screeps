@@ -18,6 +18,9 @@ global.REPORT_FORTHP = function(verbose) {
         if(!Game.rooms[rname].isMine()) {
             continue;
         }
+        if(!Game.rooms[rname].inEmpire()) {
+            continue;
+        }
         var fortstatus = '';
         if(Game.rooms[rname].isFortified()) {
             fortstatus = '(FORTIFIED)';

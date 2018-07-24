@@ -15,12 +15,17 @@ module.exports = {
         var pullmin = 10000;
         var pushmax = 900000;
         
-        if (creep.room.getLevel() == 8 && !(creep.room.isFortified() || creep.room.priorityRebuild() || creep.room.priorityDefend())) {
+        var emode = creep.room.getEnergyMode();
+        if (emode === 0) {
+            creep.sleepFor(25);  
+        }
+        if (emode === 2) {
             pullfrom = creep.room.storage;
             depositto = creep.room.terminal;
             pullmin = 10000;
             pushmax = 900000;
         }
+
         if (!pullfrom || !depositto) {
             return;
         }
@@ -48,15 +53,8 @@ module.exports = {
                 }
             }
         } else if(creep.memory[MEMORY_JOB] == JOB_RENEW) {
-            if (!creep.getRenewEnabled() || depositto.store[pushmax] > 900000 || pullfrom.store[pullmin] < 10000 || !creep.memory[MEMORY_NEEDED]) {
-                if (creep.ticksToLive > 100 ) {
-                    creep.memory[MEMORY_JOB] = JOB_GFS;
-                }
-                creep.say('dying off');
-            } else {
-                if(jobRenew.run(creep) == -1 || creep.ticksToLive > 500 ) {
-                    creep.memory[MEMORY_JOB] = JOB_GFS;
-                }
+            if(jobRenew.run(creep) == -1 || creep.ticksToLive > 500 ) {
+                creep.memory[MEMORY_JOB] = JOB_GFS;
             }
         } else {
             creep.memory[MEMORY_JOB] = JOB_GFS;

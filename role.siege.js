@@ -82,7 +82,8 @@ module.exports = {
             }
         }
 
-        /*
+        
+        
         if (melee_parts && !work_parts) {
             creep.avoidEdges();
             target = creep.getClosestHostileCreep();
@@ -90,19 +91,16 @@ module.exports = {
                 var trange = creep.pos.getRangeTo(target);
                 if (trange == 1) {
                     creep.attack(target);
-                    return;
                 } else if (trange <= 3) {
                     if(creep.attack(target) == ERR_NOT_IN_RANGE) {
                         creep.moveTo(target, {visualizePathStyle: {stroke: COLOR_PATROL}});
                     }
-                    return;
                 }
+                return;
             }
         }
-        */
         
-        /*
-        */
+        
         
         
         if (ranged_parts) {
@@ -166,7 +164,7 @@ module.exports = {
                     } else if (frustration < 250) {
                         target = creep.getClosestHostileStructureInTypes(valid_types2);
                     } else {
-                        target = creep.getClosestHostileStructure();
+                        target = creep.getClosestHostileStructure(true);
                         if (!target && melee_parts) {
                             target = creep.getClosestHostileCreep();
                         }

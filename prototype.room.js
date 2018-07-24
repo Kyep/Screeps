@@ -1,3 +1,29 @@
+Room.prototype.getEnergyMode = function() {
+    if (!this.isMine() || !this.storage || !this.storage.isActive() || !this.terminal || !this.terminal.isActive()) {
+        return -1;
+    }
+    var rlvl = this.getLevel();
+    if (this.terminal.store[RESOURCE_ENERGY] >= 50000) {
+        if (this.priorityRebuild() && this.storage.store[RESOURCE_ENERGY] < 50000) {
+            return 1; // terminal -> storage.
+        }
+        if (this.isFortified() && this.storage.store[RESOURCE_ENERGY] < 50000) {
+            return 1; // terminal -> storage.
+        }
+        if (rlvl < 8 && this.storage.store[RESOURCE_ENERGY] < 200000 && this.terminal.getEnergyAboveMinimum() > 0) {
+            return 1; // terminal -> storage.
+        }
+    }
+    if (rlvl == 8 && this.storage.store[RESOURCE_ENERGY] > 500000 && !this.terminal.metEnergyMax() && !this.priorityDefend() && !this.priorityRebuild() ) {
+        return 2; // storage -> terminal
+    }
+    if (this.storage && this.terminal && this.storage.store[RESOURCE_ENERGY] > 250000 && this.terminal.store[RESOURCE_ENERGY] < 25000) {
+        return 2;
+    } 
+    return 0;
+}
+
+
 Room.prototype.getEnergyPriority = function() {
     // Returns a number indicating how important it is that this room have energy in its terminal.
     // Higher = better.
@@ -188,6 +214,9 @@ Room.prototype.deleteConstructionSites = function() {
 }
 
 Room.prototype.checkStructures = function(verbose, force) {
+    if (!this.isMine() || !this.inEmpire()) {
+        return 0;
+    }
     var lastcheck_time = this.memory[MEMORY_CHECKSTRUCTURES_TIME];
     if (lastcheck_time && lastcheck_time >= (Game.time - 1000) && !force) {
         return 0;
@@ -493,21 +522,29 @@ Room.prototype.deleteNonNetworkRoads = function() {
 }
 
 Room.prototype.getDismanteableStructures = function() {
-    return this.find(FIND_HOSTILE_STRUCTURES, {
+    if (this.isMine && this.inEmpire()) {
+        return [];
+    }
+    return this.find(FIND_STRUCTURES, {
         filter: function(s){
             if(s.isInvincible()) {
                 return false;
             }
+            if (s.isMine()) {
+                if (s.structureType == STRUCTURE_WALL) {
+                    return false;
+                }
+                if (s.structureType == STRUCTURE_RAMPART) {
+                    return false;
+                }
+                if (s.structureType == STRUCTURE_SPAWN) {
+                    return false;
+                }
+            }
             if (s.owner && s.owner.username && s.owner.username == "Kamots") {
                 return false;
             }
-            if (s.structureType == STRUCTURE_WALL) {
-                return false;
-            }
             if (s.structureType == STRUCTURE_ROAD) {
-                return false;
-            }
-            if (s.isMine()) {
                 return false;
             }
             return true;

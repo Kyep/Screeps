@@ -1,4 +1,146 @@
 
+Room.prototype.updateMinerals = function() {
+    var science_reactions = Memory[MEMORY_GLOBAL_SCIENCEREACTIONS];
+    var science_labs = Memory[MEMORY_GLOBAL_SCIENCELABS];
+
+    var needed = [];
+    var produces = [];
+    
+    if (!this.isMine() || !this.inEmpire() || !this.terminal) {
+        this.memory[MEMORY_RC_MINS_WANTED] = needed;
+        this.memory[MEMORY_RC_MINS_PRODUCED] = produces;
+        return;
+    }
+
+    var rconf = GET_ROOM_CONFIG(this.name);
+    var mineralmined = rconf['mineraltype'];
+
+    if (mineralmined) {
+        produces.push(mineralmined);
+    }
+
+    for (var i = 0; i < science_reactions.length; i++) {
+        var reaction = science_reactions[i];
+        var rmname = reaction['roomname'];
+        if (rmname != this.name) {
+            continue;
+        }
+        if (reaction['resource_1'] != mineralmined) {
+            var r1_amt = 0;
+            if (this.terminal.store[reaction['resource_1']]) {
+                r1_amt = this.terminal.store[reaction['resource_1']];
+            }
+            if (true || r1_amt < 10000) {
+                needed.push(reaction['resource_1']);
+            }
+        }
+        if (reaction['resource_2'] != mineralmined) {
+            var r2_amt = 0;
+            if (this.terminal.store[reaction['resource_2']]) {
+                r2_amt = this.terminal.store[reaction['resource_2']];
+            }
+            if (true || r2_amt < 10000) {
+                needed.push(reaction['resource_2']);
+            }
+        }
+        produces.push(reaction['goal']);
+    }
+    var boosts_used = this.listBoostsAvailable();
+    needed = needed.concat(boosts_used);
+    this.memory[MEMORY_RC_MINS_WANTED] = needed;
+    this.memory[MEMORY_RC_MINS_PRODUCED] = produces;
+}
+
+global.REALLOCATE_MINERALS = function() {
+    var bases = global.LIST_BASES();
+    for (var i = 0; i < bases.length; i++) {
+        var rname = bases[i];
+        Game.rooms[rname].updateMinerals();
+        Game.rooms[rname].pushMinerals();
+    }
+}
+
+global.GET_ROOMS_NEEDING_MINERAL = function(mtype) {
+    var bases = global.LIST_BASES();
+    var needed_at = [];
+    for (var i = 0; i < bases.length; i++) {
+        var rname = bases[i];
+        if (Game.rooms[rname].memory[MEMORY_RC_MINS_WANTED].includes(mtype)) {
+            needed_at.push(rname);
+        }
+    }
+    return needed_at;
+}
+
+
+Room.prototype.pushMinerals = function() {
+    if (!this.terminal || !this.terminal.isActive() || !this.terminal.isMine()) {
+        return false;
+    }
+    if (this.terminal.cooldown) {
+        return false;
+    }
+    if (this.terminal.store[RESOURCE_ENERGY] < 10000) {
+        return ERR_NOT_ENOUGH_ENERGY;
+    }
+    var skeys = Object.keys(this.terminal.store);
+    var myneeds = this.memory[MEMORY_RC_MINS_WANTED];
+    for (var i = 0; i < skeys.length; i++) {
+        if (skeys[i] == RESOURCE_ENERGY) {
+            continue;
+        }
+        var reserve_to_maintain = 5000;
+        var max_to_transfer = reserve_to_maintain;
+        var t_have = this.terminal.store[skeys[i]];
+
+        if (myneeds.includes(skeys[i])) {
+            //console.log('resource ' + skeys[i] + ' is part of my needs, and I have ' + t_have + ' of it.');
+            if (t_have < reserve_to_maintain) {
+                continue;
+            }
+            if (t_have < (reserve_to_maintain * 2)) {
+                max_to_transfer = t_have - reserve_to_maintain;
+            }
+        }
+        if (max_to_transfer > this.terminal.store[skeys[i]]) {
+            max_to_transfer = this.terminal.store[skeys[i]];
+        }
+        if (max_to_transfer > (reserve_to_maintain * 2)) {
+            max_to_transfer = reserve_to_maintain;
+        }
+        if (max_to_transfer == 0) {
+            continue;
+        }
+        var needing_this = GET_ROOMS_NEEDING_MINERAL(skeys[i]);
+        //console.log('resource ' + skeys[i] + ' is needed by: ' + JSON.stringify(needing_this));
+        for (var j = 0; j < needing_this.length; j++) {
+            var free_cap = Game.rooms[needing_this[j]].terminal.getFreeCapacity();
+            if(Game.rooms[needing_this[j]] && Game.rooms[needing_this[j]].terminal && free_cap > 0) {
+                var amt_have = 0;
+                if (Game.rooms[needing_this[j]].terminal.store[skeys[i]]) {
+                    amt_have = Game.rooms[needing_this[j]].terminal.store[skeys[i]];
+                }
+                var amt_needed = reserve_to_maintain - amt_have;
+                if (amt_needed > 0) {
+                    if (amt_needed > free_cap) {
+                        amt_needed = free_cap;
+                    }
+                    var sresult = this.terminal.send(skeys[i], max_to_transfer, needing_this[j], 'pushminerals');
+                    console.log(this.name + ': resource ' + skeys[i] + ' is needed by: ' + needing_this[j] + ' because it only has ' + amt_have + ', sending ' + max_to_transfer + ' of my ' + t_have + ' result: ' + sresult);
+                    
+                    return true;
+                } else {
+                    //console.log('resource ' + skeys[i] + ' is NOT needed by: ' + needing_this[j] + ' because it already  has ' + amt_have);
+                }
+            } else {
+                console.log('resource ' + skeys[i] + ' is NOT needed by: ' + needing_this[j] + ' because it has no room or zero free space: ' + free_cap);
+            }
+        }
+    }
+    return false;
+}
+    
+
 Room.prototype.needsLabTech = function() {
     if (!this.isMine()) {
         return false;

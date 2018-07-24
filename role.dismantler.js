@@ -23,7 +23,8 @@ module.exports = {
             }
 	        //creep.avoidEdges();
 	        var target = creep.getClosestDismantableStructure(true);
-            if (_.sum(creep.carry) == creep.carryCapacity || (!target && _.sum(creep.carry) > 0)) {
+	        var free_space = creep.carryCapacity - _.sum(creep.carry);
+            if (free_space === 0 || (!target && free_space === 0)) {
                 if(creep.carry.energy > 0) {
     	            creep.memory[MEMORY_JOB] = JOB_RENEW;
                 } else {
@@ -36,10 +37,14 @@ module.exports = {
                 var amount_to_withdraw = 0;
                 if (target.store != undefined) {
                     var storekeys = Object.keys(target.store);
+                    myresource = storekeys[storekeys.length - 1];
+                    /*
                     if(target.store[RESOURCE_ENERGY] == 0 && storekeys.length > 1) {
                         myresource = storekeys[1];
                     }
-                    amount_to_withdraw = Math.min(target.store[myresource], creep.carryCapacity - _.sum(creep.carry));
+                    */
+                    creep.say(myresource);
+                    amount_to_withdraw = Math.min(target.store[myresource], free_space);
                 } else if (target.energy != undefined) {
                     amount_to_withdraw = Math.min(target.energy, creep.carryCapacity - _.sum(creep.carry));
                 }
@@ -57,7 +62,12 @@ module.exports = {
                 if (amount_to_withdraw > 0) {
                     var wresult = creep.withdraw(target, myresource, amount_to_withdraw);
                     if (wresult == OK && (_.sum(creep.store) + amount_to_withdraw) == creep.carryCapacity) {
-                        console.log(creep.name + ': looted ' + amount_to_withdraw + ' ' + myresource + ' from ' + target.structureType + ' owned by ' + target.owner.username);
+                        var ustring = '*UNKNOWN*';
+                        if (target && target.owner && target.owner.username) {
+                            ustring = target.owner.username;
+                        }
+                        
+                        console.log(creep.name + ': looted ' + amount_to_withdraw + ' ' + myresource + ' from ' + target.structureType + ' owned by ' + ustring + ' in room ' + creep.room.name);
                         creep.memory[MEMORY_JOB] = JOB_RETURN;
                     }
                 } else {
@@ -68,7 +78,7 @@ module.exports = {
             } else {
                 creep.say('no target');
                 new RoomVisual(creep.room.name).circle(creep.pos, {stroke: 'red'});
-                creep.sleepFor(3);
+                creep.sleepFor(25);
                 //creep.memory[MEMORY_ROLE] = 'recycler';
                 return;
             }
@@ -98,7 +108,7 @@ module.exports = {
                 creep.announceJob();
                 return;
             }
-            var result = creep.returnToStorage();
+            var result = creep.returnToStorage([], [], [STRUCTURE_TERMINAL]);
             if (!result) {
                 if(creep.carry.energy > 0) {
                     creep.memory[MEMORY_JOB] = JOB_UPGRADE;

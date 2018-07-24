@@ -142,6 +142,8 @@ global.MEMORY_RC_MINERALTYPE = 'mineraltype';
 global.MEMORY_RC_LASTBASEUPDATE = 'lastbaseupdate';
 global.MEMORY_RC_LASTASSIGNUPDATE = 'lastassignupdate';
 global.MEMORY_RC_CONTROLLER = 'controller';
+global.MEMORY_RC_MINS_WANTED = 'mineralswanted';
+global.MEMORY_RC_MINS_PRODUCED = 'mineralsproduced';
 
 // Spawns, top level memory categories
 global.MEMORY_SPAWNINGROLE = 'role_spawning';

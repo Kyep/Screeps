@@ -7,7 +7,7 @@ global.empire_workers = {
 
 	'remoteconstructor': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 4}), 'renew_allowed': 0, 'abbr': 'RC'},
 	'minirc': { 'body': global.CONSTRUCT_BODY({WORK: 2, CARRY: 2, MOVE: 4}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'miniRC'},
-    'dismantler': { 'body': global.CONSTRUCT_BODY({WORK: 3, CARRY: 27, MOVE: 10}), 'renew_allowed': 1, 'abbr': 'DIS'},
+    'dismantler': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 15, MOVE: 16}), 'renew_allowed': 1, 'abbr': 'DIS'},
 
 	'sharvester': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 1}) },
 	'fharvester': { 'body': global.CONSTRUCT_BODY({WORK: 1, CARRY: 1, MOVE: 2}) },
@@ -67,7 +67,7 @@ global.empire_workers = {
     'antikite16': { 'body': global.CONSTRUCT_BODY({RANGED_ATTACK: 16, MOVE: 16}), 'noresizing': 1, 'renew_allowed': 0, 'antikite': 1, 'abbr': 'ak16'}, 
 
     // Anti-player defense classes
-	'wizard': { 'body':   global.CONSTRUCT_BODY({MOVE: 25, RANGED_ATTACK: 20, HEAL: 5}), 'noresizing': 1, 'renew_allowed': 0}, // {"cost":5500,"ranged_dps":200,"hps":60}
+	'wizard': { 'body':   global.CONSTRUCT_BODY({MOVE: 25, RANGED_ATTACK: 15, HEAL: 10}), 'noresizing': 1, 'renew_allowed': 0}, // {"cost":6000,"ranged_dps":150,"hps":120}
 
     // Anti-player SIEGE TEAM ATTACK classes (boosted)
 	//'siegeX': { 'body':      global.CONSTRUCT_BODY({TOUGH: 13, MOVE: 10, WORK: 27}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'SX'},   // {"cost":3600,"dismantle_dps":1500} <--- 6k DPS with boosts
@@ -78,7 +78,7 @@ global.empire_workers = {
 
     // Anti-player SIEGE TEAM ATTACK classes (unboosted)
 	'siege': { 'body':     global.CONSTRUCT_BODY({MOVE: 20, WORK: 20}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'S'}, // {"cost":3000,"dismantle_dps":1000}
-	'sieger': { 'body':     global.CONSTRUCT_BODY({MOVE: 25, RANGED_ATTACK: 25}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'Sr'}, // {"cost":6500,"ranged_dps":250}
+	'sieger': { 'body':     global.CONSTRUCT_BODY({MOVE: 25, RANGED_ATTACK: 25}), 'noresizing': 1, 'renew_allowed': 0, 'abbr': 'Sr'}, // {"cost":5200,"ranged_dps":230,"hps":24}
 	'siegehealer': { 'body':   global.CONSTRUCT_BODY({TOUGH: 15, MOVE: 10, HEAL: 15}), 'noresizing': 1, 'abbr': 'SH' }, // {"cost":4400,"hps":180}
 
     // Anti-player SOLO ATTACK classes (unboosted)

@@ -1,3 +1,4 @@
+
 global.CONVERT_TICKS = function(ticks) {
     var mins = ((ticks * 3.2) / 60);
     if (mins > 60) {
@@ -182,6 +183,9 @@ global.LIST_BASES = function() {
     var bases = [];
     for (var rname in Game.rooms) {
         if (!Game.rooms[rname].isMine()) {
+            continue;
+        }
+        if (!Game.rooms[rname].inEmpire()) {
             continue;
         }
         bases.push(rname);
@@ -598,6 +602,14 @@ global.SPAWN_EVERYWHERE = function (btype) {
     }
 }
 
+global.SPAWN_EVERYWHERE_2 = function (btype) {
+    for (var sname in Game.spawns) {
+        var rname = Game.spawns[sname].room.name;
+        var retval = Game.rooms[rname].createUnit(btype, rname);
+        console.log('spawning ' + btype + ' for: ' + rname + ' result: ' + retval);
+    }
+}
+
 
 global.ROOMLIST_ATTACK_WAVE = function (roomlist, unit_type, dest_room, roompath, dest_x, dest_y) {
     if (roomlist == undefined) {
@@ -634,6 +646,7 @@ global.ROOMLIST_ATTACK_WAVE = function (roomlist, unit_type, dest_room, roompath
 
 
 global.RETARGET_ROLE = function (role, newtarget, waypoints) {
+    var affected = 0;
     if (waypoints == undefined || waypoints == null) {
         waypoints = [];
     }
@@ -641,8 +654,10 @@ global.RETARGET_ROLE = function (role, newtarget, waypoints) {
         if (Game.creeps[crname].memory[MEMORY_ROLE] == role) {
             Game.creeps[crname].memory[MEMORY_DEST] = newtarget;
             Game.creeps[crname].memory[MEMORY_NEXTDEST] = waypoints;
+            affected++;
         }
     }
+    return affected;
 }
 
 global.SWITCH_ROLE = function (rolea, roleb) {
