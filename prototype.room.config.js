@@ -560,10 +560,11 @@ Room.prototype.makeAssignments = function(myconf) {
             if (mineralpatch) {
                 var term = this.terminal;
                 if (term) {
-                    var got_minerals = term.store[myconf[MEMORY_RC_MINERALID]];
+                    var got_minerals = this.terminal.store[myconf[MEMORY_RC_MINERALTYPE]];
                     if (got_minerals >= empire_defaults['mineralcap']) {
-                        //console.log(rname + ' is capped on minerals with ' + got_minerals + ' > ' + empire_defaults['mineralcap']);
+                        //console.log(this.name + ' is capped on minerals with ' + got_minerals + ' > ' + empire_defaults['mineralcap']);
                     } else if (mineralpatch.mineralAmount > 0) {
+                        //console.log(this.name + ' ... is mining minerals ' + got_minerals + ' < '+ empire_defaults['mineralcap'] + ' : ' + myconf[MEMORY_RC_MINERALTYPE]);
                         myconf = this.addSourceAssignment(myconf, 'extractor', { 'extractor': 1}, 30);
                     }
                 }

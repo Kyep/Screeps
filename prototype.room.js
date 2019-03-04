@@ -880,6 +880,7 @@ Room.prototype.sellResource = function (mtype) {
     var room_orders = Game.market.getAllOrders({'type': ORDER_SELL, 'roomName': this.name, 'resourceType': mtype});
     var order_id = undefined;
     var old_price = 0;
+    var old_amount = -1;
     for (var thisorder in room_orders) {
         if (thisorder.remainingAmount == 0) {
             continue;
@@ -963,11 +964,17 @@ Room.prototype.sellResource = function (mtype) {
             amount_to_sell = 20000;
         }
     } else {
-        if (amount_to_sell > 10000) {
+        if (amount_to_sell > 200000) {
+            console.log("MARKET: WARNING: room " + this.name + " has over 200k units of " + mtype + " -- going to sell it for 0.1 price!");
+            sell_price = 0.1;
+        }
+		if (amount_to_sell > 10000) {
             amount_to_sell = 10000;
         }
     }
-    if(effective_buy_price > sell_price && buy_order_id != undefined) {
+	var terminal_energy = this.terminal.store[RESOURCE_ENERGY];
+
+    if(effective_buy_price > sell_price && buy_order_id != undefined && terminal_energy >= 10000) {
         if (buy_order_amount < amount_to_sell) {
             amount_to_sell = buy_order_amount;
         }
@@ -978,7 +985,10 @@ Room.prototype.sellResource = function (mtype) {
         var retval = Game.market.createOrder(ORDER_SELL, mtype, sell_price, amount_to_sell, this.name);
         console.log('MARKET: CREATE sell order for ' + amount_to_sell + ' units of ' + mtype + ' from ' + this.name + ' at ' + sell_price + ' result ' + retval);
     } else {
-        if (old_price == sell_price) {
+		if (old_amount < 10000 && amount_to_sell >= 10000) {
+			console.log('MARKET: EXTEND order ' + order_id);
+			Game.market.extendOrder(order_id, 10000);
+		} else if (old_price == sell_price) {
             console.log('MARKET: PERFECT existing order ' + order_id + ' for ' + mtype + ' in ' + this.name + ' selling at ' + old_price);
         } else if (old_price < sell_price) {
             console.log('MARKET: REPRICE UP order ' + order_id + ' from ' + old_price + ' to ' + sell_price);
